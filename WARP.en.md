@@ -1,0 +1,204 @@
+# WARP.en.md
+
+This file provides minimal, executable repository rules for automated agents. Content is equivalent to `AGENTS.md`, `CLAUDE.md`, `CLAUDE.en.md`, `WARP.md`, and `WARP.en.md`, targeting generic agent runtimes.
+
+---
+
+## 1. Document Positioning
+
+- Purpose: minimal, executable repository rules for automated agents.
+- **Authoritative design entry**: `docs/design-v2/rebuild-v0.01.md` (rebuild design document, single source of truth)
+- Legacy design/governance documents archived to `docs/archive/` (read-only)
+
+---
+
+## 2. System Positioning
+
+EmotionQuant is a sentiment-driven quantitative system for China A-shares.
+
+- Solo developer project
+- Execution model: **4-week incremental delivery** (each week produces independently verifiable deliverables)
+- Docs serve implementation — no "docs perfection" pursuit
+
+---
+
+## 3. Iron Laws (10 rules)
+
+1. **Stock selection = MSS + IRS**, trade timing = PAS, risk control is independent. The three must not mix.
+2. **MSS only looks at market level** — never touches industry or individual stocks.
+3. **IRS only looks at industry level** — never touches market temperature or stock patterns.
+4. **PAS only looks at individual stock patterns** — does not take MSS/IRS scores as input.
+5. **Each raw observation belongs to exactly one factor** — no cross-factor double counting.
+6. **Modules only pass "result contracts"** (pydantic objects) — no internal intermediate features.
+7. **Each module can be unit-tested independently** — no dependency on other modules to start.
+8. **Backtest and paper trading share the same broker kernel**.
+9. **No hardcoded paths/secrets** — all injected via config.py.
+10. **Execution semantics fixed to T+1 Open**: signal_date=T, execute_date=T+1, fill price=T+1 Open.
+
+Details: `docs/design-v2/rebuild-v0.01.md` §1
+
+---
+
+## 4. Development Flow
+
+- Execution model: 4-week incremental delivery (see rebuild-v0.01.md §9)
+- Each week produces independently verifiable deliverables (runnable code + passing tests)
+- Branch naming: `rebuild/{module}`, merge target `main`
+
+---
+
+## 5. Data Contracts
+
+Inter-module data passed as pydantic objects (contracts.py):
+- `MarketScore` (MSS → Selector)
+- `IndustryScore` (IRS → Selector)
+- `StockCandidate` (Selector → Strategy)
+- `Signal` (Strategy → Broker)
+- `Order` / `Trade` (Broker internal → Report)
+
+Code in English, comments/docs/UI in Chinese. Uniform `snake_case`.
+L1 layer uses `ts_code` (TuShare format), L2+ layers use `code` (6-digit pure code).
+
+Details: `docs/design-v2/rebuild-v0.01.md` §5
+
+---
+
+## 6. Data Architecture
+
+DuckDB single-database storage, decoupled via L1-L4 layers. Data root injected via `DATA_PATH` environment variable (directory outside repo).
+
+| Layer | Content |
+|-------|---------|
+| L1 | Raw data (API fetch, written by fetcher.py) |
+| L2 | Processed data (adjusted prices / moving averages / volume ratio / market snapshot / industry daily) |
+| L3 | Algorithm output (MSS / IRS / PAS / gene library) |
+| L4 | Historical analysis cache (orders / trades / reports) |
+
+**Dependency rule**: L2 reads only L1; L3 reads only L1/L2; L4 reads only L1/L2/L3. Reverse dependencies forbidden.
+
+Details: `docs/design-v2/rebuild-v0.01.md` §4.1
+
+---
+
+## 7. Architecture (6 Modules)
+
+| Module | Responsibility |
+|--------|---------------|
+| Data | Fetch, clean, store, cache algorithm output |
+| Selector | MSS market sentiment + IRS industry rotation + gene filter → candidate pool |
+| Strategy | PAS pattern detection (breakout / pullback) → trade signals |
+| Broker | Risk control + matching (backtest and paper trading share kernel) |
+| Backtest | Historical backtesting (backtrader single engine) |
+| Report | Backtest reports + daily stock selection reports + alerts |
+
+---
+
+## 8. Governance Structure
+
+### 8.1 Directory Positioning
+
+| Directory | Role |
+|-----------|------|
+| `docs/design-v2/` | Current design documents (rebuild-v0.01.md is sole authoritative entry) |
+| `docs/design/` | Legacy design (pending archive) |
+| `docs/archive/` | Historical archives (read-only) |
+
+### 8.2 Single Source of Truth (SoT)
+
+`docs/design-v2/rebuild-v0.01.md` is the sole authoritative design document (architecture / modules / contracts / iron laws / plan).
+
+### 8.3 Archive Rules
+
+- Archive naming: `archive-{model}-{version}-{date}`
+- Archived directories are read-only, no further iteration
+- Legacy design docs archived to `docs/archive/archive-docs-toplevel-v5-20260301/`
+- Legacy governance docs archived to `docs/archive/archive-steering-v6-20260301/`
+
+---
+
+## 9. Quality Gates
+
+- Commands must run, tests must reproduce, artifacts must be verifiable
+- Hardcoded path checks, A-share rule checks
+- Effective tests over coverage numbers
+- TODO/HACK/FIXME: allowed during development, must be cleaned before merge
+
+---
+
+## 10. Core Algorithm Constraints
+
+- Stock selection = MSS + IRS, trade timing = PAS, risk control independent. The three must not mix
+- MSS only at market level, IRS only at industry level, PAS only at individual stock patterns
+- Each raw observation belongs to exactly one factor — no cross-factor double counting
+- Modules only pass "result contracts" (pydantic objects) — no internal intermediate features
+
+Details: `docs/design-v2/rebuild-v0.01.md` §1 iron laws + §4 module boundaries
+
+---
+
+## 11. Tech Stack
+
+- Python `>=3.10`
+- Storage: DuckDB single database
+- Data sources: TuShare (primary) + AKShare (fallback)
+- Backtesting: backtrader single engine
+- GUI: CLI only for MVP, GUI deferred
+
+Details: `docs/design-v2/rebuild-v0.01.md` §6
+
+---
+
+## 12. Repository Remotes
+
+- `origin`: `${REPO_REMOTE_URL}` (defined in `.env.example`)
+- `backup`: `${REPO_BACKUP_REMOTE_URL}` (defined in `.env.example`, suggested local remote name `backup`)
+
+---
+
+## 13. Historical Notes
+
+All legacy design/governance documents archived to `docs/archive/` (read-only):
+- `archive-docs-toplevel-v5-20260301/` — legacy roadmap/system-overview/module-index/naming-conventions/naming-contracts/technical-baseline
+- `archive-steering-v6-20260301/` — legacy 6A-WORKFLOW/iron-rules/CORE-PRINCIPLES/GOVERNANCE-STRUCTURE/TRD/templates
+- `designv1/` / `reference/` / `sos/` — earlier history
+
+Current authoritative design entry: `docs/design-v2/rebuild-v0.01.md`
+
+---
+
+## 14. Execution Plan
+
+Current execution plan: see `docs/design-v2/rebuild-v0.01.md` §9 (4-week plan).
+
+## 15. Git Auth Baseline
+
+- TLS backend baseline: prefer `openssl` (`git config --global http.sslbackend openssl`, repo-level override allowed).
+- In restricted sandbox sessions, authenticated `git push` should run in non-sandbox or elevated mode to ensure credential interaction and storage paths are accessible.
+
+## 16. MCP Baseline
+
+Recommended MCP services:
+- `context` (Context7 document/context retrieval)
+- `fetch` (HTTP content fetching)
+- `filesystem` (cross-directory file operations)
+- `sequential-thinking` (multi-step reasoning)
+- `mcp-playwright` (browser automation)
+
+Skill vs MCP boundary:
+- Skill = process instructions / templates.
+- MCP = runtime tools.
+- Skills do not replace MCP.
+
+Default trigger policy:
+- Version-sensitive API/framework issues → prefer `context`.
+- Non-browser-rendered web content → prefer `fetch`.
+- Non-trivial file I/O → prefer `filesystem`.
+- Multi-branch decisions and complex troubleshooting → prefer `sequential-thinking`.
+- UI flows and screenshot replay → prefer `mcp-playwright`.
+
+Bootstrap:
+- One-click: `powershell -ExecutionPolicy Bypass -File scripts/setup/bootstrap_dev_tooling.ps1`
+- MCP only: `powershell -ExecutionPolicy Bypass -File scripts/setup/configure_mcp.ps1 -ContextApiKey <your_key>`
+- Optional MCP target dir: `-CodexHome <path>` (default: in-project `.tmp/codex-home`)
+- Hooks only: `powershell -ExecutionPolicy Bypass -File scripts/setup/configure_git_hooks.ps1`
+- Skills check only: `powershell -ExecutionPolicy Bypass -File scripts/setup/check_skills.ps1`

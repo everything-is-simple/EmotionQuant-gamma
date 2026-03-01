@@ -1,0 +1,119 @@
+# EmotionQuant Spiral 依赖图（执行版）
+
+**状态**: Active  
+**更新时间**: 2026-02-23  
+**定位**: Spiral/ENH 依赖关系与插入点说明。
+
+---
+
+## 0. Reborn 依赖口径（2026-02-23 新增）
+
+1. 依赖链同时服务于三大螺旋闭环，不再只服务线性圈位推进。
+2. `implemented` 不等于 `closed-loop-completed`：必须有业务看板 `GO/NO_GO`。
+3. 螺旋2前置条件：螺旋1（canary 数据 + 简回测 + 最小归因）通过。
+4. 螺旋3前置条件：螺旋2（16年数据 + 完整回测 + 完整归因）通过。
+
+---
+
+## 1. 主链依赖
+
+```text
+S0 -> S1 -> S2a -> S2b -> S2c -> S3a -> S3 -> S4 -> S3ar -> S3b -> S3c -> S3d -> S3e -> S4b -> S5 -> S6 -> S7a
+```
+
+约束：
+
+1. 仅允许前向依赖，不允许跨圈反向依赖。
+2. 阶段A算法链路需覆盖 S2a/S2b/S2c，完成 CP-03/CP-04/CP-10/CP-05 的实现与算法语义收口。
+3. S3/S4/S5 均消费 S2c 收口后的 `integrated_recommendation`。
+4. S2c->S3 迁移前，必须同时通过命名/治理一致性门禁（`--contracts --governance`）与 `validation_weight_plan` 桥接硬门禁。
+5. S3b 依赖 S4：偏差归因必须消费纸上交易结果，不允许只基于回测推断。
+6. S3c 依赖 S3b：行业语义校准必须使用归因窗口作为审计窗口。
+7. S3d 依赖 S3c：MSS adaptive 校准必须基于 SW31 行业语义已收口的数据口径。
+8. S3e 依赖 S3d：Validation 生产校准必须消费 MSS adaptive 与真实收益序列口径。
+9. S4b 依赖 S3e：极端防御阈值必须来自归因结论 + Validation 生产校准 + 压力回放，不允许拍脑袋设值。
+10. 各圈收口前必须执行契约行为回归：`tests/unit/scripts/test_contract_behavior_regression.py`。
+
+---
+
+## 1.1 阶段映射依赖
+
+1. 阶段A 对应 `S0-S2c`，阶段合同见 `Governance/SpiralRoadmap/SPIRAL-STAGE-TEMPLATES.md`。
+2. 阶段B 对应 `S3a-S4b`，阶段合同见 `Governance/SpiralRoadmap/SPIRAL-STAGE-TEMPLATES.md`。
+3. 阶段C 对应 `S5-S7a`，阶段合同见 `Governance/SpiralRoadmap/SPIRAL-STAGE-TEMPLATES.md`。
+4. 阶段推进必须满足：上一阶段 `退出门禁` 通过，下一阶段 `入口门禁` 才允许启动。
+
+---
+
+## 2. 扩展圈依赖（ENH）
+
+```text
+S2c -> S3a(ENH-10) -> S3
+S6 -> S7a(ENH-11)
+```
+
+| ENH | 名称 | 挂载圈位 | 依赖 | 价值 |
+|---|---|---|---|---|
+| ENH-10 | 数据采集增强 | S3a（S2c 后、S3 前） | S2c PASS/WARN + 桥接门禁通过 | 高：提升历史数据准备效率 |
+| ENH-11 | 定时调度器 | S7a（S6 后） | S6 PASS | 中：提升日常运营自动化 |
+
+---
+
+## 2.1 专项圈依赖（收益验证与极端防御）
+
+```text
+S3 -> S4 -> S3ar -> S3b(归因验证) -> S3c(SW31校准) -> S3d(MSS adaptive) -> S3e(Validation生产校准) -> S4b(极端防御)
+```
+
+| 专项圈 | 名称 | 挂载圈位 | 依赖 | 价值 |
+|---|---|---|---|---|
+| S3b | 收益归因验证 | S3ar 后 | S3ar PASS | 高：确认收益来源（信号 vs 执行） |
+| S3c | 行业语义校准 | S3b 后 | S3b PASS/WARN | 高：消除 `industry_code=ALL` 粒度偏差 |
+| S3d | MSS 自适应校准 | S3c 后 | S3c PASS/WARN | 高：完成 adaptive 阈值与真实收益 probe |
+| S3e | Validation 生产校准 | S3d 后 | S3d PASS/WARN | 高：完成 future_returns + 双窗口 WFA 生产口径 |
+| S4b | 极端防御专项 | S3e 后 | S3e PASS/WARN | 高：降低连续跌停/流动性枯竭回撤 |
+
+---
+
+## 3. 层级依赖（数据口径）
+
+1. L2 只读 L1。
+2. L3 只读 L1/L2。
+3. L4 只读 L1/L2/L3。
+4. ENH-10/11 只增强执行与调度，不改变 L1-L4 语义。
+
+---
+
+## 4. 关键契约依赖
+
+| 上游产物 | 下游消费 | 阻断条件 |
+|---|---|---|
+| `raw_*` / `raw_trade_cal` | L2 快照（S0c） | 数据缺失或交易日不匹配 |
+| `mss_panorama` | S1b/S2a | 评分字段不完整 |
+| `irs_industry_daily` + `stock_pas_daily` | S2b | 任一主信号缺失 |
+| `validation_gate_decision` | S2b/S2c/S3/S4 | gate 不可追溯或 FAIL 未修复 |
+| `validation_weight_plan` | S2c/S3/S4 | `selected_weight_plan -> plan_id -> integrated_recommendation.weight_plan_id` 桥接链路断裂 |
+| `docs/naming-contracts.schema.json`（`nc-v1`） | S2/S3/S4/S5 运行契约 | Schema 缺失或阈值/枚举与文档漂移 |
+| `validation_gate_decision.contract_version` | S3/S4/S5 执行前检查 | `contract_version != "nc-v1"` |
+| `integrated_recommendation` | S3/S4/S5 | 缺 A 股规则门禁字段或 RR 执行门槛口径不一致 |
+| `ab_benchmark_report` + `live_backtest_deviation` | S3b/S4b | 归因证据缺失或口径不一致 |
+| `extreme_defense_report` | S4b/S5 | 连续跌停/流动性枯竭压力场景未覆盖 |
+| `python -m scripts.quality.local_quality_check --contracts --governance` | 圈间推进门禁 | contracts/governance 任一 FAIL |
+| `tests/unit/scripts/test_contract_behavior_regression.py` | 圈收口防跑偏门禁 | 行为与命名/契约基线漂移 |
+| `.github/workflows/quality-gates.yml` | PR/主干合并门禁 | CI 未配置或检查项缺失 |
+| `fetch_progress.json` | S3a 运维恢复 | 进度文件损坏或状态不一致 |
+| `scheduler_status.json` | S7a 日常运维 | 调度状态不可查询 |
+
+---
+
+## 5. 变更记录
+
+| 版本 | 日期 | 变更 |
+|---|---|---|
+| v1.6 | 2026-02-23 | 新增 Reborn 依赖口径：引入三大螺旋前置关系与“implemented 不等于闭环完成”约束，更新时间同步 |
+| v1.5 | 2026-02-20 | 主链新增 `S3c/S3d/S3e` 依赖段并补齐 `S3ar`；阶段B专项圈依赖升级为“归因 -> SW31 -> MSS adaptive -> Validation 生产校准 -> 极端防御” |
+| v1.4 | 2026-02-16 | 主链插入 S2c（S2b->S3a）；ENH-10 插入位改为 S2c 后；新增 `validation_weight_plan` 桥接硬门禁依赖；阶段A映射改为 S0-S2c |
+| v1.3 | 2026-02-15 | 新增“阶段映射依赖”小节，明确阶段A/B/C与圈序关系并链接阶段模板文档 |
+| v1.2 | 2026-02-15 | 主链更新为 `S0->...->S7a` 全执行序；新增 S3b/S4b 专项圈依赖；关键契约新增归因/极端防御证据与防跑偏行为回归门禁 |
+| v1.1 | 2026-02-14 | 增加 S2->S3 质量门禁依赖；补充 Schema/contract_version/本地检查/CI workflow 契约依赖 |
+| v1.0 | 2026-02-13 | 重建依赖图；纳入 ENH-10/ENH-11 圈位与依赖约束 |
