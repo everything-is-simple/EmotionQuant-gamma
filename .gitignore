@@ -141,6 +141,9 @@ desktop.ini
 # 报告输出（整目录忽略）
 .reports/
 
+# YTC 归档资料（不上传）
+docs/archive/
+
 # Agent / tooling traces
 .specstory/
 .claude/
