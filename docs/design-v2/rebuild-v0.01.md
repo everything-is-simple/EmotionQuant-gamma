@@ -168,23 +168,52 @@ sequenceDiagram
    1. E9：`_pair_trades` 增加 `len(buys)==len(sells)` 断言；`stop()` 执行 `_force_close_all()` 末日收盘强平。
    2. E10：`Order/Trade` 均冗余 `pattern`，归因链直连，报告阶段无需 JOIN 信号表。
 
-### 9.3 防偏差控制点图
+### 9.3 偏差清单与修复结果（F-G，第二轮）
+
+6. F 类（字段/Schema 不对齐）
+   1. F11：`l4_orders` / `l4_trades` DDL 补充 `pattern VARCHAR NOT NULL` 列。
+   2. F12：BUY Order 创建 (`check_signal`) 补 `pattern=signal.pattern`。
+   3. F13：SELL Order 创建 (`check_positions`、回撤清仓) 补 `pattern=position.pattern`。
+   4. F14：`Position` dataclass 新增 `pattern: str` 字段（与 `signal_type` 并存）。
+7. G 类（数据流缺失）
+   1. G15：`_get_market_data` 改为 L2 LEFT JOIN L1，补充 `raw_open` / `is_halt` / `up_limit` / `down_limit`。
+   2. G16：组合回撤 NAV 计算加 `if not p.is_paper` 过滤，与仓位计算保持一致。
+
+### 9.4 偏差清单与修复结果（H，第三轮）
+
+8. H 类（残余一致性风险）
+   1. H17：回测写 `l4_trades` 全链路改 `bulk_upsert`（按 `trade_id` 幂等覆盖），避免重跑重复成交。
+   2. H18：涨跌停可成交检查改“原始价口径”(`raw_open/open` 对 `up_limit/down_limit`)，避免复权价混比误判。
+   3. H19：`_pair_trades` 改 FIFO 数量配对，支持分批成交/分批平仓；断言改为“无负仓位 + 期末净仓位为 0”。
+   4. H20：`l2_market_snapshot` DDL 注释补齐北交所阈值（`±15%`）避免实现回退。
+
+### 9.5 防偏差控制点图（A-H）
 
 ```mermaid
 flowchart TD
     A[Signal生成] --> B{signal_id确定性?}
     B -- 否 --> BX[拒绝写入/修正contracts]
     B -- 是 --> C[Order upsert]
-    C --> D{PENDING且execute_date==today?}
+    C --> C1{Order携带pattern?}
+    C1 -- 否 --> C1X[pydantic校验失败]
+    C1 -- 是 --> D{PENDING且execute_date==today?}
     D -- 否 --> DX[中止撮合并报警]
-    D -- 是 --> E{可成交? is_halt/涨跌停检查}
-    E -- 否 --> F[REJECTED并记录原因]
-    E -- 是 --> G[FILLED生成Trade]
-    G --> H{回测结束仍有未平仓?}
-    H -- 是 --> I[_force_close_all 末日收盘强平]
-    H -- 否 --> J[_pair_trades配对]
-    I --> J
-    J --> K{买卖笔数一致?}
-    K -- 否 --> KX[断言失败/阻断报告]
-    K -- 是 --> L[pattern归因统计]
+    D -- 是 --> E{market_data含 L1 字段?}
+    E -- 否 --> EX[is_halt/涨跌停检查失效]
+    E -- 是 --> E1{含raw_open/open?}
+    E1 -- 否 --> E1X[涨跌停口径混比风险]
+    E1 -- 是 --> F{可成交? is_halt/涨跌停检查}
+    F -- 否 --> G[REJECTED并记录原因]
+    F -- 是 --> H[FILLED生成Trade]
+    H --> H1{l4_trades upsert?}
+    H1 -- 否 --> H1X[重跑重复成交污染统计]
+    H1 -- 是 --> I{回测结束仍有未平仓?}
+    I -- 是 --> J[_force_close_all 末日收盘强平]
+    I -- 否 --> K[_pair_trades配对]
+    J --> K
+    K --> K1{FIFO数量配对?}
+    K1 -- 否 --> K1X[分批成交PnL失真]
+    K1 -- 是 --> L{净仓位回到0?}
+    L -- 否 --> LX[断言失败/阻断报告]
+    L -- 是 --> M[pattern归因统计]
 ```

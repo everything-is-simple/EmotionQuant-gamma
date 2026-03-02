@@ -71,7 +71,8 @@ class EmotionQuantStrategy(bt.Strategy):
             market_data = self._get_market_data(today)
             trades = self.broker_engine.execute_orders(pending_orders, market_data)
             for trade in trades:
-                self.store.bulk_insert("l4_trades", pd.DataFrame([trade.model_dump()]))
+                # l4_trades 存在重跑场景，必须 upsert（按 trade_id 幂等覆盖）
+                self.store.bulk_upsert("l4_trades", pd.DataFrame([trade.model_dump()]))
 
         # 2. 更新持仓（止损/止盈检查）
         market_data = self._get_market_data(today)
@@ -89,9 +90,17 @@ class EmotionQuantStrategy(bt.Strategy):
                 self.broker_engine.add_pending_order(order)
 
     def _get_market_data(self, date):
-        """从 store 读取指定日期的 L2 数据（回测模式）。"""
+        """
+        从 store 读取指定日期的撮合所需数据。
+        L2 提供复权价序列，L1 提供停牌/涨跌停与原始开盘价。
+        """
         return self.store.read_df(
-            "SELECT * FROM l2_stock_adj_daily WHERE date = ?", (date,)
+            "SELECT a.*, b.open AS raw_open, b.is_halt, b.up_limit, b.down_limit "
+            "FROM l2_stock_adj_daily a "
+            "LEFT JOIN l1_stock_daily b "
+            "  ON a.code = SPLIT_PART(b.ts_code, '.', 1) "
+            "  AND a.date = b.date "
+            "WHERE a.date = ?", (date,)
         )
 
     def stop(self):
@@ -130,7 +139,8 @@ class EmotionQuantStrategy(bt.Strategy):
                 fee=fee,
                 is_paper=pos.is_paper,
             )
-            self.store.bulk_insert("l4_trades", pd.DataFrame([trade.model_dump()]))
+            # l4_trades 存在重跑场景，必须 upsert（按 trade_id 幂等覆盖）
+            self.store.bulk_upsert("l4_trades", pd.DataFrame([trade.model_dump()]))
         logger.info(f"force_close_all: {len(open_positions)} 笔持仓已强平")
 ```
 
@@ -299,37 +309,61 @@ def _pair_trades(trades_df: pd.DataFrame) -> pd.DataFrame:
                     pnl, pnl_pct, holding_days, pattern, fee_total
 
     前置条件：回测结束前必须已调用 force_close_all()，保证无未平仓持仓。
+    配对规则：按数量配对（支持分批成交/分批平仓），不是按笔数 zip。
     """
     pairs = []
-    # 按 code 分组，BUY/SELL 按时间顺序配对
+    # 按 code 分组，BUY/SELL 按时间顺序 FIFO 数量配对
     for code, group in trades_df.groupby("code"):
-        buys = group[group["action"] == "BUY"].sort_values("execute_date")
-        sells = group[group["action"] == "SELL"].sort_values("execute_date")
+        group = group.sort_values(["execute_date", "trade_id"])
+        buy_queue = []  # [{qty, price, fee, execute_date, pattern}]
 
-        # ── 安全断言：BUY/SELL 数量必须一致 ──
-        if len(buys) != len(sells):
+        for t in group.itertuples():
+            if t.action == "BUY":
+                buy_queue.append({
+                    "qty": t.quantity,
+                    "price": t.price,
+                    "fee": t.fee,
+                    "execute_date": t.execute_date,
+                    "pattern": t.pattern,
+                })
+                continue
+
+            # SELL：按 FIFO 与买单队列逐笔配对
+            sell_qty = t.quantity
+            while sell_qty > 0 and buy_queue:
+                buy = buy_queue[0]
+                matched_qty = min(buy["qty"], sell_qty)
+                buy_fee_part = buy["fee"] * (matched_qty / buy["qty"])
+                sell_fee_part = t.fee * (matched_qty / t.quantity)
+                pnl = (t.price - buy["price"]) * matched_qty - buy_fee_part - sell_fee_part
+
+                pairs.append({
+                    "code": code,
+                    "entry_date": buy["execute_date"],
+                    "exit_date": t.execute_date,
+                    "entry_price": buy["price"],
+                    "exit_price": t.price,
+                    "quantity": matched_qty,
+                    "pnl": pnl,
+                    "pnl_pct": (t.price - buy["price"]) / buy["price"],
+                    "holding_days": (t.execute_date - buy["execute_date"]).days,
+                    "pattern": buy["pattern"],   # Trade 已冗余携带 pattern 字段
+                    "fee_total": buy_fee_part + sell_fee_part,
+                })
+
+                buy["qty"] -= matched_qty
+                sell_qty -= matched_qty
+                if buy["qty"] == 0:
+                    buy_queue.pop(0)
+
+            if sell_qty > 0:
+                raise ValueError(f"{code}: SELL 数量超过 BUY 库存，出现负仓位")
+
+        if buy_queue:
             raise ValueError(
-                f"{code}: BUY({len(buys)}) != SELL({len(sells)})，"
-                f"存在未平仓交易，force_close_all 可能未执行"
+                f"{code}: 存在未平仓数量 {sum(x['qty'] for x in buy_queue)}，"
+                f"force_close_all 可能未执行"
             )
-
-        for buy, sell in zip(buys.itertuples(), sells.itertuples()):
-            pnl = (sell.price - buy.price) * buy.quantity - buy.fee - sell.fee
-            pnl_pct = (sell.price - buy.price) / buy.price
-            holding_days = (sell.execute_date - buy.execute_date).days
-            pairs.append({
-                "code": code,
-                "entry_date": buy.execute_date,
-                "exit_date": sell.execute_date,
-                "entry_price": buy.price,
-                "exit_price": sell.price,
-                "quantity": buy.quantity,
-                "pnl": pnl,
-                "pnl_pct": pnl_pct,
-                "holding_days": holding_days,
-                "pattern": buy.pattern,    # Trade 已冗余携带 pattern 字段
-                "fee_total": buy.fee + sell.fee,
-            })
 
     return pd.DataFrame(pairs)
 ```

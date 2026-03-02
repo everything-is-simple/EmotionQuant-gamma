@@ -130,8 +130,8 @@ CREATE TABLE IF NOT EXISTS l2_market_snapshot (
     total_stocks               INTEGER,
     rise_count                 INTEGER,
     fall_count                 INTEGER,
-    strong_up_count            INTEGER,   -- 按板块阈值：主板≥5%, 创业板/科创板≥10%, ST≥2.5%
-    strong_down_count          INTEGER,   -- 对称
+    strong_up_count            INTEGER,   -- 按板块阈值：主板≥5%, 创业板/科创板≥10%, 北交所≥15%, ST≥2.5%
+    strong_down_count          INTEGER,   -- 对称（主板≤-5%, 创业板/科创板≤-10%, 北交所≤-15%, ST≤-2.5%）
     limit_up_count             INTEGER,   -- 涨停
     limit_down_count           INTEGER,   -- 跌停
     touched_limit_up_count     INTEGER,   -- 曾触及涨停但收盘未封住
@@ -217,6 +217,7 @@ CREATE TABLE IF NOT EXISTS l4_orders (
     signal_id     VARCHAR NOT NULL,
     code          VARCHAR NOT NULL,
     action        VARCHAR NOT NULL,
+    pattern       VARCHAR NOT NULL,            -- 冗余：来自 Signal.pattern（归因链直连）
     quantity      INTEGER,
     price_limit   DOUBLE,
     execute_date  DATE,
@@ -233,6 +234,7 @@ CREATE TABLE IF NOT EXISTS l4_trades (
     code          VARCHAR NOT NULL,
     execute_date  DATE    NOT NULL,
     action        VARCHAR NOT NULL,
+    pattern       VARCHAR NOT NULL,            -- 冗余：来自 Order.pattern（_pair_trades 直接读取）
     price         DOUBLE,
     quantity      INTEGER,
     fee           DOUBLE,

@@ -65,7 +65,8 @@ class Position:
     current_price: float          # 最新收盘价
     max_price: float              # 持仓期间最高价（移动止盈用）
     stop_loss: float              # 当前止损价
-    signal_type: str              # 触发形态（如 PAS_BOF）
+    pattern: str                   # 形态名（如 "bof"），来自 Trade.pattern
+    signal_type: str              # reason_code（如 "PAS_BOF"）
     is_paper: bool = False        # 是否模拟持仓
 ```
 
@@ -142,6 +143,7 @@ def check_signal(self, signal, broker_state) -> Order | None:
         signal_id=signal.signal_id,
         code=signal.code,
         action="BUY",
+        pattern=signal.pattern,           # 冗余传递，归因链直连
         quantity=quantity,
         execute_date=execute_date,
         is_paper=is_paper,
@@ -241,6 +243,7 @@ def _check_portfolio_drawdown(self, broker_state, today_date) -> bool:
     """
     nav = broker_state.cash + sum(
         p.current_price * p.quantity for p in broker_state.portfolio.values()
+        if not p.is_paper                    # 与仓位计算一致：只算真实持仓
     )
     broker_state.max_nav = max(broker_state.max_nav, nav)
     drawdown = (broker_state.max_nav - nav) / broker_state.max_nav
@@ -312,6 +315,7 @@ def check_positions(self, portfolio, market_data, trade_date):
                 signal_id=f"RISK_{code}_{trade_date}",
                 code=code,
                 action="SELL",
+                pattern=position.pattern,      # 沿用原始 BUY 形态
                 quantity=position.quantity,
                 execute_date=execute_date,
                 status="PENDING"
@@ -325,6 +329,7 @@ def check_positions(self, portfolio, market_data, trade_date):
                 sell_orders.append(Order(
                     signal_id=f"DRAWDOWN_{code}_{trade_date}",
                     code=code, action="SELL",
+                    pattern=position.pattern,  # 沿用原始 BUY 形态
                     quantity=position.quantity,
                     execute_date=self._next_trade_date(trade_date),
                     status="PENDING"
@@ -449,13 +454,14 @@ def execute(self, order, market_data, today: date) -> Trade | None:
         order.reject_reason = "HALTED"
         return None
 
-    # 2. 涨跌停检查
-    if order.action == "BUY" and bar["adj_open"] >= bar.get("up_limit", float("inf")) * 0.998:
+    # 2. 涨跌停检查（口径一致：原始价 open vs up/down_limit）
+    open_for_limit = bar.get("raw_open", bar.get("open", bar["adj_open"]))
+    if order.action == "BUY" and open_for_limit >= bar.get("up_limit", float("inf")) * 0.998:
         order.status = "REJECTED"
         order.reject_reason = "LIMIT_UP"
         return None
 
-    if order.action == "SELL" and bar["adj_open"] <= bar.get("down_limit", 0) * 1.002:
+    if order.action == "SELL" and open_for_limit <= bar.get("down_limit", 0) * 1.002:
         order.status = "REJECTED"
         order.reject_reason = "LIMIT_DOWN"
         return None
@@ -599,7 +605,7 @@ Trust → l4_stock_trust（降级/升级时更新）
 | 成交价=T+1 Open | matcher.execute | price = bar["adj_open"] |
 | 禁止 T 日 Close 成交 | 架构保证 | signal 和 execute 分两天 |
 | 停牌日不成交 | matcher.execute | is_halt 检查 |
-| 一字板不成交 | matcher.execute | open >= up_limit 检查 |
+| 一字板不成交 | matcher.execute | 原始价口径：raw_open/open 与 up_limit/down_limit 对比 |
 
 ### 7.2 交易日历依赖
 
