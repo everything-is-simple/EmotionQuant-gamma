@@ -15,6 +15,7 @@ Broker 是系统中唯一有"钱"的模块：**接收信号 → 风控检查 →
 - **T+1 语义**：signal_date=T，execute_date=T+1，成交价=T+1 Open（铁律 #10）
 - **有状态**：持有持仓、资金、信任分级，需要持久化
 - **幂等**：同一信号不重复下单（signal_id 唯一约束）
+- **v0.01 失效优先**：入场后首个可评估日不延续则退出（避免低频钝刀消耗）
 
 ---
 
@@ -64,7 +65,7 @@ class Position:
     current_price: float          # 最新收盘价
     max_price: float              # 持仓期间最高价（移动止盈用）
     stop_loss: float              # 当前止损价
-    signal_type: str              # 触发形态（如 PAS_BPB）
+    signal_type: str              # 触发形态（如 PAS_BOF）
     is_paper: bool = False        # 是否模拟持仓
 ```
 

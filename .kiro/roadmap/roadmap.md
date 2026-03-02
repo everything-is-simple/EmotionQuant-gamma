@@ -1,5 +1,7 @@
 # EmotionQuant 路线图
 
+目标导向：构建“散户可执行、低频、非拥挤、可生存”的 A 股量化系统，优先活下来，再追求扩张。
+
 ## 迭代总览
 
 | 迭代 | 周期 | 核心交付 | 状态 |
@@ -21,7 +23,7 @@
 ### Week 2 — Selector + Strategy
 - **spec**: `spec-02-selector.md`, `spec-03-strategy.md`
 - **交付**: mss.py, irs.py, selector.py, pas_bof.py, registry.py, strategy.py
-- **验收**: 全市场运行一次选股+信号生成，每个模块可独立单测
+- **验收**: 全市场运行一次选股+信号生成，每个模块可独立单测；完成 BOF 基线与 MSS/IRS 消融对照
 - **前置依赖**: Week 1（L2表必须可用）
 
 ### Week 3 — Broker + Backtest
@@ -61,8 +63,8 @@ builder   ─┘                      ├─ strategy ─── broker ───
 | 交付物 | 说明 |
 |--------|------|
 | pas_bpb.py | BPB突破回踩形态检测器 |
-| gene.py 实现 | 五牛五衰基因计算，250日滚动窗口 |
-| ENABLE_GENE_FILTER = True | 基因库漏斗开启 |
+| gene.py 实现 | 基于 v0.01 历史样本做事后反推，再形成可执行定义 |
+| ENABLE_GENE_FILTER | 仅在反推验证通过后开启（非默认） |
 | IRS 扩展因子 | 连续性 + 估值（从2因子扩展到4因子） |
 | BB箱体增强 | 所有形态的信号强度加权 |
 | PAS_COMBINATION 生效 | ANY/ALL/VOTE三种组合模式 |
@@ -92,3 +94,4 @@ builder   ─┘                      ├─ strategy ─── broker ───
 | 执行策略 | YTC/Volman形态检测 | 替代旧版打板/短线战法 |
 | IRS 第1迭代 | 2因子（相对强度+资金流向） | 信号最强的2个，其余后续加回 |
 | GUI | 延后 | 第1迭代命令行足够 |
+| 赛道选择 | 低频形态触发 | 避开主流高频/拥挤因子赛道的算力与速度绞杀 |

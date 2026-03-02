@@ -65,6 +65,7 @@ class PatternDetector(ABC):
 - [ ] 实现 ALL_DETECTORS（五形态在册，v0.01 仅启用 bof）
 - [ ] 实现 `get_active_detectors(config)`（按 PAS_PATTERNS 过滤+实例化）
 - [ ] 预留第2/3迭代检测器注释位
+- [ ] v0.01 验收时强校验：`len(PAS_PATTERNS) == 1 and PAS_PATTERNS[0] == \"bof\"`
 
 ### strategy.py
 - [ ] 实现 `generate_signals`（遍历候选 × 检测器）
@@ -87,3 +88,4 @@ class PatternDetector(ABC):
 4. 分母为零/数据不足 -> return None（不崩溃）
 5. `generate_signals` 对空候选池返回空列表
 6. 单形态回测命令可执行：`python main.py backtest --patterns=bof`
+7. v0.01 禁止并行启用多个 PAS 形态

@@ -11,7 +11,7 @@
 |----|------|
 | `DataFetcher`(ABC) → `TuShareFetcher` / `AKShareFetcher` | 多态：主备切换 |
 | `Store` | 有状态：持有 DuckDB 连接 |
-| `PatternDetector`(ABC) → `BpbDetector` / `PbDetector` / ... | 多态：形态可装配 |
+| `PatternDetector`(ABC) → `BofDetector` / `BpbDetector` / ... | 多态：形态可装配 |
 | `Broker`（组合 `RiskManager` + `Matcher`） | 有状态：持仓/资金 |
 
 **用纯函数（无状态、无多态）**：
@@ -74,7 +74,7 @@ def safe_ratio(numerator, denominator, default=0.0):
 
 - 每个模块可独立单测，不依赖其他模块启动
 - 纯函数（如 `compute_mss_single`）→ 构造 mock dict/DataFrame，验证输出
-- OOP（如 `BpbDetector.detect`）→ 构造 mock K线数据
+- OOP（如 `BofDetector.detect`）→ 构造 mock K线数据
 - Store → 测试时注入 `:memory:` DuckDB
 - 关键边界用例必须覆盖：分母为零、数据不足、全部盈利/全部亏损
 
@@ -95,8 +95,8 @@ def safe_ratio(numerator, denominator, default=0.0):
 | 比率 | `{名称}_ratio` | `volume_ratio` |
 | 计数 | `{名称}_count` | `limit_up_count` |
 | 配置开关 | `ENABLE_{功能}` | `ENABLE_MSS_GATE` |
-| 形态检测器 | `pas_{形态缩写}.py` | `pas_bpb.py` |
-| 信号原因码 | `PAS_{形态}` | `PAS_BPB` |
+| 形态检测器 | `pas_{形态缩写}.py` | `pas_bof.py`（v0.01） |
+| 信号原因码 | `PAS_{形态}` | `PAS_BOF` |
 | 触发器标识 | `pattern_id` | `bof_spring_v1` |
 | 触发记录标识 | `trigger_id` | `bof_000001_20260302` |
 | 形态大类 | `setup_type` | `range_bof` |

@@ -683,7 +683,7 @@ def build_layer(store: Store, layer: str, start: date = None,
         # 调用各算法模块
         from selector.mss import compute_mss
         from selector.irs import compute_irs
-        from strategy.pas_bpb import detect_all
+        from strategy.pas_bof import detect_all  # v0.01 仅 BOF
         compute_mss(store, start, end)
         compute_irs(store, start, end)
         detect_all(store, start, end)

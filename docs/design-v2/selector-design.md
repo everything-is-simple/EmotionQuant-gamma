@@ -11,12 +11,24 @@
 
 Selector 回答一个问题：**从全市场 ~5000 只股票中，今天应该关注哪 50-100 只？**
 
-三级漏斗：
-1. **MSS（时机维度）**：今天该不该做？→ 开关
-2. **IRS（空间维度）**：做哪些行业？→ 缩小范围
-3. **基因库 + 基础过滤**：哪些个股质量合格？→ 输出候选池
+三级漏斗（v0.01 执行口径）：
+1. **MSS（时机维度）**：今天该不该做？→ 开关（先做消融验证）
+2. **IRS（空间维度）**：做哪些行业？→ 缩小范围（先做消融验证）
+3. **基础过滤**：哪些个股具备交易可行性？→ 输出候选池
+
+> 说明：`gene` 在 v0.01 不进入实时漏斗，仅保留接口用于事后分析。
 
 每级漏斗可通过 config 独立开关，支持对照实验。
+
+### 1.2 v0.01 强制验证顺序（防假设漂移）
+
+MSS/IRS 在 v0.01 视为待验证假设，不得直接视为“默认有效”。回测/评审必须按以下顺序输出同口径结果：
+
+1. `BOF baseline`：`ENABLE_MSS_GATE=False` 且 `ENABLE_IRS_FILTER=False`
+2. `BOF + MSS`：`ENABLE_MSS_GATE=True` 且 `ENABLE_IRS_FILTER=False`
+3. `BOF + MSS + IRS`：`ENABLE_MSS_GATE=True` 且 `ENABLE_IRS_FILTER=True`
+
+比较指标必须一致：胜率、盈亏比、期望值、最大回撤、分环境中位数路径。
 
 ### 1.1 v0.01 扫描策略（两阶段）
 
@@ -404,7 +416,7 @@ def compute_gene(store: Store, start: date, end: date) -> None:
 ### 5.3 selector 中的使用方式
 
 ```python
-# selector.py 中的基因过滤（第2迭代开启）
+# selector.py 中的基因过滤（v0.02+ 且验证通过后开启）
 if config.ENABLE_GENE_FILTER:
     gene_df = store.read_table("l3_stock_gene", date_range=(calc_date, calc_date))
     candidates = candidates.merge(gene_df[["code", "gene_score"]], on="code")
@@ -415,7 +427,7 @@ if config.ENABLE_GENE_FILTER:
 
 ```python
 # config.py
-ENABLE_GENE_FILTER = False        # 第1迭代关闭
+ENABLE_GENE_FILTER = False        # v0.01-v0.02 默认关闭（未验证前不启用）
 GENE_SCORE_THRESHOLD = -30        # 宽松阈值，只排除最差的
 GENE_LOOKBACK_DAYS = 250          # 基因计算窗口
 ```
@@ -583,14 +595,14 @@ class StockCandidate(BaseModel):  # contracts.py
 
 ENABLE_MSS_GATE    = True    # 关闭 → 不管大盘情绪，全天候交易
 ENABLE_IRS_FILTER  = True    # 关闭 → 不限行业，全市场选股
-ENABLE_GENE_FILTER = False   # 第2迭代开启
+ENABLE_GENE_FILTER = False   # v0.01-v0.02 禁止在实时漏斗启用（仅事后分析）
 ```
 
 **对照实验组合**：
 
 | MSS | IRS | Gene | 效果 |
 |-----|-----|------|------|
-| ✓ | ✓ | ✓ | 全开（最严格，默认） |
+| ✓ | ✓ | ✓ | v0.02+ 可选（需先完成反推验证） |
 | ✗ | ✗ | ✗ | 纯 PAS 形态交易 |
 | ✓ | ✗ | ✗ | 管大盘时机，不限行业 |
 | ✗ | ✓ | ✗ | 管行业轮动，不管大盘 |

@@ -6,6 +6,8 @@
 2. 扫描采用两阶段：全市场粗筛（5000 -> 约200）后执行形态精扫。
 3. 执行语义固定：T 日信号，T+1 开盘成交。
 4. 回测与纸上交易共用 Broker 内核，禁止双语义。
+5. MSS/IRS 必须按 `BOF baseline -> BOF+MSS -> BOF+MSS+IRS` 消融验证。
+6. `ENABLE_GENE_FILTER` 在 v0.01 强制关闭，仅允许事后分析。
 
 ## 数据流
 
@@ -52,7 +54,7 @@ backtest ──读 L1-L3 历史 → 调用 broker 内核 → 写 L4
 src/
 ├── data/           # fetcher.py, cleaner.py, builder.py, store.py
 ├── selector/       # mss.py, irs.py, gene.py, selector.py
-├── strategy/       # pattern_base.py, pas_bpb.py, pas_pb.py, ..., registry.py, strategy.py
+├── strategy/       # pattern_base.py, pas_bof.py(活跃), pas_*.py(在册), registry.py, strategy.py
 ├── broker/         # risk.py, matcher.py
 ├── backtest/       # engine.py
 ├── report/         # reporter.py
@@ -93,6 +95,6 @@ python main.py fetch                          # 拉取增量数据
 python main.py build --layers=l2,l3           # 生成 L2+L3
 python main.py build --layers=all --force     # 全量重建
 python main.py backtest --start=2023-01-01    # 回测
-python main.py backtest --patterns=bpb        # 单形态回测
+python main.py backtest --patterns=bof        # 单形态回测（v0.01）
 python main.py run                            # 每日全链路
 ```

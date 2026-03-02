@@ -52,7 +52,8 @@ python main.py fetch                              # 拉取增量数据
 python main.py build --layers=l2,l3               # 生成 L2+L3
 python main.py backtest --start=2023-01-01        # 默认回测
 python main.py backtest --patterns=bof            # 单形态回测
-python main.py backtest --patterns=bof,bpb --combination=ANY
+# v0.02+ 才启用多形态组合
+# python main.py backtest --patterns=bof,bpb --combination=ANY
 python main.py run                                # 每日全链路
 ```
 
@@ -85,6 +86,7 @@ python main.py run                                # 每日全链路
 - [ ] `_compute_pattern_stats(paired, date)`: 逐形态统计，写 l4_pattern_stats
 - [ ] 分环境统计（牛/震荡/熊）并输出分段胜率、期望值
 - [ ] 输出中位数路径结论（不是最佳路径）
+- [ ] 输出消融对照结果（BOF baseline / BOF+MSS / BOF+MSS+IRS）
 - [ ] 控制台报告格式（期望值/左尾/右尾/分布/稳定性/逐形态）
 
 ### reporter.py — 预警

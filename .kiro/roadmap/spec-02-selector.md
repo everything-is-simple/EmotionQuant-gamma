@@ -92,6 +92,10 @@ zscore_normalize(value, mean, std) → 0-100
 ### 集成验证
 - [ ] 用真实 L2 数据运行 compute_mss + compute_irs，验证分数分布合理
 - [ ] 运行 select_candidates，验证候选池 50-100 只
+- [ ] 消融对照A：关闭 MSS/IRS，仅 BOF baseline（输出指标）
+- [ ] 消融对照B：开启 MSS，关闭 IRS（输出指标）
+- [ ] 消融对照C：开启 MSS+IRS（输出指标）
+- [ ] 三组结果按同口径对比（胜率/盈亏比/期望值/最大回撤/分环境中位数）
 
 ## 验收标准
 1. `compute_mss_single` 输入全零 → score ≈ 50（中性）
@@ -99,3 +103,4 @@ zscore_normalize(value, mean, std) → 0-100
 3. MSS=BEARISH 时 selector 返回空列表
 4. limit_up_count=0 时 broken_rate=0（不是 NaN）
 5. 全市场无交易数据时返回空候选池，不报错
+6. 漏斗消融实验三组结果可复现且可比较

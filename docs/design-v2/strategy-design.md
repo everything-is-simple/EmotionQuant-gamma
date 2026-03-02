@@ -2,7 +2,7 @@
 
 **版本**: v1.0
 **创建日期**: 2026-03-01
-**对应模块**: `src/strategy/`（pattern_base.py, pas_bof.py, pas_bpb.py, registry.py, strategy.py）
+**对应模块**: `src/strategy/`（pattern_base.py, pas_bof.py, registry.py, strategy.py；`pas_bpb.py` 为 v0.02 预留）
 **上游文档**: `architecture-master.md` §4.3，`volman-ytc-mapping.md`
 
 ---
@@ -22,6 +22,8 @@ Strategy 回答一个问题：**候选池中的这只股票，今天该买吗？
 2. v0.01 仅启用 `bof` 作为主触发器。
 3. `bpb` 调整到 v0.02 验证，`tst/pb/cpb` 后续逐步启用。
 
+> 执行约束：本文件中除 BOF 外的形态内容均为“预留设计”，不进入 v0.01 回测与实盘口径。
+
 ---
 
 ## 2. PatternDetector 基类（pattern_base.py）
@@ -38,7 +40,7 @@ class PatternDetector(ABC):
     PAS 形态检测器抽象基类。
     每个具体形态继承此类，实现 detect() 方法。
     """
-    name: str                        # 形态唯一标识，如 "bpb"
+    name: str                        # 形态唯一标识，如 "bof"
 
     @abstractmethod
     def detect(self, df: pd.DataFrame, code: str,
@@ -109,7 +111,9 @@ df 行要求：
 
 ---
 
-## 4. pas_bpb.py — BPB 突破回踩检测器（v0.02 预留）
+## 4. pas_bpb.py — BPB 突破回踩检测器（v0.02 预留，仅参考）
+
+> 本节不属于 v0.01 可执行范围。
 
 ### 3.1 类定义
 
@@ -447,7 +451,7 @@ PAS_BOF_VOLUME_MULT = 1.2         # BOF 放量阈值
 
 # 单形态独立回测
 # python main.py backtest --patterns=bof --start=2023-01-01
-# python main.py backtest --patterns=bof,bpb --combination=ANY
+# v0.02+：python main.py backtest --patterns=bof,bpb --combination=ANY
 ```
 
 ---
@@ -544,7 +548,7 @@ class TstDetector(PatternDetector):
 
 | 模块 | 测试方式 |
 |------|---------|
-| BpbDetector | 构造突破后回踩的 mock K线数据，验证信号触发和 strength 值 |
+| BofDetector | 构造假破位回收的 mock K线数据，验证信号触发和 strength 值 |
 | _check_first_pullback | 构造首次/非首次穿越 ma20 的数据，验证返回值 |
 | _detect_cup_handle | 构造 U 形+小箱体的数据，验证检测结果 |
 | _evaluate_market_conditions | 构造各种不利/有利条件，验证评分 |

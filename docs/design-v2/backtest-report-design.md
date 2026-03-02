@@ -18,6 +18,7 @@
 1. 分环境统计：牛市/震荡/熊市分段输出胜率与期望值。
 2. 中位数路径优先：以多窗口统计中位数结果作为主结论，不以最佳路径作为主结论。
 3. 成本压力：报告必须展示手续费+滑点后的净表现。
+4. 消融对照必做：`BOF baseline` / `BOF + MSS` / `BOF + MSS + IRS`。
 
 ---
 
@@ -171,7 +172,7 @@ python main.py backtest --start=2023-01-01 --end=2025-12-31
 # 单形态独立回测
 python main.py backtest --patterns=bof --start=2023-01-01
 
-# 多形态组合回测
+# 多形态组合回测（v0.02+）
 python main.py backtest --patterns=bof,bpb --combination=ANY --start=2023-01-01
 
 # 指定初始资金
@@ -186,7 +187,7 @@ parser_bt = subparsers.add_parser("backtest")
 parser_bt.add_argument("--start", required=True, type=str)
 parser_bt.add_argument("--end", type=str, default=str(date.today()))
 parser_bt.add_argument("--patterns", type=str, default=None,
-                       help="逗号分隔的形态列表，如 bpb,pb")
+                       help="逗号分隔的形态列表，如 bof（v0.01）或 bof,bpb（v0.02+）")
 parser_bt.add_argument("--combination", type=str, default=None,
                        choices=["ANY", "ALL", "VOTE"])
 parser_bt.add_argument("--cash", type=float, default=1_000_000)
@@ -549,8 +550,8 @@ generate_backtest_report() 输出：
      卡玛比率:  1.91
    ─────────────────────────────────────
    逐形态:
-     bpb: 120笔, 胜率46%, 盈亏比2.1, EV+1.2%
-     pb:  85笔,  胜率42%, 盈亏比1.8, EV+0.8%
+     bof: 120笔, 胜率46%, 盈亏比2.1, EV+1.2%
+     # v0.02+ 示例：bpb/pb/...
    ─────────────────────────────────────
 ```
 
