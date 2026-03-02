@@ -69,25 +69,40 @@ class EmotionQuantStrategy(bt.Strategy):
         pending_orders = self.broker_engine.get_pending_orders(today)
         if pending_orders:
             market_data = self._get_market_data(today)
-            trades = self.broker_engine.execute_orders(pending_orders, market_data)
+            trades = self.broker_engine.execute_orders(pending_orders, market_data, today)
+            # 持久化订单状态（FILLED / REJECTED）—— 审计链 Signal→Order→Trade 完整
+            self.store.bulk_upsert("l4_orders",
+                pd.DataFrame([o.model_dump() for o in pending_orders]))
             for trade in trades:
                 # l4_trades 存在重跑场景，必须 upsert（按 trade_id 幂等覆盖）
                 self.store.bulk_upsert("l4_trades", pd.DataFrame([trade.model_dump()]))
+                # 信任分级更新（仅 SELL 触发：BUY 时持仓未了结，无法判定盈亏）
+                if trade.action == "SELL":
+                    self.broker_engine.risk.update_trust(trade.code, trade)
 
         # 2. 更新持仓（止损/止盈检查）
         market_data = self._get_market_data(today)
         sell_orders = self.broker_engine.update_daily(today, market_data)
-        # sell_orders 在下一交易日执行
+        # sell_orders 在下一交易日执行；先持久化为 PENDING
+        if sell_orders:
+            self.store.bulk_upsert("l4_orders",
+                pd.DataFrame([o.model_dump() for o in sell_orders]))
 
         # 3. 今日选股 + 信号生成
         candidates = select_candidates(self.store, today)
         signals = generate_signals(self.store, candidates, today, self.config)
 
         # 4. 风控检查 → 生成 BUY 订单
+        buy_orders = []
         for signal in signals:
-            order = self.broker_engine.risk.check_signal(signal, self.broker_engine)
+            order = self.broker_engine.risk.check_signal(signal, self.broker_engine, today)
             if order:
                 self.broker_engine.add_pending_order(order)
+                buy_orders.append(order)
+        # 持久化 BUY 订单（PENDING）
+        if buy_orders:
+            self.store.bulk_upsert("l4_orders",
+                pd.DataFrame([o.model_dump() for o in buy_orders]))
 
     def _get_market_data(self, date):
         """
@@ -128,8 +143,22 @@ class EmotionQuantStrategy(bt.Strategy):
             fee = self.broker_engine.matcher._calculate_fee(
                 close_price * pos.quantity, "SELL"
             )
+            fc_order_id = f"FC_{pos.code}_{last_date}"
+            # 强平订单也需持久化，保证审计链完整
+            fc_order = Order(
+                order_id=fc_order_id,
+                signal_id=fc_order_id,
+                code=pos.code,
+                action="SELL",
+                pattern=pos.pattern,
+                quantity=pos.quantity,
+                execute_date=last_date,
+                status="FILLED"
+            )
+            self.store.bulk_upsert("l4_orders", pd.DataFrame([fc_order.model_dump()]))
             trade = Trade(
-                order_id="FORCE_CLOSE",
+                trade_id=f"{fc_order_id}_T",   # 确定性：重跑覆盖而非追加
+                order_id=fc_order_id,
                 code=pos.code,
                 execute_date=last_date,
                 action="SELL",
@@ -268,14 +297,12 @@ def check_warnings(store: Store, trade_date: date):
 #### 期望值指标
 
 ```python
-def _compute_expectation(trades_df: pd.DataFrame) -> dict:
+def _compute_expectation(paired: pd.DataFrame) -> dict:
     """
-    从成交记录计算期望值指标。
-    trades_df 需要包含 entry_price 和 exit_price（需配对计算）。
+    从已配对交易数据计算期望值指标。
+    paired 为 _pair_trades() 的输出，需包含 pnl_pct 列。
+    调用方应先执行 paired = _pair_trades(trades_df)，再将 paired 传入。
     """
-    # 配对：每笔 BUY → 对应的 SELL（同 code，按时间顺序）
-    paired = _pair_trades(trades_df)
-
     wins = paired[paired["pnl_pct"] > 0]
     losses = paired[paired["pnl_pct"] <= 0]
 
@@ -321,6 +348,7 @@ def _pair_trades(trades_df: pd.DataFrame) -> pd.DataFrame:
             if t.action == "BUY":
                 buy_queue.append({
                     "qty": t.quantity,
+                    "original_qty": t.quantity,  # 原始数量（费用分摊分母，不随部分匹配递减）
                     "price": t.price,
                     "fee": t.fee,
                     "execute_date": t.execute_date,
@@ -333,7 +361,7 @@ def _pair_trades(trades_df: pd.DataFrame) -> pd.DataFrame:
             while sell_qty > 0 and buy_queue:
                 buy = buy_queue[0]
                 matched_qty = min(buy["qty"], sell_qty)
-                buy_fee_part = buy["fee"] * (matched_qty / buy["qty"])
+                buy_fee_part = buy["fee"] * (matched_qty / buy["original_qty"])
                 sell_fee_part = t.fee * (matched_qty / t.quantity)
                 pnl = (t.price - buy["price"]) * matched_qty - buy_fee_part - sell_fee_part
 
@@ -345,7 +373,7 @@ def _pair_trades(trades_df: pd.DataFrame) -> pd.DataFrame:
                     "exit_price": t.price,
                     "quantity": matched_qty,
                     "pnl": pnl,
-                    "pnl_pct": (t.price - buy["price"]) / buy["price"],
+                    "pnl_pct": pnl / (buy["price"] * matched_qty),  # 净收益率（含手续费）
                     "holding_days": (t.execute_date - buy["execute_date"]).days,
                     "pattern": buy["pattern"],   # Trade 已冗余携带 pattern 字段
                     "fee_total": buy_fee_part + sell_fee_part,

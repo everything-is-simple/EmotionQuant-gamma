@@ -35,6 +35,7 @@ class Broker:
         self.cash = initial_cash
         self.portfolio: dict[str, Position] = {}  # code → Position
         self.max_nav = initial_cash               # 净值峰值（回撤计算用）
+        self.force_bearish_until: date | None = None  # 回撤熔断冷却截止日
 
     def process_signals(self, signals: list[Signal], trade_date: date) -> list[Order]:
         """
@@ -42,14 +43,17 @@ class Broker:
         trade_date = signal_date 的下一交易日（execute_date）
         """
 
-    def execute_orders(self, orders: list[Order], market_data: pd.DataFrame) -> list[Trade]:
+    def execute_orders(self, orders: list[Order], market_data: pd.DataFrame,
+                       today: date) -> list[Trade]:
         """
         撮合订单。回测模式下由 engine 调用，纸上交易模式下由 main.py 调用。
+        today: 当前交易日，传递给 matcher.execute(order, market_data, today)。
         """
 
-    def update_daily(self, trade_date: date, market_data: pd.DataFrame):
+    def update_daily(self, trade_date: date, market_data: pd.DataFrame) -> list[Order]:
         """
         每日收盘后更新：检查止损/止盈/信任降级，生成 SELL 订单。
+        内部调用 self.risk.check_positions(..., broker_state=self)。
         """
 ```
 
@@ -83,17 +87,19 @@ class RiskManager:
         self.config = config
 
     # ── 开仓前检查 ──
-    def check_signal(self, signal: Signal, broker_state) -> Order | None:
+    def check_signal(self, signal: Signal, broker_state, today_date: date) -> Order | None:
         """
         对 BUY 信号执行全部风控检查，通过则生成 Order。
+        today_date: 回测当前模拟日期（不可用 date.today()）。
         返回 None = 拒绝开仓。
         """
 
     # ── 持仓期检查（每日收盘后）──
     def check_positions(self, portfolio: dict, market_data: pd.DataFrame,
-                        trade_date: date) -> list[Order]:
+                        trade_date: date, broker_state) -> list[Order]:
         """
         检查所有持仓的止损/止盈/熔断条件。
+        broker_state: Broker 实例（组合回撤检查需要 cash/max_nav/force_bearish_until）。
         返回需要执行的 SELL Order 列表。
         """
 
@@ -108,7 +114,10 @@ class RiskManager:
 ### 3.2 开仓前检查流程
 
 ```python
-def check_signal(self, signal, broker_state) -> Order | None:
+def check_signal(self, signal, broker_state, today_date: date) -> Order | None:
+    # 0. BACKUP 自动升级检查（冷藏 120 交易日到期 → OBSERVE）
+    self._check_auto_promote(signal.code, today_date)
+
     # 1. 信任分级检查
     tier = self.get_trust_tier(signal.code)
     if tier == "BACKUP":
@@ -117,29 +126,35 @@ def check_signal(self, signal, broker_state) -> Order | None:
     is_paper = (tier == "OBSERVE")
 
     # 2. 连续亏损熔断检查
-    if self._is_loss_circuit_breaker_active(broker_state):
+    if self._is_loss_circuit_breaker_active(broker_state, today_date):
         logger.info("连续亏损熔断生效，暂停开仓")
         return None
 
     # 3. 组合回撤熔断检查
-    if self._is_drawdown_circuit_breaker_active(broker_state):
+    if self._is_drawdown_circuit_breaker_active(broker_state, today_date):
         logger.info("组合回撤熔断生效，暂停开仓")
         return None
 
-    # 4. 最大持仓数量检查
+    # 4. 重复持仓检查（同一只股票不重复开仓）
+    if signal.code in broker_state.portfolio:
+        logger.info(f"{signal.code} 已有持仓，跳过重复开仓")
+        return None
+
+    # 5. 最大持仓数量检查
     active_positions = sum(1 for p in broker_state.portfolio.values() if not p.is_paper)
     if active_positions >= self.config.MAX_POSITIONS:
         logger.info(f"持仓已满 {active_positions}/{self.config.MAX_POSITIONS}")
         return None
 
-    # 5. 计算仓位大小
+    # 6. 计算仓位大小
     quantity = self._calculate_position_size(signal, broker_state)
     if quantity < 100:  # 不足 1 手
         return None
 
-    # 6. 生成 Order
+    # 7. 生成 Order（order_id = signal_id，确定性幂等键，重跑覆盖而非追加）
     execute_date = self._next_trade_date(signal.signal_date)
     return Order(
+        order_id=signal.signal_id,        # 确定性：一个 signal 至多产一个 order
         signal_id=signal.signal_id,
         code=signal.code,
         action="BUY",
@@ -193,17 +208,14 @@ def _calculate_position_size(self, signal, broker_state) -> int:
 #### 第零级：日内浮亏即走
 
 ```python
-def _check_intraday_loss(self, position, today_close) -> bool:
+def _check_intraday_loss(self, position, trade_date: date, today_close) -> bool:
     """
     T+1 买入当天，收盘价 < 买入价 → T+2 开盘强制卖出。
     入场当天就水下 = 时机判断错误。
+    trade_date: 当前交易日（回测模拟日期）。
     """
-    if position.entry_date == self._prev_trade_date(today):
-        # 买入次日（即今天），无法卖出（T+1 限制）
-        # 实际上：买入日 = T+1，最早卖出 = T+2
-        pass
     # 持仓第二个交易日才能卖
-    holding_days = self._trading_days_between(position.entry_date, today)
+    holding_days = self._trading_days_between(position.entry_date, trade_date)
     if holding_days == 1 and today_close < position.entry_price:
         return True  # 标记 T+2 开盘卖出
     return False
@@ -259,12 +271,13 @@ def _check_portfolio_drawdown(self, broker_state, today_date) -> bool:
 #### 第三级：连续亏损熔断
 
 ```python
-def _is_loss_circuit_breaker_active(self, broker_state) -> bool:
+def _is_loss_circuit_breaker_active(self, broker_state, today_date: date) -> bool:
     """
     连续 N 笔亏损 → 暂停开新仓 M 个交易日。
+    注意：必须传入回测当前日期，禁止使用 date.today()（回测时为真实日期，会导致熔断永远不触发）。
     """
     recent_trades = self.store.read_df(
-        "SELECT * FROM l4_trades WHERE is_paper = false "
+        "SELECT * FROM l4_trades WHERE is_paper = false AND action = 'SELL' "
         "ORDER BY execute_date DESC LIMIT ?",
         (self.config.CONSECUTIVE_LOSS_LIMIT,)  # 默认 5
     )
@@ -283,18 +296,32 @@ def _is_loss_circuit_breaker_active(self, broker_state) -> bool:
     cooldown_end = self._offset_trade_date(
         last_loss_date, self.config.LOSS_COOLDOWN_DAYS  # 默认 3
     )
-    return date.today() <= cooldown_end
+    return today_date <= cooldown_end
+```
+
+#### 回撤熔断冷却检查
+
+```python
+def _is_drawdown_circuit_breaker_active(self, broker_state, today_date: date) -> bool:
+    """
+    组合回撤熔断后冷却期内 → 暂停开新仓。
+    由 _check_portfolio_drawdown 触发时设置 broker_state.force_bearish_until。
+    注意：必须传入回测当前日期，禁止使用 date.today()。
+    """
+    if broker_state.force_bearish_until is None:
+        return False
+    return today_date <= broker_state.force_bearish_until
 ```
 
 ### 3.5 SELL 订单生成
 
 ```python
-def check_positions(self, portfolio, market_data, trade_date):
+def check_positions(self, portfolio, market_data, trade_date, broker_state):
     sell_orders = []
 
     for code, position in portfolio.items():
-        if position.is_paper:
-            continue  # 模拟持仓不真卖
+        # paper 持仓也执行止损/止盈检查（生成 paper SELL 订单，
+        # 经 matcher 执行后触发 update_trust → OBSERVE→ACTIVE 信任升级路径）
 
         today = market_data[market_data.code == code].iloc[0]
 
@@ -302,7 +329,7 @@ def check_positions(self, portfolio, market_data, trade_date):
         should_sell = False
         reason = ""
 
-        if self._check_intraday_loss(position, today["adj_close"]):
+        if self._check_intraday_loss(position, trade_date, today["adj_close"]):
             should_sell, reason = True, "INTRADAY_LOSS"
         elif self._check_stop_loss(position, today["adj_close"]):
             should_sell, reason = True, "STOP_LOSS"
@@ -310,31 +337,38 @@ def check_positions(self, portfolio, market_data, trade_date):
             should_sell, reason = True, "TRAILING_STOP"
 
         if should_sell:
+            sell_signal_id = f"RISK_{code}_{trade_date}"
             execute_date = self._next_trade_date(trade_date)
             sell_orders.append(Order(
-                signal_id=f"RISK_{code}_{trade_date}",
+                order_id=sell_signal_id,        # 确定性：signal_id 即 order_id
+                signal_id=sell_signal_id,
                 code=code,
                 action="SELL",
                 pattern=position.pattern,      # 沿用原始 BUY 形态
                 quantity=position.quantity,
                 execute_date=execute_date,
+                is_paper=position.is_paper,    # 继承持仓的 paper 标记
                 status="PENDING"
             ))
-            logger.info(f"SELL {code}: {reason}")
+            logger.info(f"SELL {code}: {reason} (paper={position.is_paper})")
 
-    # 组合回撤检查（全局）
+    # 组合回撤检查（全局，NAV 仅计真实持仓，但 paper 持仓也需清出 portfolio）
     if self._check_portfolio_drawdown(broker_state, trade_date):
+        already_selling = {o.code for o in sell_orders}  # 个股止损已生成 SELL，避免同日重复卖出
         for code, position in portfolio.items():
-            if not position.is_paper:
+            if code not in already_selling:
+                dd_signal_id = f"DRAWDOWN_{code}_{trade_date}"
                 sell_orders.append(Order(
-                    signal_id=f"DRAWDOWN_{code}_{trade_date}",
+                    order_id=dd_signal_id,     # 确定性：signal_id 即 order_id
+                    signal_id=dd_signal_id,
                     code=code, action="SELL",
                     pattern=position.pattern,  # 沿用原始 BUY 形态
                     quantity=position.quantity,
                     execute_date=self._next_trade_date(trade_date),
+                    is_paper=position.is_paper,  # 继承持仓的 paper 标记
                     status="PENDING"
                 ))
-        logger.warning("组合回撤超限，全部清仓")
+        logger.warning("组合回撤超限，全部清仓（含 paper 持仓）")
 
     return sell_orders
 ```
@@ -362,15 +396,30 @@ def update_trust(self, code, trade_result):
     is_loss = trade_result.price < self._get_entry_price(trade_result.order_id)
 
     if trust.tier == "ACTIVE":
-        if is_loss:
-            trust.consecutive_losses += 1
-            if trust.consecutive_losses >= self.config.TRUST_DEMOTE_THRESHOLD:
-                trust.tier = "OBSERVE"
+        if trust.on_probation:
+            # 升级试用期（OBSERVE→ACTIVE 后首笔真实交易）
+            if is_loss:
+                # 架构铁律：「升级后再亏 → 立即降回」，直接 BACKUP
+                trust.tier = "BACKUP"
+                trust.on_probation = False
                 trust.consecutive_losses = 0
                 trust.last_demote_date = trade_result.execute_date
-                logger.warning(f"{code}: ACTIVE → OBSERVE（3连亏）")
+                logger.warning(f"{code}: ACTIVE(试用) → BACKUP（升级后首笔即亏）")
+            else:
+                # 试用通过，转为正式 ACTIVE
+                trust.on_probation = False
+                trust.consecutive_losses = 0
         else:
-            trust.consecutive_losses = 0  # 有一笔盈利就归零
+            # 正常 ACTIVE：3 连亏才降级
+            if is_loss:
+                trust.consecutive_losses += 1
+                if trust.consecutive_losses >= self.config.TRUST_DEMOTE_THRESHOLD:
+                    trust.tier = "OBSERVE"
+                    trust.consecutive_losses = 0
+                    trust.last_demote_date = trade_result.execute_date
+                    logger.warning(f"{code}: ACTIVE → OBSERVE（3连亏）")
+            else:
+                trust.consecutive_losses = 0  # 有一笔盈利就归零
 
     elif trust.tier == "OBSERVE":
         if not trade_result.is_paper and is_loss:
@@ -379,8 +428,9 @@ def update_trust(self, code, trade_result):
             trust.last_demote_date = trade_result.execute_date
             logger.warning(f"{code}: OBSERVE → BACKUP（真买又亏）")
         elif trade_result.is_paper and not is_loss:
-            # 模拟盈利 → 升回 ACTIVE
+            # 模拟盈利 → 升回 ACTIVE（进入试用期）
             trust.tier = "ACTIVE"
+            trust.on_probation = True          # 试用期标记
             trust.last_promote_date = trade_result.execute_date
             trust.consecutive_losses = 0
 
@@ -422,9 +472,11 @@ class Matcher:
         self.store = store
         self.config = config
 
-    def execute(self, order: Order, market_data: pd.DataFrame) -> Trade | None:
+    def execute(self, order: Order, market_data: pd.DataFrame,
+                today: date) -> Trade | None:
         """
         撮合单个订单。
+        today: 当前交易日（回测模拟日期，用于断言 execute_date == today）。
         返回 Trade（成交）或 None（REJECTED）。
         """
 ```
@@ -478,9 +530,10 @@ def execute(self, order, market_data, today: date) -> Trade | None:
     amount = price * order.quantity
     fee = self._calculate_fee(amount, order.action)
 
-    # 5. 生成 Trade
+    # 5. 生成 Trade（trade_id = order_id + "_T"，确定性幂等键）
     order.status = "FILLED"
     return Trade(
+        trade_id=f"{order.order_id}_T",  # 确定性：一个 order 至多产一笔 trade
         order_id=order.order_id,
         code=order.code,
         execute_date=order.execute_date,
@@ -626,6 +679,16 @@ def _trading_days_between(self, start: date, end: date) -> int:
         (start, end)
     )
     return result.iloc[0]["cnt"]
+
+def _offset_trade_date(self, base_date: date, n_days: int) -> date:
+    """从 base_date 向后偏移 n_days 个交易日，返回目标交易日。"""
+    result = self.store.read_df(
+        "SELECT date FROM l1_trade_calendar "
+        "WHERE date > ? AND is_trade_day = true "
+        "ORDER BY date LIMIT 1 OFFSET ?",
+        (base_date, n_days - 1)
+    )
+    return result.iloc[0]["date"]
 ```
 
 ---

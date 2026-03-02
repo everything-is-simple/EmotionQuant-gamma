@@ -396,7 +396,7 @@ def generate_signals(store, candidates, signal_date, config):
     # 写 l3_signals（upsert：signal_id 是确定性幂等键，重跑覆盖而非追加）
     if signals:
         signals_df = pd.DataFrame([s.model_dump() for s in signals])
-        store.bulk_upsert("l3_signals", signals_df, key=["signal_id"])
+        store.bulk_upsert("l3_signals", signals_df)
 
     logger.info(f"{signal_date}: {len(candidates)} 候选 → {len(signals)} 信号")
     return signals

@@ -248,6 +248,7 @@ CREATE TABLE IF NOT EXISTS l4_stock_trust (
     code                VARCHAR NOT NULL PRIMARY KEY,
     tier                VARCHAR DEFAULT 'ACTIVE',  -- ACTIVE / OBSERVE / BACKUP
     consecutive_losses  INTEGER DEFAULT 0,
+    on_probation        BOOLEAN DEFAULT FALSE,     -- OBSERVE→ACTIVE 升级后试用期（首笔亏损立即降 BACKUP）
     last_demote_date    DATE,
     last_promote_date   DATE,
     updated_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -339,10 +340,17 @@ class Store:
         """
 
     # ── 读取 ──
-    def read_df(self, sql: str, params: dict = None) -> pd.DataFrame:
+    def read_df(self, sql: str, params: tuple = None) -> pd.DataFrame:
         """
         执行 SQL 查询，返回 DataFrame。
         所有模块的读取统一入口。
+        """
+
+    def read_scalar(self, sql: str, params: tuple = None):
+        """
+        执行 SQL 查询，返回单个标量值。
+        查询结果为空时返回 None。
+        用于仓位计算等只需读取单值的场景（如 SELECT adj_close ... WHERE code=? AND date=?）。
         """
 
     def read_table(self, table: str,

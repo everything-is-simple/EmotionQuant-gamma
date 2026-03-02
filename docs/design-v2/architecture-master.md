@@ -1104,7 +1104,6 @@ skewness < -0.5            → "⚠ 收益分布左偏，左尾过厚"
 from pydantic import BaseModel, Field, model_validator
 from datetime import date, datetime
 from typing import Optional
-from uuid import uuid4
 
 class MarketScore(BaseModel):       # MSS → Selector
     date: date
@@ -1140,7 +1139,7 @@ class Signal(BaseModel):            # Strategy → Broker
         return self
 
 class Order(BaseModel):             # Broker 内部（risk → matcher）
-    order_id: str = Field(default_factory=lambda: uuid4().hex[:12])
+    order_id: str                   # 确定性幂等键：BUY 用 signal_id，SELL 用 RISK_/DRAWDOWN_ 前缀键
     signal_id: str                  # 关联 Signal.signal_id
     code: str
     action: str
@@ -1154,7 +1153,7 @@ class Order(BaseModel):             # Broker 内部（risk → matcher）
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 class Trade(BaseModel):             # Broker → Report
-    trade_id: str = Field(default_factory=lambda: uuid4().hex[:12])
+    trade_id: str                   # 确定性幂等键：f"{order_id}_T"（普通成交）或 f"FC_{code}_{date}"（强平）
     order_id: str                   # 关联 Order.order_id
     code: str
     execute_date: date              # 实际成交日
@@ -1210,9 +1209,10 @@ class Trade(BaseModel):             # Broker → Report
 不建监控平台，但要支撑每日自动跑一遍，必须保留以下最小保障：
 
 - **run_id**：每次运行生成唯一 ID（`{trade_date}_{uuid[:8]}`），所有日志/输出都带 run_id
-- **幂等键**：各模块使用确定性幂等键，重跑不产生重复写入（DuckDB upsert）：
+- **幂等键**：全链路确定性幂等键，重跑不产生重复写入（DuckDB upsert）：
   - Signal: `signal_id = f"{code}_{signal_date}_{pattern}"`（同一天同一股票同一形态 → 同一 signal_id）
-  - Order: `order_id = uuid4()`（因 quantity 可能因资金变化而不同，不做幂等，由 signal_id 上游保证）
+  - Order: `order_id = signal_id`（BUY 复用 signal_id，SELL 用 `RISK_`/`DRAWDOWN_` 确定性前缀键）
+  - Trade: `trade_id = f"{order_id}_T"`（一个 order 至多产一笔 trade），强平用 `f"FC_{code}_{date}_T"`
   - 其他模块: `trade_date + module` 级去重
 - **失败重试**：fetcher 网络请求失败自动重试 3 次（tenacity）
 - **失败快照**：模块抛异常时，loguru 写入 `logs/{run_id}.log`，包含 traceback + 输入参数
