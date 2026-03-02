@@ -506,6 +506,14 @@ def check_warnings(store, trade_date):
             logger.warning(f"[{trade_date}] {rule['message']}")
 ```
 
+### 4.3 消融回退门（强制）
+
+对 `BOF baseline -> BOF+MSS -> BOF+MSS+IRS` 的每次升级，report 层必须输出回退判定：
+
+1. 相对前一配置 `expected_value` 下降超过 10% -> 回退
+2. 相对前一配置 `max_drawdown` 恶化超过 20% -> 回退
+3. 任一市场环境中位数路径由正转负且连续两个评估窗未恢复 -> 回退
+
 ---
 
 ## 5. 报告类型
@@ -568,9 +576,9 @@ generate_daily_report() 输出：
    MSS: 72.3 (BULLISH)
    候选池: 68 只（Top-5 行业）
    信号: 3 只
-     000001 BPB strength=0.78
-     600519 BPB strength=0.65
-     000858 BPB strength=0.61
+     000001 BOF strength=0.78
+     600519 BOF strength=0.65
+     000858 BOF strength=0.61
    ─────────────────────────────────────
    当前持仓: 5 只
    今日浮盈: +2.3%

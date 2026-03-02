@@ -144,6 +144,7 @@ def check_signal(self, signal, broker_state) -> Order | None:
         action="BUY",
         quantity=quantity,
         execute_date=execute_date,
+        is_paper=is_paper,
         status="PENDING"
     )
 ```
@@ -153,14 +154,16 @@ def check_signal(self, signal, broker_state) -> Order | None:
 ```python
 def _calculate_position_size(self, signal, broker_state) -> int:
     """
-    等权仓位：每只股票占总资产的 1/MAX_POSITIONS。
+    v0.01 采用 R 风险仓位：单笔账户风险固定 0.8%，
+    再叠加单只仓位上限（10%）做硬约束。
     向下取整到 100 股（1 手）。
     """
     nav = broker_state.cash + sum(
         p.current_price * p.quantity for p in broker_state.portfolio.values()
         if not p.is_paper
     )
-    per_stock = nav * self.config.MAX_POSITION_PCT
+    risk_budget = nav * self.config.RISK_PER_TRADE_PCT
+    max_notional = nav * self.config.MAX_POSITION_PCT
     # 用信号日收盘价估算（实际成交价是 T+1 Open，有滑点）
     est_price = self.store.read_scalar(
         "SELECT adj_close FROM l2_stock_adj_daily WHERE code=? AND date=?",
@@ -168,7 +171,10 @@ def _calculate_position_size(self, signal, broker_state) -> int:
     )
     if est_price is None or est_price <= 0:
         return 0
-    quantity = int(per_stock / est_price / 100) * 100
+    est_stop_pct = max(self.config.STOP_LOSS_PCT, 0.01)  # 无 stop 信息时按配置止损估算
+    qty_by_risk = risk_budget / (est_price * est_stop_pct)
+    qty_by_cap = max_notional / est_price
+    quantity = int(min(qty_by_risk, qty_by_cap) / 100) * 100
     return quantity
 ```
 
@@ -338,7 +344,7 @@ def check_positions(self, portfolio, market_data, trade_date):
             3连亏                真买又亏
   ACTIVE ────────→ OBSERVE ────────────→ BACKUP
     ↑                  ↑                     │
-    │ 模拟盈利≥1次      │ 冷藏30个交易日       │
+    │ 模拟盈利≥1次      │ 冷藏120个交易日       │
     └──────────────────┘←────────────────────┘
 ```
 
@@ -353,7 +359,7 @@ def update_trust(self, code, trade_result):
     if trust.tier == "ACTIVE":
         if is_loss:
             trust.consecutive_losses += 1
-            if trust.consecutive_losses >= 3:
+            if trust.consecutive_losses >= self.config.TRUST_DEMOTE_THRESHOLD:
                 trust.tier = "OBSERVE"
                 trust.consecutive_losses = 0
                 trust.last_demote_date = trade_result.execute_date
@@ -380,11 +386,11 @@ def update_trust(self, code, trade_result):
 
 ```python
 def _check_auto_promote(self, code, today_date):
-    """BACKUP → OBSERVE：冷藏 30 个交易日自动升级"""
+    """BACKUP → OBSERVE：冷藏 N 个交易日自动升级（v0.01 默认 120）"""
     trust = self._load_trust(code)
     if trust.tier == "BACKUP" and trust.last_demote_date:
         days_since = self._trading_days_between(trust.last_demote_date, today_date)
-        if days_since >= 30:
+        if days_since >= self.config.TRUST_BACKUP_COOLDOWN:
             trust.tier = "OBSERVE"
             trust.last_promote_date = today_date
             self._save_trust(trust)
@@ -501,6 +507,7 @@ def _calculate_fee(self, amount: float, action: str) -> float:
 # 仓位管理
 MAX_POSITIONS = 10                # 最大持仓数量
 MAX_POSITION_PCT = 0.10           # 单只仓位上限（占总资产）
+RISK_PER_TRADE_PCT = 0.008        # 单笔账户风险（v0.01 固定 0.8%）
 
 # 止损体系
 STOP_LOSS_PCT = 0.05              # 个股止损线（-5%）
@@ -519,7 +526,7 @@ SLIPPAGE_BPS = 0                  # 滑点（基点），默认 0
 
 # 信任分级
 TRUST_DEMOTE_THRESHOLD = 3        # 连亏 N 次降级
-TRUST_BACKUP_COOLDOWN = 30        # BACKUP 冷藏天数（交易日）
+TRUST_BACKUP_COOLDOWN = 120       # BACKUP 冷藏天数（交易日，v0.01）
 
 # 初始资金
 INITIAL_CASH = 1_000_000          # 初始资金（元）
@@ -653,3 +660,4 @@ def _trading_days_between(self, start: date, end: date) -> int:
 - 信任=OBSERVE 的真单盈利 → 升回 ACTIVE
 - 组合回撤清仓 + 连亏熔断同时触发 → 优先组合回撤
 - 手续费不足 5 元 → 按 5 元收取
+

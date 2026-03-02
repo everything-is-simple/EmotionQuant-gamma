@@ -22,12 +22,12 @@ EmotionQuant is a sentiment-driven quantitative system for China A-shares.
 
 ---
 
-## 3. Iron Laws (10 rules)
+## 3. Iron Laws (v0.01)
 
-1. **Stock selection = MSS + IRS**, trade timing = PAS, risk control is independent. The three must not mix.
+1. **v0.01 live scope = BOF single-pattern closed loop**; MSS/IRS are optional funnel gates and must pass ablation before being enabled.
 2. **MSS only looks at market level** — never touches industry or individual stocks.
 3. **IRS only looks at industry level** — never touches market temperature or stock patterns.
-4. **PAS only looks at individual stock patterns** — does not take MSS/IRS scores as input.
+4. **PAS is a framework-level concept; v0.01 implementation is BOF only**, and does not take MSS/IRS scores as pattern inputs.
 5. **Each raw observation belongs to exactly one factor** — no cross-factor double counting.
 6. **Modules only pass "result contracts"** (pydantic objects) — no internal intermediate features.
 7. **Each module can be unit-tested independently** — no dependency on other modules to start.
@@ -35,13 +35,13 @@ EmotionQuant is a sentiment-driven quantitative system for China A-shares.
 9. **No hardcoded paths/secrets** — all injected via config.py.
 10. **Execution semantics fixed to T+1 Open**: signal_date=T, execute_date=T+1, fill price=T+1 Open.
 
-Details: `docs/design-v2/rebuild-v0.01.md` §1
+Details: `docs/design-v2/rebuild-v0.01.md` (current version is authoritative).
 
 ---
 
 ## 4. Development Flow
 
-- Execution model: 4-week incremental delivery (see rebuild-v0.01.md §9)
+- Execution model: 4-week incremental delivery (see current rebuild-v0.01.md).
 - Each week produces independently verifiable deliverables (runnable code + passing tests)
 - Branch naming: `rebuild/{module}`, merge target `main`
 
@@ -59,7 +59,7 @@ Inter-module data passed as pydantic objects (contracts.py):
 Code in English, comments/docs/UI in Chinese. Uniform `snake_case`.
 L1 layer uses `ts_code` (TuShare format), L2+ layers use `code` (6-digit pure code).
 
-Details: `docs/design-v2/rebuild-v0.01.md` §5
+Details: `docs/design-v2/rebuild-v0.01.md` (result-contract section).
 
 ---
 
@@ -71,12 +71,12 @@ DuckDB single-database storage, decoupled via L1-L4 layers. Data root injected v
 |-------|---------|
 | L1 | Raw data (API fetch, written by fetcher.py) |
 | L2 | Processed data (adjusted prices / moving averages / volume ratio / market snapshot / industry daily) |
-| L3 | Algorithm output (MSS / IRS / PAS / gene library) |
+| L3 | Algorithm output (MSS / IRS / PAS(BOF) / Gene analysis) |
 | L4 | Historical analysis cache (orders / trades / reports) |
 
 **Dependency rule**: L2 reads only L1; L3 reads only L1/L2; L4 reads only L1/L2/L3. Reverse dependencies forbidden.
 
-Details: `docs/design-v2/rebuild-v0.01.md` §4.1
+Details: `docs/design-v2/rebuild-v0.01.md` (data and boundary sections).
 
 ---
 
@@ -85,8 +85,8 @@ Details: `docs/design-v2/rebuild-v0.01.md` §4.1
 | Module | Responsibility |
 |--------|---------------|
 | Data | Fetch, clean, store, cache algorithm output |
-| Selector | MSS market sentiment + IRS industry rotation + gene filter → candidate pool |
-| Strategy | PAS pattern detection (breakout / pullback) → trade signals |
+| Selector | MSS market sentiment + IRS industry rotation → candidate pool (Gene is post-analysis only) |
+| Strategy | PAS pattern detection (v0.01 BOF only) → trade signals |
 | Broker | Risk control + matching (backtest and paper trading share kernel) |
 | Backtest | Historical backtesting (backtrader single engine) |
 | Report | Backtest reports + daily stock selection reports + alerts |
@@ -105,7 +105,7 @@ Details: `docs/design-v2/rebuild-v0.01.md` §4.1
 
 ### 8.2 Single Source of Truth (SoT)
 
-`docs/design-v2/rebuild-v0.01.md` is the sole authoritative design document (architecture / modules / contracts / iron laws / plan).
+`docs/design-v2/rebuild-v0.01.md` is the sole authoritative design document (current version/sections prevail).
 
 ### 8.3 Archive Rules
 
@@ -127,12 +127,12 @@ Details: `docs/design-v2/rebuild-v0.01.md` §4.1
 
 ## 10. Core Algorithm Constraints
 
-- Stock selection = MSS + IRS, trade timing = PAS, risk control independent. The three must not mix
-- MSS only at market level, IRS only at industry level, PAS only at individual stock patterns
+- v0.01 live scope: BOF single-pattern closed loop; MSS/IRS are optional gates enabled only after ablation
+- MSS only at market level, IRS only at industry level; PAS is a framework concept and v0.01 uses BOF only
 - Each raw observation belongs to exactly one factor — no cross-factor double counting
 - Modules only pass "result contracts" (pydantic objects) — no internal intermediate features
 
-Details: `docs/design-v2/rebuild-v0.01.md` §1 iron laws + §4 module boundaries
+Details: `docs/design-v2/rebuild-v0.01.md` (iron laws, module boundaries, trigger sections).
 
 ---
 
@@ -144,7 +144,7 @@ Details: `docs/design-v2/rebuild-v0.01.md` §1 iron laws + §4 module boundaries
 - Backtesting: backtrader single engine
 - GUI: CLI only for MVP, GUI deferred
 
-Details: `docs/design-v2/rebuild-v0.01.md` §6
+Details: `docs/design-v2/rebuild-v0.01.md` (current version).
 
 ---
 
@@ -168,7 +168,7 @@ Current authoritative design entry: `docs/design-v2/rebuild-v0.01.md`
 
 ## 14. Execution Plan
 
-Current execution plan: see `docs/design-v2/rebuild-v0.01.md` §9 (4-week plan).
+Current execution plan: see `docs/design-v2/rebuild-v0.01.md` (current version).
 
 ## 15. Git Auth Baseline
 
@@ -202,3 +202,6 @@ Bootstrap:
 - Optional MCP target dir: `-CodexHome <path>` (default: in-project `.tmp/codex-home`)
 - Hooks only: `powershell -ExecutionPolicy Bypass -File scripts/setup/configure_git_hooks.ps1`
 - Skills check only: `powershell -ExecutionPolicy Bypass -File scripts/setup/check_skills.ps1`
+
+
+

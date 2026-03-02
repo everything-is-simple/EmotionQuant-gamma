@@ -71,9 +71,9 @@ main.py             # CLI 入口
 | MarketScore | MSS → Selector | date, score(0-100), signal(BULLISH/NEUTRAL/BEARISH) |
 | IndustryScore | IRS → Selector | date, industry, score, rank |
 | StockCandidate | Selector → Strategy | code, industry, score |
-| Signal | Strategy → Broker | signal_id, code, signal_date, action(BUY/SELL/HOLD), strength(0-1), pattern |
-| Order | Broker 内部 | order_id, signal_id, code, action, quantity, execute_date, status |
-| Trade | Broker → Report | trade_id, order_id, code, execute_date, price, quantity, fee, is_paper |
+| Signal | Strategy → Broker | signal_id, code, signal_date, action(BUY in v0.01), strength(0-1), pattern, reason_code |
+| Order | Broker 内部 | order_id, signal_id, code, action, quantity, execute_date, is_paper, status, reject_reason |
+| Trade | Broker → Report | trade_id, order_id, code, execute_date, action, price, quantity, fee, is_paper |
 
 ## 依赖栈
 

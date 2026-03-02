@@ -178,9 +178,9 @@ CREATE TABLE IF NOT EXISTS l3_signals (
     signal_id    VARCHAR NOT NULL PRIMARY KEY,
     code         VARCHAR NOT NULL,
     signal_date  DATE    NOT NULL,
-    action       VARCHAR NOT NULL,    -- BUY / SELL / HOLD
+    action       VARCHAR NOT NULL,    -- v0.01 运行约束: BUY（SELL 由 broker 内部订单产生）
     strength     DOUBLE,              -- 0-1
-    pattern      VARCHAR,             -- bpb / pb / tst / bof / cpb
+    pattern      VARCHAR,             -- v0.01 运行约束: bof（其余保留给后续版本）
     reason_code  VARCHAR,
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -219,6 +219,7 @@ CREATE TABLE IF NOT EXISTS l4_orders (
     quantity      INTEGER,
     price_limit   DOUBLE,
     execute_date  DATE,
+    is_paper      BOOLEAN DEFAULT FALSE,
     status        VARCHAR DEFAULT 'PENDING',  -- PENDING / FILLED / REJECTED
     reject_reason VARCHAR,
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP

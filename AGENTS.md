@@ -22,12 +22,12 @@ EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
 
 ---
 
-## 3. 铁律ﾈ10 条ﾉ
+## 3. 铁律（v0.01）
 
-1. **选股 = MSS + IRS**，交易时机 = PAS，风控执行独立。三者不混。
+1. **v0.01 实盘口径 = BOF 单形态闭环**；MSS/IRS 仅作为可开关漏斗，必须先通过消融验证。
 2. **MSS 只看市场级**，不碰行业和个股。
 3. **IRS 只看行业级**，不碰市场温度和个股形态。
-4. **PAS 只看个股形态**，不把 MSS/IRS 分数当输入。
+4. **PAS 是框架层概念，v0.01 实现仅 BOF**，且不把 MSS/IRS 分数当形态输入。
 5. **同一原始观测只归属一个因子**，禁止跨因子重复计分。
 6. **模块间只传“结果契约”**（pydantic 对象），不传内部中间特征。
 7. **每个模块可独立单测**，不依赖其他模块启动。
@@ -35,13 +35,13 @@ EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
 9. **路径/密钥禁止硬编码**，统一经 config.py 注入。
 10. **执行语义固定为 T+1 Open**：signal_date=T，execute_date=T+1，成交价=T+1 开盘价。
 
-详见：`docs/design-v2/rebuild-v0.01.md` §1
+详见：`docs/design-v2/rebuild-v0.01.md`（以当前版本为准）
 
 ---
 
 ## 4. 开发流程
 
-- 执行模型：四周增量交付（见 rebuild-v0.01.md §9）
+- 执行模型：四周增量交付（见 rebuild-v0.01.md 当前版本）
 - 每周产出可独立验证的交付物（可跑的代码 + 通过的测试）
 - 分支命名：`rebuild/{module}`，合并目标 `main`
 
@@ -57,9 +57,9 @@ EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
 - `Order` / `Trade`（Broker 内部 → Report）
 
 代码中使用英文，注释/文档/UI 使用中文。统一 `snake_case`。
-L1 层用 `ts_code`（TuShare 格式），L2+ 层用 `code`ﾈ6 位纯代码）。
+L1 层用 `ts_code`（TuShare 格式），L2+ 层用 `code`（6 位纯代码）。
 
-详见：`docs/design-v2/rebuild-v0.01.md` §5
+详见：`docs/design-v2/rebuild-v0.01.md`（结果契约章节）
 
 ---
 
@@ -71,23 +71,23 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 |------|------|
 | L1 | 原始数据（API 直取，fetcher.py 写入） |
 | L2 | 加工数据（复权价/均线/量比/市场截面/行业日线） |
-| L3 | 算法输出（MSS/IRS/PAS/基因库） |
+| L3 | 算法输出（MSS/IRS/PAS(BOF)/Gene分析） |
 | L4 | 历史分析缓存（订单/成交/报告） |
 
 **依赖规则**：L2 只读 L1；L3 只读 L1/L2；L4 只读 L1/L2/L3。禁止反向依赖。
 
-详见：`docs/design-v2/rebuild-v0.01.md` §4.1
+详见：`docs/design-v2/rebuild-v0.01.md`（数据与边界章节）
 
 ---
 
-## 7. 架构分层ﾈ6 模块ﾉ
+## 7. 架构分层（6 模块）
 
 | 模块 | 职责 |
 |----|------|
 | Data | 拉数据、清洗、落库、缓存算法输出 |
-| Selector | MSS 市场情绪 + IRS 行业轮动 + 基因库过滤 → 候选池 |
-| Strategy | PAS 形态检测（突破/回踩）→ 交易信号 |
-| Broker | 风控 + 撒合（回测和纸上交易共用内核） |
+| Selector | MSS 市场情绪 + IRS 行业轮动 → 候选池（Gene 仅事后分析） |
+| Strategy | PAS 形态检测（v0.01 仅 BOF）→ 交易信号 |
+| Broker | 风控 + 撮合（回测和纸上交易共用内核） |
 | Backtest | 历史回测（backtrader 单引擎） |
 | Report | 回测报告 + 每日选股报告 + 预警 |
 
@@ -105,7 +105,7 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 
 ### 8.2 单一事实源（SoT）
 
-`docs/design-v2/rebuild-v0.01.md` 是系统设计的唯一权威文件（架构/模块/契约/铁律/计划）。
+`docs/design-v2/rebuild-v0.01.md` 是系统设计的唯一权威文件（以当前版本章节为准）。
 
 ### 8.3 归档规则
 
@@ -127,12 +127,12 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 
 ## 10. 核心算法约束
 
-- 选股 = MSS + IRS，交易时机 = PAS，风控执行独立。三者不混
-- MSS 只看市场级，IRS 只看行业级，PAS 只看个股形态
+- v0.01 实盘口径：BOF 单形态闭环；MSS/IRS 仅作为可开关漏斗，先消融后启用
+- MSS 只看市场级，IRS 只看行业级；PAS 为框架概念，v0.01 仅 BOF
 - 同一原始观测只归属一个因子，禁止跨因子重复计分
 - 模块间只传“结果契约”（pydantic 对象），不传内部中间特征
 
-详见：`docs/design-v2/rebuild-v0.01.md` §1 铁律 + §4 模块边界
+详见：`docs/design-v2/rebuild-v0.01.md`（铁律、模块边界、触发器章节）。
 
 ---
 
@@ -144,7 +144,7 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 - 回测：backtrader 单引擎
 - GUI：MVP 阶段命令行，GUI 延后
 
-详见：`docs/design-v2/rebuild-v0.01.md` §6
+详见：`docs/design-v2/rebuild-v0.01.md`（当前版本）
 
 ---
 
@@ -168,7 +168,7 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 
 ## 14. 执行计划
 
-当前执行计划见 `docs/design-v2/rebuild-v0.01.md` §9（四周计划）。
+当前执行计划见 `docs/design-v2/rebuild-v0.01.md`（以当前版本为准）。
 
 ## 15. Git 认证基线
 
@@ -202,3 +202,5 @@ Bootstrap：
 - 可选 MCP 目标目录：`-CodexHome <path>`（默认：项目内 `.tmp/codex-home`）
 - 仅 Hooks：`powershell -ExecutionPolicy Bypass -File scripts/setup/configure_git_hooks.ps1`
 - 仅 Skills 检查：`powershell -ExecutionPolicy Bypass -File scripts/setup/check_skills.ps1`
+
+

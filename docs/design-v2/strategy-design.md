@@ -109,9 +109,17 @@ df 行要求：
 1. 入场后次日不延续（`close(t+1) <= entry_close`）
 2. 收盘跌回结构内并破坏触发低点
 
+### 3.4 可复现口径（引用 SoT）
+
+`lower_bound` 及相关口径定义见 `rebuild-v0.01.md` §4：
+- `lower_bound = min(adj_low[t-20, t-1])`，窗口不足 20 个交易日时不触发
+- 价格字段统一使用前复权口径（`adj_open/adj_high/adj_low/adj_close`）
+- `SMA20(Volume)` 使用过去 20 个有效交易日（停牌日不计入窗口）
+- 一字涨停/一字跌停/停牌日不作为可成交触发样本
+
 ---
 
-## 4. pas_bpb.py — BPB 突破回踩检测器（v0.02 预留，仅参考）
+## 4. pas_bpb.py
 
 > 本节不属于 v0.01 可执行范围。
 
@@ -395,7 +403,7 @@ def generate_signals(store, candidates, signal_date, config):
     return signals
 ```
 
-### 5.3 组合模式
+### 6.3 组合模式
 
 ```python
 def _combine_signals(stock_signals: list[Signal], config) -> list[Signal]:
@@ -486,7 +494,7 @@ T+1 日 09:30 开盘
 
 ## 8. 第2/3迭代形态接口预览
 
-### 7.1 pas_pb.py（第2迭代）
+### 8.1 pas_pb.py（第2迭代）
 
 ```python
 class PbDetector(PatternDetector):
@@ -504,7 +512,7 @@ class PbDetector(PatternDetector):
         ...
 ```
 
-### 7.2 pas_tst.py（第3迭代）
+### 8.2 pas_tst.py（第3迭代）
 
 ```python
 class TstDetector(PatternDetector):
@@ -522,7 +530,7 @@ class TstDetector(PatternDetector):
         ...
 ```
 
-### 7.3 pas_bof.py / pas_cpb.py（第3迭代）
+### 8.3 pas_bof.py / pas_cpb.py（第3迭代）
 
 签名相同，具体检测逻辑见 `architecture-master.md` §4.3.4 和 §4.3.5。
 
