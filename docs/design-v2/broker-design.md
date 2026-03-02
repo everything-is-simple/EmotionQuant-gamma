@@ -161,8 +161,12 @@ def _calculate_position_size(self, signal, broker_state) -> int:
     )
     per_stock = nav * self.config.MAX_POSITION_PCT
     # 用信号日收盘价估算（实际成交价是 T+1 Open，有滑点）
-    est_price = signal.strength  # 这里需要传入估计价格
-    # 实际实现中，从 store 读 signal_date 的收盘价
+    est_price = self.store.read_scalar(
+        "SELECT adj_close FROM l2_stock_adj_daily WHERE code=? AND date=?",
+        (signal.code, signal.signal_date)
+    )
+    if est_price is None or est_price <= 0:
+        return 0
     quantity = int(per_stock / est_price / 100) * 100
     return quantity
 ```
@@ -619,8 +623,8 @@ def _trading_days_between(self, start: date, end: date) -> int:
 
 纸上交易模式（main.py 每日调用）：
   - market_data = 当日真实数据
-  - 信任=OBSERVE 的股票 is_paper=true
-  - ACTIVE 股票 is_paper=false，但不真正下单（第1迭代）
+  - 不连接券商，全部为模拟成交（is_paper=true）
+  - 信任分级仅影响是否允许生成模拟单（BACKUP 可直接跳过）
 
 实盘模式（后续迭代）：
   - matcher 接入券商 API，真实下单

@@ -67,7 +67,7 @@ def safe_ratio(numerator, denominator, default=0.0):
 
 - 全局配置统一在 `config.py`
 - 漏斗开关：`ENABLE_MSS_GATE`, `ENABLE_IRS_FILTER`, `ENABLE_GENE_FILTER`
-- PAS 形态：`PAS_PATTERNS = ["bpb"]`（新增形态只改这一行）
+- PAS 形态：`PAS_PATTERNS = ["bof"]`（v0.01 默认）
 - 数据根目录：`DATA_PATH` 环境变量注入，config.py 读取
 
 ## 测试策略
@@ -97,3 +97,7 @@ def safe_ratio(numerator, denominator, default=0.0):
 | 配置开关 | `ENABLE_{功能}` | `ENABLE_MSS_GATE` |
 | 形态检测器 | `pas_{形态缩写}.py` | `pas_bpb.py` |
 | 信号原因码 | `PAS_{形态}` | `PAS_BPB` |
+| 触发器标识 | `pattern_id` | `bof_spring_v1` |
+| 触发记录标识 | `trigger_id` | `bof_000001_20260302` |
+| 形态大类 | `setup_type` | `range_bof` |
+| 环境标签 | `env_regime` | `bull / sideways / bear` |

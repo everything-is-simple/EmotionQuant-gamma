@@ -51,8 +51,8 @@ BUY/SELL 按 (code, 时间顺序) 配对 → 计算每笔 pnl_pct、holding_days
 python main.py fetch                              # 拉取增量数据
 python main.py build --layers=l2,l3               # 生成 L2+L3
 python main.py backtest --start=2023-01-01        # 默认回测
-python main.py backtest --patterns=bpb            # 单形态回测
-python main.py backtest --patterns=bpb,pb --combination=ANY
+python main.py backtest --patterns=bof            # 单形态回测
+python main.py backtest --patterns=bof,bpb --combination=ANY
 python main.py run                                # 每日全链路
 ```
 
@@ -83,6 +83,8 @@ python main.py run                                # 每日全链路
 - [ ] `generate_backtest_report(db_path, config, start, end)`: 全量统计 + 控制台输出 + 写 l4
 - [ ] `generate_daily_report(store, trade_date)`: 每日一行写入 l4_daily_report
 - [ ] `_compute_pattern_stats(paired, date)`: 逐形态统计，写 l4_pattern_stats
+- [ ] 分环境统计（牛/震荡/熊）并输出分段胜率、期望值
+- [ ] 输出中位数路径结论（不是最佳路径）
 - [ ] 控制台报告格式（期望值/左尾/右尾/分布/稳定性/逐形态）
 
 ### reporter.py — 预警
@@ -100,7 +102,7 @@ python main.py run                                # 每日全链路
 
 ### 纸上交易模式
 - [ ] run 命令中 broker 使用纸上交易模式
-- [ ] ACTIVE 股票 is_paper=false（第1迭代不真实下单）
+- [ ] 纸上交易模式下全部交易 is_paper=true（不连券商）
 - [ ] OBSERVE 股票 is_paper=true
 - [ ] 结果写入 l4_trades（is_paper 字段区分）
 
@@ -122,7 +124,7 @@ python main.py run                                # 每日全链路
 
 ## 验收标准
 1. `python main.py backtest --start=2023-01-01` 跑通，输出完整报告
-2. `python main.py backtest --patterns=bpb` 单形态回测可执行
+2. `python main.py backtest --patterns=bof` 单形态回测可执行
 3. 回测报告包含：胜率、盈亏比、期望值、最大回撤、夏普比率、逐形态统计
 4. 零交易时所有指标返回 0，不报错
 5. 预警规则命中时 loguru.warning 输出

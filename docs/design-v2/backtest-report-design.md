@@ -13,6 +13,12 @@
 
 **Report**：用数据说话——期望值是否为正、左尾是否可控、右尾是否拿住。不搞监控平台，日志预警足够。
 
+### v0.01 报告强制项
+
+1. 分环境统计：牛市/震荡/熊市分段输出胜率与期望值。
+2. 中位数路径优先：以多窗口统计中位数结果作为主结论，不以最佳路径作为主结论。
+3. 成本压力：报告必须展示手续费+滑点后的净表现。
+
 ---
 
 ## 2. Backtest — backtrader 封装
@@ -145,8 +151,7 @@ def run_backtest(db_path: str, config, start: date, end: date,
                         db_path=db_path, config=config,
                         initial_cash=initial_cash)
 
-    # 不使用 backtrader 自带的 broker
-    cerebro.broker.set_cash(initial_cash)
+    # 不使用 backtrader 自带撮合/风控逻辑（资金状态由 Broker 内核维护）
 
     # 运行
     results = cerebro.run()
@@ -164,10 +169,10 @@ def run_backtest(db_path: str, config, start: date, end: date,
 python main.py backtest --start=2023-01-01 --end=2025-12-31
 
 # 单形态独立回测
-python main.py backtest --patterns=bpb --start=2023-01-01
+python main.py backtest --patterns=bof --start=2023-01-01
 
 # 多形态组合回测
-python main.py backtest --patterns=bpb,pb --combination=ANY --start=2023-01-01
+python main.py backtest --patterns=bof,bpb --combination=ANY --start=2023-01-01
 
 # 指定初始资金
 python main.py backtest --start=2023-01-01 --cash=500000

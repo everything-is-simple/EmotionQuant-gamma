@@ -2,7 +2,7 @@
 
 **版本**: v1.0
 **创建日期**: 2026-03-01
-**对应模块**: `src/strategy/`（pattern_base.py, pas_bpb.py, registry.py, strategy.py）
+**对应模块**: `src/strategy/`（pattern_base.py, pas_bof.py, pas_bpb.py, registry.py, strategy.py）
 **上游文档**: `architecture-master.md` §4.3，`volman-ytc-mapping.md`
 
 ---
@@ -15,6 +15,12 @@ Strategy 回答一个问题：**候选池中的这只股票，今天该买吗？
 - **只看个股 OHLCV**：不把 MSS/IRS 分数当输入（铁律 #4）
 - **形态检测器模式**：每个形态一个检测器，签名统一，可独立回测
 - **可装配**：形态通过 registry 注册，config 控制启停，支持自由组合
+
+### 1.1 v0.01 口径
+
+1. YTC 五形态全部注册在册：`tst / bof / bpb / pb / cpb`。
+2. v0.01 仅启用 `bof` 作为主触发器。
+3. `bpb` 调整到 v0.02 验证，`tst/pb/cpb` 后续逐步启用。
 
 ---
 
@@ -76,7 +82,34 @@ df 行要求：
 
 ---
 
-## 3. pas_bpb.py — BPB 突破回踩检测器（第1迭代）
+## 3. pas_bof.py — BOF 假突破检测器（v0.01 主触发器）
+
+### 3.1 Spring 触发（做多）
+
+触发必须全部满足：
+
+1. `low < lower_bound * (1 - 0.01)`
+2. `close >= lower_bound`
+3. 收盘位置强（`close_pos >= 0.6`）
+4. `volume >= volume_ma20 * 1.2`
+
+### 3.2 确认条件（1-2日内）
+
+满足任一：
+
+1. `close(t+1) > high(trigger_day)`
+2. `close(t+2) >= close(trigger_day) * 1.03`
+
+### 3.3 失效条件
+
+满足任一立即失效：
+
+1. 入场后次日不延续（`close(t+1) <= entry_close`）
+2. 收盘跌回结构内并破坏触发低点
+
+---
+
+## 4. pas_bpb.py — BPB 突破回踩检测器（v0.02 预留）
 
 ### 3.1 类定义
 
@@ -258,27 +291,26 @@ def _normalize(self, value: float, low: float, high: float) -> float:
 
 ---
 
-## 4. registry.py — 形态注册表
+## 5. registry.py — 形态注册表
 
-### 4.1 设计
+### 5.1 设计
 
 ```python
 from strategy.pattern_base import PatternDetector
+from strategy.pas_bof import BofDetector
 from strategy.pas_bpb import BpbDetector
-# 第2迭代
-# from strategy.pas_pb import PbDetector
-# 第3迭代
+# 后续迭代
 # from strategy.pas_tst import TstDetector
-# from strategy.pas_bof import BofDetector
+# from strategy.pas_pb import PbDetector
 # from strategy.pas_cpb import CpbDetector
 
 # 所有已实现的检测器（全量注册表）
 ALL_DETECTORS: dict[str, type[PatternDetector]] = {
-    "bpb": BpbDetector,
-    # "pb":  PbDetector,      # 第2迭代取消注释
-    # "tst": TstDetector,     # 第3迭代
-    # "bof": BofDetector,     # 第3迭代
-    # "cpb": CpbDetector,     # 第3迭代
+    "bof": BofDetector,      # v0.01
+    "bpb": BpbDetector,      # v0.02
+    # "tst": TstDetector,    # 后续
+    # "pb":  PbDetector,     # 后续
+    # "cpb": CpbDetector,    # 后续
 }
 
 def get_active_detectors(config) -> list[PatternDetector]:
@@ -293,7 +325,7 @@ def get_active_detectors(config) -> list[PatternDetector]:
     return detectors
 ```
 
-### 4.2 新增形态的完整流程
+### 5.2 新增形态的完整流程
 
 ```text
 1. 写 pas_xxx.py，继承 PatternDetector，实现 detect()
@@ -306,9 +338,9 @@ def get_active_detectors(config) -> list[PatternDetector]:
 
 ---
 
-## 5. strategy.py — 信号汇总
+## 6. strategy.py — 信号汇总
 
-### 5.1 函数签名
+### 6.1 函数签名
 
 ```python
 def generate_signals(store: Store, candidates: list[StockCandidate],
@@ -319,7 +351,7 @@ def generate_signals(store: Store, candidates: list[StockCandidate],
     """
 ```
 
-### 5.2 执行流程
+### 6.2 执行流程
 
 ```python
 def generate_signals(store, candidates, signal_date, config):
@@ -398,27 +430,29 @@ def _combine_signals(stock_signals: list[Signal], config) -> list[Signal]:
     return stock_signals
 ```
 
-### 5.4 配置
+### 6.4 配置
 
 ```python
 # config.py — Strategy 配置
 
 # PAS 形态
-PAS_PATTERNS = ["bpb"]            # 当前活跃形态列表
+PAS_PATTERNS = ["bof"]            # v0.01 当前活跃形态
 PAS_COMBINATION = "ANY"           # 组合模式：ANY / ALL / VOTE
 PAS_VOTE_THRESHOLD = 0.6          # VOTE 模式阈值
 PAS_LOOKBACK_DAYS = 60            # 检测器输入的历史窗口
 PAS_MIN_HISTORY_DAYS = 30         # 最少历史数据天数
-PAS_BPB_LOOKBACK = 20             # BPB N日区间
+PAS_BPB_LOOKBACK = 20             # BPB N日区间（v0.02）
+PAS_BOF_BREAK_PCT = 0.01          # BOF 假破位阈值
+PAS_BOF_VOLUME_MULT = 1.2         # BOF 放量阈值
 
 # 单形态独立回测
-# python main.py backtest --patterns=bpb --start=2023-01-01
-# python main.py backtest --patterns=bpb,pb --combination=ANY
+# python main.py backtest --patterns=bof --start=2023-01-01
+# python main.py backtest --patterns=bof,bpb --combination=ANY
 ```
 
 ---
 
-## 6. Signal 生命周期
+## 7. Signal 生命周期
 
 ```text
 T 日 15:00 收盘
@@ -446,7 +480,7 @@ T+1 日 09:30 开盘
 
 ---
 
-## 7. 第2/3迭代形态接口预览
+## 8. 第2/3迭代形态接口预览
 
 ### 7.1 pas_pb.py（第2迭代）
 
@@ -490,7 +524,7 @@ class TstDetector(PatternDetector):
 
 ---
 
-## 8. 观测唯一性约束
+## 9. 观测唯一性约束
 
 15 个观测分属 5 个检测器，语义不重复：
 
@@ -506,7 +540,7 @@ class TstDetector(PatternDetector):
 
 ---
 
-## 9. 单测要点
+## 10. 单测要点
 
 | 模块 | 测试方式 |
 |------|---------|

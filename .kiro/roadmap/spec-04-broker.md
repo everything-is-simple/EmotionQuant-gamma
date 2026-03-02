@@ -60,11 +60,12 @@ PAS 只产 BUY。SELL 由 risk.py 根据止损/止盈/信任规则直接创建 O
 ### risk.py — 开仓检查
 - [ ] 实现 RiskManager 类
 - [ ] `check_signal`: 信任检查 → 熔断检查 → 持仓数量检查 → 仓位计算 → 生成 Order
-- [ ] `_calculate_position_size`: 等权 nav/MAX_POSITIONS，取整到 100 股
+- [ ] `_calculate_position_size`: 用信号日收盘价估算（禁止用 signal.strength 代替价格）
 - [ ] `_next_trade_date` / `_trading_days_between`（查 l1_trade_calendar）
 
 ### risk.py — 四级止损
 - [ ] `check_positions`: 遍历持仓，按优先级检查，返回 SELL Order 列表
+- [ ] 新增：入场后次日不延续退出规则（v0.01 强制）
 - [ ] `_check_intraday_loss`: 持仓 1 天且 close < entry_price
 - [ ] `_check_stop_loss`: 浮亏 ≥ STOP_LOSS_PCT(-5%)
 - [ ] `_check_trailing_stop`: 更新 max_price，回落 ≥ TRAILING_STOP_PCT(8%)

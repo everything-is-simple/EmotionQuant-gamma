@@ -3,6 +3,8 @@
 ## 需求摘要
 从全市场 ~5000 股中筛选 50-100 只候选股。三级漏斗：MSS(时机开关) → IRS(行业过滤) → 基础过滤 → 输出候选池。
 
+v0.01 增加两阶段扫描：先粗筛到约200只，再进入漏斗与形态精扫。
+
 **设计文档**: `docs/design-v2/selector-design.md`, `docs/design-v2/architecture-master.md` §4.2
 
 ## 交付文件
@@ -78,10 +80,12 @@ zscore_normalize(value, mean, std) → 0-100
 
 ### selector.py
 - [ ] 实现 `select_candidates(store, calc_date)` → list[StockCandidate]
+- [ ] 实现全市场粗筛（5000 -> 约200）
 - [ ] Step 1: MSS 开关检查（读 l3_mss_daily）
 - [ ] Step 2: IRS 过滤（读 l3_irs_daily，取 Top-N 行业的股票）
 - [ ] Step 3: 基因过滤（预留，ENABLE_GENE_FILTER=False 时跳过）
 - [ ] Step 4: 基础过滤（_apply_basic_filters：ST/次新/流动性/市值）
+- [ ] 输出 `liquidity_tier` / `attention_tier` / `score`（用于候选排序）
 - [ ] 各步日志输出过滤数量
 - [ ] 单测：mock Store 返回预设数据，验证每级过滤
 
