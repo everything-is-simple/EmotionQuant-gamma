@@ -95,8 +95,43 @@ class EmotionQuantStrategy(bt.Strategy):
         )
 
     def stop(self):
-        """回测结束，清仓并输出报告。"""
+        """回测结束：强制平仓所有未平仓持仓 → 关闭 store。"""
+        last_date = self.datas[0].datetime.date(0)
+        self._force_close_all(last_date)
         self.store.close()
+
+    def _force_close_all(self, last_date: date):
+        """
+        回测末日强制平仓。
+        以最后一个交易日的收盘价对所有 open positions 生成 SELL Trade，
+        确保 _pair_trades 的 BUY/SELL 数量一致。
+        """
+        open_positions = self.broker_engine.get_open_positions()
+        if not open_positions:
+            return
+        market_data = self._get_market_data(last_date)
+        for pos in open_positions:
+            bar = market_data[market_data.code == pos.code]
+            if bar.empty:
+                logger.warning(f"force_close: {pos.code} 最后交易日无数据，跳过")
+                continue
+            close_price = bar.iloc[0]["adj_close"]
+            fee = self.broker_engine.matcher._calculate_fee(
+                close_price * pos.quantity, "SELL"
+            )
+            trade = Trade(
+                order_id="FORCE_CLOSE",
+                code=pos.code,
+                execute_date=last_date,
+                action="SELL",
+                pattern=pos.pattern,
+                price=close_price,
+                quantity=pos.quantity,
+                fee=fee,
+                is_paper=pos.is_paper,
+            )
+            self.store.bulk_insert("l4_trades", pd.DataFrame([trade.model_dump()]))
+        logger.info(f"force_close_all: {len(open_positions)} 笔持仓已强平")
 ```
 
 ### 2.3 数据喂入
@@ -262,12 +297,21 @@ def _pair_trades(trades_df: pd.DataFrame) -> pd.DataFrame:
     将 BUY/SELL 交易配对，计算每笔完整交易的盈亏。
     返回 DataFrame：code, entry_date, exit_date, entry_price, exit_price,
                     pnl, pnl_pct, holding_days, pattern, fee_total
+
+    前置条件：回测结束前必须已调用 force_close_all()，保证无未平仓持仓。
     """
     pairs = []
     # 按 code 分组，BUY/SELL 按时间顺序配对
     for code, group in trades_df.groupby("code"):
         buys = group[group["action"] == "BUY"].sort_values("execute_date")
         sells = group[group["action"] == "SELL"].sort_values("execute_date")
+
+        # ── 安全断言：BUY/SELL 数量必须一致 ──
+        if len(buys) != len(sells):
+            raise ValueError(
+                f"{code}: BUY({len(buys)}) != SELL({len(sells)})，"
+                f"存在未平仓交易，force_close_all 可能未执行"
+            )
 
         for buy, sell in zip(buys.itertuples(), sells.itertuples()):
             pnl = (sell.price - buy.price) * buy.quantity - buy.fee - sell.fee
@@ -283,7 +327,7 @@ def _pair_trades(trades_df: pd.DataFrame) -> pd.DataFrame:
                 "pnl": pnl,
                 "pnl_pct": pnl_pct,
                 "holding_days": holding_days,
-                "pattern": getattr(buy, "pattern", "unknown"),
+                "pattern": buy.pattern,    # Trade 已冗余携带 pattern 字段
                 "fee_total": buy.fee + sell.fee,
             })
 

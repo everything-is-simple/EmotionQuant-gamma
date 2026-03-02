@@ -427,7 +427,11 @@ class Matcher:
 ### 5.2 撮合流程
 
 ```python
-def execute(self, order, market_data) -> Trade | None:
+def execute(self, order, market_data, today: date) -> Trade | None:
+    # ── 前置断言：只撮合当日到期的 PENDING 订单 ──
+    assert order.status == "PENDING", f"非 PENDING 订单不可撮合: {order.order_id} status={order.status}"
+    assert order.execute_date == today, f"execute_date 不匹配: {order.execute_date} != {today}"
+
     row = market_data[
         (market_data.code == order.code) &
         (market_data.date == order.execute_date)
@@ -475,6 +479,7 @@ def execute(self, order, market_data) -> Trade | None:
         code=order.code,
         execute_date=order.execute_date,
         action=order.action,
+        pattern=order.pattern,          # 冗余传递，报告阶段直接读取
         price=price,
         quantity=order.quantity,
         fee=fee,

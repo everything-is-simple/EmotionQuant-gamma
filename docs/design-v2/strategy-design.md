@@ -95,12 +95,10 @@ df 行要求：
 3. 收盘位置强（`close_pos >= 0.6`）
 4. `volume >= volume_ma20 * 1.2`
 
-### 3.2 确认条件（1-2日内）
+### 3.2 执行语义（v0.01 冻结）
 
-满足任一：
-
-1. `close(t+1) > high(trigger_day)`
-2. `close(t+2) >= close(trigger_day) * 1.03`
+- 触发日 = `signal_date = T`：T 日收盘后满足 §3.1 的 4 条即生成 BUY Signal（不做“等 1-2 日确认再入场”）。
+- 执行日 = `execute_date = next_trade_day(T)`：成交价 = 执行日开盘价（`T+1 Open`）。
 
 ### 3.3 失效条件
 
@@ -113,7 +111,7 @@ df 行要求：
 
 `lower_bound` 及相关口径定义见 `rebuild-v0.01.md` §4：
 - `lower_bound = min(adj_low[t-20, t-1])`，窗口不足 20 个交易日时不触发
-- 价格字段统一使用前复权口径（`adj_open/adj_high/adj_low/adj_close`）
+- 价格字段统一使用 `adj = raw × adj_factor`（`adj_open/adj_high/adj_low/adj_close`），历史行不回写
 - `SMA20(Volume)` 使用过去 20 个有效交易日（停牌日不计入窗口）
 - 一字涨停/一字跌停/停牌日不作为可成交触发样本
 
@@ -190,6 +188,7 @@ Step 6 — 计算 signal_strength
 
 Step 7 — 构造 Signal
   return Signal(
+      # signal_id 由 model_validator 自动生成：f"{code}_{signal_date}_bpb"
       code=code,
       signal_date=signal_date,
       action="BUY",
@@ -394,10 +393,10 @@ def generate_signals(store, candidates, signal_date, config):
         if combined:
             signals.extend(combined)
 
-    # 写 l3_signals
+    # 写 l3_signals（upsert：signal_id 是确定性幂等键，重跑覆盖而非追加）
     if signals:
         signals_df = pd.DataFrame([s.model_dump() for s in signals])
-        store.bulk_insert("l3_signals", signals_df)
+        store.bulk_upsert("l3_signals", signals_df, key=["signal_id"])
 
     logger.info(f"{signal_date}: {len(candidates)} 候选 → {len(signals)} 信号")
     return signals
