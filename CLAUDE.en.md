@@ -121,6 +121,8 @@ Details: `docs/design-v2/rebuild-v0.01.md` (data and boundary sections).
 - Commands must run, tests must reproduce, artifacts must be verifiable
 - Hardcoded path checks, A-share rule checks
 - Effective tests over coverage numbers
+- No bare code-only submissions: key business logic, time-semantics rules, and state-machine branches must include necessary comments (intent, boundary, constraints) for maintainability
+- Delivery must include both: minimal readable comments + corresponding test/verification evidence (at least one traceable to a test case or regression record)
 - TODO/HACK/FIXME: allowed during development, must be cleaned before merge
 
 ---

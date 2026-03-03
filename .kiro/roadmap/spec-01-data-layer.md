@@ -1,6 +1,6 @@
 # Spec 01: Data Layer
 
-> **版本**: v0.01 | **状态**: Draft | **基线**: `docs/design-v2/rebuild-v0.01.md` | **评审标准**: `docs/design-v2/sandbox-review-standard.md`
+> **版本**: v0.01 | **状态**: Active | **基线**: `docs/design-v2/rebuild-v0.01.md` | **评审标准**: `docs/design-v2/sandbox-review-standard.md`
 
 ## 需求摘要
 搭建系统地基：从 TuShare 拉取 A 股数据、清洗加工、存入 DuckDB、定义模块间契约。零业务逻辑。
@@ -100,3 +100,4 @@
 | 级别 | 问题 | Owner | 截止日期 | 状态 |
 |------|------|-------|----------|------|
 | — | 当前无已知 S2+ 偏差 | — | — | — |
+

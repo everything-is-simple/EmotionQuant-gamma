@@ -22,31 +22,40 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
+    # 数据处理
     "pandas>=2.0.0",
     "numpy>=1.24.0",
+    # 数据源（TuShare 主 + AKShare 备）
     "tushare>=1.2.89",
+    "akshare>=1.10.0",
+    # 存储
     "duckdb>=0.9.0",
     "pyarrow>=10.0.0",
-    "streamlit>=1.28.0",
-    "plotly>=5.17.0",
+    # 回测引擎（v0.01 唯一引擎）
+    "backtrader>=1.9.78.123",
+    # 模块边界契约
     "pydantic>=2.0.0",
     "pydantic-settings>=2.0.0",
+    # 日志
+    "loguru>=0.7.0",
+    # 网络重试
     "tenacity>=8.0.0",
+    # 环境变量
     "python-dotenv>=1.0.0",
-    "pyyaml>=6.0",
 ]
 
 [project.optional-dependencies]
-backtest = [
-    "pyqlib>=0.9.6",
-    "backtrader>=1.9.78.123",
+gui = [
+    # GUI 延后（v0.02+ 阶段再启用）
+    "streamlit>=1.28.0",
+    "plotly>=5.17.0",
 ]
 visualization = [
     "altair>=5.0.0",
 ]
 full = [
-    "pyqlib>=0.9.6",
-    "backtrader>=1.9.78.123",
+    "streamlit>=1.28.0",
+    "plotly>=5.17.0",
     "altair>=5.0.0",
 ]
 dev = [
@@ -56,11 +65,11 @@ dev = [
     "ruff>=0.8.0",
     "mypy>=1.10.0",
     "pre-commit>=3.7.0",
-    "types-PyYAML>=6.0.12",
 ]
 
 [project.scripts]
-eq = "src.pipeline.main:main"
+# 入口点：python main.py fetch/build/backtest/run（architecture-master §3）
+eq = "main:main"
 
 [tool.setuptools]
 package-dir = {"" = "."}

@@ -32,7 +32,7 @@ pytest -v
 
 Copy `.env.example` to `.env` and fill in actual values. Key variables:
 
-- `TUSHARE_PRIMARY_TOKEN` — TuShare API token
+- `TUSHARE_TOKEN` — TuShare API token
 - `DATA_PATH` — Data root directory (outside repo)
 
 ## License

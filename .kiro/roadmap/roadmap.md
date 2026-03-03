@@ -5,6 +5,7 @@
 - **执行基线**: `docs/design-v2/rebuild-v0.01.md`（Frozen，当前唯一执行口径）
 - **评审标准**: `docs/design-v2/sandbox-review-standard.md`（七维评审 + 定稿门禁）
 - **冲突规则**: 本路线图及实现卡与上述基线冲突时，以基线为准。
+- **文档状态**: Active（正式版）
 
 ## 迭代总览
 

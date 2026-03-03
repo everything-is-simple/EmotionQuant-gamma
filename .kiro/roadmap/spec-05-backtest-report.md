@@ -1,6 +1,6 @@
 # Spec 05: Backtest + Report
 
-> **版本**: v0.01 | **状态**: Draft | **基线**: `docs/design-v2/rebuild-v0.01.md` | **评审标准**: `docs/design-v2/sandbox-review-standard.md`
+> **版本**: v0.01 | **状态**: Active | **基线**: `docs/design-v2/rebuild-v0.01.md` | **评审标准**: `docs/design-v2/sandbox-review-standard.md`
 
 ## 需求摘要
 **Backtest**：用历史数据验证策略。backtrader 单引擎，调用 Broker 内核保证回测/实盘一致。
@@ -157,3 +157,4 @@ python main.py run                                # 每日全链路
 | 级别 | 问题 | Owner | 截止日期 | 状态 |
 |------|------|-------|----------|------|
 | — | 当前无已知 S2+ 偏差 | — | — | — |
+

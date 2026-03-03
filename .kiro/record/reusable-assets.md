@@ -1,7 +1,7 @@
 # EmotionQuant 可复用资产登记（重启版模板）
 
 **状态**: Active（正式治理）  
-**最后更新**: 2026-03-02  
+**最后更新**: 2026-03-03
 **责任文件**: `.kiro/record/reusable-assets.md`
 
 ---
@@ -46,6 +46,7 @@
 | DES-004 | Strategy 设计 | `docs/design-v2/strategy-design.md` | A | Week2 实现参考 |
 | DES-005 | Broker 设计 | `docs/design-v2/broker-design.md` | A | Week3 实现参考 |
 | DES-006 | Backtest/Report 设计 | `docs/design-v2/backtest-report-design.md` | A | Week4 实现参考 |
+| DES-007 | 沙盘评审标准 | `docs/design-v2/sandbox-review-standard.md` | S | 所有模块定稿前七维评审 + 定稿门禁 |
 
 ---
 
@@ -77,3 +78,4 @@
 | 日期 | 版本 | 变更 |
 |---|---|---|
 | 2026-03-02 | v1.0 | 重启清零：建立正式模板并初始化基线资产 |
+| 2026-03-03 | v1.1 | 新增 DES-007 沙盘评审标准资产 |

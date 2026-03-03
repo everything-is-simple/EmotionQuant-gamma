@@ -32,7 +32,7 @@ pytest -v
 
 复制 `.env.example` 为 `.env` 并填入实际值。关键变量：
 
-- `TUSHARE_PRIMARY_TOKEN` — TuShare API token
+- `TUSHARE_TOKEN` — TuShare API token
 - `DATA_PATH` — 数据根目录（仓库外独立目录）
 
 ## 许可证

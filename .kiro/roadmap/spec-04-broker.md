@@ -1,6 +1,6 @@
 # Spec 04: Broker
 
-> **版本**: v0.01 | **状态**: Draft | **基线**: `docs/design-v2/rebuild-v0.01.md` | **评审标准**: `docs/design-v2/sandbox-review-standard.md`
+> **版本**: v0.01 | **状态**: Active | **基线**: `docs/design-v2/rebuild-v0.01.md` | **评审标准**: `docs/design-v2/sandbox-review-standard.md`
 
 ## 需求摘要
 系统中唯一有"钱"的模块：接收信号 → 风控检查 → 下单 → 撮合成交。回测和纸上交易共用此内核。有状态（持仓、资金、信任分级）。
@@ -143,3 +143,4 @@ PAS 只产 BUY。SELL 由 risk.py 根据止损/止盈/信任规则直接创建 O
 | 级别 | 问题 | Owner | 截止日期 | 状态 |
 |------|------|-------|----------|------|
 | — | 当前无已知 S2+ 偏差 | — | — | — |
+

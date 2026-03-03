@@ -1,6 +1,6 @@
 # Spec 03: Strategy
 
-> **版本**: v0.01 | **状态**: Draft | **基线**: `docs/design-v2/rebuild-v0.01.md` | **评审标准**: `docs/design-v2/sandbox-review-standard.md`
+> **版本**: v0.01 | **状态**: Active | **基线**: `docs/design-v2/rebuild-v0.01.md` | **评审标准**: `docs/design-v2/sandbox-review-standard.md`
 
 ## 需求摘要
 对候选池中每只股票判断买卖时机。PAS 形态检测器架构：每个形态一个检测器，签名统一，可独立回测，config 驱动装配。v0.01 只实现 BOF（假突破反杀）并单形态跑通。
@@ -98,3 +98,4 @@ class PatternDetector(ABC):
 | 级别 | 问题 | Owner | 截止日期 | 状态 |
 |------|------|-------|----------|------|
 | — | 当前无已知 S2+ 偏差 | — | — | — |
+

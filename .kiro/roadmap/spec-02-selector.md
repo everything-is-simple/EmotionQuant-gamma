@@ -1,6 +1,6 @@
 # Spec 02: Selector
 
-> **版本**: v0.01 | **状态**: Draft | **基线**: `docs/design-v2/rebuild-v0.01.md` | **评审标准**: `docs/design-v2/sandbox-review-standard.md`
+> **版本**: v0.01 | **状态**: Active | **基线**: `docs/design-v2/rebuild-v0.01.md` | **评审标准**: `docs/design-v2/sandbox-review-standard.md`
 
 ## 需求摘要
 从全市场 ~5000 股中筛选 50-100 只候选股。
@@ -117,3 +117,4 @@ zscore_normalize(value, mean, std) → 0-100
 | 级别 | 问题 | Owner | 截止日期 | 状态 |
 |------|------|-------|----------|------|
 | — | 当前无已知 S2+ 偏差 | — | — | — |
+
