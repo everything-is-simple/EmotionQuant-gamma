@@ -62,7 +62,7 @@ def safe_ratio(numerator, denominator, default=0.0):
 - **不逐行校验 DataFrame**
 - 关键 id 字段采用确定性规则（重跑覆盖而非追加）：
   - `signal_id = f"{code}_{signal_date}_{pattern}"`
-  - `order_id = signal_id`（BUY），`order_id = f"RISK_{code}_{date}"`（SELL）
+  - `order_id = signal_id`（BUY），`order_id = f"RISK_{code}_{date}"`（止损/止盈SELL），`order_id = f"DRAWDOWN_{code}_{date}"`（组合回撤清仓SELL）
   - `trade_id = f"{order_id}_T"`
   - 强平：`trade_id = f"FC_{code}_{date}_T"`
 - 时间戳用 `Field(default_factory=lambda: datetime.now(timezone.utc))`（禁用已弃用的 `datetime.utcnow()`）

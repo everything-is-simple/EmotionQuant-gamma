@@ -447,20 +447,24 @@ def select_candidates(store: Store, calc_date: date) -> list[StockCandidate]:
 ```
 
 ### 6.2 漏斗流程（伪代码）
-
 ```python
 def select_candidates(store, calc_date):
     # ── Step 0: 全市场股票池 ──
     all_stocks = store.read_df(
         "SELECT DISTINCT code FROM l2_stock_adj_daily WHERE date = ?",
-        (calc_date,)
+        (calc_date,),
     )
     logger.info(f"全市场 {len(all_stocks)} 只")
 
-    # ── Step 1: MSS 开关 ──
+    # ── Step 1: 粗筛（基础条件过滤）──
+    candidates = _apply_basic_filters(store, all_stocks["code"].tolist(), calc_date)
+    logger.info(f"粗筛后 {len(candidates)} 只")
+
+    # ── Step 2: MSS 开关 ──
     if config.ENABLE_MSS_GATE:
         mss = store.read_df(
-            "SELECT signal FROM l3_mss_daily WHERE date = ?", (calc_date,)
+            "SELECT signal FROM l3_mss_daily WHERE date = ?",
+            (calc_date,),
         )
         if mss.empty:
             logger.warning("MSS 无数据，跳过 MSS 开关")
@@ -469,40 +473,35 @@ def select_candidates(store, calc_date):
             return []
         # BULLISH / NEUTRAL → 放行
 
-    # ── Step 2: IRS 漏斗 ──
+    # ── Step 3: IRS 漏斗（在粗筛池内执行）──
     if config.ENABLE_IRS_FILTER:
         irs = store.read_df(
             "SELECT industry FROM l3_irs_daily WHERE date = ? AND rank <= ?",
-            (calc_date, config.IRS_TOP_N)
+            (calc_date, config.IRS_TOP_N),
         )
         top_industries = set(irs["industry"].tolist())
-        # 取这些行业的股票
+
         info = store.read_df(
             "SELECT ts_code, industry FROM l1_stock_info "
             "WHERE effective_from = (SELECT MAX(effective_from) FROM l1_stock_info si "
             "WHERE si.ts_code = l1_stock_info.ts_code AND si.effective_from <= ?)",
-            (calc_date,)
+            (calc_date,),
         )
         info["code"] = info["ts_code"].apply(ts_code_to_code)
-        candidates = info[info["industry"].isin(top_industries)]["code"].tolist()
-    else:
-        candidates = all_stocks["code"].tolist()
+        ind_pass = set(info[info["industry"].isin(top_industries)]["code"].tolist())
+        candidates = [c for c in candidates if c in ind_pass]
 
     logger.info(f"IRS 过滤后 {len(candidates)} 只")
 
-    # ── Step 3: 基因库过滤（第2迭代）──
+    # ── Step 4: 基因库过滤（第2迭代）──
     if config.ENABLE_GENE_FILTER:
         gene = store.read_df(
             "SELECT code, gene_score FROM l3_stock_gene WHERE calc_date = ?",
-            (calc_date,)
+            (calc_date,),
         )
         gene_pass = set(gene[gene["gene_score"] > config.GENE_SCORE_THRESHOLD]["code"])
         candidates = [c for c in candidates if c in gene_pass]
         logger.info(f"基因过滤后 {len(candidates)} 只")
-
-    # ── Step 4: 基础条件过滤 ──
-    candidates = _apply_basic_filters(store, candidates, calc_date)
-    logger.info(f"基础过滤后 {len(candidates)} 只")
 
     # ── 构造输出（含候选池评分，见 §6.4.1）──
     result = []

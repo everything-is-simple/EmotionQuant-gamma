@@ -1,5 +1,7 @@
 # Spec 04: Broker
 
+> **版本**: v0.01 | **状态**: Draft | **基线**: `docs/design-v2/rebuild-v0.01.md` | **评审标准**: `docs/design-v2/sandbox-review-standard.md`
+
 ## 需求摘要
 系统中唯一有"钱"的模块：接收信号 → 风控检查 → 下单 → 撮合成交。回测和纸上交易共用此内核。有状态（持仓、资金、信任分级）。
 
@@ -20,11 +22,13 @@
 ```python
 class Broker:
     def __init__(self, store, config, initial_cash=1_000_000)
+        # K28控制点：__init__ 必须初始化 force_bearish_until: date | None = None
     def process_signals(self, signals, trade_date) -> list[Order]   # 风控 → 生成订单
-    def execute_orders(self, orders, market_data) -> list[Trade]     # 撮合
+    def execute_orders(self, orders, market_data, today: date) -> list[Trade]  # L31控制点：必须传 today
     def update_daily(self, trade_date, market_data) -> list[Order]   # 止损/止盈检查
 ```
-- Position dataclass: code, entry_date, entry_price, quantity, current_price, max_price, stop_loss, signal_type, is_paper
+- Position dataclass: code, entry_date, entry_price, quantity, current_price, max_price, stop_loss, **pattern**, signal_type, is_paper
+  - `pattern: str`：形态名（如 "bof"），来自 Trade.pattern，用于 SELL 订单归因链直连（F14控制点）
 
 ### 四级止损体系（优先级高→低）
 1. **第零级：日内浮亏即走** — 买入次日收盘 < 买入价 → T+2 卖出
@@ -59,29 +63,48 @@ PAS 只产 BUY。SELL 由 risk.py 根据止损/止盈/信任规则直接创建 O
 
 ### risk.py — 开仓检查
 - [ ] 实现 RiskManager 类
-- [ ] `check_signal`: 信任检查 → 熔断检查 → 持仓数量检查 → 仓位计算 → 生成 Order
+- [ ] `check_signal(signal, broker_state, today_date: date)`: 信任检查 → 熔断检查 → 持仓数量检查 → 仓位计算 → 生成 Order
+  - J24控制点：签名必含 `today_date`，禁止使用 `date.today()`
+  - I21控制点：重复持仓守卫 `if signal.code in broker_state.portfolio: return None`
+  - M36控制点：开头先调 `self._check_auto_promote(signal.code, today_date)`
 - [ ] `_calculate_position_size`: 用信号日收盘价估算（禁止用 signal.strength 代替价格）
 - [ ] `_next_trade_date` / `_trading_days_between`（查 l1_trade_calendar）
+- [ ] `_offset_trade_date(base_date, n_days)`（M34控制点：回撤熔断/连亏熔断冷却截止日依赖）
 
 ### risk.py — 四级止损
-- [ ] `check_positions`: 遍历持仓，按优先级检查，返回 SELL Order 列表
-- [ ] 新增：入场后次日不延续退出规则（v0.01 强制）
-- [ ] `_check_intraday_loss`: 持仓 1 天且 close < entry_price
+- [ ] `check_positions(portfolio, market_data, trade_date, broker_state)`: 遍历持仓，按优先级检查，返回 SELL Order 列表
+  - K27控制点：签名必含 `broker_state`（组合回撤检查需要）
+  - **R43控制点：paper 持仓也必须执行止损/止盈检查**，SELL 订单继承 `is_paper=position.is_paper`
+  - **P40控制点：组合回撤清仓循环前收集 `already_selling = {o.code for o in sell_orders}`**，避免同日同持仓双 SELL
+- [ ] `_check_intraday_loss`: 持仓 1 天且 close < entry_price → T+2 开盘卖出（第零级：日内浮亏即走，v0.01 强制）
 - [ ] `_check_stop_loss`: 浮亏 ≥ STOP_LOSS_PCT(-5%)
 - [ ] `_check_trailing_stop`: 更新 max_price，回落 ≥ TRAILING_STOP_PCT(8%)
 - [ ] `_check_portfolio_drawdown`: nav 回撤 ≥ 15% → 全清仓 + force_bearish_until
-- [ ] `_is_loss_circuit_breaker_active`: 连续 N 笔亏损 → 冷却期
+- [ ] `_is_loss_circuit_breaker_active(broker_state, today_date)`: 连续 N 笔亏损 → 冷却期
+  - I23控制点：必须传入回测模拟日期，禁止 `date.today()`
+  - **Q41控制点：SQL 必须加 `AND action = 'SELL'`**，仅对已平仓交易判定连续亏损
+- [ ] `_is_drawdown_circuit_breaker_active(broker_state, today_date)`: 组合回撤熔断后冷却期检查（K28控制点）
 
 ### risk.py — 信任分级
 - [ ] `get_trust_tier(code)`: 读 l4_stock_trust
 - [ ] `update_trust(code, trade_result)`: 降级/升级逻辑
-- [ ] `_check_auto_promote`: BACKUP → OBSERVE（冷藏30天自动）
+  - **Q42控制点：仅在 `trade.action == "SELL"` 时调用**，BUY 禁止触发 update_trust
+  - **S44控制点：ACTIVE 分支必须区分 `on_probation`**
+    - OBSERVE→ACTIVE 升级时设 `on_probation=True`
+    - `on_probation=True + is_loss` → 立即 BACKUP
+    - `on_probation=True + not is_loss` → `on_probation=False`（试用通过转正式 ACTIVE）
+- [ ] `_check_auto_promote`: BACKUP → OBSERVE（冷藏120个交易日自动，TRUST_BACKUP_COOLDOWN=120）
 - [ ] 新股默认 ACTIVE
+- [ ] l4_stock_trust DDL 必含 `on_probation BOOLEAN DEFAULT FALSE`（S44控制点）
 
 ### matcher.py
 - [ ] 实现 Matcher 类
-- [ ] `execute(order, market_data)` → Trade | None
-- [ ] 停牌/涨跌停检查
+- [ ] `execute(order, market_data, today: date)` → Trade | None（L31控制点：签名必含 today）
+- [ ] **前置断言**（D8控制点）：`assert order.status == "PENDING" and order.execute_date == today`
+- [ ] 停牌检查：`is_halt=true` → REJECTED(HALTED)
+- [ ] 涨跌停检查（H18控制点）：必须用**原始价口径** `raw_open/open` 对比 `up_limit/down_limit`，禁止复权价混比
+  - 买入：`raw_open >= up_limit * 0.998` → REJECTED(LIMIT_UP)
+  - 卖出：`raw_open <= down_limit * 1.002` → REJECTED(LIMIT_DOWN)
 - [ ] 成交价 = adj_open + 滑点(slippage_bps)
 - [ ] `_calculate_fee(amount, action)`: 佣金+印花税+过户费
 
@@ -98,7 +121,13 @@ PAS 只产 BUY。SELL 由 risk.py 根据止损/止盈/信任规则直接创建 O
 - [ ] Matcher：停牌/涨停/跌停/正常成交
 - [ ] _calculate_fee：买入/卖出费率验证（不足5元按5元）
 - [ ] update_trust：3连亏→OBSERVE，真买又亏→BACKUP
+- [ ] update_trust kill-chain（Q41+Q42+R43+S44）：
+  - 连亏熔断 SQL 只包含 SELL（验证 BUY 不稀释）
+  - BUY trade 不触发 update_trust（consecutive_losses 不归零）
+  - paper 持仓触发止损→生成 paper SELL→update_trust→OBSERVE升级路径可达
+  - OBSERVE→ACTIVE(on_probation=True)→首笔亏损→立即 BACKUP
 - [ ] T+1：买入当天无法卖出
+- [ ] 同日个股止损+组合回撤应只生成一笔 SELL（P40）
 
 ## 验收标准
 1. 回测和纸上交易使用同一个 Broker 实例

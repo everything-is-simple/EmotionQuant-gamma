@@ -1,5 +1,7 @@
 # Spec 05: Backtest + Report
 
+> **版本**: v0.01 | **状态**: Draft | **基线**: `docs/design-v2/rebuild-v0.01.md` | **评审标准**: `docs/design-v2/sandbox-review-standard.md`
+
 ## 需求摘要
 **Backtest**：用历史数据验证策略。backtrader 单引擎，调用 Broker 内核保证回测/实盘一致。
 **Report**：期望值是否为正、左尾是否可控、右尾是否拿住。日志预警，不搞监控平台。
@@ -22,10 +24,11 @@
 ### engine.py
 - backtrader 只负责时间推进和数据管理，**不使用**其自带 broker/sizer
 - EmotionQuantStrategy(bt.Strategy) 在 next() 中调用：
-  1. execute_orders（执行昨日挂单）
-  2. update_daily（止损/止盈检查）
+  1. broker.execute_orders(pending_orders, market_data, today)（执行昨日挂单 → matcher.execute）
+  2. broker.update_daily(trade_date, market_data)（止损/止盈检查 → 生成 SELL 订单）
   3. select_candidates → generate_signals（今日选股+信号）
-  4. risk.check_signal（风控 → 生成 BUY 订单）
+  4. broker.process_signals(signals, today) → risk.check_signal → 生成 BUY 订单
+- 调用链与沙盘标准 §2.2 对齐：`next → process_signals → check_signal → matcher.execute`
 - 数据源：用上证综指(000001.SH)作为时钟驱动 next()，实际数据从 store 读取
 - 支持 --patterns 参数覆盖 PAS_PATTERNS（单形态独立回测）
 
@@ -63,15 +66,30 @@ python main.py run                                # 每日全链路
 - [ ] 实现 EmotionQuantStrategy(bt.Strategy)
 - [ ] `__init__`: 创建 Store + Broker 实例
 - [ ] `next()`: 4步流程（执行挂单 → 止损检查 → 选股 → 风控）
+  - **K30控制点：审计链完整性——每步都必须持久化**
+    - Step 1 执行挂单后：bulk_upsert l4_orders（FILLED/REJECTED）+ bulk_upsert l4_trades
+    - Step 2 止损检查后：bulk_upsert l4_orders（SELL PENDING）
+    - Step 4 风控生成 BUY 后：bulk_upsert l4_orders（BUY PENDING）
+  - **Q42控制点：Step 1 仅在 `trade.action == "SELL"` 时调用 `risk.update_trust(trade.code, trade)`**
+  - 所有 l4_trades 写入必须用 **bulk_upsert**（按 trade_id 幂等覆盖，H17控制点）
 - [ ] `stop()`: 清仓 + 关闭 store
-- [ ] `_get_market_data(date)`: 从 store 读 L2 当日数据
+- [ ] `_force_close_all(last_date)`：回测末日强制平仓
+  - **终止结算例外声明**：以最后一个交易日收盘价（含卖出侧滑点）强平，不属于交易决策语义，是 T+1 规则的回测定界例外
+  - 强平订单也必须持久化 l4_orders + l4_trades（FC_ 前缀确定性键）
+- [ ] `_get_market_data(date)`: **必须 L2 LEFT JOIN L1**（G15控制点）
+  - 返回字段必含：adj_open/adj_close/... + `raw_open`/`is_halt`/`up_limit`/`down_limit`
+  - 缺 L1 字段会导致停牌/涨跌停检查失效
 - [ ] 实现 `create_bt_data(store, start, end)`: 上证综指作为时钟 feed
 - [ ] 实现 `run_backtest(db_path, config, start, end, patterns, combination, cash)`
 - [ ] --patterns 参数覆盖 config.PAS_PATTERNS
 
 ### reporter.py — 统计计算
-- [ ] `_pair_trades(trades_df)`: BUY/SELL 配对，返回 pnl_pct/holding_days
+- [ ] `_pair_trades(trades_df)`: BUY/SELL **FIFO 数量配对**（支持分批成交/分批平仓，H19控制点）
+  - **O39控制点：buy_fee 分摊分母必须用 `original_qty`**（入队时记录），禁止用递减后的 `qty`
+  - **M33控制点：`pnl_pct = pnl / (buy_price * matched_qty)`**，pnl 必须已扣除买卖双方手续费（净口径）
+  - 断言：配对完成后无负仓位 + 期末净仓位为 0
 - [ ] `_compute_expectation(paired)`: win_rate, avg_win, avg_loss, profit_factor, EV
+  - **N37控制点：入参是已配对的 paired DataFrame**，内部不再调用 `_pair_trades`，避免二次配对崩溃
 - [ ] `_compute_left_tail(paired, nav)`: max_single_loss, max_drawdown, max_consecutive_loss
 - [ ] `_compute_right_tail(paired)`: max_single_win, avg_holding_days_win
 - [ ] `_compute_distribution(paired)`: skewness, kurtosis

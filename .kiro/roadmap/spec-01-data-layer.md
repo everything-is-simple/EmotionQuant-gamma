@@ -1,5 +1,7 @@
 # Spec 01: Data Layer
 
+> **版本**: v0.01 | **状态**: Draft | **基线**: `docs/design-v2/rebuild-v0.01.md` | **评审标准**: `docs/design-v2/sandbox-review-standard.md`
+
 ## 需求摘要
 搭建系统地基：从 TuShare 拉取 A 股数据、清洗加工、存入 DuckDB、定义模块间契约。零业务逻辑。
 
@@ -14,7 +16,7 @@
 | `src/data/store.py` | DuckDB 统一存取层（建表、upsert、查询） |
 | `src/data/fetcher.py` | L1 数据下载（TuShare主 + AKShare备） |
 | `src/data/cleaner.py` | L1→L2 清洗加工（复权、均线、聚合） |
-| `src/data/builder.py` | L2/L3/L4 增量生成调度 |
+| `src/data/builder.py` | L2/L3 增量生成调度（L4 由 broker/report 运行时写入，不经过 builder） |
 
 ## 设计要点
 
@@ -33,14 +35,14 @@
 - tenacity 重试 3 次，API 调用间 sleep 0.3s
 
 ### cleaner.py
-- `clean_stock_adj_daily`: 前复权(adj_factor) → pct_chg → MA5/10/20/60 → 量比
+- `clean_stock_adj_daily`: 后复权(adj = raw × adj_factor) → pct_chg → MA5/10/20/60 → 量比
 - `clean_market_snapshot`: 全市场截面统计（strong_up/down 按板块分别计算阈值！）
 - `clean_industry_daily`: 按申万一级聚合（等权平均涨跌幅）
 - 增量生成时从 start-60 天读 L1（滚动窗口），只写 [start, end] 到 L2
 
 ### contracts.py
 - 6 个 pydantic BaseModel: MarketScore, IndustryScore, StockCandidate, Signal, Order, Trade
-- 关键 id 字段采用确定性规则（见 `conventions.md`）：`signal_id = f"{code}_{signal_date}_{pattern}"`，`order_id = signal_id`，`trade_id = f"{order_id}_T"`
+- 关键 id 字段采用确定性规则（见 `.kiro/steering/conventions.md`）：`signal_id = f"{code}_{signal_date}_{pattern}"`，`order_id = signal_id`，`trade_id = f"{order_id}_T"`
 
 ## 实现任务
 
@@ -53,7 +55,8 @@
 ### store.py
 - [ ] 实现 Store.__init__（连接 DuckDB、启用 WAL、执行全部 DDL）
 - [ ] 实现全部 L1-L4 建表 DDL（含 _meta_fetch_progress, _meta_runs）
-- [ ] 实现 bulk_upsert / bulk_insert / read_df / read_table
+- [ ] 实现 bulk_upsert / bulk_insert / read_df / read_scalar / read_table
+  - `read_scalar(sql, params)` 返回单个标量值（仓位计算等场景需要，K29控制点）
 - [ ] 实现 get_fetch_progress / update_fetch_progress / get_max_date
 - [ ] 单测：`:memory:` 库上验证 CRUD
 
@@ -67,7 +70,7 @@
 - [ ] 单测：mock API 返回，验证合并逻辑和断点续传
 
 ### cleaner.py
-- [ ] 实现 clean_stock_adj_daily（前复权 + pct_chg + MA + 量比，向量化）
+- [ ] 实现 clean_stock_adj_daily（后复权 adj=raw×adj_factor + pct_chg + MA + 量比，向量化）
 - [ ] 实现 clean_market_snapshot（17 个字段，strong_up/down 按板块 JOIN l1_stock_info）
 - [ ] 实现 clean_industry_daily（按申万一级聚合）
 - [ ] 实现 ts_code_to_code 转换

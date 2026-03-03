@@ -14,10 +14,10 @@
 ```
 fetcher  ──写→  L1 表
 cleaner  ──读 L1 → 写→  L2 表
-builder  ──统一调度 L2/L3/L4 生成
-mss/irs/pas/gene ──读 L2 → 写→  L3 表（可并行）
+builder  ──统一调度 L2/L3 生成（L4 由 broker/report 运行时写入）
+mss/irs/gene ──读 L2 → 写→  L3 表（可并行）
 selector ──读 L3 → 输出候选池（内存，不落库）
-strategy ──读 L3 + 候选池 → 写→  l3_signals
+strategy ──读 L2 + 候选池 → 调用 pas_*.py → 写→  l3_signals
 broker   ──读 信号 → 写→  L4 表
 report   ──读 L3 + L4 → 写→  L4 报告
 backtest ──读 L1-L3 历史 → 调用 broker 内核 → 写 L4
@@ -31,7 +31,7 @@ backtest ──读 L1-L3 历史 → 调用 broker 内核 → 写 L4
 |----|------|--------|--------|
 | L1 | 原始数据（API直取） | fetcher.py | l1_stock_daily, l1_index_daily, l1_stock_info, l1_trade_calendar |
 | L2 | 加工数据（算一次到处用） | cleaner.py | l2_stock_adj_daily, l2_industry_daily, l2_market_snapshot |
-| L3 | 算法输出 | mss/irs/pas/gene | l3_mss_daily, l3_irs_daily, l3_signals, l3_stock_gene |
+| L3 | 算法输出 | mss/irs/strategy/gene | l3_mss_daily, l3_irs_daily, l3_signals, l3_stock_gene |
 | L4 | 历史分析缓存 | broker/report | l4_orders, l4_trades, l4_stock_trust, l4_daily_report, l4_pattern_stats |
 
 ## 股票代码格式

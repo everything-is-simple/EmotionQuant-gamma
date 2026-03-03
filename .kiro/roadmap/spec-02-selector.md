@@ -1,9 +1,15 @@
 # Spec 02: Selector
 
-## 需求摘要
-从全市场 ~5000 股中筛选 50-100 只候选股。三级漏斗：MSS(时机开关) → IRS(行业过滤) → 基础过滤 → 输出候选池。
+> **版本**: v0.01 | **状态**: Draft | **基线**: `docs/design-v2/rebuild-v0.01.md` | **评审标准**: `docs/design-v2/sandbox-review-standard.md`
 
-v0.01 增加两阶段扫描：先粗筛到约200只，再进入漏斗与形态精扫。
+## 需求摘要
+从全市场 ~5000 股中筛选 50-100 只候选股。
+
+v0.01 固定采用两阶段扫描（SoT：`docs/design-v2/selector-design.md`）：
+- **Stage 1 粗筛**（~5000 → ~200）：停牌/上市天数/流动性/基础波动 等基础过滤（目标是降低计算规模与 API 压力）
+- **Stage 2 精筛**（~200 → 50-100）：在粗筛池内执行 MSS 门控 + IRS 行业过滤（v0.01 的 `gene` 仅保留接口，不进实时漏斗）→ 输出候选池给 Strategy
+
+说明：PAS 形态触发器扫描由 `strategy.py` 在候选池上执行，不在全市场扫描，也不在 selector 内实现。
 
 **设计文档**: `docs/design-v2/selector-design.md`, `docs/design-v2/architecture-master.md` §4.2
 
@@ -44,10 +50,11 @@ zscore_normalize(value, mean, std) → 0-100
 - 后续迭代预留 4 个函数签名（返回 0）
 
 ### selector.py 漏斗
-1. MSS 开关（ENABLE_MSS_GATE）→ BEARISH 当日不出手
-2. IRS 过滤（ENABLE_IRS_FILTER）→ Top-N 强势行业
-3. 基因过滤（ENABLE_GENE_FILTER=False）→ 第2迭代
-4. 基础过滤：排除 ST、次新股(<60天)、流动性不足
+1. Stage 1：粗筛（_apply_basic_filters）→ 停牌/次新/流动性/基础波动 等过滤，约 5000→200
+2. Stage 2：MSS 开关（ENABLE_MSS_GATE）→ BEARISH 当日不出手（可在实现中前置以便早退，但口径归入 Stage 2）
+3. Stage 2：IRS 过滤（ENABLE_IRS_FILTER）→ 在粗筛池内仅保留 Top-N 强势行业
+4. 基因过滤（ENABLE_GENE_FILTER=False）→ 第2迭代（v0.01 默认禁用）
+5. 候选排序与截断：构造 `list[StockCandidate]`，按 score 排序，取 Top-N 输出给 Strategy
 - 候选池为内存 `list[StockCandidate]`，不落库
 
 ## 实现任务
@@ -78,14 +85,14 @@ zscore_normalize(value, mean, std) → 0-100
 - [ ] 实现 `compute_gene(store, start, end)` 函数签名（内部 pass，第2迭代填充）
 - [ ] 在 config.py 中设置 `ENABLE_GENE_FILTER = False`
 
-### selector.py
+### selector.py（两阶段扫描：粗筛 5000→~200 + 精筛 MSS/IRS（~200→50-100））
 - [ ] 实现 `select_candidates(store, calc_date)` → list[StockCandidate]
-- [ ] 实现全市场粗筛（5000 -> 约200）
-- [ ] Step 1: MSS 开关检查（读 l3_mss_daily）
-- [ ] Step 2: IRS 过滤（读 l3_irs_daily，取 Top-N 行业的股票）
-- [ ] Step 3: 基因过滤（预留，ENABLE_GENE_FILTER=False 时跳过）
-- [ ] Step 4: 基础过滤（_apply_basic_filters：ST/次新/流动性/市值）
-- [ ] 输出 `liquidity_tier` / `attention_tier` / `score`（用于候选排序）
+- [ ] Stage 1: 粗筛（_apply_basic_filters：停牌/上市天数/ST/次新/流动性/基础波动/市值）得到 ~200
+- [ ] Stage 2: MSS 开关检查（读 l3_mss_daily，BEARISH 当日不出手）
+- [ ] Stage 2: IRS 过滤（读 l3_irs_daily，取 Top-N 行业，并与粗筛池取交集）
+- [ ] 基因过滤（预留，ENABLE_GENE_FILTER=False 时跳过）
+- [ ] 构造候选 `score`（流动性40%+结构稳定30%+行业优先30%，仅用于候选排序，不参与PAS触发）
+- [ ] 按 score 降序排序，取 Top-N（50-100）输出给 Strategy
 - [ ] 各步日志输出过滤数量
 - [ ] 单测：mock Store 返回预设数据，验证每级过滤
 
