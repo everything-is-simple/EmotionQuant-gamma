@@ -152,8 +152,9 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 
 ## 12. 仓库远端
 
-- `origin`: `${REPO_REMOTE_URL}`（定义见 `.env.example`）
-- `backup`: `${REPO_BACKUP_REMOTE_URL}`（定义见 `.env.example`，本地 remote 名称建议 `backup`）
+- `origin`: `${REPO_REMOTE_URL}`（定义见 `.env.example`；当前值：`https://github.com/everything-is-simple/EmotionQuant-gamma`）
+- `backup`: `${REPO_BACKUP_REMOTE_URL}`（定义见 `.env.example`；当前值：`https://gitee.com/wangweiyun2233/EmotionQuant-gamma`；本地 remote 名称建议 `backup`）
+- 推送策略：凡需同步到远端的提交，必须同时推送到 `origin` 与 `backup`；不接受只推送单一远端。
 
 ---
 

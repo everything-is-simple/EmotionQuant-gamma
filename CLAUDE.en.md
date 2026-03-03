@@ -152,8 +152,9 @@ Details: `docs/design-v2/rebuild-v0.01.md` (current version).
 
 ## 12. Repository Remotes
 
-- `origin`: `${REPO_REMOTE_URL}` (defined in `.env.example`)
-- `backup`: `${REPO_BACKUP_REMOTE_URL}` (defined in `.env.example`, suggested local remote name `backup`)
+- `origin`: `${REPO_REMOTE_URL}` (defined in `.env.example`; current value: `https://github.com/everything-is-simple/EmotionQuant-gamma`)
+- `backup`: `${REPO_BACKUP_REMOTE_URL}` (defined in `.env.example`; current value: `https://gitee.com/wangweiyun2233/EmotionQuant-gamma`; suggested local remote name `backup`)
+- Push policy: every commit intended for remote sync must be pushed to both `origin` and `backup`; single-remote push is not acceptable.
 
 ---
 
