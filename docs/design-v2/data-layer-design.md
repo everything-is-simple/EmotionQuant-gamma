@@ -181,7 +181,7 @@ CREATE TABLE IF NOT EXISTS l3_signals (
     signal_date  DATE    NOT NULL,
     action       VARCHAR NOT NULL,    -- v0.01 运行约束: BUY（SELL 由 broker 内部订单产生）
     strength     DOUBLE,              -- 0-1
-    pattern      VARCHAR,             -- v0.01 运行约束: bof（其余保留给后续版本）
+    pattern      VARCHAR NOT NULL,    -- v0.01 运行约束: bof（其余保留给后续版本）
     reason_code  VARCHAR,
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -220,7 +220,7 @@ CREATE TABLE IF NOT EXISTS l4_orders (
     pattern       VARCHAR NOT NULL,            -- 冗余：来自 Signal.pattern（归因链直连）
     quantity      INTEGER,
     price_limit   DOUBLE,
-    execute_date  DATE,
+    execute_date  DATE    NOT NULL,
     is_paper      BOOLEAN DEFAULT FALSE,
     status        VARCHAR DEFAULT 'PENDING',  -- PENDING / FILLED / REJECTED
     reject_reason VARCHAR,
@@ -713,10 +713,10 @@ def build_layer(store: Store, layer: str, start: date = None,
         # 调用各算法模块
         from selector.mss import compute_mss
         from selector.irs import compute_irs
-        from strategy.pas_bof import detect_all  # v0.01 仅 BOF
         compute_mss(store, start, end)
         compute_irs(store, start, end)
-        detect_all(store, start, end)
+        # l3_signals 由 strategy.generate_signals 在运行时按候选池上下文写入
+        # （v0.01 不在 builder 中批量全市场生成信号）
 ```
 
 ### 6.3 层级依赖
@@ -724,6 +724,7 @@ def build_layer(store: Store, layer: str, start: date = None,
 ```text
 L2 依赖 L1（必须先 fetch）
 L3 依赖 L2（必须先 build l2）
+其中 l3_signals 由 strategy 运行时写入；builder 的 l3 仅构建 mss/irs（及后续 gene）
 L4 由 broker/reporter 在运行时写入（不经过 builder）
 
 builder 不自动级联：build --layers=l3 不会自动先 build l2
@@ -753,7 +754,7 @@ L1 Tables（l1_stock_daily, l1_index_daily, l1_stock_info, l1_trade_calendar）
     │
 L2 Tables（l2_stock_adj_daily, l2_industry_daily, l2_market_snapshot）
     │
-    ▼ mss.py / irs.py / pas_*.py / gene.py（各自读 L2，独立计算）
+    ▼ mss.py / irs.py / gene.py（离线批处理） + strategy.py（运行时信号生成）
     │
 L3 Tables（l3_mss_daily, l3_irs_daily, l3_signals, l3_stock_gene）
     │

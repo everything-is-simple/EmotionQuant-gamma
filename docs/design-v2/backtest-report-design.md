@@ -127,7 +127,7 @@ class EmotionQuantStrategy(bt.Strategy):
     def _force_close_all(self, last_date: date):
         """
         回测末日强制平仓。
-        以最后一个交易日的收盘价对所有 open positions 生成 SELL Trade，
+        这是 T+1 规则的回测终止结算例外：以最后一个交易日收盘价（含卖出滑点）对所有 open positions 生成 SELL Trade，
         确保 _pair_trades 的 BUY/SELL 数量一致。
         """
         open_positions = self.broker_engine.get_open_positions()
@@ -140,6 +140,8 @@ class EmotionQuantStrategy(bt.Strategy):
                 logger.warning(f"force_close: {pos.code} 最后交易日无数据，跳过")
                 continue
             close_price = bar.iloc[0]["adj_close"]
+            if self.config.SLIPPAGE_BPS > 0:
+                close_price *= (1 - self.config.SLIPPAGE_BPS / 10000)  # 卖出侧滑点
             fee = self.broker_engine.matcher._calculate_fee(
                 close_price * pos.quantity, "SELL"
             )

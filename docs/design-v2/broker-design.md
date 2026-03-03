@@ -624,7 +624,7 @@ Order (PENDING, execute_date=T+1)
     │
 Trade (写入 l4_trades)
     │
-    ▼ risk.update_trust()
+    ▼ 若 trade.action == "SELL" 才调用 risk.update_trust()
     │   更新 l4_stock_trust
     │
     ▼ 持仓期间每日 risk.check_positions()
@@ -659,6 +659,7 @@ Trust → l4_stock_trust（降级/升级时更新）
 | 禁止 T 日 Close 成交 | 架构保证 | signal 和 execute 分两天 |
 | 停牌日不成交 | matcher.execute | is_halt 检查 |
 | 一字板不成交 | matcher.execute | 原始价口径：raw_open/open 与 up_limit/down_limit 对比 |
+| 回测末日强平例外 | backtest.stop -> _force_close_all | 仅回测终止结算使用当日收盘价，不属于交易决策语义 |
 
 ### 7.2 交易日历依赖
 
@@ -725,13 +726,13 @@ def _offset_trade_date(self, base_date: date, n_days: int) -> date:
 | _check_portfolio_drawdown | 构造净值回撤，验证全部清仓 |
 | Matcher.execute | 构造停牌/涨跌停/正常成交，验证 REJECTED/FILLED |
 | _calculate_fee | 验证买入/卖出手续费计算正确性 |
-| update_trust | 模拟 3 连亏 → OBSERVE，真买又亏 → BACKUP |
+| update_trust | 模拟 3 连亏 → OBSERVE，OBSERVE 模拟盈利 → ACTIVE(试用)，试用真买亏损 → BACKUP |
 
 **关键边界用例**：
 - 买入日即停牌 → REJECTED
 - T+1 买入后当天无法卖出（即使浮亏 >5%）→ T+2 才能卖
 - 一字涨停无法买入 → REJECTED (LIMIT_UP)
-- 信任=OBSERVE 的真单盈利 → 升回 ACTIVE
+- 信任=OBSERVE 的模拟单盈利 → 升回 ACTIVE（试用）
 - 组合回撤清仓 + 连亏熔断同时触发 → 优先组合回撤
 - 手续费不足 5 元 → 按 5 元收取
 
