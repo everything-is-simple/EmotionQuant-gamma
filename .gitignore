@@ -159,3 +159,7 @@ tests_tmp/
 tmp_*/
 temp_*/
 gcm-diagnose.log
+
+# TuShare key materials (local only, never push)
+docs/reference/tushare/tushare-10000积分-网关/
+docs/reference/tushare/tushare-config-5000积分-官方-兜底号.md
