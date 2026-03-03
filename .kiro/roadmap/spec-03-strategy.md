@@ -92,3 +92,9 @@ class PatternDetector(ABC):
 5. 单形态回测命令可执行：`python main.py backtest --patterns=bof`
 6. v0.01 禁止并行启用多个 PAS 形态
 7. 失效退出（次日不延续/跌回结构）由 Broker spec-04 覆盖验证
+
+## 已知风险与偏差
+
+| 级别 | 问题 | Owner | 截止日期 | 状态 |
+|------|------|-------|----------|------|
+| — | 当前无已知 S2+ 偏差 | — | — | — |

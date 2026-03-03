@@ -141,6 +141,7 @@ python main.py run                                # 每日全链路
 - [ ] 验证回测报告输出（期望值/回撤/夏普合理）
 - [ ] 运行 `python main.py run` 每日流程跑通
 - [ ] 验证 l4_trades / l4_daily_report / l4_pattern_stats 有数据
+- [ ] 幂等重跑验证：同输入连跑两次，校验 l4_orders/l4_trades 主键集合不变、行数不变、关键指标（EV/胜率/最大回撤）不漂移
 
 ## 验收标准
 1. `python main.py backtest --start=2023-01-01` 跑通，输出完整报告
@@ -150,3 +151,9 @@ python main.py run                                # 每日全链路
 5. 预警规则命中时 loguru.warning 输出
 6. `python main.py run` 每日全链路自动执行
 7. l4_pattern_stats 记录每个形态的独立表现
+
+## 已知风险与偏差
+
+| 级别 | 问题 | Owner | 截止日期 | 状态 |
+|------|------|-------|----------|------|
+| — | 当前无已知 S2+ 偏差 | — | — | — |

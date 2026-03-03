@@ -35,6 +35,19 @@
   - 视角七：注册表生态管理
   - 视角八：组合系统
 
+### 视角落地映射总表
+
+| 视角 | 类型 | 状态 | 对应 spec / 版本 | 核心验收指标 |
+|------|------|------|-----------------|-------------|
+| 一：闭环健康度 | Type-A | v0.01 部分覆盖 | spec-05 reporter | hold_days, consecutive_loss, signals_per_day |
+| 二：环境分桶 | Type-A | v0.01 部分覆盖 | spec-02 MSS + spec-05 分环境统计 | 分环境胜率/期望值 |
+| 三：信号质量因子 | Type-A | v0.04 计划 | spec-05 reporter 扩展 | strength Top20% vs Bottom20% 胜率差 |
+| 四：候选池分层 | Type-B | v0.06 计划 | 待定（Selector 扩展） | 不同 tier 的胜率/摩擦/期望值 |
+| 五：执行摩擦 | Type-A | v0.01 部分覆盖 | spec-04 Matcher | REJECTED 率, slippage_bps |
+| 六：风险归因 | Type-A | v0.01 部分覆盖 | spec-05 pattern_stats | 逐形态/分环境亏损贡献 |
+| 七：注册表生态管理 | Type-B | v0.05 计划 | 待定（Registry 扩展） | 滚动期望值, 重叠度, 淘汰率 |
+| 八：组合系统 | Type-B | v0.01 部分覆盖 | spec-04 risk.py | max_drawdown, 连亏熔断触发次数 |
+
 ---
 
 ## 1) 视角一：闭环健康度（系统是否按预期工作） 【Type-A 监控覆盖层】
