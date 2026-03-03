@@ -1,7 +1,10 @@
 # Strategy 详细设计
 
-**版本**: v1.0
+**版本**: v0.01 正式版
 **创建日期**: 2026-03-01
+**状态**: Frozen（与 `rebuild-v0.01.md` 对齐）
+**封版日期**: 2026-03-03
+**变更规则**: 仅允许勘误与说明性修订；执行语义变更需进入 v0.02+。
 **对应模块**: `src/strategy/`（pattern_base.py, pas_bof.py, registry.py, strategy.py；`pas_bpb.py` 为 v0.02 预留）
 **上游文档**: `architecture-master.md` §4.3，`volman-ytc-mapping.md`
 

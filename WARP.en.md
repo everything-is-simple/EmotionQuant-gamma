@@ -2,6 +2,11 @@
 
 This file provides minimal, executable repository rules for automated agents. Content is equivalent to `AGENTS.md`, `CLAUDE.md`, `CLAUDE.en.md`, `WARP.md`, and `WARP.en.md`, targeting generic agent runtimes.
 
+**Document Version**: `v0.01 Formal Release`  
+**Document Status**: `Frozen`  
+**Freeze Date**: `2026-03-03`  
+**Change Policy**: Only errata, link fixes, and non-semantic formatting updates are allowed; execution semantics must not change.
+
 ---
 
 ## 1. Document Positioning
