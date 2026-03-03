@@ -254,7 +254,7 @@ EmotionQuant-gamma/
 
 | 表名 | 用途 | 字段 | API 来源 |
 |------|------|------|----------|
-| `l1_stock_daily` | 个股日线（未复权） | ts_code, date, open, high, low, close, volume, amount, pre_close, adj_factor, is_halt, up_limit, down_limit, total_mv, circ_mv | TuShare `daily()` + `daily_basic()` 合并；OHLCV 来自 daily，市值来自 daily_basic |
+| `l1_stock_daily` | 个股日线（未复权） | ts_code, date, open, high, low, close, volume, amount, pre_close, pct_chg, adj_factor, is_halt, up_limit, down_limit, total_mv, circ_mv | TuShare `daily()` + `daily_basic()` 合并；OHLCV + pct_chg 来自 daily，市值来自 daily_basic |
 | `l1_index_daily` | 大盘指数日线 | ts_code, date, open, high, low, close, pre_close, pct_chg, volume, amount | TuShare `index_daily()` |
 | `l1_stock_info` | 股票基础信息 + 行业映射 | ts_code, name, industry, market, is_st, list_date, effective_from | TuShare `stock_basic()` + 行业分类接口；低频更新 |
 | `l1_trade_calendar` | 交易日历 | date, is_trade_day, prev_trade_day, next_trade_day | TuShare `trade_cal()` |

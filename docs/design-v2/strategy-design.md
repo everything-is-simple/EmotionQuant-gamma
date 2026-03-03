@@ -121,7 +121,7 @@ df 行要求：
 
 > 本节不属于 v0.01 可执行范围。
 
-### 3.1 类定义
+### 4.1 类定义
 
 ```python
 class BpbDetector(PatternDetector):
@@ -137,7 +137,7 @@ class BpbDetector(PatternDetector):
         ...
 ```
 
-### 3.2 检测算法详细步骤
+### 4.2 检测算法详细步骤
 
 ```text
 输入：df（单只股票历史日线），signal_date（T日）
@@ -198,7 +198,7 @@ Step 7 — 构造 Signal
   )
 ```
 
-### 3.3 辅助函数
+### 4.3 辅助函数
 
 #### _check_first_pullback — FB首次回撤检测（Volman）
 
@@ -529,7 +529,7 @@ class TstDetector(PatternDetector):
         ...
 ```
 
-### 8.3 pas_bof.py / pas_cpb.py（第3迭代）
+### 8.3 pas_cpb.py（第3迭代）+ pas_bof Volman RB 增强
 
 签名相同，具体检测逻辑见 `architecture-master.md` §4.3.4 和 §4.3.5。
 

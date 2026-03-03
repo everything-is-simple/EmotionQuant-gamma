@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS l1_stock_daily (
     pre_close    DOUBLE,
     volume       DOUBLE,             -- 成交量（手）
     amount       DOUBLE,             -- 成交额（千元）
+    pct_chg      DOUBLE,             -- 涨跌幅（%），TuShare daily() 原生返回
     adj_factor   DOUBLE,             -- 复权因子
     is_halt      BOOLEAN DEFAULT FALSE,
     up_limit     DOUBLE,             -- 涨停价

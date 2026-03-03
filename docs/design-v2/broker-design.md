@@ -55,6 +55,16 @@ class Broker:
         每日收盘后更新：检查止损/止盈/信任降级，生成 SELL 订单。
         内部调用 self.risk.check_positions(..., broker_state=self)。
         """
+
+    # ── 订单队列管理（backtest engine 调用）──
+    def get_pending_orders(self, trade_date: date) -> list[Order]:
+        """返回 execute_date == trade_date 的全部 PENDING 订单。"""
+
+    def add_pending_order(self, order: Order):
+        """将新生成的 BUY/SELL Order 加入待执行队列。"""
+
+    def get_open_positions(self) -> list[Position]:
+        """返回当前所有未平仓持仓（回测末日强平用）。"""
 ```
 
 ### Position 数据结构

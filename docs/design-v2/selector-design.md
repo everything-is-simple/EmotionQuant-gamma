@@ -504,15 +504,18 @@ def select_candidates(store, calc_date):
     candidates = _apply_basic_filters(store, candidates, calc_date)
     logger.info(f"基础过滤后 {len(candidates)} 只")
 
-    # ── 构造输出 ──
+    # ── 构造输出（含候选池评分，见 §6.4.1）──
     result = []
     for code in candidates:
+        score = _compute_candidate_score(store, code, calc_date)
         result.append(StockCandidate(
             code=code,
             industry=_get_industry(store, code, calc_date),
-            score=0.0   # selector 不评分，score 留给 strategy
+            score=score  # §6.4.1 评分：流动性 40% + 结构稳定 30% + 行业优先 30%
         ))
 
+    # 按 score 降序排列，取 Top-N 输出
+    result.sort(key=lambda c: c.score, reverse=True)
     return result
 ```
 
