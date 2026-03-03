@@ -93,7 +93,7 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 | Selector | MSS 市场情绪 + IRS 行业轮动 → 候选池（Gene 仅事后分析） |
 | Strategy | PAS 形态检测（v0.01 仅 BOF）→ 交易信号 |
 | Broker | 风控 + 撮合（回测和纸上交易共用内核） |
-| Backtest | 历史回测（backtrader 单引擎） |
+| Backtest | 历史回测（backtrader 单引擎；仅时钟推进/数据喂入，交易内核为自研 Broker） |
 | Report | 回测报告 + 每日选股报告 + 预警 |
 
 ---
@@ -148,7 +148,7 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 - Python `>=3.10`
 - 数据：DuckDB 单库存储
 - 数据源：TuShare（主）+ AKShare（备）
-- 回测：backtrader 单引擎
+- 回测：backtrader 单引擎（仅时钟推进/数据喂入，交易内核为自研 Broker）
 - GUI：MVP 阶段命令行，GUI 延后
 
 详见：`docs/design-v2/rebuild-v0.01.md`（当前版本）

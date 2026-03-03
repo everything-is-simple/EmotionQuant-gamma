@@ -11,6 +11,8 @@ Freeze record: [`docs/design-v2/release-v0.01-formal.md`](docs/design-v2/release
 
 Covers: 6-module architecture, MSS/IRS/PAS factor system, L1-L4 data layers, pydantic contracts, 4-week delivery plan.
 
+Backtest scope note: `backtrader` is used only for trading-calendar stepping and data feeding; risk control, matching, position sizing, and state transitions are implemented in the in-house `Broker` kernel.
+
 ## Quick Start
 
 ```bash

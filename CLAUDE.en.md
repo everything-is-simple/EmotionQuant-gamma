@@ -93,7 +93,7 @@ Details: `docs/design-v2/rebuild-v0.01.md` (data and boundary sections).
 | Selector | MSS market sentiment + IRS industry rotation → candidate pool (Gene is post-analysis only) |
 | Strategy | PAS pattern detection (v0.01 BOF only) → trade signals |
 | Broker | Risk control + matching (backtest and paper trading share kernel) |
-| Backtest | Historical backtesting (backtrader single engine) |
+| Backtest | Historical backtesting (backtrader single engine; clock/data-feed only, trading kernel is in-house Broker) |
 | Report | Backtest reports + daily stock selection reports + alerts |
 
 ---
@@ -148,7 +148,7 @@ Details: `docs/design-v2/rebuild-v0.01.md` (iron laws, module boundaries, trigge
 - Python `>=3.10`
 - Storage: DuckDB single database
 - Data sources: TuShare (primary) + AKShare (fallback)
-- Backtesting: backtrader single engine
+- Backtesting: backtrader single engine (clock/data-feed only, trading kernel is in-house Broker)
 - GUI: CLI only for MVP, GUI deferred
 
 Details: `docs/design-v2/rebuild-v0.01.md` (current version).
