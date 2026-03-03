@@ -13,6 +13,14 @@
 3. 切换策略：主通道调用失败时，自动切换到兜底通道。
 4. 当前代码仅实现双 TuShare 通道；AKShare/BaoStock 仅为路线图预留底牌。
 
+### 1.1 双 key 来源映射（本地口径）
+
+1. 主通道（第三方网关，非 TuShare 官方）  
+   路径：`docs/reference/tushare/tushare-10000积分-网关/`
+2. 兜底通道（TuShare 官方 key）  
+   路径：`docs/reference/tushare/tushare-config-5000积分-官方-兜底号.md`
+3. 安全规则：文档只记录来源路径与用途，不记录 token 明文；实际 token 仅放本地 `.env`。
+
 ---
 
 ## 2. 环境变量约定
