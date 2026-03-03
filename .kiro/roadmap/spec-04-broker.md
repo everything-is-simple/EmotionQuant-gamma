@@ -36,7 +36,7 @@ class Broker:
 ### 个股信任分级
 - ACTIVE → 真单 | OBSERVE → 模拟单(is_paper=true) | BACKUP → 跳过
 - 降级：3连亏 → OBSERVE；真买又亏 → BACKUP
-- 升级：BACKUP 冷藏30天 → OBSERVE；模拟盈利1次 → ACTIVE
+- 升级：BACKUP 冷藏120个交易日 → OBSERVE；模拟盈利1次 → ACTIVE
 
 ### Matcher
 - 成交价 = T+1 Open（adj_open）+ 滑点

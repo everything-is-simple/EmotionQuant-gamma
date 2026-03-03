@@ -55,7 +55,7 @@ src/
 ├── data/           # fetcher.py, cleaner.py, builder.py, store.py
 ├── selector/       # mss.py, irs.py, gene.py, selector.py
 ├── strategy/       # pattern_base.py, pas_bof.py(活跃), pas_*.py(在册), registry.py, strategy.py
-├── broker/         # risk.py, matcher.py
+├── broker/         # broker.py, risk.py, matcher.py
 ├── backtest/       # engine.py
 ├── report/         # reporter.py
 ├── contracts.py    # pydantic 模块边界契约
@@ -72,8 +72,8 @@ main.py             # CLI 入口
 | IndustryScore | IRS → Selector | date, industry, score, rank |
 | StockCandidate | Selector → Strategy | code, industry, score |
 | Signal | Strategy → Broker | signal_id, code, signal_date, action(BUY in v0.01), strength(0-1), pattern, reason_code |
-| Order | Broker 内部 | order_id, signal_id, code, action, quantity, execute_date, is_paper, status, reject_reason |
-| Trade | Broker → Report | trade_id, order_id, code, execute_date, action, price, quantity, fee, is_paper |
+| Order | Broker 内部 | order_id, signal_id, code, action, quantity, execute_date, pattern, is_paper, status, reject_reason |
+| Trade | Broker → Report | trade_id, order_id, code, execute_date, action, price, quantity, fee, pattern, is_paper |
 
 ## 依赖栈
 

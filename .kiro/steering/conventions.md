@@ -60,8 +60,12 @@ def safe_ratio(numerator, denominator, default=0.0):
 
 - **只校验模块边界对象**（contracts.py 中的 6 个契约类）
 - **不逐行校验 DataFrame**
-- 所有 id 字段用 `Field(default_factory=lambda: uuid4().hex[:12])`
-- 时间戳用 `Field(default_factory=datetime.utcnow)`
+- 关键 id 字段采用确定性规则（重跑覆盖而非追加）：
+  - `signal_id = f"{code}_{signal_date}_{pattern}"`
+  - `order_id = signal_id`（BUY），`order_id = f"RISK_{code}_{date}"`（SELL）
+  - `trade_id = f"{order_id}_T"`
+  - 强平：`trade_id = f"FC_{code}_{date}_T"`
+- 时间戳用 `Field(default_factory=lambda: datetime.now(timezone.utc))`（禁用已弃用的 `datetime.utcnow()`）
 
 ## 配置管理
 

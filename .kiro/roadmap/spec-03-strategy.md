@@ -29,12 +29,12 @@ class PatternDetector(ABC):
 - signal.action 只产出 BUY（SELL 由 broker 止损触发）
 
 ### BOF 检测算法（v0.01）
-1. 定位区间边界（lower/upper bound）
+1. 定位区间边界（lower bound = min(adj_low[t-20, t-1])）
 2. Spring 触发：`low < lower*(1-1%)` 且 `close >= lower`
 3. 收盘位置确认：`close_pos >= 0.6`
 4. 量能确认：`volume >= volume_ma20*1.2`
-5. 延续确认（1-2日）：`close(t+1)>high(t)` 或 `close(t+2)>=close(t)*1.03`
-6. 失效退出：次日不延续或收盘跌回结构内
+5. 触发即生成 BUY Signal（`signal_date=T`），不存在入场前的延续确认
+6. 失效退出由 Broker 风控层执行（次日不延续 / 收盘跌回结构内）
 
 ### registry.py
 - ALL_DETECTORS: dict[str, type[PatternDetector]]，五形态在册（tst/bof/bpb/pb/cpb）

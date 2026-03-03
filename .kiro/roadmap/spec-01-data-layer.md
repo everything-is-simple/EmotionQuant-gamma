@@ -40,7 +40,7 @@
 
 ### contracts.py
 - 6 个 pydantic BaseModel: MarketScore, IndustryScore, StockCandidate, Signal, Order, Trade
-- id 字段: `Field(default_factory=lambda: uuid4().hex[:12])`
+- 关键 id 字段采用确定性规则（见 `conventions.md`）：`signal_id = f"{code}_{signal_date}_{pattern}"`，`order_id = signal_id`，`trade_id = f"{order_id}_T"`
 
 ## 实现任务
 

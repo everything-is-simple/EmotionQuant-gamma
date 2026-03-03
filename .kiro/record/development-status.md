@@ -23,8 +23,8 @@
 
 | 项目 | 结论 | 备注 |
 |---|---|---|
-| 系统设计 | 已完成终审修订 | 可进入正式版冻结 |
-| 系统治理 | 已建立重启模板 | 从本周开始按 6A 强制执行 |
+| 系统设计 | ✅ 已完成终审并定稿 | 16轮沙盘评审通过，S0/S1=0 |
+| 系统治理 | ✅ 已完成沙盘评审并定稿 | 11项偏差已修复，S0/S1=0 |
 | 代码实现 | 待启动 | 按 Week1 -> Week4 推进 |
 
 ---
@@ -58,6 +58,8 @@
 |---|---|---|---|
 | 2026-03-02 | 治理重启：record 三件套 + 6A 正式版模板落地 | completed | `.kiro/record/*.md`, `.kiro/steering/6A-WORKFLOW.md` |
 | 2026-03-02 | 治理补丁：6A v1.2 强化 + architecture Order 修正 + 设计文档 4 项修复 | completed | `6A-WORKFLOW.md` v1.2, `architecture.md`, 4 design-v2 docs |
+| 2026-03-03 | 设计终审：16轮沙盘评审 + 5项修复 + 定稿门禁通过 | completed | `design-v2/` 全部文档 v1.0, `sandbox-review-standard.md` |
+| 2026-03-03 | 治理评审：.kiro 文件沙盘评审 + 11项偏差修复 | completed | `.kiro/` 全部文件 |
 
 ---
 
@@ -69,6 +71,7 @@
 |---|---|---|---|---|---|---|
 | 2026-03-02 | 治理重启模板落地 | n/a | n/a | `.kiro/record/*.md`, `.kiro/steering/6A-WORKFLOW.md` | 本次治理评审结论 | debts/status/assets/roadmap 已同步，spec=N/A（治理任务） |
 | 2026-03-02 | 治理补丁：6A v1.2 + architecture Order + 设计文档修复 | n/a | n/a | `6A-WORKFLOW.md` v1.2, `architecture.md`, design-v2 docs | 治理评审 | debts=无变化, status=已同步, assets=无变化, roadmap=N/A, spec=N/A（治理任务） |
+| 2026-03-03 | 设计终审 + 治理评审 | n/a | n/a | `design-v2/` v1.0定稿, `.kiro/` 11项偏差修复 | 沙盘评审标准 7维检查 | debts=无变化, status=已同步, assets=无变化, roadmap=已同步, spec=N/A（治理任务） |
 
 ---
 
@@ -85,3 +88,4 @@
 | 日期 | 版本 | 变更 |
 |---|---|---|
 | 2026-03-02 | v1.0 | 重启清零：建立正式模板并切换到 `.kiro` 治理基线 |
+| 2026-03-03 | v1.1 | 设计终审定稿 + 治理沙盘评审完成，状态同步 |
