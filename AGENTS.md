@@ -13,7 +13,7 @@
 
 - 作用：给自动化代理提供最小、可执行的仓库工作规则。
 - **权威设计入口**：`docs/design-v2/system-baseline.md`（重构设计文档，单一事实源）
-- 旧版设计/治理文档已归档至 `docs/archive/`（只读）
+- 分阶段文档统一归档至 `docs/spec/`；参考资料统一位于 `docs/reference/`
 
 ---
 
@@ -104,9 +104,10 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 
 | 目录 | 定位 |
 |------|------|
-| `docs/design-v2/` | 新版设计文档（system-baseline.md 为唯一权威入口） |
-| `docs/design/` | 旧版设计（待归档） |
-| `docs/archive/` | 历史归档（只读） |
+| `docs/design-v2/` | 系统级设计文档（system-baseline.md 为唯一权威入口） |
+| `docs/spec/` | 分阶段归档（v0.01+；路线图/实现卡/runbook/勘误/发布记录） |
+| `docs/reference/` | 参考资料与外部方法论（非执行口径） |
+| `.kiro/roadmap/` | 当前执行阶段工作副本（按版本子目录） |
 
 ### 8.2 单一事实源（SoT）
 
@@ -114,10 +115,9 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 
 ### 8.3 归档规则
 
-- 归档命名：`archive-{model}-{version}-{date}`
-- 归档目录只读，不再迭代
-- 旧版设计文档归档至 `docs/archive/archive-docs-toplevel-v5-20260301/`
-- 旧版治理文档归档至 `docs/archive/archive-steering-v6-20260301/`
+- 分阶段文档统一使用版本目录归档：`docs/spec/<version>/`
+- 当前执行阶段工作副本统一位于：`.kiro/roadmap/<version>/`
+- 系统级设计文档仅存放于：`docs/design-v2/`
 
 ---
 
@@ -165,12 +165,10 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 
 ## 13. 历史说明
 
-旧版所有设计/治理文档已归档至 `docs/archive/`（只读）：
-- `archive-docs-toplevel-v5-20260301/` — 旧版 roadmap/system-overview/module-index/naming-conventions/naming-contracts/technical-baseline
-- `archive-steering-v6-20260301/` — 旧版 6A-WORKFLOW/系统铁律/CORE-PRINCIPLES/GOVERNANCE-STRUCTURE/TRD/模板
-- `designv1/` / `reference/` / `sos/` — 更早期历史
-
-新版设计权威入口：`docs/design-v2/system-baseline.md`
+系统总纲权威入口：`docs/design-v2/system-baseline.md`
+分阶段全量归档：`docs/spec/`
+当前执行阶段工作副本：`.kiro/roadmap/`
+外部参考资料：`docs/reference/`
 
 ---
 

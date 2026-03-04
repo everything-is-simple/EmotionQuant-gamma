@@ -8,7 +8,7 @@
 **优先级**: A股交易规则权威参考（恒星组文档 ⭐⭐⭐）
 **定位**: 参考资料（非设计规范）
 **路线图口径**: Spiral + CP（命名 `CP-*`，以 `Governance/SpiralRoadmap/planA/VORTEX-EVOLUTION-ROADMAP.md` 为准）
-**冲突处理**: 若与 `docs/design/` 冲突，以设计文档为准
+**冲突处理**: 若与 `docs/design-v2/system-baseline.md` 冲突，以系统总纲为准
 **整理更新**: 2026-02-05（系统铁律表述更新）
 
 ---

@@ -13,7 +13,7 @@ This file provides minimal, executable repository rules for automated agents. Co
 
 - Purpose: minimal, executable repository rules for automated agents.
 - **Authoritative design entry**: `docs/design-v2/system-baseline.md` (rebuild design document, single source of truth)
-- Legacy design/governance documents archived to `docs/archive/` (read-only)
+- Stage documents are archived under `docs/spec/`; reference materials are under `docs/reference/`
 
 ---
 
@@ -104,9 +104,10 @@ Details: `docs/design-v2/system-baseline.md` (data and boundary sections).
 
 | Directory | Role |
 |-----------|------|
-| `docs/design-v2/` | Current design documents (system-baseline.md is sole authoritative entry) |
-| `docs/design/` | Legacy design (pending archive) |
-| `docs/archive/` | Historical archives (read-only) |
+| `docs/design-v2/` | System-level design documents (system-baseline.md is sole authoritative entry) |
+| `docs/spec/` | Stage archives (v0.01+; roadmap/spec/runbook/errata/release notes) |
+| `docs/reference/` | Reference and external methodology materials (non-execution source) |
+| `.kiro/roadmap/` | Active stage working set (versioned subdirectories) |
 
 ### 8.2 Single Source of Truth (SoT)
 
@@ -114,10 +115,9 @@ Details: `docs/design-v2/system-baseline.md` (data and boundary sections).
 
 ### 8.3 Archive Rules
 
-- Archive naming: `archive-{model}-{version}-{date}`
-- Archived directories are read-only, no further iteration
-- Legacy design docs archived to `docs/archive/archive-docs-toplevel-v5-20260301/`
-- Legacy governance docs archived to `docs/archive/archive-steering-v6-20260301/`
+- Stage documents are archived by version under: `docs/spec/<version>/`
+- Active-stage working copies are maintained under: `.kiro/roadmap/<version>/`
+- System-level design documents are stored only in: `docs/design-v2/`
 
 ---
 
@@ -165,12 +165,10 @@ Details: `docs/design-v2/system-baseline.md` (current version).
 
 ## 13. Historical Notes
 
-All legacy design/governance documents archived to `docs/archive/` (read-only):
-- `archive-docs-toplevel-v5-20260301/` — legacy roadmap/system-overview/module-index/naming-conventions/naming-contracts/technical-baseline
-- `archive-steering-v6-20260301/` — legacy 6A-WORKFLOW/iron-rules/CORE-PRINCIPLES/GOVERNANCE-STRUCTURE/TRD/templates
-- `designv1/` / `reference/` / `sos/` — earlier history
-
-Current authoritative design entry: `docs/design-v2/system-baseline.md`
+System baseline authoritative entry: `docs/design-v2/system-baseline.md`
+Stage full archives: `docs/spec/`
+Active-stage working set: `.kiro/roadmap/`
+Reference materials: `docs/reference/`
 
 ---
 

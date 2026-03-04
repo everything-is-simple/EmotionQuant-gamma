@@ -30,8 +30,11 @@ pytest -v
 
 - `src/` — 实现代码（Data / Selector / Strategy / Broker / Backtest / Report）
 - `tests/` — 自动化测试
-- `docs/design-v2/` — 新版设计文档
-- `docs/archive/` — 历史归档（只读）
+- `docs/` — 文档总入口（见 `docs/README.md`）
+- `docs/design-v2/` — 系统级总纲与模块设计（不放分阶段文件）
+- `docs/spec/` — 各阶段归档（v0.01+，含路线图/实现卡/runbook/勘误/发布记录）
+- `docs/reference/` — 外部参考资料与方法论材料
+- `.kiro/roadmap/` — 当前执行阶段工作副本（按版本子目录）
 
 ## 环境配置
 

@@ -30,8 +30,11 @@ pytest -v
 
 - `src/` — Implementation (Data / Selector / Strategy / Broker / Backtest / Report)
 - `tests/` — Automated tests
-- `docs/design-v2/` — Current design documents
-- `docs/archive/` — Historical archives (read-only)
+- `docs/` — Documentation entry (see `docs/README.md`)
+- `docs/design-v2/` — System-level baseline and module designs (no stage-specific files)
+- `docs/spec/` — Stage archives (v0.01+, including roadmap/spec/runbook/errata/release notes)
+- `docs/reference/` — External references and methodology notes
+- `.kiro/roadmap/` — Active execution working set (versioned subdirectories)
 
 ## Configuration
 
