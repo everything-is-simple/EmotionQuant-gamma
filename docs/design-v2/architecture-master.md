@@ -2,7 +2,7 @@
 
 **版本**: v0.01 正式版
 **创建日期**: 2026-03-01
-**状态**: Frozen（与 `rebuild-v0.01.md` 对齐）
+**状态**: Frozen（与 `system-baseline.md` 对齐）
 **封版日期**: 2026-03-03
 **变更规则**: 仅允许勘误与说明性修订；执行语义变更需进入 v0.02+。
 
@@ -25,7 +25,7 @@
 3. 扫描流程采用两阶段：全市场粗筛（5000 -> 约200）后再做形态精扫。
 4. MSS/IRS 在 v0.01 视为待验证假设，必须执行三步消融：`BOF baseline` → `BOF+MSS` → `BOF+MSS+IRS`。
 5. `ENABLE_GENE_FILTER` 在 v0.01 强制关闭，gene 仅做事后反推分析。
-6. 若本文历史段落与 `docs/design-v2/rebuild-v0.01.md` 冲突，以 `rebuild-v0.01.md` 为准。
+6. 若本文历史段落与 `docs/design-v2/system-baseline.md` 冲突，以 `system-baseline.md` 为准。
 
 ---
 
@@ -1257,3 +1257,7 @@ class Trade(BaseModel):             # Broker → Report
 - 实现纸上交易模式（broker 内核的 paper 模式）
 - 全链路联调：data → selector → strategy → broker → report
 - **验收**：每日能自动跑一遍完整流程
+
+
+
+

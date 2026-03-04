@@ -12,7 +12,7 @@ This file provides minimal, executable repository rules for automated agents. Co
 ## 1. Document Positioning
 
 - Purpose: minimal, executable repository rules for automated agents.
-- **Authoritative design entry**: `docs/design-v2/rebuild-v0.01.md` (rebuild design document, single source of truth)
+- **Authoritative design entry**: `docs/design-v2/system-baseline.md` (rebuild design document, single source of truth)
 - Legacy design/governance documents archived to `docs/archive/` (read-only)
 
 ---
@@ -40,13 +40,13 @@ EmotionQuant is a sentiment-driven quantitative system for China A-shares.
 9. **No hardcoded paths/secrets** — all injected via config.py.
 10. **Execution semantics fixed to T+1 Open**: signal_date=T, execute_date=T+1, fill price=T+1 Open.
 
-Details: `docs/design-v2/rebuild-v0.01.md` (current version is authoritative).
+Details: `docs/design-v2/system-baseline.md` (current version is authoritative).
 
 ---
 
 ## 4. Development Flow
 
-- Execution model: 4-week incremental delivery (see current rebuild-v0.01.md).
+- Execution model: 4-week incremental delivery (see current system-baseline.md).
 - Each week produces independently verifiable deliverables (runnable code + passing tests)
 - Branch naming: `rebuild/{module}`, merge target `main`
 
@@ -64,7 +64,7 @@ Inter-module data passed as pydantic objects (contracts.py):
 Code in English, comments/docs/UI in Chinese. Uniform `snake_case`.
 L1 layer uses `ts_code` (TuShare format), L2+ layers use `code` (6-digit pure code).
 
-Details: `docs/design-v2/rebuild-v0.01.md` (result-contract section).
+Details: `docs/design-v2/system-baseline.md` (result-contract section).
 
 ---
 
@@ -81,7 +81,7 @@ DuckDB single-database storage, decoupled via L1-L4 layers. Data root injected v
 
 **Dependency rule**: L2 reads only L1; L3 reads only L1/L2; L4 reads only L1/L2/L3. Reverse dependencies forbidden.
 
-Details: `docs/design-v2/rebuild-v0.01.md` (data and boundary sections).
+Details: `docs/design-v2/system-baseline.md` (data and boundary sections).
 
 ---
 
@@ -104,13 +104,13 @@ Details: `docs/design-v2/rebuild-v0.01.md` (data and boundary sections).
 
 | Directory | Role |
 |-----------|------|
-| `docs/design-v2/` | Current design documents (rebuild-v0.01.md is sole authoritative entry) |
+| `docs/design-v2/` | Current design documents (system-baseline.md is sole authoritative entry) |
 | `docs/design/` | Legacy design (pending archive) |
 | `docs/archive/` | Historical archives (read-only) |
 
 ### 8.2 Single Source of Truth (SoT)
 
-`docs/design-v2/rebuild-v0.01.md` is the sole authoritative design document (current version/sections prevail).
+`docs/design-v2/system-baseline.md` is the sole authoritative design document (current version/sections prevail).
 
 ### 8.3 Archive Rules
 
@@ -139,7 +139,7 @@ Details: `docs/design-v2/rebuild-v0.01.md` (data and boundary sections).
 - Each raw observation belongs to exactly one factor — no cross-factor double counting
 - Modules only pass "result contracts" (pydantic objects) — no internal intermediate features
 
-Details: `docs/design-v2/rebuild-v0.01.md` (iron laws, module boundaries, trigger sections).
+Details: `docs/design-v2/system-baseline.md` (iron laws, module boundaries, trigger sections).
 
 ---
 
@@ -151,7 +151,7 @@ Details: `docs/design-v2/rebuild-v0.01.md` (iron laws, module boundaries, trigge
 - Backtesting: backtrader single engine (clock/data-feed only, trading kernel is in-house Broker)
 - GUI: CLI only for MVP, GUI deferred
 
-Details: `docs/design-v2/rebuild-v0.01.md` (current version).
+Details: `docs/design-v2/system-baseline.md` (current version).
 
 ---
 
@@ -170,13 +170,13 @@ All legacy design/governance documents archived to `docs/archive/` (read-only):
 - `archive-steering-v6-20260301/` — legacy 6A-WORKFLOW/iron-rules/CORE-PRINCIPLES/GOVERNANCE-STRUCTURE/TRD/templates
 - `designv1/` / `reference/` / `sos/` — earlier history
 
-Current authoritative design entry: `docs/design-v2/rebuild-v0.01.md`
+Current authoritative design entry: `docs/design-v2/system-baseline.md`
 
 ---
 
 ## 14. Execution Plan
 
-Current execution plan: see `docs/design-v2/rebuild-v0.01.md` (current version).
+Current execution plan: see `docs/design-v2/system-baseline.md` (current version).
 
 ## 15. Git Auth Baseline
 
@@ -210,6 +210,10 @@ Bootstrap:
 - Optional MCP target dir: `-CodexHome <path>` (default: in-project `.tmp/codex-home`)
 - Hooks only: `powershell -ExecutionPolicy Bypass -File scripts/setup/configure_git_hooks.ps1`
 - Skills check only: `powershell -ExecutionPolicy Bypass -File scripts/setup/check_skills.ps1`
+
+
+
+
 
 
 

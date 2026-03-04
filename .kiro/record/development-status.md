@@ -10,9 +10,9 @@
 
 | 类型 | 路径 | 说明 |
 |---|---|---|
-| 设计总纲 | `docs/design-v2/rebuild-v0.01.md` | 当前唯一设计口径 |
-| 路线图 | `.kiro/roadmap/v0.01-mvp-roadmap.md` | 周级推进计划 |
-| 模块实现卡 | `.kiro/roadmap/v0.01-mvp-spec-*.md` | 模块拆解与验收 |
+| 设计总纲 | `docs/design-v2/system-baseline.md` | 当前唯一设计口径 |
+| 路线图 | `.kiro/roadmap/v0.01/v0.01-mvp-roadmap.md` | 周级推进计划 |
+| 模块实现卡 | `.kiro/roadmap/v0.01/v0.01-mvp-spec-*.md` | 模块拆解与验收 |
 | 工作流 | `.kiro/steering/6A-WORKFLOW.md` | 固定执行流程 |
 | 技术债 | `.kiro/record/debts.md` | 风险与欠账追踪 |
 | 资产复用 | `.kiro/record/reusable-assets.md` | 可复用沉淀 |
@@ -64,10 +64,10 @@
 | 2026-03-03 | 治理省察：steering/record 对标 sandbox-review-standard + god_view 审计，3项 record 同步修复 | completed | `development-status.md` Week3 spec引用修复, `reusable-assets.md` DES-007新增 |
 | 2026-03-03 | 根配置文件省察+15项修复：.env.example 重写、pyproject.toml 依赖栈重建、README 字段同步、CLAUDE/WARP §9质量门控对齐 | completed | `.env.example` `.gitignore` `pyproject.toml` `README{.en}.md` `CLAUDE{.en}.md` `WARP{.en}.md` |
 | 2026-03-03 | v0.01 正式版封版：全部文档层通过定稿门禁（sandbox-review-standard §6），spec-01–05 全部 Active | completed | 封版基线：16轮沙盘评审 S0/S1=0，5个文档层通过审计，15项根配置偏差全部封线 |
-| 2026-03-03 | 根配置文件终审：.env/pyproject/README/WARP/CLAUDE 对标审计 + 15项偏差修复；roadmap + spec-01~05 状态升格 Active | completed | `.env.example`, `pyproject.toml`, `README*.md`, `WARP*.md`, `CLAUDE*.md`, `.kiro/roadmap/v0.01-mvp-roadmap.md`, `.kiro/roadmap/v0.01-mvp-spec-01-data-layer.md`, `.kiro/roadmap/v0.01-mvp-spec-02-selector.md`, `.kiro/roadmap/v0.01-mvp-spec-03-strategy.md`, `.kiro/roadmap/v0.01-mvp-spec-04-broker.md`, `.kiro/roadmap/v0.01-mvp-spec-05-backtest-report.md` |
-| 2026-03-04 | v0.01 spec-01（Data Layer）文档校对：补齐校对证据落点并与 SoT/steering/record/顶层文件交叉核对 | completed | `docs/roadmap/v0.01-mvp-spec-01-data-layer.md`, `.kiro/roadmap/v0.01-mvp-spec-01-data-layer.md` |
-| 2026-03-04 | v0.01 spec-02~05 文档校对：补齐校对证据落点并与 design/roadmap/steering/record/顶层文件交叉核对 | completed | `docs/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/roadmap/v0.01-mvp-spec-03-strategy.md`, `docs/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/roadmap/v0.01-mvp-spec-05-backtest-report.md` |
-| 2026-03-04 | v0.01 实现前总校对收口：roadmap 增加“校对完成状态+追溯索引+七维勾选”，spec-01~05 增加 REV-ID 并同步 `.kiro/roadmap` | completed | `docs/roadmap/v0.01-mvp.md`, `docs/roadmap/v0.01-mvp-spec-01~05`, `.kiro/roadmap/v0.01-mvp-roadmap.md`, `.kiro/roadmap/v0.01-mvp-spec-01~05` |
+| 2026-03-03 | 根配置文件终审：.env/pyproject/README/WARP/CLAUDE 对标审计 + 15项偏差修复；roadmap + spec-01~05 状态升格 Active | completed | `.env.example`, `pyproject.toml`, `README*.md`, `WARP*.md`, `CLAUDE*.md`, `.kiro/roadmap/v0.01/v0.01-mvp-roadmap.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-01-data-layer.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-02-selector.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-03-strategy.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-04-broker.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-05-backtest-report.md` |
+| 2026-03-04 | v0.01 spec-01（Data Layer）文档校对：补齐校对证据落点并与 SoT/steering/record/顶层文件交叉核对 | completed | `docs/spec/v0.01/v0.01-mvp-spec-01-data-layer.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-01-data-layer.md` |
+| 2026-03-04 | v0.01 spec-02~05 文档校对：补齐校对证据落点并与 design/roadmap/steering/record/顶层文件交叉核对 | completed | `docs/spec/v0.01/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/v0.01-mvp-spec-03-strategy.md`, `docs/spec/v0.01/v0.01-mvp-spec-04-broker.md`, `docs/spec/v0.01/v0.01-mvp-spec-05-backtest-report.md` |
+| 2026-03-04 | v0.01 实现前总校对收口：roadmap 增加“校对完成状态+追溯索引+七维勾选”，spec-01~05 增加 REV-ID 并同步 `.kiro/roadmap` | completed | `docs/spec/v0.01/v0.01-mvp.md`, `docs/spec/v0.01-mvp-spec-01~05`, `.kiro/roadmap/v0.01/v0.01-mvp-roadmap.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-01~05` |
 
 ---
 
@@ -83,10 +83,10 @@
 | 2026-03-03 | 治理省察：steering/record 审计 | n/a | n/a | `development-status.md` Week3 spec引用修复, `reusable-assets.md` DES-007新增 | sandbox-review-standard + god_view 交叉验证 | debts=无变化, status=已同步, assets=已同步, roadmap=无变化, spec=无变化 |
 | 2026-03-03 | 根配置文件省察+15项修复 | n/a | n/a | `.env.example`/`pyproject.toml`/`README{.en}.md`/`CLAUDE{.en}.md`/`WARP{.en}.md` | sandbox-review-standard 定稿门禁 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=无变化 |
 | 2026-03-03 | v0.01 正式版封版 | n/a | n/a | 全部 spec-01–05 Active、roadmap Active（正式版）、设计文档 Frozen、根配置对齐 v0.01 | sandbox-review-standard §6 + god_view 全维考核 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=spec-01 Draft→Active |
-| 2026-03-03 | 根配置文件终审 + 文档状态升格（roadmap/spec） | n/a | n/a | `.env.example`, `pyproject.toml`, `README*.md`, `WARP*.md`, `CLAUDE*.md`, `.kiro/roadmap/v0.01-mvp-roadmap.md`, `.kiro/roadmap/v0.01-mvp-spec-01-data-layer.md`, `.kiro/roadmap/v0.01-mvp-spec-02-selector.md`, `.kiro/roadmap/v0.01-mvp-spec-03-strategy.md`, `.kiro/roadmap/v0.01-mvp-spec-04-broker.md`, `.kiro/roadmap/v0.01-mvp-spec-05-backtest-report.md` | sandbox-review-standard §6 定稿门禁 + god_view v0.01 对照 | debts=无变化, status=已同步, assets=无变化, roadmap=已同步, spec=已同步 |
-| 2026-03-04 | v0.01 spec-01 文档校对（仅文档，不实现） | n/a | n/a | `docs/roadmap/v0.01-mvp-spec-01-data-layer.md`, `.kiro/roadmap/v0.01-mvp-spec-01-data-layer.md` | 设计/路线图/steering/record/顶层文件一致性复核 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=已同步 |
-| 2026-03-04 | v0.01 spec-02~05 文档校对（仅文档，不实现） | n/a | n/a | `docs/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/roadmap/v0.01-mvp-spec-03-strategy.md`, `docs/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/roadmap/v0.01-mvp-spec-05-backtest-report.md`, `.kiro/roadmap/v0.01-mvp-spec-02-selector.md`, `.kiro/roadmap/v0.01-mvp-spec-03-strategy.md`, `.kiro/roadmap/v0.01-mvp-spec-04-broker.md`, `.kiro/roadmap/v0.01-mvp-spec-05-backtest-report.md` | 设计/路线图/steering/record/顶层文件一致性复核 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=已同步 |
-| 2026-03-04 | v0.01 实现前最后一轮总校对（仅文档，不实现） | n/a | n/a | `docs/roadmap/v0.01-mvp.md`, `docs/roadmap/v0.01-mvp-spec-01-data-layer.md`, `docs/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/roadmap/v0.01-mvp-spec-03-strategy.md`, `docs/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/roadmap/v0.01-mvp-spec-05-backtest-report.md`, `.kiro/roadmap/v0.01-mvp-roadmap.md`, `.kiro/roadmap/v0.01-mvp-spec-01-data-layer.md`, `.kiro/roadmap/v0.01-mvp-spec-02-selector.md`, `.kiro/roadmap/v0.01-mvp-spec-03-strategy.md`, `.kiro/roadmap/v0.01-mvp-spec-04-broker.md`, `.kiro/roadmap/v0.01-mvp-spec-05-backtest-report.md` | 七维模板逐项勾选复核（Schema/调用链/幂等/状态机/时序/冲突/报告） | debts=无变化, status=已同步, assets=无变化, roadmap=已同步, spec=已同步 |
+| 2026-03-03 | 根配置文件终审 + 文档状态升格（roadmap/spec） | n/a | n/a | `.env.example`, `pyproject.toml`, `README*.md`, `WARP*.md`, `CLAUDE*.md`, `.kiro/roadmap/v0.01/v0.01-mvp-roadmap.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-01-data-layer.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-02-selector.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-03-strategy.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-04-broker.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-05-backtest-report.md` | sandbox-review-standard §6 定稿门禁 + god_view v0.01 对照 | debts=无变化, status=已同步, assets=无变化, roadmap=已同步, spec=已同步 |
+| 2026-03-04 | v0.01 spec-01 文档校对（仅文档，不实现） | n/a | n/a | `docs/spec/v0.01/v0.01-mvp-spec-01-data-layer.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-01-data-layer.md` | 设计/路线图/steering/record/顶层文件一致性复核 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=已同步 |
+| 2026-03-04 | v0.01 spec-02~05 文档校对（仅文档，不实现） | n/a | n/a | `docs/spec/v0.01/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/v0.01-mvp-spec-03-strategy.md`, `docs/spec/v0.01/v0.01-mvp-spec-04-broker.md`, `docs/spec/v0.01/v0.01-mvp-spec-05-backtest-report.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-02-selector.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-03-strategy.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-04-broker.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-05-backtest-report.md` | 设计/路线图/steering/record/顶层文件一致性复核 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=已同步 |
+| 2026-03-04 | v0.01 实现前最后一轮总校对（仅文档，不实现） | n/a | n/a | `docs/spec/v0.01/v0.01-mvp.md`, `docs/spec/v0.01/v0.01-mvp-spec-01-data-layer.md`, `docs/spec/v0.01/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/v0.01-mvp-spec-03-strategy.md`, `docs/spec/v0.01/v0.01-mvp-spec-04-broker.md`, `docs/spec/v0.01/v0.01-mvp-spec-05-backtest-report.md`, `.kiro/roadmap/v0.01/v0.01-mvp-roadmap.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-01-data-layer.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-02-selector.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-03-strategy.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-04-broker.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-05-backtest-report.md` | 七维模板逐项勾选复核（Schema/调用链/幂等/状态机/时序/冲突/报告） | debts=无变化, status=已同步, assets=无变化, roadmap=已同步, spec=已同步 |
 
 ---
 
@@ -110,3 +110,7 @@
 | 2026-03-04 | v1.5 | 进入 Week1 文档校对：spec-01 补齐“校对证据”落点并完成跨文档一致性复核 |
 | 2026-03-04 | v1.6 | 完成 spec-02~05 文档校对与证据化留痕；v0.01 spec-01~05 校对闭环完成 |
 | 2026-03-04 | v1.7 | 实现前最后一轮总校对完成：roadmap 新增追溯索引与七维勾选，spec-01~05 统一 REV-ID |
+
+
+
+

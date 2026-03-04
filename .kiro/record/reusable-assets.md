@@ -34,13 +34,13 @@
 | GOV-002 | 技术债模板 | `.kiro/record/debts.md` | S | 所有风险/欠账登记 |
 | GOV-003 | 开发状态模板 | `.kiro/record/development-status.md` | S | 周级/任务级进展记录 |
 | GOV-004 | 复用资产模板 | `.kiro/record/reusable-assets.md` | S | 资产沉淀与分级 |
-| GOV-005 | 路线图+实现卡 | `.kiro/roadmap/v0.01-mvp-roadmap.md`, `.kiro/roadmap/v0.01-mvp-spec-*.md` | S | 任务推进与勾选追踪 |
+| GOV-005 | 路线图+实现卡 | `.kiro/roadmap/v0.01/v0.01-mvp-roadmap.md`, `.kiro/roadmap/v0.01/v0.01-mvp-spec-*.md` | S | 任务推进与勾选追踪 |
 
 ### 3.2 设计资产
 
 | ID | 资产 | 路径 | 等级 | 复用边界 |
 |---|---|---|---|---|
-| DES-001 | 设计总纲（SoT） | `docs/design-v2/rebuild-v0.01.md` | S | 所有模块设计冲突裁决 |
+| DES-001 | 设计总纲（SoT） | `docs/design-v2/system-baseline.md` | S | 所有模块设计冲突裁决 |
 | DES-002 | Data 设计 | `docs/design-v2/data-layer-design.md` | A | Week1 实现参考 |
 | DES-003 | Selector 设计 | `docs/design-v2/selector-design.md` | A | Week2 实现参考 |
 | DES-004 | Strategy 设计 | `docs/design-v2/strategy-design.md` | A | Week2 实现参考 |
@@ -82,3 +82,7 @@
 | 2026-03-04 | v1.2 | v0.01/spec-01 文档校对后复核：无新增可复用资产 |
 | 2026-03-04 | v1.3 | v0.01/spec-02~05 文档校对后复核：无新增可复用资产 |
 | 2026-03-04 | v1.4 | v0.01 实现前最后一轮总校对后复核：无新增可复用资产 |
+
+
+
+

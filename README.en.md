@@ -4,10 +4,10 @@ EmotionQuant is a sentiment-driven quantitative trading system for China A-share
 
 ## Design Document
 
-Single authoritative entry: [`docs/design-v2/rebuild-v0.01.md`](docs/design-v2/rebuild-v0.01.md)
+Single authoritative entry: [`docs/design-v2/system-baseline.md`](docs/design-v2/system-baseline.md)
 
 System doc baseline: `v0.01 Formal Release` (frozen on `2026-03-03`; only errata/link fixes are allowed, no execution-semantics changes).
-Freeze record: [`docs/design-v2/release-v0.01-formal.md`](docs/design-v2/release-v0.01-formal.md)
+Freeze record: [`docs/spec/v0.01/release-v0.01-formal.md`](docs/spec/v0.01/release-v0.01-formal.md)
 
 Covers: 6-module architecture, MSS/IRS/PAS factor system, L1-L4 data layers, pydantic contracts, 4-week delivery plan.
 
@@ -43,3 +43,7 @@ Copy `.env.example` to `.env` and fill in actual values. Key variables:
 ## License
 
 MIT (see [`LICENSE`](LICENSE))
+
+
+
+

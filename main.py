@@ -1,0 +1,252 @@
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import subprocess
+from datetime import date, datetime
+from pathlib import Path
+from typing import Sequence
+
+import pandas as pd
+
+from src.config import get_settings
+from src.broker.broker import Broker
+from src.data.builder import build_layers
+from src.data.fetcher import create_fetcher, fetch_incremental
+from src.logging_utils import configure_logger, logger
+from src.selector.selector import select_candidates
+from src.strategy.strategy import generate_signals
+from src.data.store import Store
+
+
+def _parse_date(value: str | None) -> date | None:
+    if not value:
+        return None
+    return date.fromisoformat(value)
+
+
+def _git_commit() -> str | None:
+    try:
+        output = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            stderr=subprocess.DEVNULL,
+            text=True,
+            cwd=Path(__file__).resolve().parent,
+        ).strip()
+        return output or None
+    except Exception:
+        return None
+
+
+def _config_hash(payload: dict) -> str:
+    body = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
+    return hashlib.sha256(body).hexdigest()
+
+
+def _start_run(store: Store, modules: Sequence[str], config_hash: str, data_snapshot: str) -> str:
+    # 运行级可复现锚点：每次运行必须绑定配置哈希 + 数据快照 + 代码版本。
+    run_id = f"{date.today().isoformat()}_{datetime.utcnow().strftime('%H%M%S')}"
+    row = pd.DataFrame(
+        [
+            {
+                "run_id": run_id,
+                "start_time": datetime.utcnow(),
+                "end_time": None,
+                "modules": ",".join(modules),
+                "status": "RUNNING",
+                "error_summary": None,
+                "config_hash": config_hash,
+                "data_snapshot": data_snapshot,
+                "git_commit": _git_commit(),
+                "runtime_env": "cli",
+            }
+        ]
+    )
+    store.bulk_upsert("_meta_runs", row)
+    return run_id
+
+
+def _finish_run(store: Store, run_id: str, status: str, error_summary: str | None = None) -> None:
+    row = pd.DataFrame(
+        [
+            {
+                "run_id": run_id,
+                "start_time": store.read_scalar(
+                    "SELECT start_time FROM _meta_runs WHERE run_id = ?", (run_id,)
+                ),
+                "end_time": datetime.utcnow(),
+                "modules": store.read_scalar("SELECT modules FROM _meta_runs WHERE run_id = ?", (run_id,)),
+                "status": status,
+                "error_summary": error_summary,
+                "config_hash": store.read_scalar(
+                    "SELECT config_hash FROM _meta_runs WHERE run_id = ?", (run_id,)
+                ),
+                "data_snapshot": store.read_scalar(
+                    "SELECT data_snapshot FROM _meta_runs WHERE run_id = ?", (run_id,)
+                ),
+                "git_commit": store.read_scalar(
+                    "SELECT git_commit FROM _meta_runs WHERE run_id = ?", (run_id,)
+                ),
+                "runtime_env": store.read_scalar(
+                    "SELECT runtime_env FROM _meta_runs WHERE run_id = ?", (run_id,)
+                ),
+            }
+        ]
+    )
+    store.bulk_upsert("_meta_runs", row)
+
+
+def cmd_fetch(args: argparse.Namespace) -> int:
+    cfg = get_settings()
+    store = Store(cfg.db_path)
+    run_id = _start_run(
+        store=store,
+        modules=["fetch"],
+        config_hash=_config_hash(cfg.model_dump(mode="json")),
+        data_snapshot=f"fetch:{datetime.utcnow().isoformat()}",
+    )
+    try:
+        fetcher = create_fetcher(cfg)
+        start = _parse_date(args.start) or cfg.history_start
+        end = _parse_date(args.end) or date.today()
+        total = 0
+        # 先拉交易日历，再拉其他表，确保 T+1 / next_trade_date 有基准。
+        total += fetch_incremental(store, fetcher, "trade_cal", "l1_trade_calendar", start, end)
+        total += fetch_incremental(store, fetcher, "stock_info", "l1_stock_info", start, end)
+        total += fetch_incremental(store, fetcher, "index_daily", "l1_index_daily", start, end)
+        total += fetch_incremental(store, fetcher, "stock_daily", "l1_stock_daily", start, end)
+        logger.info(f"fetch completed, written rows={total}")
+        _finish_run(store, run_id, "SUCCESS")
+        return 0
+    except Exception as exc:
+        logger.exception("fetch failed")
+        _finish_run(store, run_id, "FAILED", str(exc))
+        return 1
+    finally:
+        store.close()
+
+
+def cmd_build(args: argparse.Namespace) -> int:
+    cfg = get_settings()
+    store = Store(cfg.db_path)
+    layers = [part.strip() for part in args.layers.split(",") if part.strip()]
+    run_id = _start_run(
+        store=store,
+        modules=["build"] + layers,
+        config_hash=_config_hash(cfg.model_dump(mode="json")),
+        data_snapshot=f"build:{datetime.utcnow().isoformat()}",
+    )
+    try:
+        written = build_layers(
+            store=store,
+            config=cfg,
+            layers=layers,
+            start=_parse_date(args.start),
+            end=_parse_date(args.end),
+            force=args.force,
+        )
+        logger.info(f"build completed, upsert rows={written}")
+        _finish_run(store, run_id, "SUCCESS")
+        return 0
+    except Exception as exc:
+        logger.exception("build failed")
+        _finish_run(store, run_id, "FAILED", str(exc))
+        return 1
+    finally:
+        store.close()
+
+
+def cmd_run(args: argparse.Namespace) -> int:
+    cfg = get_settings()
+    store = Store(cfg.db_path)
+    run_id = _start_run(
+        store=store,
+        modules=["run", "fetch", "build", "selector", "strategy", "broker"],
+        config_hash=_config_hash(cfg.model_dump(mode="json")),
+        data_snapshot=f"run:{datetime.utcnow().isoformat()}",
+    )
+    try:
+        trade_date = _parse_date(args.trade_date) or date.today()
+
+        # 1) 先增量拉取交易日历，再确定 signal_date，避免“无日历无法推进 T+1”。
+        fetcher = create_fetcher(cfg)
+        cal_start = trade_date.replace(day=1)
+        fetch_incremental(store, fetcher, "trade_cal", "l1_trade_calendar", cal_start, trade_date)
+        signal_date = store.prev_trade_date(trade_date)
+        if signal_date is None:
+            raise RuntimeError("Cannot resolve signal_date from trade calendar.")
+
+        # 2) 增量拉取 L1，确保当日与前一交易日数据可用。
+        fetch_incremental(store, fetcher, "stock_info", "l1_stock_info", signal_date, trade_date)
+        fetch_incremental(store, fetcher, "index_daily", "l1_index_daily", signal_date, trade_date)
+        fetch_incremental(store, fetcher, "stock_daily", "l1_stock_daily", signal_date, trade_date)
+
+        # 3) 构建 L2/L3（MSS/IRS），信号仍由运行时 Strategy 产生。
+        build_layers(store, cfg, layers=["l2", "l3"], start=signal_date, end=trade_date, force=False)
+
+        # 4) 在 T 日收盘后（signal_date）选股并生成信号。
+        candidates = select_candidates(store, signal_date, cfg)
+        signals = generate_signals(store, candidates, signal_date, cfg)
+
+        # 5) Broker 在 T+1（trade_date）执行撮合，并处理过期订单。
+        broker = Broker(store, cfg)
+        broker.process_signals(signals)
+        trades = broker.execute_pending_orders(trade_date)
+        expired = broker.expire_orders(trade_date)
+
+        logger.info(
+            f"run completed: trade_date={trade_date}, candidates={len(candidates)}, "
+            f"signals={len(signals)}, trades={len(trades)}, expired={expired}"
+        )
+        _finish_run(store, run_id, "SUCCESS")
+        return 0
+    except Exception as exc:
+        logger.exception("run failed")
+        _finish_run(store, run_id, "FAILED", str(exc))
+        return 1
+    finally:
+        store.close()
+
+
+def _not_implemented(name: str) -> int:
+    logger.error(f"Command `{name}` is reserved for Week3/Week4 implementation.")
+    return 2
+
+
+def create_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="EmotionQuant CLI")
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    fetch = sub.add_parser("fetch", help="Fetch L1 data")
+    fetch.add_argument("--start", type=str, default=None, help="Start date (YYYY-MM-DD)")
+    fetch.add_argument("--end", type=str, default=None, help="End date (YYYY-MM-DD)")
+    fetch.set_defaults(func=cmd_fetch)
+
+    build = sub.add_parser("build", help="Build L2/L3 data")
+    build.add_argument("--layers", type=str, default="l2", help="Comma-separated layers: l2,l3,all")
+    build.add_argument("--start", type=str, default=None, help="Start date (YYYY-MM-DD)")
+    build.add_argument("--end", type=str, default=None, help="End date (YYYY-MM-DD)")
+    build.add_argument("--force", action="store_true", help="Force rebuild target layers")
+    build.set_defaults(func=cmd_build)
+
+    backtest = sub.add_parser("backtest", help="Run backtest (Week3)")
+    backtest.set_defaults(func=lambda _args: _not_implemented("backtest"))
+
+    run = sub.add_parser("run", help="Run daily full pipeline (Week4)")
+    run.add_argument("--trade-date", type=str, default=None, help="Execution date (YYYY-MM-DD)")
+    run.set_defaults(func=cmd_run)
+
+    return parser
+
+
+def main() -> int:
+    cfg = get_settings()
+    configure_logger(cfg.resolved_log_path / "emotionquant.log", cfg.log_level)
+    parser = create_parser()
+    args = parser.parse_args()
+    return int(args.func(args))
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

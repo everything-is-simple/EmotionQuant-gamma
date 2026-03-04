@@ -14,7 +14,7 @@
 
 把沙盘模拟从“经验排查”升级为“可重复执行的评审流程”，避免单点修复后在调用链其他位置再次失效。
 
-本标准是 `rebuild-v0.01.md` 的配套评审规范；若与主文档冲突，以 `rebuild-v0.01.md` 为准。
+本标准是 `system-baseline.md` 的配套评审规范；若与主文档冲突，以 `system-baseline.md` 为准。
 
 ---
 
@@ -203,7 +203,7 @@
 
 证据入口：
 
-1. `docs/design-v2/rebuild-v0.01.md` §9（A-S 偏差闭环）
+1. `docs/design-v2/system-baseline.md` §9（A-S 偏差闭环）
 2. `docs/design-v2/architecture-master.md` / `broker-design.md` / `data-layer-design.md` 对齐记录
 
 ---
@@ -217,5 +217,9 @@
 职责边界：
 
 1. 本文件定义“如何评审”。
-2. `rebuild-v0.01.md` 定义“评审通过标准与执行口径”。
+2. `system-baseline.md` 定义“评审通过标准与执行口径”。
 3. 各模块设计文档定义“模块内部实现细节”。
+
+
+
+

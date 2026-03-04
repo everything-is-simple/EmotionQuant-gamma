@@ -2,12 +2,12 @@
 
 **版本**: v0.01 正式版
 **创建日期**: 2026-03-01
-**状态**: Frozen（与 `rebuild-v0.01.md` 对齐）
+**状态**: Frozen（与 `system-baseline.md` 对齐）
 **封版日期**: 2026-03-03
 **变更规则**: 仅允许勘误与说明性修订；执行语义变更需进入 v0.02+。
 **对应模块**: `src/data/`（fetcher.py, cleaner.py, builder.py, store.py）
 **上游文档**: `architecture-master.md` §4.1
-**运维记录**: `data-rebuild-runbook-20260303.md`（L1 保留、L2/L3/L4 清理与重建链路）
+**运维记录**: `docs/spec/v0.01/data-rebuild-runbook-20260303.md`（L1 保留、L2/L3/L4 清理与重建链路）
 
 ---
 
@@ -554,7 +554,7 @@ def clean_market_snapshot(store: Store, start: date, end: date):
      - 先剔除 is_halt=true 的行（或将停牌日 volume 设为 NaN）
      - 在剔除后的有效交易日序列上做 rolling
      - 算完后 merge 回完整日期序列
-     口径依据：rebuild-v0.01.md §4「SMA20(Volume) 使用过去 20 个有效交易日（停牌日不计入窗口）」
+     口径依据：system-baseline.md §4「SMA20(Volume) 使用过去 20 个有效交易日（停牌日不计入窗口）」
   5. 均线（向量化 rolling，仅在有效交易日上计算）：
      ma5  = groupby(code)['adj_close'].rolling(5).mean()
      ma10 = groupby(code)['adj_close'].rolling(10).mean()
@@ -800,3 +800,4 @@ DuckDB 列式压缩后预估：
   L3 + L4:              ~50 MB
   总计:                  ~600 MB（3年数据）
 ```
+

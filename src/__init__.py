@@ -1,0 +1,2 @@
+"""EmotionQuant source package."""
+

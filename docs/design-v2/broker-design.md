@@ -2,7 +2,7 @@
 
 **版本**: v0.01 正式版
 **创建日期**: 2026-03-01
-**状态**: Frozen（与 `rebuild-v0.01.md` 对齐）
+**状态**: Frozen（与 `system-baseline.md` 对齐）
 **封版日期**: 2026-03-03
 **变更规则**: 仅允许勘误与说明性修订；执行语义变更需进入 v0.02+。
 **对应模块**: `src/broker/`（risk.py, matcher.py）
@@ -748,4 +748,5 @@ def _offset_trade_date(self, base_date: date, n_days: int) -> date:
 - 信任=OBSERVE 的模拟单盈利 → 升回 ACTIVE（试用）
 - 组合回撤清仓 + 连亏熔断同时触发 → 优先组合回撤
 - 手续费不足 5 元 → 按 5 元收取
+
 

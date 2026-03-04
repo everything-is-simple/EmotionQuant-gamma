@@ -1,7 +1,7 @@
 # Bob Volman《外汇超短线交易》与 YTC 形态映射分析
 
 > **文档版本**：v0.01 正式版（参考附录）  
-> **文档状态**：Frozen（与 `rebuild-v0.01.md` 对齐）  
+> **文档状态**：Frozen（与 `system-baseline.md` 对齐）  
 > **创建日期**：2026-03-01  
 > **封版日期**：2026-03-03  
 > **变更规则**：仅允许勘误与说明性修订；不改变 v0.01 触发口径。  
@@ -9,7 +9,7 @@
 
 > **v0.01 口径说明**：本文件用于形态语义映射与增强参考，不作为 v0.01 的硬触发判定来源。  
 > v0.01 的交易触发以 `strategy-design.md` 中 BOF 量化规则为准。
-> 文中关于 `PAS_BPB`、Week2/Week4 的实现节奏均属历史研究草案，执行计划以 `rebuild-v0.01.md` 与 `.kiro/roadmap` 为准。
+> 文中关于 `PAS_BPB`、Week2/Week4 的实现节奏均属历史研究草案，执行计划以 `system-baseline.md` 与 `.kiro/roadmap` 为准。
 
 ---
 
@@ -887,3 +887,4 @@ def generate_adverse_condition_warnings(positions, market_data):
 
 **文档状态**：已完成  
 **下一步行动**：将此映射关系写入 `architecture-master.md` §4.3.8
+

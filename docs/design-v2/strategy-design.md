@@ -2,7 +2,7 @@
 
 **版本**: v0.01 正式版
 **创建日期**: 2026-03-01
-**状态**: Frozen（与 `rebuild-v0.01.md` 对齐）
+**状态**: Frozen（与 `system-baseline.md` 对齐）
 **封版日期**: 2026-03-03
 **变更规则**: 仅允许勘误与说明性修订；执行语义变更需进入 v0.02+。
 **对应模块**: `src/strategy/`（pattern_base.py, pas_bof.py, registry.py, strategy.py；`pas_bpb.py` 为 v0.02 预留）
@@ -112,7 +112,7 @@ df 行要求：
 
 ### 3.4 可复现口径（引用 SoT）
 
-`lower_bound` 及相关口径定义见 `rebuild-v0.01.md` §4：
+`lower_bound` 及相关口径定义见 `system-baseline.md` §4：
 - `lower_bound = min(adj_low[t-20, t-1])`，窗口不足 20 个交易日时不触发
 - 价格字段统一使用 `adj = raw × adj_factor`（`adj_open/adj_high/adj_low/adj_close`），历史行不回写
 - `SMA20(Volume)` 使用过去 20 个有效交易日（停牌日不计入窗口）
@@ -570,3 +570,4 @@ class TstDetector(PatternDetector):
 - volume_ma20 = 0 → volume_ratio 无穷大，跳过
 - 所有条件满足但 market_score < -1 → 放弃交易
 - 候选池为空 → 直接返回空 Signal 列表
+

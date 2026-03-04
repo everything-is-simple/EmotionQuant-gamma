@@ -12,7 +12,7 @@
 ## 1. 文档定位
 
 - 作用：给自动化代理提供最小、可执行的仓库工作规则。
-- **权威设计入口**：`docs/design-v2/rebuild-v0.01.md`（重构设计文档，单一事实源）
+- **权威设计入口**：`docs/design-v2/system-baseline.md`（重构设计文档，单一事实源）
 - 旧版设计/治理文档已归档至 `docs/archive/`（只读）
 
 ---
@@ -40,13 +40,13 @@ EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
 9. **路径/密钥禁止硬编码**，统一经 config.py 注入。
 10. **执行语义固定为 T+1 Open**：signal_date=T，execute_date=T+1，成交价=T+1 开盘价。
 
-详见：`docs/design-v2/rebuild-v0.01.md`（以当前版本为准）
+详见：`docs/design-v2/system-baseline.md`（以当前版本为准）
 
 ---
 
 ## 4. 开发流程
 
-- 执行模型：四周增量交付（见 rebuild-v0.01.md 当前版本）
+- 执行模型：四周增量交付（见 system-baseline.md 当前版本）
 - 每周产出可独立验证的交付物（可跑的代码 + 通过的测试）
 - 分支命名：`rebuild/{module}`，合并目标 `main`
 
@@ -64,7 +64,7 @@ EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
 代码中使用英文，注释/文档/UI 使用中文。统一 `snake_case`。
 L1 层用 `ts_code`（TuShare 格式），L2+ 层用 `code`（6 位纯代码）。
 
-详见：`docs/design-v2/rebuild-v0.01.md`（结果契约章节）
+详见：`docs/design-v2/system-baseline.md`（结果契约章节）
 
 ---
 
@@ -81,7 +81,7 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 
 **依赖规则**：L2 只读 L1；L3 只读 L1/L2；L4 只读 L1/L2/L3。禁止反向依赖。
 
-详见：`docs/design-v2/rebuild-v0.01.md`（数据与边界章节）
+详见：`docs/design-v2/system-baseline.md`（数据与边界章节）
 
 ---
 
@@ -104,13 +104,13 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 
 | 目录 | 定位 |
 |------|------|
-| `docs/design-v2/` | 新版设计文档（rebuild-v0.01.md 为唯一权威入口） |
+| `docs/design-v2/` | 新版设计文档（system-baseline.md 为唯一权威入口） |
 | `docs/design/` | 旧版设计（待归档） |
 | `docs/archive/` | 历史归档（只读） |
 
 ### 8.2 单一事实源（SoT）
 
-`docs/design-v2/rebuild-v0.01.md` 是系统设计的唯一权威文件（以当前版本章节为准）。
+`docs/design-v2/system-baseline.md` 是系统设计的唯一权威文件（以当前版本章节为准）。
 
 ### 8.3 归档规则
 
@@ -139,7 +139,7 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 - 同一原始观测只归属一个因子，禁止跨因子重复计分
 - 模块间只传“结果契约”（pydantic 对象），不传内部中间特征
 
-详见：`docs/design-v2/rebuild-v0.01.md`（铁律、模块边界、触发器章节）。
+详见：`docs/design-v2/system-baseline.md`（铁律、模块边界、触发器章节）。
 
 ---
 
@@ -151,7 +151,7 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 - 回测：backtrader 单引擎（仅时钟推进/数据喂入，交易内核为自研 Broker）
 - GUI：MVP 阶段命令行，GUI 延后
 
-详见：`docs/design-v2/rebuild-v0.01.md`（当前版本）
+详见：`docs/design-v2/system-baseline.md`（当前版本）
 
 ---
 
@@ -170,13 +170,13 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 - `archive-steering-v6-20260301/` — 旧版 6A-WORKFLOW/系统铁律/CORE-PRINCIPLES/GOVERNANCE-STRUCTURE/TRD/模板
 - `designv1/` / `reference/` / `sos/` — 更早期历史
 
-新版设计权威入口：`docs/design-v2/rebuild-v0.01.md`
+新版设计权威入口：`docs/design-v2/system-baseline.md`
 
 ---
 
 ## 14. 执行计划
 
-当前执行计划见 `docs/design-v2/rebuild-v0.01.md`（以当前版本为准）。
+当前执行计划见 `docs/design-v2/system-baseline.md`（以当前版本为准）。
 
 ## 15. Git 认证基线
 
@@ -210,5 +210,9 @@ Bootstrap：
 - 可选 MCP 目标目录：`-CodexHome <path>`（默认：项目内 `.tmp/codex-home`）
 - 仅 Hooks：`powershell -ExecutionPolicy Bypass -File scripts/setup/configure_git_hooks.ps1`
 - 仅 Skills 检查：`powershell -ExecutionPolicy Bypass -File scripts/setup/check_skills.ps1`
+
+
+
+
 
 

@@ -1,0 +1,507 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import date, datetime
+from pathlib import Path
+from typing import Any
+
+import duckdb
+import pandas as pd
+
+
+CURRENT_SCHEMA_VERSION = 1
+
+
+@dataclass(frozen=True)
+class SchemaVersion:
+    schema_version: int
+    updated_at: datetime | None
+
+
+class Store:
+    """DuckDB unified storage gateway."""
+
+    def __init__(self, db_path: str | Path):
+        path = Path(db_path).expanduser().resolve()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        self.db_path = path
+        self.conn = duckdb.connect(str(path))
+        try:
+            self.conn.execute("PRAGMA enable_wal")
+        except duckdb.Error:
+            # Some DuckDB versions may not expose this PRAGMA.
+            pass
+        self._init_tables()
+        self._ensure_schema_version(CURRENT_SCHEMA_VERSION)
+
+    def _init_tables(self) -> None:
+        for ddl in self._all_ddls():
+            self.conn.execute(ddl)
+
+    @staticmethod
+    def _all_ddls() -> list[str]:
+        return [
+            # L1
+            """
+            CREATE TABLE IF NOT EXISTS l1_stock_daily (
+                ts_code      VARCHAR NOT NULL,
+                date         DATE    NOT NULL,
+                open         DOUBLE,
+                high         DOUBLE,
+                low          DOUBLE,
+                close        DOUBLE,
+                pre_close    DOUBLE,
+                volume       DOUBLE,
+                amount       DOUBLE,
+                pct_chg      DOUBLE,
+                adj_factor   DOUBLE,
+                is_halt      BOOLEAN DEFAULT FALSE,
+                up_limit     DOUBLE,
+                down_limit   DOUBLE,
+                total_mv     DOUBLE,
+                circ_mv      DOUBLE,
+                PRIMARY KEY (ts_code, date)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l1_index_daily (
+                ts_code      VARCHAR NOT NULL,
+                date         DATE    NOT NULL,
+                open         DOUBLE,
+                high         DOUBLE,
+                low          DOUBLE,
+                close        DOUBLE,
+                pre_close    DOUBLE,
+                pct_chg      DOUBLE,
+                volume       DOUBLE,
+                amount       DOUBLE,
+                PRIMARY KEY (ts_code, date)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l1_stock_info (
+                ts_code        VARCHAR NOT NULL,
+                name           VARCHAR,
+                industry       VARCHAR,
+                market         VARCHAR,
+                is_st          BOOLEAN DEFAULT FALSE,
+                list_date      DATE,
+                effective_from DATE NOT NULL,
+                PRIMARY KEY (ts_code, effective_from)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l1_trade_calendar (
+                date           DATE NOT NULL PRIMARY KEY,
+                is_trade_day   BOOLEAN NOT NULL,
+                prev_trade_day DATE,
+                next_trade_day DATE
+            )
+            """,
+            # L2
+            """
+            CREATE TABLE IF NOT EXISTS l2_stock_adj_daily (
+                code         VARCHAR NOT NULL,
+                date         DATE    NOT NULL,
+                adj_open     DOUBLE,
+                adj_high     DOUBLE,
+                adj_low      DOUBLE,
+                adj_close    DOUBLE,
+                volume       DOUBLE,
+                amount       DOUBLE,
+                pct_chg      DOUBLE,
+                ma5          DOUBLE,
+                ma10         DOUBLE,
+                ma20         DOUBLE,
+                ma60         DOUBLE,
+                volume_ma5   DOUBLE,
+                volume_ma20  DOUBLE,
+                volume_ratio DOUBLE,
+                PRIMARY KEY (code, date)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l2_industry_daily (
+                industry    VARCHAR NOT NULL,
+                date        DATE    NOT NULL,
+                pct_chg     DOUBLE,
+                amount      DOUBLE,
+                stock_count INTEGER,
+                rise_count  INTEGER,
+                fall_count  INTEGER,
+                PRIMARY KEY (industry, date)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l2_market_snapshot (
+                date                        DATE NOT NULL PRIMARY KEY,
+                total_stocks                INTEGER,
+                rise_count                  INTEGER,
+                fall_count                  INTEGER,
+                strong_up_count             INTEGER,
+                strong_down_count           INTEGER,
+                limit_up_count              INTEGER,
+                limit_down_count            INTEGER,
+                touched_limit_up_count      INTEGER,
+                new_100d_high_count         INTEGER,
+                new_100d_low_count          INTEGER,
+                continuous_limit_up_2d      INTEGER,
+                continuous_limit_up_3d_plus INTEGER,
+                continuous_new_high_2d_plus INTEGER,
+                high_open_low_close_count   INTEGER,
+                low_open_high_close_count   INTEGER,
+                pct_chg_std                 DOUBLE,
+                amount_volatility           DOUBLE
+            )
+            """,
+            # L3
+            """
+            CREATE TABLE IF NOT EXISTS l3_mss_daily (
+                date               DATE NOT NULL PRIMARY KEY,
+                score              DOUBLE,
+                signal             VARCHAR,
+                market_coefficient DOUBLE,
+                profit_effect      DOUBLE,
+                loss_effect        DOUBLE,
+                continuity         DOUBLE,
+                extreme            DOUBLE,
+                volatility         DOUBLE
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l3_irs_daily (
+                date      DATE    NOT NULL,
+                industry  VARCHAR NOT NULL,
+                score     DOUBLE,
+                rank      INTEGER,
+                rs_score  DOUBLE,
+                cf_score  DOUBLE,
+                PRIMARY KEY (date, industry)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l3_signals (
+                signal_id   VARCHAR NOT NULL PRIMARY KEY,
+                code        VARCHAR NOT NULL,
+                signal_date DATE    NOT NULL,
+                action      VARCHAR NOT NULL,
+                strength    DOUBLE,
+                pattern     VARCHAR NOT NULL,
+                reason_code VARCHAR,
+                created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """,
+            """
+            CREATE INDEX IF NOT EXISTS idx_signals_date_code
+            ON l3_signals(signal_date, code)
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l3_stock_gene (
+                code            VARCHAR NOT NULL,
+                calc_date       DATE    NOT NULL,
+                bull_score      DOUBLE,
+                bear_score      DOUBLE,
+                gene_score      DOUBLE,
+                limit_up_freq   DOUBLE,
+                streak_up_avg   DOUBLE,
+                new_high_freq   DOUBLE,
+                strength_ratio  DOUBLE,
+                resilience      DOUBLE,
+                limit_down_freq DOUBLE,
+                streak_down_avg DOUBLE,
+                new_low_freq    DOUBLE,
+                weakness_ratio  DOUBLE,
+                fragility       DOUBLE,
+                PRIMARY KEY (code, calc_date)
+            )
+            """,
+            # L4
+            """
+            CREATE TABLE IF NOT EXISTS l4_orders (
+                order_id      VARCHAR NOT NULL PRIMARY KEY,
+                signal_id     VARCHAR NOT NULL,
+                code          VARCHAR NOT NULL,
+                action        VARCHAR NOT NULL,
+                pattern       VARCHAR NOT NULL,
+                quantity      INTEGER,
+                price_limit   DOUBLE,
+                execute_date  DATE NOT NULL,
+                is_paper      BOOLEAN DEFAULT FALSE,
+                status        VARCHAR DEFAULT 'PENDING',
+                reject_reason VARCHAR,
+                created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l4_trades (
+                trade_id      VARCHAR NOT NULL PRIMARY KEY,
+                order_id      VARCHAR NOT NULL,
+                code          VARCHAR NOT NULL,
+                execute_date  DATE NOT NULL,
+                action        VARCHAR NOT NULL,
+                pattern       VARCHAR NOT NULL,
+                price         DOUBLE,
+                quantity      INTEGER,
+                fee           DOUBLE,
+                slippage_bps  DOUBLE DEFAULT 0,
+                is_paper      BOOLEAN DEFAULT FALSE,
+                created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l4_stock_trust (
+                code                VARCHAR NOT NULL PRIMARY KEY,
+                tier                VARCHAR DEFAULT 'ACTIVE',
+                consecutive_losses  INTEGER DEFAULT 0,
+                on_probation        BOOLEAN DEFAULT FALSE,
+                last_demote_date    DATE,
+                last_promote_date   DATE,
+                updated_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l4_daily_report (
+                date                 DATE NOT NULL PRIMARY KEY,
+                candidates_count     INTEGER,
+                signals_count        INTEGER,
+                trades_count         INTEGER,
+                win_rate             DOUBLE,
+                avg_win              DOUBLE,
+                avg_loss             DOUBLE,
+                profit_factor        DOUBLE,
+                expected_value       DOUBLE,
+                max_drawdown         DOUBLE,
+                max_consecutive_loss INTEGER,
+                skewness             DOUBLE,
+                rolling_ev_30d       DOUBLE,
+                sharpe_30d           DOUBLE
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l4_pattern_stats (
+                date           DATE NOT NULL,
+                pattern        VARCHAR NOT NULL,
+                trade_count    INTEGER,
+                win_rate       DOUBLE,
+                avg_win        DOUBLE,
+                avg_loss       DOUBLE,
+                profit_factor  DOUBLE,
+                expected_value DOUBLE,
+                PRIMARY KEY (date, pattern)
+            )
+            """,
+            # Meta
+            """
+            CREATE TABLE IF NOT EXISTS _meta_fetch_progress (
+                data_type    VARCHAR NOT NULL PRIMARY KEY,
+                last_success DATE,
+                last_attempt TIMESTAMP,
+                status       VARCHAR DEFAULT 'OK',
+                error_msg    VARCHAR
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS _meta_runs (
+                run_id          VARCHAR NOT NULL PRIMARY KEY,
+                start_time      TIMESTAMP,
+                end_time        TIMESTAMP,
+                modules         VARCHAR,
+                status          VARCHAR,
+                error_summary   VARCHAR,
+                config_hash     VARCHAR,
+                data_snapshot   VARCHAR,
+                git_commit      VARCHAR,
+                runtime_env     VARCHAR,
+                created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS _meta_schema_version (
+                id             INTEGER PRIMARY KEY,
+                schema_version INTEGER NOT NULL,
+                updated_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """,
+        ]
+
+    def _ensure_schema_version(self, current_version: int) -> None:
+        # v0.01 约束：版本不一致时阻断运行，避免“旧库+新代码”静默污染结果。
+        row = self.conn.execute(
+            "SELECT schema_version, updated_at FROM _meta_schema_version WHERE id = 1"
+        ).fetchone()
+        if row is None:
+            self.conn.execute(
+                """
+                INSERT INTO _meta_schema_version(id, schema_version, updated_at)
+                VALUES (1, ?, CURRENT_TIMESTAMP)
+                """,
+                [current_version],
+            )
+            return
+
+        db_version = int(row[0])
+        if db_version == current_version:
+            return
+        if db_version > current_version:
+            raise RuntimeError(
+                f"Schema version {db_version} is newer than code version {current_version}."
+            )
+        raise RuntimeError(
+            "Schema migration required. Rebuild DB or provide migration script "
+            f"(db={db_version}, code={current_version})."
+        )
+
+    def get_schema_version(self) -> SchemaVersion:
+        row = self.conn.execute(
+            "SELECT schema_version, updated_at FROM _meta_schema_version WHERE id = 1"
+        ).fetchone()
+        if row is None:
+            return SchemaVersion(schema_version=0, updated_at=None)
+        return SchemaVersion(schema_version=int(row[0]), updated_at=row[1])
+
+    def bulk_upsert(self, table: str, df: pd.DataFrame) -> int:
+        if df.empty:
+            return 0
+        # 幂等核心：所有重跑覆盖写都走 upsert，禁止同主键重复追加。
+        tmp_name = "_tmp_df_upsert"
+        self.conn.register(tmp_name, df)
+        try:
+            columns = ", ".join(df.columns)
+            self.conn.execute(f"INSERT OR REPLACE INTO {table} ({columns}) SELECT {columns} FROM {tmp_name}")
+        finally:
+            self.conn.unregister(tmp_name)
+        return len(df)
+
+    def bulk_insert(self, table: str, df: pd.DataFrame) -> int:
+        if df.empty:
+            return 0
+        tmp_name = "_tmp_df_insert"
+        self.conn.register(tmp_name, df)
+        try:
+            columns = ", ".join(df.columns)
+            self.conn.execute(f"INSERT INTO {table} ({columns}) SELECT {columns} FROM {tmp_name}")
+        finally:
+            self.conn.unregister(tmp_name)
+        return len(df)
+
+    def read_df(self, sql: str, params: tuple[Any, ...] | list[Any] | None = None) -> pd.DataFrame:
+        if params is None:
+            return self.conn.execute(sql).df()
+        return self.conn.execute(sql, params).df()
+
+    def read_scalar(
+        self, sql: str, params: tuple[Any, ...] | list[Any] | None = None
+    ) -> Any | None:
+        if params is None:
+            row = self.conn.execute(sql).fetchone()
+        else:
+            row = self.conn.execute(sql, params).fetchone()
+        if row is None:
+            return None
+        return row[0]
+
+    def read_table(
+        self,
+        table: str,
+        date_range: tuple[date, date] | None = None,
+        codes: list[str] | None = None,
+        date_col: str = "date",
+        code_col: str = "code",
+    ) -> pd.DataFrame:
+        where_clauses: list[str] = []
+        params: list[Any] = []
+
+        if date_range is not None:
+            where_clauses.append(f"{date_col} BETWEEN ? AND ?")
+            params.extend([date_range[0], date_range[1]])
+        if codes:
+            placeholders = ", ".join(["?"] * len(codes))
+            where_clauses.append(f"{code_col} IN ({placeholders})")
+            params.extend(codes)
+
+        sql = f"SELECT * FROM {table}"
+        if where_clauses:
+            sql += " WHERE " + " AND ".join(where_clauses)
+        return self.read_df(sql, tuple(params))
+
+    def read_table_asof(
+        self,
+        table: str,
+        asof_date: date,
+        codes: list[str] | None = None,
+        date_col: str = "date",
+        code_col: str = "code",
+        extra_where: str | None = None,
+        extra_params: tuple[Any, ...] | None = None,
+    ) -> pd.DataFrame:
+        # 防未来函数：统一由 Store 注入 date <= asof_date 约束。
+        # 业务模块无需重复拼接“<= asof”条件，避免漏写。
+        where_clauses = [f"{date_col} <= ?"]
+        params: list[Any] = [asof_date]
+
+        if codes:
+            placeholders = ", ".join(["?"] * len(codes))
+            where_clauses.append(f"{code_col} IN ({placeholders})")
+            params.extend(codes)
+        if extra_where:
+            where_clauses.append(f"({extra_where})")
+        if extra_params:
+            params.extend(list(extra_params))
+
+        sql = f"SELECT * FROM {table} WHERE " + " AND ".join(where_clauses)
+        return self.read_df(sql, tuple(params))
+
+    def get_fetch_progress(self, data_type: str) -> date | None:
+        value = self.read_scalar(
+            "SELECT last_success FROM _meta_fetch_progress WHERE data_type = ?", (data_type,)
+        )
+        return value
+
+    def update_fetch_progress(
+        self,
+        data_type: str,
+        last_date: date | None,
+        status: str = "OK",
+        error_msg: str | None = None,
+    ) -> None:
+        payload = pd.DataFrame(
+            [
+                {
+                    "data_type": data_type,
+                    "last_success": last_date,
+                    "last_attempt": datetime.utcnow(),
+                    "status": status,
+                    "error_msg": error_msg,
+                }
+            ]
+        )
+        self.bulk_upsert("_meta_fetch_progress", payload)
+
+    def get_max_date(self, table: str, date_col: str = "date") -> date | None:
+        return self.read_scalar(f"SELECT MAX({date_col}) FROM {table}")
+
+    def next_trade_date(self, base_date: date) -> date | None:
+        # 交易日历是一等公民：所有 T+1 推进必须走此函数，不用自然日+1。
+        return self.read_scalar(
+            """
+            SELECT date FROM l1_trade_calendar
+            WHERE is_trade_day = TRUE AND date > ?
+            ORDER BY date
+            LIMIT 1
+            """,
+            (base_date,),
+        )
+
+    def prev_trade_date(self, base_date: date) -> date | None:
+        return self.read_scalar(
+            """
+            SELECT date FROM l1_trade_calendar
+            WHERE is_trade_day = TRUE AND date < ?
+            ORDER BY date DESC
+            LIMIT 1
+            """,
+            (base_date,),
+        )
+
+    def close(self) -> None:
+        self.conn.close()

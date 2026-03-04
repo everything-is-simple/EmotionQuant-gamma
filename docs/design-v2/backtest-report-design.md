@@ -2,7 +2,7 @@
 
 **版本**: v0.01 正式版
 **创建日期**: 2026-03-01
-**状态**: Frozen（与 `rebuild-v0.01.md` 对齐）
+**状态**: Frozen（与 `system-baseline.md` 对齐）
 **封版日期**: 2026-03-03
 **变更规则**: 仅允许勘误与说明性修订；执行语义变更需进入 v0.02+。
 **对应模块**: `src/backtest/engine.py`，`src/report/reporter.py`
@@ -778,3 +778,4 @@ WARN_SKEWNESS = -0.5              # 偏度 < 此值触发预警
 - 全部亏损 → win_rate=0, expected_value 为负
 - 只有 BUY 没有 SELL（回测结束时仍持仓）→ 按最后一天收盘价强制平仓
 - 单笔交易 → skewness/kurtosis 返回 0（样本不足）
+
