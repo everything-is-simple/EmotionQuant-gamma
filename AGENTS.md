@@ -1,6 +1,6 @@
 # AGENTS.md
 
-本文件为自动化代理提供最小、可执行的仓库工作规则。与 `AGENTS.en.md`、`CLAUDE.md`、`CLAUDE.en.md`、`WARP.md`、`WARP.en.md` 内容等价，面向通用代理运行时。
+本文件为自动化代理提供最小、可执行的仓库工作规则。与 `AGENTS.md`、`AGENTS.en.md`、`CLAUDE.md`、`CLAUDE.en.md`、`WARP.md`、`WARP.en.md` 内容等价，面向通用代理运行时。
 
 **文档版本**：`v0.01 正式版`  
 **文档状态**：`Frozen`（封版）  
