@@ -45,6 +45,7 @@ class Store:
         这些列用于 Gate 诚信指标，不改变主键与核心执行语义。
         """
         optional_columns = [
+            ("l1_stock_info", "list_status", "VARCHAR DEFAULT 'L'"),
             ("l4_daily_report", "reject_rate", "DOUBLE"),
             ("l4_daily_report", "missing_rate", "DOUBLE"),
             ("l4_daily_report", "exposure_rate", "DOUBLE"),
@@ -108,6 +109,7 @@ class Store:
                 name           VARCHAR,
                 industry       VARCHAR,
                 market         VARCHAR,
+                list_status    VARCHAR DEFAULT 'L',
                 is_st          BOOLEAN DEFAULT FALSE,
                 list_date      DATE,
                 effective_from DATE NOT NULL,

@@ -29,6 +29,7 @@ def _load_universe_snapshot(store: Store, calc_date: date) -> pd.DataFrame:
                 l1.is_halt,
                 info.industry,
                 info.is_st,
+                info.list_status,
                 info.list_date,
                 ROW_NUMBER() OVER (
                     PARTITION BY l2.code, l2.date
@@ -51,6 +52,7 @@ def _load_universe_snapshot(store: Store, calc_date: date) -> pd.DataFrame:
             is_halt,
             industry,
             is_st,
+            list_status,
             list_date
         FROM joined
         WHERE rn = 1
@@ -66,12 +68,14 @@ def _apply_basic_filters(df: pd.DataFrame, calc_date: date, config: Settings) ->
     work["industry"] = work["industry"].fillna("未知")
     work["is_halt"] = work["is_halt"].fillna(False)
     work["is_st"] = work["is_st"].fillna(False)
+    work["list_status"] = work["list_status"].fillna("UNKNOWN")
     work["list_date"] = pd.to_datetime(work["list_date"], errors="coerce")
     work["list_days"] = (pd.Timestamp(calc_date) - work["list_date"]).dt.days
 
     # 粗筛目标：先剔除不可交易与明显质量差样本，再做排序。
     filtered = work[
-        (~work["is_halt"])
+        (work["list_status"] == "L")
+        & (~work["is_halt"])
         & (~work["is_st"])
         & (work["list_days"].fillna(0) >= config.min_list_days)
         & (work["amount"].fillna(0) >= config.min_amount)

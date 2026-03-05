@@ -137,6 +137,14 @@ def _fetch_l1_info_boundary(con: duckdb.DuckDBPyConnection) -> dict:
         ORDER BY 1
         """
     ).fetchall()
+    status_distribution = con.execute(
+        """
+        SELECT COALESCE(list_status, 'NULL') AS list_status, COUNT(*) AS rows
+        FROM l1_stock_info
+        GROUP BY 1
+        ORDER BY rows DESC, list_status
+        """
+    ).fetchall()
     return {
         "min_effective_from": row[0].isoformat() if row[0] else None,
         "max_effective_from": row[1].isoformat() if row[1] else None,
@@ -145,6 +153,9 @@ def _fetch_l1_info_boundary(con: duckdb.DuckDBPyConnection) -> dict:
         "codes": int(row[4] or 0),
         "effective_from_distribution": [
             {"effective_from": item[0].isoformat(), "rows": int(item[1])} for item in distribution
+        ],
+        "list_status_distribution": [
+            {"list_status": item[0], "rows": int(item[1])} for item in status_distribution
         ],
     }
 
@@ -326,6 +337,80 @@ def _fetch_miss_breakdown(con: duckdb.DuckDBPyConnection, start: str, end: str) 
     }
 
 
+def _fetch_signal_list_status_metrics(con: duckdb.DuckDBPyConnection, start: str, end: str) -> dict:
+    row = con.execute(
+        """
+        WITH s AS (
+          SELECT code, signal_date AS date
+          FROM l3_signals
+          WHERE signal_date BETWEEN ? AND ?
+        ),
+        a AS (
+          SELECT
+            s.code,
+            s.date,
+            (
+              SELECT i.list_status
+              FROM l1_stock_info i
+              WHERE SPLIT_PART(i.ts_code, '.', 1) = s.code
+                AND i.effective_from <= s.date
+              ORDER BY i.effective_from DESC
+              LIMIT 1
+            ) AS asof_list_status
+          FROM s
+        )
+        SELECT
+          COUNT(*) AS signal_count,
+          SUM(CASE WHEN asof_list_status = 'L' THEN 1 ELSE 0 END) AS live_signal_count,
+          SUM(CASE WHEN asof_list_status IS NULL THEN 1 ELSE 0 END) AS missing_status_count,
+          SUM(CASE WHEN asof_list_status IS NOT NULL AND asof_list_status <> 'L' THEN 1 ELSE 0 END) AS non_live_signal_count
+        FROM a
+        """,
+        [start, end],
+    ).fetchone()
+
+    by_status = con.execute(
+        """
+        WITH s AS (
+          SELECT code, signal_date AS date
+          FROM l3_signals
+          WHERE signal_date BETWEEN ? AND ?
+        ),
+        a AS (
+          SELECT
+            (
+              SELECT i.list_status
+              FROM l1_stock_info i
+              WHERE SPLIT_PART(i.ts_code, '.', 1) = s.code
+                AND i.effective_from <= s.date
+              ORDER BY i.effective_from DESC
+              LIMIT 1
+            ) AS asof_list_status
+          FROM s
+        )
+        SELECT COALESCE(asof_list_status, 'NULL') AS list_status, COUNT(*) AS rows
+        FROM a
+        GROUP BY 1
+        ORDER BY rows DESC, list_status
+        """,
+        [start, end],
+    ).fetchall()
+
+    signal_count = int(row[0] or 0)
+    non_live_signal_count = int(row[3] or 0)
+    non_live_signal_ratio = float(non_live_signal_count / signal_count) if signal_count > 0 else 0.0
+    return {
+        "signal_count": signal_count,
+        "live_signal_count": int(row[1] or 0),
+        "missing_status_count": int(row[2] or 0),
+        "non_live_signal_count": non_live_signal_count,
+        "non_live_signal_ratio": non_live_signal_ratio,
+        "signal_status_distribution": [
+            {"list_status": item[0], "rows": int(item[1])} for item in by_status
+        ],
+    }
+
+
 def main() -> int:
     args = build_parser().parse_args()
     target_db = Path(args.target_db).expanduser().resolve()
@@ -342,6 +427,17 @@ def main() -> int:
         daily_coverage = _fetch_daily_asof_coverage(con, args.start, args.end)
         signal_coverage = _fetch_signal_asof_coverage(con, args.start, args.end)
         miss_breakdown = _fetch_miss_breakdown(con, args.start, args.end)
+        signal_status_metrics = _fetch_signal_list_status_metrics(con, args.start, args.end)
+
+        thresholds = {
+            "signal_asof_hit_rate_min": 0.999,
+            "non_live_signal_ratio_max": 0.0,
+        }
+        gates = {
+            "signal_asof_hit_rate_pass": signal_coverage.hit_rate >= thresholds["signal_asof_hit_rate_min"],
+            "non_live_signal_ratio_pass": signal_status_metrics["non_live_signal_ratio"]
+            <= thresholds["non_live_signal_ratio_max"],
+        }
 
         result = {
             "window": {"start": args.start, "end": args.end},
@@ -349,7 +445,11 @@ def main() -> int:
             "l1_stock_info_boundary": l1_info_boundary,
             "asof_coverage_l1_stock_daily": asdict(daily_coverage),
             "asof_coverage_l3_signals": asdict(signal_coverage),
+            "signal_list_status_metrics": signal_status_metrics,
             "miss_breakdown": miss_breakdown,
+            "thresholds": thresholds,
+            "gate_checks": gates,
+            "g6_ready": bool(all(gates.values())),
         }
     finally:
         con.close()

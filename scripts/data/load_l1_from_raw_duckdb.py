@@ -24,6 +24,8 @@ def main() -> int:
 
     con = duckdb.connect(str(target))
     con.execute(f"ATTACH '{source.as_posix()}' AS rawdb")
+    # 兼容旧库：为 stock_info 补齐 list_status 列，避免快照导入失败。
+    con.execute("ALTER TABLE l1_stock_info ADD COLUMN IF NOT EXISTS list_status VARCHAR DEFAULT 'L'")
 
     if args.refresh_stock_info_only:
         con.execute("DELETE FROM l1_stock_info")
@@ -113,18 +115,20 @@ def main() -> int:
     # keep a row when attrs change by effective date, not only latest one.
     con.execute(
         """
-        INSERT INTO l1_stock_info(ts_code, name, industry, market, is_st, list_date, effective_from)
+        INSERT INTO l1_stock_info(
+          ts_code, name, industry, market, list_status, is_st, list_date, effective_from
+        )
         WITH base AS (
           SELECT
             ts_code,
             name,
             industry,
             market,
+            COALESCE(list_status, 'L') AS list_status,
             list_date,
             STRPTIME(trade_date, '%Y%m%d')::DATE AS effective_from
           FROM rawdb.raw_stock_basic
-          WHERE list_status = 'L'
-            AND STRPTIME(trade_date, '%Y%m%d')::DATE BETWEEN ? AND ?
+          WHERE STRPTIME(trade_date, '%Y%m%d')::DATE BETWEEN ? AND ?
         ),
         dedup_day AS (
           SELECT *,
@@ -135,7 +139,7 @@ def main() -> int:
           FROM base
         ),
         clean AS (
-          SELECT ts_code, name, industry, market, list_date, effective_from
+          SELECT ts_code, name, industry, market, list_status, list_date, effective_from
           FROM dedup_day
           WHERE rn = 1
         ),
@@ -145,6 +149,7 @@ def main() -> int:
             LAG(name) OVER (PARTITION BY ts_code ORDER BY effective_from) AS prev_name,
             LAG(industry) OVER (PARTITION BY ts_code ORDER BY effective_from) AS prev_industry,
             LAG(market) OVER (PARTITION BY ts_code ORDER BY effective_from) AS prev_market,
+            LAG(list_status) OVER (PARTITION BY ts_code ORDER BY effective_from) AS prev_list_status,
             LAG(list_date) OVER (PARTITION BY ts_code ORDER BY effective_from) AS prev_list_date
           FROM clean
         ),
@@ -155,6 +160,7 @@ def main() -> int:
              OR COALESCE(name, '') <> COALESCE(prev_name, '')
              OR COALESCE(industry, '') <> COALESCE(prev_industry, '')
              OR COALESCE(market, '') <> COALESCE(prev_market, '')
+             OR COALESCE(list_status, '') <> COALESCE(prev_list_status, '')
              OR COALESCE(list_date, '') <> COALESCE(prev_list_date, '')
         )
         SELECT
@@ -162,6 +168,7 @@ def main() -> int:
           name,
           industry,
           market,
+          list_status,
           (name LIKE '%ST%') AS is_st,
           STRPTIME(list_date, '%Y%m%d')::DATE AS list_date,
           effective_from

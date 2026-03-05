@@ -95,6 +95,7 @@ def test_mss_irs_and_selector_pipeline(tmp_path) -> None:
                 "name": "平安银行",
                 "industry": "银行",
                 "market": "主板",
+                "list_status": "L",
                 "is_st": False,
                 "list_date": date(2010, 1, 1),
                 "effective_from": d0,
@@ -186,3 +187,217 @@ def test_bof_detector_trigger() -> None:
     assert signal.pattern == "bof"
     assert signal.action == "BUY"
 
+
+def test_selector_asof_prefers_latest_status_snapshot(tmp_path) -> None:
+    db = tmp_path / "selector_asof.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 10)
+
+    store.bulk_upsert(
+        "l2_stock_adj_daily",
+        pd.DataFrame(
+            [
+                {
+                    "code": "000001",
+                    "date": calc_date,
+                    "adj_open": 10.0,
+                    "adj_high": 10.2,
+                    "adj_low": 9.8,
+                    "adj_close": 10.0,
+                    "volume": 10000,
+                    "amount": 1e8,
+                    "pct_chg": 0.0,
+                    "ma5": 10.0,
+                    "ma10": 10.0,
+                    "ma20": 10.0,
+                    "ma60": 10.0,
+                    "volume_ma5": 9000,
+                    "volume_ma20": 9000,
+                    "volume_ratio": 1.1,
+                }
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_daily",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SZ",
+                    "date": calc_date,
+                    "open": 10.0,
+                    "high": 10.2,
+                    "low": 9.8,
+                    "close": 10.0,
+                    "pre_close": 10.0,
+                    "volume": 10000,
+                    "amount": 1e8,
+                    "pct_chg": 0.0,
+                    "adj_factor": 1.0,
+                    "is_halt": False,
+                    "up_limit": 11.0,
+                    "down_limit": 9.0,
+                    "total_mv": 1e6,
+                    "circ_mv": 8e5,
+                }
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_info",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SZ",
+                    "name": "样本股",
+                    "industry": "银行",
+                    "market": "主板",
+                    "list_status": "L",
+                    "is_st": False,
+                    "list_date": date(2010, 1, 1),
+                    "effective_from": date(2026, 1, 1),
+                },
+                {
+                    "ts_code": "000001.SZ",
+                    "name": "样本股",
+                    "industry": "银行",
+                    "market": "主板",
+                    "list_status": "D",
+                    "is_st": False,
+                    "list_date": date(2010, 1, 1),
+                    "effective_from": date(2026, 1, 9),
+                },
+            ]
+        ),
+    )
+
+    cfg = Settings(ENABLE_MSS_GATE=False, ENABLE_IRS_FILTER=False, MIN_AMOUNT=1, MIN_LIST_DAYS=1)
+    cands = select_candidates(store, calc_date, cfg)
+    assert cands == []
+    store.close()
+
+
+def test_selector_filters_out_non_live_status(tmp_path) -> None:
+    db = tmp_path / "selector_delist.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 10)
+
+    store.bulk_upsert(
+        "l2_stock_adj_daily",
+        pd.DataFrame(
+            [
+                {
+                    "code": "000001",
+                    "date": calc_date,
+                    "adj_open": 10.0,
+                    "adj_high": 10.2,
+                    "adj_low": 9.8,
+                    "adj_close": 10.0,
+                    "volume": 10000,
+                    "amount": 1e8,
+                    "pct_chg": 0.0,
+                    "ma5": 10.0,
+                    "ma10": 10.0,
+                    "ma20": 10.0,
+                    "ma60": 10.0,
+                    "volume_ma5": 9000,
+                    "volume_ma20": 9000,
+                    "volume_ratio": 1.1,
+                },
+                {
+                    "code": "000002",
+                    "date": calc_date,
+                    "adj_open": 12.0,
+                    "adj_high": 12.2,
+                    "adj_low": 11.8,
+                    "adj_close": 12.0,
+                    "volume": 10000,
+                    "amount": 1e8,
+                    "pct_chg": 0.0,
+                    "ma5": 12.0,
+                    "ma10": 12.0,
+                    "ma20": 12.0,
+                    "ma60": 12.0,
+                    "volume_ma5": 9000,
+                    "volume_ma20": 9000,
+                    "volume_ratio": 1.1,
+                },
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_daily",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SZ",
+                    "date": calc_date,
+                    "open": 10.0,
+                    "high": 10.2,
+                    "low": 9.8,
+                    "close": 10.0,
+                    "pre_close": 10.0,
+                    "volume": 10000,
+                    "amount": 1e8,
+                    "pct_chg": 0.0,
+                    "adj_factor": 1.0,
+                    "is_halt": False,
+                    "up_limit": 11.0,
+                    "down_limit": 9.0,
+                    "total_mv": 1e6,
+                    "circ_mv": 8e5,
+                },
+                {
+                    "ts_code": "000002.SZ",
+                    "date": calc_date,
+                    "open": 12.0,
+                    "high": 12.2,
+                    "low": 11.8,
+                    "close": 12.0,
+                    "pre_close": 12.0,
+                    "volume": 10000,
+                    "amount": 1e8,
+                    "pct_chg": 0.0,
+                    "adj_factor": 1.0,
+                    "is_halt": False,
+                    "up_limit": 13.2,
+                    "down_limit": 10.8,
+                    "total_mv": 1e6,
+                    "circ_mv": 8e5,
+                },
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_info",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SZ",
+                    "name": "在市股",
+                    "industry": "银行",
+                    "market": "主板",
+                    "list_status": "L",
+                    "is_st": False,
+                    "list_date": date(2010, 1, 1),
+                    "effective_from": date(2020, 1, 1),
+                },
+                {
+                    "ts_code": "000002.SZ",
+                    "name": "退市股",
+                    "industry": "银行",
+                    "market": "主板",
+                    "list_status": "D",
+                    "is_st": False,
+                    "list_date": date(2010, 1, 1),
+                    "effective_from": date(2020, 1, 1),
+                },
+            ]
+        ),
+    )
+
+    cfg = Settings(ENABLE_MSS_GATE=False, ENABLE_IRS_FILTER=False, MIN_AMOUNT=1, MIN_LIST_DAYS=1)
+    cands = select_candidates(store, calc_date, cfg)
+    assert len(cands) == 1
+    assert cands[0].code == "000001"
+    store.close()
