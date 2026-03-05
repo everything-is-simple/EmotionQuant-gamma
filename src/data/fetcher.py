@@ -213,9 +213,11 @@ class TuShareFetcher(DataFetcher):
         if basic is None or basic.empty:
             return pd.DataFrame()
         basic = basic.rename(columns={"list_date": "list_date_raw"})
-        basic["effective_from"] = date.today()
         basic["is_st"] = basic["name"].str.contains("ST", na=False)
         basic["list_date"] = pd.to_datetime(basic["list_date_raw"], format="%Y%m%d", errors="coerce").dt.date
+        # 避免“单点快照”幸存者偏差：默认以 list_date 作为生效起点。
+        # 若 list_date 缺失，再回退到当天，保证字段非空。
+        basic["effective_from"] = basic["list_date"].fillna(date.today())
         return basic[
             [
                 "ts_code",

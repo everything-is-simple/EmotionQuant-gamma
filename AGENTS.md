@@ -214,3 +214,20 @@ Bootstrap：
 
 
 
+
+## 17. 测试与工具目录规范（强制）
+
+### 17.1 tests 目录必须按“类型 + 模块”组织
+
+1. `tests/unit/<module>/`：单元测试（纯函数/单模块）
+2. `tests/integration/<module>/`：集成测试（跨模块调用链）
+3. `tests/patches/<module>/`：补丁/回归测试（历史缺陷防回退）
+4. `<module>` 必须与 `src/` 对齐：`data/selector/strategy/broker/backtest/report/core`
+5. 修改 `src/<module>/` 时，必须在对应模块目录补/改测试，不允许散落在 tests 根目录
+
+### 17.2 scripts 目录是唯一工具入口
+
+1. 任何“非系统运行时、但研发/运维必须”的程序统一放在 `scripts/`
+2. 按系统域分类：`scripts/data/`、`scripts/backtest/`、`scripts/report/`、`scripts/ops/` 等
+3. `scripts/` 下工具不得反向污染 `src/` 运行时依赖（即：业务模块不依赖脚本入口）
+4. 新增工具必须放入对应分类目录，不允许散落在仓库根目录

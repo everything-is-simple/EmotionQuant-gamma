@@ -214,3 +214,20 @@ Bootstrap:
 
 
 
+
+## 17. Test And Tool Layout Rules (Mandatory)
+
+### 17.1 tests must follow "type + module"
+
+1. `tests/unit/<module>/`: unit tests (pure function / single module)
+2. `tests/integration/<module>/`: integration tests (cross-module flow)
+3. `tests/patches/<module>/`: patch/regression tests (prevent known bug rollback)
+4. `<module>` must mirror `src/`: `data/selector/strategy/broker/backtest/report/core`
+5. When changing `src/<module>/`, add/update tests in the matching module folder; do not drop tests at tests root
+
+### 17.2 scripts is the only tool entry
+
+1. Any non-runtime but required engineering/ops utility must live under `scripts/`
+2. Classify by domain: `scripts/data/`, `scripts/backtest/`, `scripts/report/`, `scripts/ops/`, etc.
+3. Tools under `scripts/` must not become runtime dependencies for `src/`
+4. New tools must be placed in the matching category folder, never at repository root

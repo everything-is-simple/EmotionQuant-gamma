@@ -37,6 +37,25 @@ class Store:
     def _init_tables(self) -> None:
         for ddl in self._all_ddls():
             self.conn.execute(ddl)
+        self._ensure_optional_columns()
+
+    def _ensure_optional_columns(self) -> None:
+        """
+        非破坏性 schema 演进：为已有库补齐报告扩展字段。
+        这些列用于 Gate 诚信指标，不改变主键与核心执行语义。
+        """
+        optional_columns = [
+            ("l4_daily_report", "reject_rate", "DOUBLE"),
+            ("l4_daily_report", "missing_rate", "DOUBLE"),
+            ("l4_daily_report", "exposure_rate", "DOUBLE"),
+            ("l4_daily_report", "failure_reason_breakdown", "VARCHAR"),
+        ]
+        for table, col, typ in optional_columns:
+            try:
+                self.conn.execute(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {col} {typ}")
+            except duckdb.Error:
+                # 低版本 DuckDB 兼容：忽略 IF NOT EXISTS 不可用的失败。
+                pass
 
     @staticmethod
     def _all_ddls() -> list[str]:
@@ -274,7 +293,11 @@ class Store:
                 max_consecutive_loss INTEGER,
                 skewness             DOUBLE,
                 rolling_ev_30d       DOUBLE,
-                sharpe_30d           DOUBLE
+                sharpe_30d           DOUBLE,
+                reject_rate          DOUBLE,
+                missing_rate         DOUBLE,
+                exposure_rate        DOUBLE,
+                failure_reason_breakdown VARCHAR
             )
             """,
             """

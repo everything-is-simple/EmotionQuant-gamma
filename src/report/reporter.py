@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import deque
 from datetime import date
+import json
 
 import pandas as pd
 
@@ -142,6 +143,68 @@ def _max_drawdown(equity: pd.Series) -> float:
     return float(drawdown.max())
 
 
+def _load_orders(store: Store, start: date, end: date) -> pd.DataFrame:
+    return store.read_df(
+        """
+        SELECT order_id, execute_date, status, reject_reason, is_paper
+        FROM l4_orders
+        WHERE execute_date BETWEEN ? AND ?
+        ORDER BY execute_date, order_id
+        """,
+        (start, end),
+    )
+
+
+def _compute_failure_reason_breakdown(orders_df: pd.DataFrame) -> dict[str, int]:
+    if orders_df.empty:
+        return {}
+    failed = orders_df[orders_df["status"].isin(["REJECTED", "EXPIRED"])].copy()
+    if failed.empty:
+        return {}
+    failed["reason_key"] = failed["reject_reason"].fillna(failed["status"]).replace("", "UNKNOWN")
+    grouped = failed.groupby("reason_key").size().sort_values(ascending=False)
+    return {str(k): int(v) for k, v in grouped.items()}
+
+
+def _compute_exposure_rate(store: Store, start: date, end: date) -> float:
+    # 暴露率定义：窗口内“有真实持仓”的交易日占比。
+    calendar = store.read_df(
+        """
+        SELECT date
+        FROM l1_trade_calendar
+        WHERE is_trade_day = TRUE AND date BETWEEN ? AND ?
+        ORDER BY date
+        """,
+        (start, end),
+    )
+    if calendar.empty:
+        return 0.0
+
+    trades = store.read_df(
+        """
+        SELECT execute_date, action, quantity
+        FROM l4_trades
+        WHERE execute_date BETWEEN ? AND ? AND is_paper = FALSE
+        ORDER BY execute_date
+        """,
+        (start, end),
+    )
+    if trades.empty:
+        return 0.0
+
+    daily_delta = (
+        trades.assign(delta=trades["quantity"] * trades["action"].map({"BUY": 1, "SELL": -1}).fillna(0))
+        .groupby("execute_date", as_index=False)["delta"]
+        .sum()
+    )
+    merged = calendar.merge(daily_delta, left_on="date", right_on="execute_date", how="left")
+    merged["delta"] = merged["delta"].fillna(0)
+    merged["position_qty"] = merged["delta"].cumsum()
+    exposed_days = int((merged["position_qty"] > 0).sum())
+    total_days = int(len(merged))
+    return float(exposed_days / total_days) if total_days > 0 else 0.0
+
+
 def generate_backtest_report(
     store: Store,
     config: Settings,
@@ -154,6 +217,7 @@ def generate_backtest_report(
     结果会回写 l4_daily_report，便于后续 Gate 对照。
     """
     trades = _load_trades(store, start, end)
+    orders = _load_orders(store, start, end)
     paired = _pair_trades(trades)
     exp = _compute_expectation(paired)
 
@@ -181,6 +245,17 @@ def generate_backtest_report(
         )
         or 0
     )
+    orders_count = int(len(orders))
+    rejected_count = int((orders["status"] == "REJECTED").sum()) if not orders.empty else 0
+    missing_count = (
+        int(((orders["status"] == "REJECTED") & (orders["reject_reason"] == "NO_MARKET_DATA")).sum())
+        if not orders.empty
+        else 0
+    )
+    reject_rate = float(rejected_count / orders_count) if orders_count > 0 else 0.0
+    missing_rate = float(missing_count / orders_count) if orders_count > 0 else 0.0
+    exposure_rate = _compute_exposure_rate(store, start, end)
+    failure_breakdown = _compute_failure_reason_breakdown(orders)
 
     row = pd.DataFrame(
         [
@@ -199,6 +274,10 @@ def generate_backtest_report(
                 "skewness": None,
                 "rolling_ev_30d": None,
                 "sharpe_30d": None,
+                "reject_rate": reject_rate,
+                "missing_rate": missing_rate,
+                "exposure_rate": exposure_rate,
+                "failure_reason_breakdown": json.dumps(failure_breakdown, ensure_ascii=False),
             }
         ]
     )
@@ -207,7 +286,8 @@ def generate_backtest_report(
     logger.info(
         "backtest summary: "
         f"range={start}..{end}, trade_count={trade_count}, EV={expected_value:.6f}, "
-        f"PF={profit_factor}, MDD={max_dd:.6f}"
+        f"PF={profit_factor}, MDD={max_dd:.6f}, reject_rate={reject_rate:.6f}, "
+        f"missing_rate={missing_rate:.6f}, exposure_rate={exposure_rate:.6f}"
     )
 
     return {
@@ -215,4 +295,7 @@ def generate_backtest_report(
         "expected_value": float(expected_value),
         "profit_factor": float(profit_factor),
         "max_drawdown": float(max_dd),
+        "reject_rate": float(reject_rate),
+        "missing_rate": float(missing_rate),
+        "exposure_rate": float(exposure_rate),
     }
