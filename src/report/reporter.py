@@ -146,7 +146,7 @@ def _max_drawdown(equity: pd.Series) -> float:
 def _load_orders(store: Store, start: date, end: date) -> pd.DataFrame:
     return store.read_df(
         """
-        SELECT order_id, execute_date, status, reject_reason, is_paper
+        SELECT order_id, signal_id, execute_date, action, status, reject_reason, is_paper
         FROM l4_orders
         WHERE execute_date BETWEEN ? AND ?
         ORDER BY execute_date, order_id
@@ -205,6 +205,54 @@ def _compute_exposure_rate(store: Store, start: date, end: date) -> float:
     return float(exposed_days / total_days) if total_days > 0 else 0.0
 
 
+def _compute_opportunity_metrics(orders_df: pd.DataFrame, signals_count: int) -> dict[str, float]:
+    if orders_df.empty:
+        return {
+            "opportunity_count": float(signals_count),
+            "filled_count": 0.0,
+            "skip_cash_count": 0.0,
+            "skip_maxpos_count": 0.0,
+            "participation_rate": 0.0,
+        }
+
+    buy_orders = orders_df[orders_df["action"] == "BUY"].copy()
+    filled_count = int((buy_orders["status"] == "FILLED").sum()) if not buy_orders.empty else 0
+    skip_cash_count = (
+        int(
+            (
+                (buy_orders["status"] == "REJECTED")
+                & (
+                    buy_orders["reject_reason"].isin(
+                        ["INSUFFICIENT_CASH", "INSUFFICIENT_CASH_AT_EXECUTION"]
+                    )
+                )
+            ).sum()
+        )
+        if not buy_orders.empty
+        else 0
+    )
+    skip_maxpos_count = (
+        int(
+            (
+                (buy_orders["status"] == "REJECTED")
+                & (buy_orders["reject_reason"] == "MAX_POSITIONS_REACHED")
+            ).sum()
+        )
+        if not buy_orders.empty
+        else 0
+    )
+
+    opportunity_count = int(signals_count)
+    participation_rate = float(filled_count / opportunity_count) if opportunity_count > 0 else 0.0
+    return {
+        "opportunity_count": float(opportunity_count),
+        "filled_count": float(filled_count),
+        "skip_cash_count": float(skip_cash_count),
+        "skip_maxpos_count": float(skip_maxpos_count),
+        "participation_rate": float(participation_rate),
+    }
+
+
 def generate_backtest_report(
     store: Store,
     config: Settings,
@@ -256,6 +304,7 @@ def generate_backtest_report(
     missing_rate = float(missing_count / orders_count) if orders_count > 0 else 0.0
     exposure_rate = _compute_exposure_rate(store, start, end)
     failure_breakdown = _compute_failure_reason_breakdown(orders)
+    opportunity = _compute_opportunity_metrics(orders, signals_count)
 
     row = pd.DataFrame(
         [
@@ -278,16 +327,22 @@ def generate_backtest_report(
                 "missing_rate": missing_rate,
                 "exposure_rate": exposure_rate,
                 "failure_reason_breakdown": json.dumps(failure_breakdown, ensure_ascii=False),
+                "opportunity_count": int(opportunity["opportunity_count"]),
+                "filled_count": int(opportunity["filled_count"]),
+                "skip_cash_count": int(opportunity["skip_cash_count"]),
+                "skip_maxpos_count": int(opportunity["skip_maxpos_count"]),
+                "participation_rate": float(opportunity["participation_rate"]),
             }
         ]
     )
     store.bulk_upsert("l4_daily_report", row)
 
     logger.info(
-        "backtest summary: "
-        f"range={start}..{end}, trade_count={trade_count}, EV={expected_value:.6f}, "
-        f"PF={profit_factor}, MDD={max_dd:.6f}, reject_rate={reject_rate:.6f}, "
-        f"missing_rate={missing_rate:.6f}, exposure_rate={exposure_rate:.6f}"
+            "backtest summary: "
+            f"range={start}..{end}, trade_count={trade_count}, EV={expected_value:.6f}, "
+            f"PF={profit_factor}, MDD={max_dd:.6f}, reject_rate={reject_rate:.6f}, "
+            f"missing_rate={missing_rate:.6f}, exposure_rate={exposure_rate:.6f}, "
+            f"participation_rate={opportunity['participation_rate']:.6f}"
     )
 
     return {
@@ -298,4 +353,9 @@ def generate_backtest_report(
         "reject_rate": float(reject_rate),
         "missing_rate": float(missing_rate),
         "exposure_rate": float(exposure_rate),
+        "opportunity_count": float(opportunity["opportunity_count"]),
+        "filled_count": float(opportunity["filled_count"]),
+        "skip_cash_count": float(opportunity["skip_cash_count"]),
+        "skip_maxpos_count": float(opportunity["skip_maxpos_count"]),
+        "participation_rate": float(opportunity["participation_rate"]),
     }

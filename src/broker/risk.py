@@ -15,6 +15,14 @@ class BrokerRiskState:
     holdings: set[str]
 
 
+@dataclass
+class RiskDecision:
+    order: Order | None
+    reject_reason: str | None
+    execute_date: date | None
+    reserved_cash: float = 0.0
+
+
 class RiskManager:
     def __init__(self, store: Store, config: Settings):
         self.store = store
@@ -29,11 +37,26 @@ class RiskManager:
             (code, signal_date),
         )
 
-    def _calculate_position_size(self, signal: Signal, state: BrokerRiskState) -> int:
-        est_price = self._estimate_price(signal.code, signal.signal_date)
-        if est_price is None or est_price <= 0:
-            return 0
+    def _estimate_fee(self, amount: float, action: str) -> float:
+        # 与 matcher 成本口径保持一致，避免预估与撮合不一致。
+        commission = max(amount * self.config.commission_rate, self.config.min_commission)
+        transfer_fee = amount * self.config.transfer_fee_rate
+        stamp_duty = amount * self.config.stamp_duty_rate if action.upper() == "SELL" else 0.0
+        return commission + transfer_fee + stamp_duty
 
+    def _estimate_buy_cost(self, price: float, quantity: int) -> float:
+        amount = float(price) * int(quantity)
+        return amount + self._estimate_fee(amount, "BUY")
+
+    def _max_affordable_quantity(self, est_price: float, cash: float, target_quantity: int) -> int:
+        qty = int(target_quantity // 100) * 100
+        while qty >= 100:
+            if self._estimate_buy_cost(est_price, qty) <= cash + 1e-6:
+                return qty
+            qty -= 100
+        return 0
+
+    def _calculate_position_size(self, est_price: float, state: BrokerRiskState) -> int:
         nav = state.cash + state.portfolio_market_value
         risk_budget = nav * self.config.risk_per_trade_pct
         max_notional = nav * self.config.max_position_pct
@@ -45,27 +68,62 @@ class RiskManager:
         quantity = int(min(qty_by_risk, qty_by_cap) / 100) * 100
         return max(quantity, 0)
 
-    def check_signal(self, signal: Signal, state: BrokerRiskState) -> Order | None:
-        # 同一股票已有持仓时，不重复开仓。
-        if signal.code in state.holdings:
-            return None
-
-        quantity = self._calculate_position_size(signal, state)
-        if quantity < 100:
-            return None
-
+    def assess_signal(self, signal: Signal, state: BrokerRiskState) -> RiskDecision:
         execute_date = self._next_trade_date(signal.signal_date)
         if execute_date is None:
-            return None
+            return RiskDecision(order=None, reject_reason="NO_NEXT_TRADE_DAY", execute_date=None)
 
-        return Order(
-            order_id=build_order_id(signal.signal_id),
-            signal_id=signal.signal_id,
-            code=signal.code,
-            action="BUY",
-            quantity=quantity,
+        # 同一股票已有持仓（或已被更强信号占位）时，不重复开仓。
+        if signal.code in state.holdings:
+            return RiskDecision(order=None, reject_reason="ALREADY_HOLDING", execute_date=execute_date)
+
+        if len(state.holdings) >= self.config.max_positions:
+            return RiskDecision(
+                order=None,
+                reject_reason="MAX_POSITIONS_REACHED",
+                execute_date=execute_date,
+            )
+
+        est_price = self._estimate_price(signal.code, signal.signal_date)
+        if est_price is None or est_price <= 0:
+            return RiskDecision(order=None, reject_reason="NO_EST_PRICE", execute_date=execute_date)
+
+        target_quantity = self._calculate_position_size(float(est_price), state)
+        if target_quantity < 100:
+            min_lot_cost = self._estimate_buy_cost(float(est_price), 100)
+            if min_lot_cost > state.cash + 1e-6:
+                return RiskDecision(
+                    order=None,
+                    reject_reason="INSUFFICIENT_CASH",
+                    execute_date=execute_date,
+                )
+            return RiskDecision(
+                order=None,
+                reject_reason="SIZE_BELOW_MIN_LOT",
+                execute_date=execute_date,
+            )
+
+        quantity = self._max_affordable_quantity(float(est_price), state.cash, target_quantity)
+        if quantity < 100:
+            return RiskDecision(order=None, reject_reason="INSUFFICIENT_CASH", execute_date=execute_date)
+
+        reserved_cash = self._estimate_buy_cost(float(est_price), quantity)
+        return RiskDecision(
+            order=Order(
+                order_id=build_order_id(signal.signal_id),
+                signal_id=signal.signal_id,
+                code=signal.code,
+                action="BUY",
+                quantity=quantity,
+                execute_date=execute_date,
+                pattern=signal.pattern,
+                status="PENDING",
+            ),
+            reject_reason=None,
             execute_date=execute_date,
-            pattern=signal.pattern,
-            status="PENDING",
+            reserved_cash=reserved_cash,
         )
 
+    def check_signal(self, signal: Signal, state: BrokerRiskState) -> Order | None:
+        # 兼容旧调用方；新代码建议使用 assess_signal 获取拒绝原因。
+        return self.assess_signal(signal, state).order

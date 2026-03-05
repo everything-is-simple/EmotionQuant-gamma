@@ -8,7 +8,7 @@ import pandas as pd
 from src.broker.matcher import Matcher
 from src.broker.risk import BrokerRiskState, RiskManager
 from src.config import Settings
-from src.contracts import Order, Signal, Trade
+from src.contracts import Order, Signal, Trade, build_order_id
 from src.data.store import Store
 
 
@@ -39,19 +39,43 @@ class Broker:
 
     def process_signals(self, signals: list[Signal]) -> list[Order]:
         orders: list[Order] = []
+        rejected: list[Order] = []
         state = BrokerRiskState(
             cash=self.cash,
             portfolio_market_value=self._portfolio_market_value(),
             holdings=set(self.portfolio.keys()),
         )
-        for signal in signals:
-            order = self.risk.check_signal(signal, state)
-            if order is None:
+        # 同日信号按强度从高到低分配资金，保证“机会竞争”语义确定。
+        sorted_signals = sorted(signals, key=lambda s: float(s.strength), reverse=True)
+        for signal in sorted_signals:
+            decision = self.risk.assess_signal(signal, state)
+            if decision.order is None:
+                # 风控拒绝也写入订单表，便于后续统计机会参与率与拒绝分布。
+                if decision.reject_reason is not None:
+                    rejected.append(
+                        Order(
+                            order_id=build_order_id(signal.signal_id),
+                            signal_id=signal.signal_id,
+                            code=signal.code,
+                            action=signal.action,
+                            quantity=0,
+                            execute_date=decision.execute_date or signal.signal_date,
+                            pattern=signal.pattern,
+                            status="REJECTED",
+                            reject_reason=decision.reject_reason,
+                        )
+                    )
                 continue
+            order = decision.order
             orders.append(order)
             self.add_pending_order(order)
-        if orders:
-            self.store.bulk_upsert("l4_orders", pd.DataFrame([o.model_dump() for o in orders]))
+            # 预占现金与持仓名额，避免同日后续信号“重复花钱”。
+            state.cash = max(0.0, state.cash - float(decision.reserved_cash))
+            state.holdings.add(order.code)
+
+        rows = orders + rejected
+        if rows:
+            self.store.bulk_upsert("l4_orders", pd.DataFrame([o.model_dump() for o in rows]))
         return orders
 
     def add_pending_order(self, order: Order) -> None:
@@ -136,6 +160,13 @@ class Broker:
                 self._mark_order_status(order, "REJECTED", reject_reason)
                 continue
 
+            if trade.action == "BUY":
+                # 开盘跳空可能导致实成交成本高于前一日预估，需在成交前二次现金校验。
+                buy_cost = float(trade.price) * int(trade.quantity) + float(trade.fee)
+                if buy_cost > self.cash + 1e-6:
+                    self._mark_order_status(order, "REJECTED", "INSUFFICIENT_CASH_AT_EXECUTION")
+                    continue
+
             self._mark_order_status(order, "FILLED")
             trades.append(trade)
             self._apply_position_trade(trade)
@@ -170,4 +201,3 @@ class Broker:
             updated_pending.append(order)
         self.pending_orders = updated_pending
         return expired
-

@@ -42,7 +42,8 @@ def _snapshot(store: Store, start: date, end: date) -> dict:
     report = store.read_df(
         """
         SELECT expected_value, profit_factor, max_drawdown, trades_count,
-               reject_rate, missing_rate, exposure_rate, failure_reason_breakdown
+               reject_rate, missing_rate, exposure_rate, failure_reason_breakdown,
+               opportunity_count, filled_count, skip_cash_count, skip_maxpos_count, participation_rate
         FROM l4_daily_report WHERE date = ? LIMIT 1
         """,
         (end,),
@@ -59,6 +60,11 @@ def _snapshot(store: Store, start: date, end: date) -> dict:
             "missing_rate": float(row.get("missing_rate", 0.0) or 0.0),
             "exposure_rate": float(row.get("exposure_rate", 0.0) or 0.0),
             "failure_reason_breakdown": str(row.get("failure_reason_breakdown", "") or ""),
+            "opportunity_count": int(row.get("opportunity_count", 0) or 0),
+            "filled_count": int(row.get("filled_count", 0) or 0),
+            "skip_cash_count": int(row.get("skip_cash_count", 0) or 0),
+            "skip_maxpos_count": int(row.get("skip_maxpos_count", 0) or 0),
+            "participation_rate": float(row.get("participation_rate", 0.0) or 0.0),
         }
 
     return {

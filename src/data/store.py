@@ -49,6 +49,11 @@ class Store:
             ("l4_daily_report", "missing_rate", "DOUBLE"),
             ("l4_daily_report", "exposure_rate", "DOUBLE"),
             ("l4_daily_report", "failure_reason_breakdown", "VARCHAR"),
+            ("l4_daily_report", "opportunity_count", "INTEGER"),
+            ("l4_daily_report", "filled_count", "INTEGER"),
+            ("l4_daily_report", "skip_cash_count", "INTEGER"),
+            ("l4_daily_report", "skip_maxpos_count", "INTEGER"),
+            ("l4_daily_report", "participation_rate", "DOUBLE"),
         ]
         for table, col, typ in optional_columns:
             try:
@@ -297,7 +302,12 @@ class Store:
                 reject_rate          DOUBLE,
                 missing_rate         DOUBLE,
                 exposure_rate        DOUBLE,
-                failure_reason_breakdown VARCHAR
+                failure_reason_breakdown VARCHAR,
+                opportunity_count    INTEGER,
+                filled_count         INTEGER,
+                skip_cash_count      INTEGER,
+                skip_maxpos_count    INTEGER,
+                participation_rate   DOUBLE
             )
             """,
             """
