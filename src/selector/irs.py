@@ -99,10 +99,11 @@ def compute_irs(
                 }
             )
         day_scores_df = pd.DataFrame(day_scores)
+        # 部分日期可能因原始缺失导致分数非有限值；按 0 兜底，保证日内排序稳定可执行。
+        day_scores_df["score"] = pd.to_numeric(day_scores_df["score"], errors="coerce").fillna(0.0)
         day_scores_df["rank"] = day_scores_df["score"].rank(method="dense", ascending=False).astype(int)
         output_rows.extend(day_scores_df.to_dict(orient="records"))
 
     if not output_rows:
         return 0
     return store.bulk_upsert("l3_irs_daily", pd.DataFrame(output_rows))
-

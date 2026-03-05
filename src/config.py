@@ -13,8 +13,22 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    # Data source
+    # Data source (dual-channel first, legacy single token fallback)
     tushare_token: str = Field(default="", alias="TUSHARE_TOKEN")
+    tushare_primary_token: str = Field(default="", alias="TUSHARE_PRIMARY_TOKEN")
+    tushare_primary_http_url: str = Field(default="", alias="TUSHARE_PRIMARY_HTTP_URL")
+    tushare_primary_sdk_provider: str = Field(default="", alias="TUSHARE_PRIMARY_SDK_PROVIDER")
+    tushare_primary_rate_limit_per_min: int = Field(
+        default=0, alias="TUSHARE_PRIMARY_RATE_LIMIT_PER_MIN"
+    )
+    tushare_fallback_token: str = Field(default="", alias="TUSHARE_FALLBACK_TOKEN")
+    tushare_fallback_http_url: str = Field(default="", alias="TUSHARE_FALLBACK_HTTP_URL")
+    tushare_fallback_sdk_provider: str = Field(default="", alias="TUSHARE_FALLBACK_SDK_PROVIDER")
+    tushare_fallback_rate_limit_per_min: int = Field(
+        default=0, alias="TUSHARE_FALLBACK_RATE_LIMIT_PER_MIN"
+    )
+    tushare_sdk_provider: str = Field(default="tushare", alias="TUSHARE_SDK_PROVIDER")
+    tushare_http_url: str = Field(default="", alias="TUSHARE_HTTP_URL")
     tushare_rate_limit_per_min: int = Field(default=300, alias="TUSHARE_RATE_LIMIT_PER_MIN")
     akshare_enabled: bool = Field(default=True, alias="AKSHARE_ENABLED")
 
@@ -97,9 +111,25 @@ class Settings(BaseSettings):
         return self.resolved_data_path / "emotionquant.duckdb"
 
     @property
+    def duckdb_dir(self) -> str:
+        path = self.resolved_data_path / "duckdb"
+        path.mkdir(parents=True, exist_ok=True)
+        return str(path)
+
+    @property
+    def parquet_path(self) -> str:
+        path = self.resolved_data_path / "parquet"
+        path.mkdir(parents=True, exist_ok=True)
+        return str(path)
+
+    @property
     def pas_pattern_list(self) -> list[str]:
         # 配置用逗号字符串，运行时统一解析为小写列表。
         return [part.strip().lower() for part in self.pas_patterns.split(",") if part.strip()]
+
+    @classmethod
+    def from_env(cls, env_file: str = ".env") -> "Settings":
+        return cls(_env_file=env_file, _env_file_encoding="utf-8")
 
 
 @lru_cache(maxsize=1)

@@ -11,6 +11,7 @@ from typing import Sequence
 import pandas as pd
 
 from src.config import get_settings
+from src.backtest.engine import run_backtest
 from src.broker.broker import Broker
 from src.data.builder import build_layers
 from src.data.fetcher import create_fetcher, fetch_incremental
@@ -209,9 +210,40 @@ def cmd_run(args: argparse.Namespace) -> int:
         store.close()
 
 
-def _not_implemented(name: str) -> int:
-    logger.error(f"Command `{name}` is reserved for Week3/Week4 implementation.")
-    return 2
+def cmd_backtest(args: argparse.Namespace) -> int:
+    cfg = get_settings()
+    store = Store(cfg.db_path)
+    run_id = _start_run(
+        store=store,
+        modules=["backtest", "selector", "strategy", "broker", "report"],
+        config_hash=_config_hash(cfg.model_dump(mode="json")),
+        data_snapshot=f"backtest:{datetime.utcnow().isoformat()}",
+    )
+    try:
+        start = _parse_date(args.start) or cfg.history_start
+        end = _parse_date(args.end) or date.today()
+        patterns = [part.strip().lower() for part in (args.patterns or "").split(",") if part.strip()]
+        result = run_backtest(
+            db_path=cfg.db_path,
+            config=cfg,
+            start=start,
+            end=end,
+            patterns=patterns or None,
+            initial_cash=args.cash,
+        )
+        logger.info(
+            "backtest done: "
+            f"days={result.trade_days}, trade_count={result.trade_count}, "
+            f"EV={result.expected_value:.6f}, PF={result.profit_factor}, MDD={result.max_drawdown:.6f}"
+        )
+        _finish_run(store, run_id, "SUCCESS")
+        return 0
+    except Exception as exc:
+        logger.exception("backtest failed")
+        _finish_run(store, run_id, "FAILED", str(exc))
+        return 1
+    finally:
+        store.close()
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -230,8 +262,12 @@ def create_parser() -> argparse.ArgumentParser:
     build.add_argument("--force", action="store_true", help="Force rebuild target layers")
     build.set_defaults(func=cmd_build)
 
-    backtest = sub.add_parser("backtest", help="Run backtest (Week3)")
-    backtest.set_defaults(func=lambda _args: _not_implemented("backtest"))
+    backtest = sub.add_parser("backtest", help="Run backtest")
+    backtest.add_argument("--start", type=str, default=None, help="Start date (YYYY-MM-DD)")
+    backtest.add_argument("--end", type=str, default=None, help="End date (YYYY-MM-DD)")
+    backtest.add_argument("--patterns", type=str, default="bof", help="Comma-separated patterns")
+    backtest.add_argument("--cash", type=float, default=1_000_000, help="Initial cash")
+    backtest.set_defaults(func=cmd_backtest)
 
     run = sub.add_parser("run", help="Run daily full pipeline (Week4)")
     run.add_argument("--trade-date", type=str, default=None, help="Execution date (YYYY-MM-DD)")
