@@ -154,7 +154,10 @@ def run_backtest(
             broker.execute_pending_orders(trade_day)
             broker.expire_orders(trade_day)
 
-            # Step 2: 用当日收盘数据生成信号；订单 execute_date 由 Broker 推到 next_trade_date。
+            # Step 2: 用当日收盘数据先评估退出触发（止损/回撤），挂成 T+1 SELL。
+            broker.generate_exit_orders(trade_day)
+
+            # Step 3: 再生成 BOF 买入信号；订单 execute_date 由 Broker 推到 next_trade_date。
             candidates = select_candidates(store, trade_day, cfg)
             signals = generate_signals(store, candidates, trade_day, cfg)
             broker.process_signals(signals)

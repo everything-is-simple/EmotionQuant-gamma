@@ -4,7 +4,7 @@ from datetime import date
 
 import pandas as pd
 
-from src.broker.broker import Broker
+from src.broker.broker import Broker, Position
 from src.config import Settings
 from src.contracts import Order, Signal, build_signal_id
 from src.data.store import Store
@@ -444,4 +444,141 @@ def test_broker_rechecks_cash_at_execution_open(tmp_path) -> None:
     ).iloc[0]
     assert row["status"] == "REJECTED"
     assert row["reject_reason"] == "INSUFFICIENT_CASH_AT_EXECUTION"
+    store.close()
+
+
+def test_broker_generates_stop_loss_exit_order_t_plus_1(tmp_path) -> None:
+    db = tmp_path / "test_exit.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+    cfg = Settings(
+        BACKTEST_INITIAL_CASH=1_000_000,
+        STOP_LOSS_PCT=0.05,
+        TRAILING_STOP_PCT=0.08,
+    )
+    broker = Broker(store, cfg)
+
+    store.bulk_upsert(
+        "l1_trade_calendar",
+        pd.DataFrame(
+            [
+                {"date": signal_date, "is_trade_day": True, "prev_trade_day": None, "next_trade_day": exec_date},
+                {"date": exec_date, "is_trade_day": True, "prev_trade_day": signal_date, "next_trade_day": None},
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l2_stock_adj_daily",
+        pd.DataFrame(
+            [
+                {
+                    "code": "000001",
+                    "date": signal_date,
+                    "adj_open": 9.4,
+                    "adj_high": 9.6,
+                    "adj_low": 9.2,
+                    "adj_close": 9.4,
+                    "volume": 10000,
+                    "amount": 1e8,
+                    "pct_chg": -0.06,
+                    "ma5": 10.0,
+                    "ma10": 10.0,
+                    "ma20": 10.0,
+                    "ma60": 10.0,
+                    "volume_ma5": 10000,
+                    "volume_ma20": 10000,
+                    "volume_ratio": 1.0,
+                }
+            ]
+        ),
+    )
+
+    # 手工放入一个持仓，模拟前序 BUY 已成交。
+    broker.portfolio["000001"] = Position(
+        code="000001",
+        entry_date=date(2026, 3, 1),
+        entry_price=10.0,
+        quantity=100,
+        current_price=10.0,
+        max_price=10.0,
+        pattern="bof",
+        is_paper=False,
+    )
+
+    exits = broker.generate_exit_orders(signal_date)
+    assert len(exits) == 1
+    assert exits[0].action == "SELL"
+    assert exits[0].execute_date == exec_date
+    assert exits[0].quantity == 100
+    assert exits[0].order_id.startswith("EXIT_")
+    store.close()
+
+
+def test_broker_exit_not_duplicated_when_pending_exists(tmp_path) -> None:
+    db = tmp_path / "test_exit_dup.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+    cfg = Settings(BACKTEST_INITIAL_CASH=1_000_000, STOP_LOSS_PCT=0.05, TRAILING_STOP_PCT=0.08)
+    broker = Broker(store, cfg)
+
+    store.bulk_upsert(
+        "l1_trade_calendar",
+        pd.DataFrame(
+            [
+                {"date": signal_date, "is_trade_day": True, "prev_trade_day": None, "next_trade_day": exec_date},
+                {"date": exec_date, "is_trade_day": True, "prev_trade_day": signal_date, "next_trade_day": None},
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l2_stock_adj_daily",
+        pd.DataFrame(
+            [
+                {
+                    "code": "000001",
+                    "date": signal_date,
+                    "adj_open": 9.4,
+                    "adj_high": 9.6,
+                    "adj_low": 9.2,
+                    "adj_close": 9.4,
+                    "volume": 10000,
+                    "amount": 1e8,
+                    "pct_chg": -0.06,
+                    "ma5": 10.0,
+                    "ma10": 10.0,
+                    "ma20": 10.0,
+                    "ma60": 10.0,
+                    "volume_ma5": 10000,
+                    "volume_ma20": 10000,
+                    "volume_ratio": 1.0,
+                }
+            ]
+        ),
+    )
+    broker.portfolio["000001"] = Position(
+        code="000001",
+        entry_date=date(2026, 3, 1),
+        entry_price=10.0,
+        quantity=100,
+        current_price=10.0,
+        max_price=10.0,
+        pattern="bof",
+        is_paper=False,
+    )
+    pending = Order(
+        order_id="EXIT_000001_2026-03-03_stop_loss",
+        signal_id="000001_2026-03-03_stop_loss",
+        code="000001",
+        action="SELL",
+        quantity=100,
+        execute_date=exec_date,
+        pattern="bof",
+        status="PENDING",
+    )
+    broker.add_pending_order(pending)
+
+    exits = broker.generate_exit_orders(signal_date)
+    assert exits == []
     store.close()

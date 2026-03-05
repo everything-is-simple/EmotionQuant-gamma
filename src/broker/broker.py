@@ -112,6 +112,82 @@ class Broker:
             return None
         return row.iloc[0].to_dict()
 
+    def _resolve_adj_close(self, code: str, trade_date: date) -> float | None:
+        row = self.store.read_df(
+            """
+            SELECT adj_close
+            FROM l2_stock_adj_daily
+            WHERE code = ? AND date = ?
+            LIMIT 1
+            """,
+            (code, trade_date),
+        )
+        if row.empty:
+            return None
+        value = float(row.iloc[0]["adj_close"] or 0.0)
+        return value if value > 0 else None
+
+    def _has_pending_sell(self, code: str) -> bool:
+        return any(
+            o.status == "PENDING" and o.action == "SELL" and o.code == code for o in self.pending_orders
+        )
+
+    def generate_exit_orders(self, signal_date: date) -> list[Order]:
+        """
+        最小退出机制（Gate 修复项）：
+        - 用当日收盘价检查止损/回撤
+        - 触发后挂 T+1 开盘 SELL 订单
+        - 不改 v0.01 BOF 触发器，仅用于释放仓位占用
+        """
+        execute_date = self.store.next_trade_date(signal_date)
+        if execute_date is None or not self.portfolio:
+            return []
+
+        orders: list[Order] = []
+        for code, pos in list(self.portfolio.items()):
+            if self._has_pending_sell(code):
+                continue
+
+            close_price = self._resolve_adj_close(code, signal_date)
+            if close_price is None:
+                continue
+
+            # 每日更新持仓参考价与历史最高价，供回撤止盈/止损判断。
+            pos.current_price = close_price
+            pos.max_price = max(pos.max_price, close_price)
+            self.portfolio[code] = pos
+
+            stop_loss_price = pos.entry_price * (1 - self.config.stop_loss_pct)
+            trailing_price = pos.max_price * (1 - self.config.trailing_stop_pct)
+
+            exit_reason: str | None = None
+            if close_price <= stop_loss_price:
+                exit_reason = "STOP_LOSS"
+            elif close_price <= trailing_price:
+                exit_reason = "TRAILING_STOP"
+
+            if exit_reason is None:
+                continue
+
+            signal_id = f"{code}_{signal_date.isoformat()}_{exit_reason.lower()}"
+            order_id = f"EXIT_{signal_id}"
+            order = Order(
+                order_id=order_id,
+                signal_id=signal_id,
+                code=code,
+                action="SELL",
+                quantity=int(pos.quantity),
+                execute_date=execute_date,
+                pattern=pos.pattern,
+                status="PENDING",
+            )
+            orders.append(order)
+            self.add_pending_order(order)
+
+        if orders:
+            self.store.bulk_upsert("l4_orders", pd.DataFrame([o.model_dump() for o in orders]))
+        return orders
+
     def _apply_position_trade(self, trade: Trade) -> None:
         if trade.action == "BUY":
             self.cash -= trade.price * trade.quantity + trade.fee
