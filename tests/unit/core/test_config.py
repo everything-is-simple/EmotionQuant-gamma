@@ -26,5 +26,6 @@ def test_default_mss_thresholds_match_v001_gate() -> None:
 
 def test_default_mss_gate_mode_and_soft_gate_limit() -> None:
     cfg = Settings()
+    assert cfg.mss_variant == "zscore_weighted6"
     assert cfg.mss_gate_mode == "bearish_only"
     assert cfg.mss_soft_gate_candidate_top_n == 30

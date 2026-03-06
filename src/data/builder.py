@@ -7,7 +7,7 @@ from src.config import Settings
 from src.data.cleaner import clean_industry_daily, clean_market_snapshot, clean_stock_adj_daily
 from src.logging_utils import logger
 from src.selector.irs import compute_irs
-from src.selector.mss import compute_mss
+from src.selector.mss_experiments import compute_mss_variant
 from src.data.store import Store
 
 
@@ -72,10 +72,11 @@ def build_l3(store: Store, config: Settings, start: date | None, end: date | Non
     begin, finish = window
 
     # L3 在 v0.01 只构建 MSS/IRS；signal 仍由 Strategy 运行时写入。
-    n1 = compute_mss(
+    n1 = compute_mss_variant(
         store,
         begin,
         finish,
+        variant_label=config.mss_variant,
         bullish_threshold=config.mss_bullish_threshold,
         bearish_threshold=config.mss_bearish_threshold,
     )

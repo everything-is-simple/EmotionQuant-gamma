@@ -77,6 +77,7 @@ class Settings(BaseSettings):
     candidate_top_n: int = Field(default=100, alias="CANDIDATE_TOP_N")
     irs_top_n: int = Field(default=10, alias="IRS_TOP_N")
     irs_min_industries_per_day: int = Field(default=25, alias="IRS_MIN_INDUSTRIES_PER_DAY")
+    mss_variant: str = Field(default="zscore_weighted6", alias="MSS_VARIANT")
     mss_gate_mode: str = Field(default="bearish_only", alias="MSS_GATE_MODE")
     mss_bullish_threshold: float = Field(default=65.0, alias="MSS_BULLISH_THRESHOLD")
     mss_bearish_threshold: float = Field(default=35.0, alias="MSS_BEARISH_THRESHOLD")

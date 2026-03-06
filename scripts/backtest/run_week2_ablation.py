@@ -33,6 +33,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Comma-separated MSS gate modes for ablation sweep",
     )
     parser.add_argument(
+        "--mss-variants",
+        default="zscore_weighted6",
+        help="Comma-separated MSS variant labels for ablation sweep",
+    )
+    parser.add_argument(
         "--irs-top-ns",
         default="10,15,20",
         help="Comma-separated IRS Top-N values for ablation sweep",
@@ -65,6 +70,7 @@ def main() -> int:
     patterns = [item.strip().lower() for item in args.patterns.split(",") if item.strip()]
     mss_thresholds = [float(item.strip()) for item in args.mss_thresholds.split(",") if item.strip()]
     mss_gate_modes = [item.strip().lower() for item in args.mss_gate_modes.split(",") if item.strip()]
+    mss_variants = [item.strip().lower() for item in args.mss_variants.split(",") if item.strip()]
     irs_top_ns = [int(item.strip()) for item in args.irs_top_ns.split(",") if item.strip()]
     db_path = Path(args.db_path).expanduser().resolve() if args.db_path else cfg.db_path
     working_db_path = (
@@ -90,6 +96,7 @@ def main() -> int:
         mss_thresholds=mss_thresholds,
         mss_gate_modes=mss_gate_modes,
         irs_top_ns=irs_top_ns,
+        mss_variants=mss_variants,
     )
     path = write_ablation_evidence(output_path, payload)
     print(f"ablation_evidence={path}")

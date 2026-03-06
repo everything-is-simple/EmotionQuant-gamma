@@ -6,6 +6,7 @@ from datetime import date
 import numpy as np
 import pandas as pd
 
+from src.data.store import Store
 from src.selector.baseline import MSS_BASELINE
 from src.selector.mss import MSS_FACTOR_NAMES, build_mss_raw_frame, calibrate_mss_baseline
 from src.selector.normalize import zscore_single
@@ -24,6 +25,14 @@ MSS_VARIANTS = [
     MssVariantSpec(label="zscore_core3", normalization="zscore", aggregation="core3"),
     MssVariantSpec(label="percentile_core3", normalization="percentile", aggregation="core3"),
 ]
+
+
+def get_mss_variant_spec(label: str) -> MssVariantSpec:
+    normalized = label.strip().lower()
+    for variant in MSS_VARIANTS:
+        if variant.label == normalized:
+            return variant
+    raise ValueError(f"Unsupported MSS variant: {label}")
 
 
 def _signal_from_score(score: float, bullish_threshold: float = 65.0, bearish_threshold: float = 35.0) -> str:
@@ -126,12 +135,13 @@ def score_mss_variant(
     baseline: dict[str, float] | None = None,
     bullish_threshold: float = 65.0,
     bearish_threshold: float = 35.0,
+    reference_raw_df: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     if raw_df is None or raw_df.empty:
         return pd.DataFrame(columns=["date", "score", "signal"] + MSS_FACTOR_NAMES)
 
     base = baseline or calibrate_mss_baseline(raw_df) or MSS_BASELINE
-    percentile_reference = _build_percentile_reference(raw_df)
+    percentile_reference = _build_percentile_reference(reference_raw_df if reference_raw_df is not None else raw_df)
     rows: list[dict[str, float | str | date]] = []
     for _, row in raw_df.iterrows():
         raw = {key: float(row[key]) for key in raw_df.columns if key.endswith("_raw")}
@@ -151,6 +161,55 @@ def score_mss_variant(
     return pd.DataFrame(rows)
 
 
+def compute_mss_variant(
+    store: Store,
+    start: date,
+    end: date,
+    variant_label: str = "zscore_weighted6",
+    baseline: dict[str, float] | None = None,
+    bullish_threshold: float = 65.0,
+    bearish_threshold: float = 35.0,
+) -> int:
+    variant = get_mss_variant_spec(variant_label)
+    score_df = store.read_df(
+        """
+        SELECT *
+        FROM l2_market_snapshot
+        WHERE date BETWEEN ? AND ?
+        ORDER BY date
+        """,
+        (start, end),
+    )
+    if score_df.empty:
+        return 0
+
+    reference_df = score_df
+    if variant.normalization == "percentile":
+        reference_df = store.read_df(
+            """
+            SELECT *
+            FROM l2_market_snapshot
+            ORDER BY date
+            """
+        )
+        if reference_df.empty:
+            reference_df = score_df
+
+    raw_df = build_mss_raw_frame(score_df)
+    reference_raw_df = build_mss_raw_frame(reference_df)
+    scored = score_mss_variant(
+        raw_df,
+        variant,
+        baseline=baseline or MSS_BASELINE,
+        bullish_threshold=bullish_threshold,
+        bearish_threshold=bearish_threshold,
+        reference_raw_df=reference_raw_df,
+    )
+    if scored.empty:
+        return 0
+    return store.bulk_upsert("l3_mss_daily", scored)
+
+
 def score_mss_variants(
     snapshot_df: pd.DataFrame,
     baseline: dict[str, float] | None = None,
@@ -168,6 +227,7 @@ def score_mss_variants(
             baseline=base,
             bullish_threshold=bullish_threshold,
             bearish_threshold=bearish_threshold,
+            reference_raw_df=raw_df,
         )
         for variant in MSS_VARIANTS
     }
