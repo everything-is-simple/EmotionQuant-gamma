@@ -1,0 +1,49 @@
+{
+  "generated_at": "2026-03-06T03:39:57Z",
+  "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "db_path": "G:\\EmotionQuant-gamma\\.tmp\\backtest\\selector-ablation-short-20260306.duckdb",
+  "start": "2026-01-05",
+  "end": "2026-02-24",
+  "patterns": [
+    "bof"
+  ],
+  "initial_cash": 1000000.0,
+  "runs": [
+    {
+      "label": "bof_baseline",
+      "enable_mss_gate": false,
+      "enable_irs_filter": false,
+      "trade_days": 30,
+      "trade_count": 12,
+      "expected_value": -0.010833129750753285,
+      "profit_factor": 0.7808625398811616,
+      "max_drawdown": 0.021103092790372455,
+      "signals_count": 12,
+      "trades_count": 24
+    },
+    {
+      "label": "bof_plus_mss",
+      "enable_mss_gate": true,
+      "enable_irs_filter": false,
+      "trade_days": 30,
+      "trade_count": 12,
+      "expected_value": -0.010833129750753285,
+      "profit_factor": 0.7808625398811616,
+      "max_drawdown": 0.021103092790372455,
+      "signals_count": 12,
+      "trades_count": 24
+    },
+    {
+      "label": "bof_plus_mss_plus_irs",
+      "enable_mss_gate": true,
+      "enable_irs_filter": true,
+      "trade_days": 30,
+      "trade_count": 2,
+      "expected_value": -0.014101550629840054,
+      "profit_factor": 0.3194636926635059,
+      "max_drawdown": 0.0,
+      "signals_count": 2,
+      "trades_count": 4
+    }
+  ]
+}

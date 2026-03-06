@@ -11,7 +11,8 @@ from src.selector.irs import compute_irs
 from src.selector.mss import compute_mss, compute_mss_single
 from src.selector.selector import select_candidates, select_candidates_frame
 from src.strategy.pas_bof import BofDetector
-from src.strategy.strategy import _combine_signals
+from src.strategy.registry import get_active_detectors
+from src.strategy.strategy import _combine_signals, generate_signals
 
 
 def _seed_market_snapshot(store: Store, start: date, days: int) -> None:
@@ -190,6 +191,34 @@ def test_bof_detector_trigger() -> None:
     assert signal.action == "BUY"
 
 
+def test_bof_detector_does_not_trigger_without_close_recovery() -> None:
+    cfg = Settings(PAS_BOF_BREAK_PCT=0.01, PAS_BOF_VOLUME_MULT=1.2)
+    detector = BofDetector(cfg)
+    d0 = date(2026, 1, 1)
+    rows = []
+    for i in range(21):
+        d = d0 + timedelta(days=i)
+        rows.append(
+            {
+                "date": d,
+                "adj_open": 10.0,
+                "adj_high": 10.5,
+                "adj_low": 9.9,
+                "adj_close": 10.2,
+                "volume": 1000.0,
+                "volume_ma20": 900.0,
+            }
+        )
+    rows[-1]["adj_low"] = 9.6
+    rows[-1]["adj_close"] = 9.7
+    rows[-1]["adj_open"] = 9.8
+    rows[-1]["adj_high"] = 10.2
+    rows[-1]["volume"] = 1300.0
+
+    signal = detector.detect("000001", d0 + timedelta(days=20), pd.DataFrame(rows))
+    assert signal is None
+
+
 def test_mss_single_all_zero_is_neutral_around_50() -> None:
     score = compute_mss_single(
         pd.Series(
@@ -217,6 +246,65 @@ def test_mss_single_all_zero_is_neutral_around_50() -> None:
     )
     assert 49.0 <= score.score <= 51.0
     assert score.signal == "NEUTRAL"
+
+
+def test_compute_irs_ranks_stronger_industry_first(tmp_path) -> None:
+    db = tmp_path / "irs_rank.duckdb"
+    store = Store(db)
+    d0 = date(2026, 1, 1)
+
+    store.bulk_upsert(
+        "l1_index_daily",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SH",
+                    "date": d0,
+                    "open": 3000.0,
+                    "high": 3010.0,
+                    "low": 2990.0,
+                    "close": 3005.0,
+                    "pre_close": 3000.0,
+                    "pct_chg": 0.003,
+                    "volume": 1e8,
+                    "amount": 2e11,
+                }
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l2_industry_daily",
+        pd.DataFrame(
+            [
+                {
+                    "industry": "银行",
+                    "date": d0,
+                    "pct_chg": 0.015,
+                    "amount": 8e10,
+                    "stock_count": 30,
+                    "rise_count": 20,
+                    "fall_count": 10,
+                },
+                {
+                    "industry": "电子",
+                    "date": d0,
+                    "pct_chg": -0.004,
+                    "amount": 3e10,
+                    "stock_count": 40,
+                    "rise_count": 15,
+                    "fall_count": 25,
+                },
+            ]
+        ),
+    )
+
+    assert compute_irs(store, d0, d0) == 2
+    ranked = store.read_df("SELECT industry, rank FROM l3_irs_daily WHERE date = ? ORDER BY rank ASC", (d0,))
+    assert ranked.iloc[0]["industry"] == "银行"
+    assert ranked.iloc[0]["rank"] == 1
+    assert ranked.iloc[1]["industry"] == "电子"
+    assert ranked.iloc[1]["rank"] == 2
+    store.close()
 
 
 def test_strategy_combine_modes() -> None:
@@ -253,6 +341,25 @@ def test_strategy_combine_modes() -> None:
     assert _combine_signals([s1, s2], active_detector_count=3, mode="ALL") == []
     assert _combine_signals([s1, s2], active_detector_count=3, mode="VOTE") == [s2]
     assert _combine_signals([s1, s2, s3], active_detector_count=3, mode="ALL") == [s2]
+
+
+def test_generate_signals_empty_candidates_returns_empty(tmp_path) -> None:
+    db = tmp_path / "strategy_empty.duckdb"
+    store = Store(db)
+    cfg = Settings(PAS_PATTERNS="bof", PAS_COMBINATION="ANY")
+
+    assert generate_signals(store, [], date(2026, 1, 8), cfg) == []
+    store.close()
+
+
+def test_registry_enforces_v001_single_bof_pattern() -> None:
+    cfg = Settings(PAS_PATTERNS="bof,bpb")
+    try:
+        get_active_detectors(cfg)
+    except ValueError as exc:
+        assert "PAS_PATTERNS=bof" in str(exc)
+    else:
+        raise AssertionError("expected v0.01 single-pattern validation to fail")
 
 
 def test_selector_asof_prefers_latest_status_snapshot(tmp_path) -> None:
@@ -467,6 +574,85 @@ def test_selector_filters_out_non_live_status(tmp_path) -> None:
     cands = select_candidates(store, calc_date, cfg)
     assert len(cands) == 1
     assert cands[0].code == "000001"
+    store.close()
+
+
+def test_selector_returns_empty_when_mss_is_bearish(tmp_path) -> None:
+    db = tmp_path / "selector_bearish.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 10)
+
+    store.bulk_upsert(
+        "l2_stock_adj_daily",
+        pd.DataFrame(
+            [
+                {
+                    "code": "000001",
+                    "date": calc_date,
+                    "adj_open": 10.0,
+                    "adj_high": 10.2,
+                    "adj_low": 9.8,
+                    "adj_close": 10.0,
+                    "volume": 10000,
+                    "amount": 2e8,
+                    "pct_chg": 0.0,
+                    "ma5": 10.0,
+                    "ma10": 10.0,
+                    "ma20": 10.0,
+                    "ma60": 10.0,
+                    "volume_ma5": 9000,
+                    "volume_ma20": 9000,
+                    "volume_ratio": 1.1,
+                }
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_daily",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SZ",
+                    "date": calc_date,
+                    "open": 10.0,
+                    "high": 10.2,
+                    "low": 9.8,
+                    "close": 10.0,
+                    "pre_close": 10.0,
+                    "volume": 10000,
+                    "amount": 2e8,
+                    "pct_chg": 0.0,
+                    "adj_factor": 1.0,
+                    "is_halt": False,
+                    "up_limit": 11.0,
+                    "down_limit": 9.0,
+                    "total_mv": 1e6,
+                    "circ_mv": 8e5,
+                }
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_info",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SZ",
+                    "name": "样本股",
+                    "industry": "银行",
+                    "market": "主板",
+                    "list_status": "L",
+                    "is_st": False,
+                    "list_date": date(2010, 1, 1),
+                    "effective_from": date(2020, 1, 1),
+                }
+            ]
+        ),
+    )
+    store.bulk_upsert("l3_mss_daily", pd.DataFrame([{"date": calc_date, "score": 20.0, "signal": "BEARISH"}]))
+
+    cfg = Settings(ENABLE_MSS_GATE=True, ENABLE_IRS_FILTER=False, MIN_AMOUNT=1, MIN_LIST_DAYS=1)
+    assert select_candidates(store, calc_date, cfg) == []
     store.close()
 
 

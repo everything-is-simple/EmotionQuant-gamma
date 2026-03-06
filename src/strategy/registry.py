@@ -16,11 +16,14 @@ ALL_DETECTORS = {
 
 
 def get_active_detectors(config: Settings) -> list[PatternDetector]:
+    patterns = config.pas_pattern_list
+    if patterns != ["bof"]:
+        raise ValueError("v0.01 only supports PAS_PATTERNS=bof")
+
     detectors: list[PatternDetector] = []
-    for name in config.pas_pattern_list:
+    for name in patterns:
         detector_cls = ALL_DETECTORS.get(name)
         if detector_cls is None:
             continue
         detectors.append(detector_cls(config))
     return detectors
-

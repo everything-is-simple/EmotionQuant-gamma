@@ -119,6 +119,7 @@ def test_select_candidates_to_generate_signals_pipeline(tmp_path) -> None:
         ENABLE_IRS_FILTER=False,
         PAS_PATTERNS="bof",
         PAS_COMBINATION="ANY",
+        PAS_MIN_HISTORY_DAYS=21,
         MIN_AMOUNT=1,
         MIN_LIST_DAYS=1,
     )

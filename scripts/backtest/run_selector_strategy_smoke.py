@@ -10,7 +10,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from src.backtest.ablation import clear_runtime_tables
+from src.backtest.ablation import clear_runtime_tables, prepare_working_db
 from src.config import get_settings
 from src.contracts import StockCandidate
 from src.data.builder import build_layers
@@ -28,6 +28,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--calc-date", required=True, help="Signal date / calc date (YYYY-MM-DD)")
     parser.add_argument("--db-path", default=None, help="Execution DuckDB path override")
     parser.add_argument(
+        "--working-db-path",
+        default=None,
+        help="Optional working copy DuckDB path; default uses a temp copy instead of mutating the live DB",
+    )
+    parser.add_argument(
         "--output",
         default=None,
         help="Output JSON path, default docs/spec/v0.01/evidence/v0.01-selector-strategy-smoke-YYYYMMDD.json",
@@ -39,7 +44,13 @@ def main() -> int:
     args = build_parser().parse_args()
     cfg = get_settings().model_copy(deep=True)
     calc_date = _parse_date(args.calc_date)
-    db_path = Path(args.db_path).expanduser().resolve() if args.db_path else cfg.db_path
+    source_db_path = Path(args.db_path).expanduser().resolve() if args.db_path else cfg.db_path
+    working_db_path = (
+        Path(args.working_db_path).expanduser().resolve()
+        if args.working_db_path
+        else REPO_ROOT / ".tmp" / "backtest" / f"selector-strategy-smoke-{date.today():%Y%m%d}.duckdb"
+    )
+    db_path = prepare_working_db(source_db_path, working_db_path)
     output_path = (
         Path(args.output).expanduser().resolve()
         if args.output
@@ -59,6 +70,7 @@ def main() -> int:
 
         payload = {
             "generated_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+            "source_db_path": str(source_db_path),
             "db_path": str(db_path),
             "calc_date": calc_date.isoformat(),
             "build_rows": int(build_rows),

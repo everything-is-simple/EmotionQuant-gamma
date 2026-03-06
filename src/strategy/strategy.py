@@ -70,7 +70,7 @@ def generate_signals(
     all_signals: list[Signal] = []
     for candidate in candidates:
         history = _load_code_history(store, candidate.code, asof_date, cfg.pas_lookback_days)
-        if history.empty:
+        if history.empty or len(history) < cfg.pas_min_history_days:
             continue
         for detector in detectors:
             signal = detector.detect(candidate.code, asof_date, history)

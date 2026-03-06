@@ -25,6 +25,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--cash", type=float, default=None, help="Initial cash override")
     parser.add_argument("--db-path", default=None, help="Execution DuckDB path override")
     parser.add_argument(
+        "--working-db-path",
+        default=None,
+        help="Optional working copy DuckDB path; when set the ablation runs on the copy instead of the live DB",
+    )
+    parser.add_argument(
         "--output",
         default=None,
         help="Output JSON path, default docs/spec/v0.01/evidence/v0.01-selector-ablation-YYYYMMDD.json",
@@ -39,6 +44,11 @@ def main() -> int:
     end = _parse_date(args.end)
     patterns = [item.strip().lower() for item in args.patterns.split(",") if item.strip()]
     db_path = Path(args.db_path).expanduser().resolve() if args.db_path else cfg.db_path
+    working_db_path = (
+        Path(args.working_db_path).expanduser().resolve()
+        if args.working_db_path
+        else REPO_ROOT / ".tmp" / "backtest" / f"selector-ablation-{date.today():%Y%m%d}.duckdb"
+    )
     output_path = (
         Path(args.output).expanduser().resolve()
         if args.output
@@ -52,6 +62,7 @@ def main() -> int:
         end=end,
         patterns=patterns or ["bof"],
         initial_cash=args.cash,
+        working_db_path=working_db_path,
     )
     path = write_ablation_evidence(output_path, payload)
     print(f"ablation_evidence={path}")

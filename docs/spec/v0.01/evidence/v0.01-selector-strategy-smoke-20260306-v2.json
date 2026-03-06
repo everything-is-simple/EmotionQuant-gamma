@@ -1,0 +1,102 @@
+{
+  "generated_at": "2026-03-06T03:36:23Z",
+  "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "db_path": "G:\\EmotionQuant-gamma\\.tmp\\backtest\\selector-strategy-smoke-20260306.duckdb",
+  "calc_date": "2026-01-09",
+  "build_rows": 112,
+  "candidates_count": 100,
+  "signals_count": 1,
+  "sample_candidates": [
+    {
+      "code": "002195",
+      "industry": "软件服务",
+      "score": 65.89482111395552,
+      "filters_passed": "LIST_STATUS;HALT;ST;LIST_DAYS;AMOUNT",
+      "reject_reason": "",
+      "liquidity_tag": "HIGH"
+    },
+    {
+      "code": "300750",
+      "industry": "电气设备",
+      "score": 65.68232917768091,
+      "filters_passed": "LIST_STATUS;HALT;ST;LIST_DAYS;AMOUNT",
+      "reject_reason": "",
+      "liquidity_tag": "HIGH"
+    },
+    {
+      "code": "300476",
+      "industry": "元器件",
+      "score": 65.04172953631024,
+      "filters_passed": "LIST_STATUS;HALT;ST;LIST_DAYS;AMOUNT",
+      "reject_reason": "",
+      "liquidity_tag": "HIGH"
+    },
+    {
+      "code": "688552",
+      "industry": "通信设备",
+      "score": 64.68409224165123,
+      "filters_passed": "LIST_STATUS;HALT;ST;LIST_DAYS;AMOUNT",
+      "reject_reason": "",
+      "liquidity_tag": "HIGH"
+    },
+    {
+      "code": "601727",
+      "industry": "电气设备",
+      "score": 64.60543611413327,
+      "filters_passed": "LIST_STATUS;HALT;ST;LIST_DAYS;AMOUNT",
+      "reject_reason": "",
+      "liquidity_tag": "HIGH"
+    },
+    {
+      "code": "002475",
+      "industry": "元器件",
+      "score": 63.17760747210227,
+      "filters_passed": "LIST_STATUS;HALT;ST;LIST_DAYS;AMOUNT",
+      "reject_reason": "",
+      "liquidity_tag": "HIGH"
+    },
+    {
+      "code": "600893",
+      "industry": "航空",
+      "score": 62.77737392421286,
+      "filters_passed": "LIST_STATUS;HALT;ST;LIST_DAYS;AMOUNT",
+      "reject_reason": "",
+      "liquidity_tag": "HIGH"
+    },
+    {
+      "code": "002179",
+      "industry": "元器件",
+      "score": 62.58051467891904,
+      "filters_passed": "LIST_STATUS;HALT;ST;LIST_DAYS;AMOUNT",
+      "reject_reason": "",
+      "liquidity_tag": "HIGH"
+    },
+    {
+      "code": "002510",
+      "industry": "汽车配件",
+      "score": 62.56906383652746,
+      "filters_passed": "LIST_STATUS;HALT;ST;LIST_DAYS;AMOUNT",
+      "reject_reason": "",
+      "liquidity_tag": "HIGH"
+    },
+    {
+      "code": "000768",
+      "industry": "航空",
+      "score": 62.45247644269671,
+      "filters_passed": "LIST_STATUS;HALT;ST;LIST_DAYS;AMOUNT",
+      "reject_reason": "",
+      "liquidity_tag": "HIGH"
+    }
+  ],
+  "sample_signals": [
+    {
+      "signal_id": "002475_2026-01-09_bof",
+      "code": "002475",
+      "signal_date": "2026-01-09",
+      "action": "BUY",
+      "strength": 0.602041633582075,
+      "pattern": "bof",
+      "reason_code": "PAS_BOF"
+    }
+  ]
+}

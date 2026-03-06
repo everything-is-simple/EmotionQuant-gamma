@@ -5,6 +5,7 @@ from datetime import date, datetime
 import json
 import math
 from pathlib import Path
+import shutil
 
 from src.backtest.engine import run_backtest
 from src.config import Settings
@@ -73,6 +74,22 @@ def _snapshot_ablation_metrics(store: Store, start: date, end: date) -> tuple[in
     return signals_count, trades_count
 
 
+def prepare_working_db(source_db: str | Path, working_db: str | Path) -> Path:
+    source = Path(source_db).expanduser().resolve()
+    target = Path(working_db).expanduser().resolve()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if target.exists():
+        target.unlink()
+    shutil.copy2(source, target)
+    wal_source = source.with_suffix(source.suffix + ".wal")
+    wal_target = target.with_suffix(target.suffix + ".wal")
+    if wal_source.exists():
+        shutil.copy2(wal_source, wal_target)
+    elif wal_target.exists():
+        wal_target.unlink()
+    return target
+
+
 def run_selector_ablation(
     db_path: str | Path,
     config: Settings,
@@ -81,8 +98,14 @@ def run_selector_ablation(
     patterns: list[str] | None = None,
     initial_cash: float | None = None,
     rebuild_l3: bool = True,
+    working_db_path: str | Path | None = None,
 ) -> dict:
-    db_file = Path(db_path).expanduser().resolve()
+    source_db = Path(db_path).expanduser().resolve()
+    db_file = (
+        prepare_working_db(source_db, working_db_path)
+        if working_db_path is not None
+        else source_db
+    )
 
     if rebuild_l3:
         store = Store(db_file)
@@ -135,6 +158,7 @@ def run_selector_ablation(
 
     return {
         "generated_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+        "source_db_path": str(source_db),
         "db_path": str(db_file),
         "start": start.isoformat(),
         "end": end.isoformat(),
