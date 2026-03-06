@@ -49,3 +49,12 @@
 5. `docs/spec/v0.01/records/v0.01-algorithm-design-pas-20260306.md`
    - 原因：同日已正式迁入 `docs/design-v2/`，不再保留 `records` 中的中间草案副本。
    - 处理：已统一删除，算法 SoT 以 `docs/design-v2/*-algorithm.md` 为准。
+
+## 5. 被更聚焦证据取代的中间实验产物
+
+1. `docs/spec/v0.01/evidence/v0.01-selector-ablation-20260306.json`
+2. `docs/spec/v0.01/evidence/v0.01-selector-ablation-gatemode-topn-short-20260306.json`
+3. `docs/spec/v0.01/evidence/v0.01-selector-ablation-mss-ab-short-20260306.json`
+4. `docs/spec/v0.01/evidence/v0.01-selector-ablation-mss-gatemode-ab-short-20260306.json`
+   - 原因：均为 2026-03-06 当日的中间探索产物，已被更聚焦的 `v0.01-mss-variant-comparison-20260306.json` 与 `v0.01-selector-ablation-mss-fullcycle-ab-20260306.json` 覆盖。
+   - 处理：已统一删除，仅保留当前可追溯且不互相打架的最终证据。

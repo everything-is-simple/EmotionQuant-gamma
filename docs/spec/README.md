@@ -20,7 +20,8 @@
   - `v0.01/governance/v0.01-boundary-deterministic-rules.md`
   - `v0.01/governance/v0.01-data-contract-table.md`
   - `v0.01/governance/v0.01-gate-checklist.md`
-  - `v0.01/evidence/v0.01-bof-baseline-evidence-20260305.md`
+  - `v0.01/evidence/v0.01-bof-baseline-evidence-20260305.md`（历史 GO 基线）
+  - `v0.01/evidence/v0.01-selector-ablation-mss-fullcycle-ab-20260306.json`（当前代码路径 full-cycle 对照）
   - `v0.01/evidence/v0.01-g6-asof-evidence-20260305.md`
   - `v0.01/records/data-rebuild-runbook-20260303.md`
   - `v0.01/records/rebuild-v0.01-errata-20260304.md`
