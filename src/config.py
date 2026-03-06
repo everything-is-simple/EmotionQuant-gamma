@@ -110,16 +110,19 @@ class Settings(BaseSettings):
 
     @property
     def db_path(self) -> Path:
+        # v0.01 唯一执行库：main.py fetch/build/run/backtest 默认都读写这里。
         return self.resolved_data_path / "emotionquant.duckdb"
 
     @property
     def duckdb_dir(self) -> str:
+        # 兼容旧脚本的 raw DuckDB/辅助库目录，不代表运行时主库。
         path = self.resolved_data_path / "duckdb"
         path.mkdir(parents=True, exist_ok=True)
         return str(path)
 
     @property
     def parquet_path(self) -> str:
+        # 兼容旧版冷备/离线交换路径；v0.01 主链路不再把 Parquet 作为在线主存储。
         path = self.resolved_data_path / "parquet"
         path.mkdir(parents=True, exist_ok=True)
         return str(path)

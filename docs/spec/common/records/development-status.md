@@ -72,6 +72,7 @@
 | 2026-03-06 | v0.01 回望修订落地：按实战证据修正 roadmap/spec/design 的实现与验收口径 | completed | `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-01-data-layer.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-05-backtest-report.md`, `docs/design-v2/data-layer-design.md`, `docs/design-v2/backtest-report-design.md` |
 | 2026-03-06 | v0.01 Broker 回望修订落地：补齐确定性主键、显式回测日期、SELL-only trust update、paper 持仓退出约束 | completed | `docs/spec/v0.01/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/design-v2/broker-design.md` |
 | 2026-03-06 | Week1 Data Layer 差距审计：完成测试、最小命令验证，并修正 `MIN_AMOUNT` 与 `stock_info.list_status` 默认主链路口径 | completed | `docs/spec/v0.01/records/v0.01-week1-data-layer-gap-audit-20260306.md`, `src/config.py`, `src/data/fetcher.py`, `tests/unit/core/test_config.py`, `tests/unit/data/test_fetcher.py`, `.env.example` |
+| 2026-03-06 | 数据存储口径收口：明确执行库 / raw 源库 / Parquet / logs / cache 的职责边界，并补齐 raw bootstrap 主入口 | completed | `docs/spec/v0.01/records/v0.01-data-storage-decision-20260306.md`, `docs/spec/v0.01/records/data-root-layout-20260306.md`, `main.py`, `src/config.py`, `src/data/fetcher.py`, `scripts/data/load_l1_from_raw_duckdb.py`, `tests/unit/data/test_fetcher.py` |
 
 ---
 
@@ -95,6 +96,7 @@
 | 2026-03-06 | v0.01 回望修订落地 | n/a | n/a | `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-01-data-layer.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-05-backtest-report.md`, `docs/design-v2/data-layer-design.md`, `docs/design-v2/backtest-report-design.md` | 按基线证据回写实现与验收口径，不触碰 Frozen 主干语义 | debts=无变化, status=已同步, assets=无变化, roadmap=已同步, spec=spec-01/spec-02/spec-05 已同步 |
 | 2026-03-06 | v0.01 Broker 回望修订落地 | n/a | n/a | `docs/spec/v0.01/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/design-v2/broker-design.md` | 基于基线经验补齐 Broker 的确定性、时序与信任链路约束，不改 Frozen 语义 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=spec-04 已同步 |
 | 2026-03-06 | Week1 Data Layer 差距审计 + 口径修正 | `python main.py build --layers=l2 --start 2026-01-01 --end 2026-01-02` | `pytest -q tests/unit/core/test_config.py tests/unit/data/test_fetcher.py tests/unit/data tests/unit/core/test_contracts.py tests/unit/selector/test_selector_strategy.py` | `docs/spec/v0.01/records/v0.01-week1-data-layer-gap-audit-20260306.md`, `src/config.py`, `src/data/fetcher.py`, `.env.example`, `tests/unit/core/test_config.py`, `tests/unit/data/test_fetcher.py` | 以 spec-01 为准完成 Gap Audit，并修正默认 `MIN_AMOUNT` 与 `list_status` 口径 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=spec-01 审计已同步 |
+| 2026-03-06 | 数据存储口径收口 + raw bootstrap 主入口 | `python main.py fetch --help` | `pytest -q tests/unit/data/test_fetcher.py tests/unit/core/test_config.py tests/unit/data tests/unit/core/test_contracts.py tests/unit/selector/test_selector_strategy.py` | `docs/spec/v0.01/records/v0.01-data-storage-decision-20260306.md`, `docs/spec/v0.01/records/data-root-layout-20260306.md`, `main.py`, `src/config.py`, `src/data/fetcher.py`, `scripts/data/load_l1_from_raw_duckdb.py`, `tests/unit/data/test_fetcher.py` | 将“执行库 + raw 源库 + 辅助目录”口径写实，并把 raw 导入收敛为主入口能力 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=spec-01 已同步 |
 
 ---
 
@@ -121,6 +123,7 @@
 | 2026-03-06 | v1.8 | 完成 v0.01 基线跑通后的回望审视，形成“保留不动 / v0.01 立即修订 / v0.02+ 延后”三分法清单 |
 | 2026-03-06 | v1.9 | 完成 v0.01 回望修订首轮落地：roadmap、spec-01/spec-02/spec-05、data-layer/backtest-report 说明性口径已按实战证据更新 |
 | 2026-03-06 | v1.10 | 完成 spec-04 / broker-design 回望修订；完成 Week1 Data Layer Gap Audit，并修正 `MIN_AMOUNT` 与 `stock_info.list_status` 默认主链路口径 |
+| 2026-03-06 | v1.11 | 明确数据存储口径：执行库 / raw 源库 / Parquet / logs / cache 边界固定，并将 raw bootstrap 并入主入口 |
 
 
 
