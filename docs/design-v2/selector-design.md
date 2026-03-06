@@ -7,6 +7,9 @@
 **变更规则**: 仅允许勘误与说明性修订；执行语义变更需进入 v0.02+。
 **对应模块**: `src/selector/`（mss.py, irs.py, gene.py, selector.py）
 **上游文档**: `architecture-master.md` §4.2
+**算法细案入口**: `mss-algorithm.md`, `irs-algorithm.md`
+
+> 自 `2026-03-06` 起，本文件负责 Selector 的系统边界与漏斗职责；MSS / IRS 的算法细案、baseline 口径与数据分类口径以对应 `*-algorithm.md` 为准。
 
 ---
 

@@ -7,6 +7,9 @@
 **变更规则**: 仅允许勘误与说明性修订；执行语义变更需进入 v0.02+。
 **对应模块**: `src/strategy/`（pattern_base.py, pas_bof.py, registry.py, strategy.py；`pas_bpb.py` 为 v0.02 预留）
 **上游文档**: `architecture-master.md` §4.3，`volman-ytc-mapping.md`
+**算法细案入口**: `pas-algorithm.md`
+
+> 自 `2026-03-06` 起，本文件负责 Strategy 的系统边界与装配规则；PAS 的算法细案与 detector 框架口径以 `pas-algorithm.md` 为准。
 
 ---
 
