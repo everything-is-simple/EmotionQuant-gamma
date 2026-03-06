@@ -4,12 +4,14 @@ from datetime import date, timedelta
 
 import pandas as pd
 
+from src.contracts import Signal
 from src.config import Settings
 from src.data.store import Store
 from src.selector.irs import compute_irs
-from src.selector.mss import compute_mss
-from src.selector.selector import select_candidates
+from src.selector.mss import compute_mss, compute_mss_single
+from src.selector.selector import select_candidates, select_candidates_frame
 from src.strategy.pas_bof import BofDetector
+from src.strategy.strategy import _combine_signals
 
 
 def _seed_market_snapshot(store: Store, start: date, days: int) -> None:
@@ -186,6 +188,71 @@ def test_bof_detector_trigger() -> None:
     assert signal is not None
     assert signal.pattern == "bof"
     assert signal.action == "BUY"
+
+
+def test_mss_single_all_zero_is_neutral_around_50() -> None:
+    score = compute_mss_single(
+        pd.Series(
+            {
+                "date": date(2026, 1, 1),
+                "total_stocks": 0,
+                "rise_count": 0,
+                "fall_count": 0,
+                "strong_up_count": 0,
+                "strong_down_count": 0,
+                "limit_up_count": 0,
+                "limit_down_count": 0,
+                "touched_limit_up_count": 0,
+                "new_100d_high_count": 0,
+                "new_100d_low_count": 0,
+                "continuous_limit_up_2d": 0,
+                "continuous_limit_up_3d_plus": 0,
+                "continuous_new_high_2d_plus": 0,
+                "high_open_low_close_count": 0,
+                "low_open_high_close_count": 0,
+                "pct_chg_std": 0.0,
+                "amount_volatility": 0.0,
+            }
+        )
+    )
+    assert 49.0 <= score.score <= 51.0
+    assert score.signal == "NEUTRAL"
+
+
+def test_strategy_combine_modes() -> None:
+    signal_date = date(2026, 1, 8)
+    s1 = Signal(
+        signal_id="000001_2026-01-08_bof",
+        code="000001",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.6,
+        pattern="bof",
+        reason_code="PAS_BOF",
+    )
+    s2 = Signal(
+        signal_id="000001_2026-01-08_bpb",
+        code="000001",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.8,
+        pattern="bpb",
+        reason_code="PAS_BPB",
+    )
+    s3 = Signal(
+        signal_id="000001_2026-01-08_pb",
+        code="000001",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.7,
+        pattern="pb",
+        reason_code="PAS_PB",
+    )
+
+    assert _combine_signals([s1, s2], active_detector_count=3, mode="ANY") == [s2]
+    assert _combine_signals([s1, s2], active_detector_count=3, mode="ALL") == []
+    assert _combine_signals([s1, s2], active_detector_count=3, mode="VOTE") == [s2]
+    assert _combine_signals([s1, s2, s3], active_detector_count=3, mode="ALL") == [s2]
 
 
 def test_selector_asof_prefers_latest_status_snapshot(tmp_path) -> None:
@@ -400,4 +467,86 @@ def test_selector_filters_out_non_live_status(tmp_path) -> None:
     cands = select_candidates(store, calc_date, cfg)
     assert len(cands) == 1
     assert cands[0].code == "000001"
+    store.close()
+
+
+def test_selector_frame_keeps_candidate_explainability_fields(tmp_path) -> None:
+    db = tmp_path / "selector_trace.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 10)
+
+    store.bulk_upsert(
+        "l2_stock_adj_daily",
+        pd.DataFrame(
+            [
+                {
+                    "code": "000001",
+                    "date": calc_date,
+                    "adj_open": 10.0,
+                    "adj_high": 10.2,
+                    "adj_low": 9.8,
+                    "adj_close": 10.0,
+                    "volume": 10000,
+                    "amount": 2e8,
+                    "pct_chg": 0.01,
+                    "ma5": 10.0,
+                    "ma10": 10.0,
+                    "ma20": 10.0,
+                    "ma60": 10.0,
+                    "volume_ma5": 9000,
+                    "volume_ma20": 9000,
+                    "volume_ratio": 1.2,
+                }
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_daily",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SZ",
+                    "date": calc_date,
+                    "open": 10.0,
+                    "high": 10.2,
+                    "low": 9.8,
+                    "close": 10.0,
+                    "pre_close": 10.0,
+                    "volume": 10000,
+                    "amount": 2e8,
+                    "pct_chg": 0.01,
+                    "adj_factor": 1.0,
+                    "is_halt": False,
+                    "up_limit": 11.0,
+                    "down_limit": 9.0,
+                    "total_mv": 1e6,
+                    "circ_mv": 8e5,
+                }
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_info",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SZ",
+                    "name": "样本股",
+                    "industry": "银行",
+                    "market": "主板",
+                    "list_status": "L",
+                    "is_st": False,
+                    "list_date": date(2010, 1, 1),
+                    "effective_from": date(2020, 1, 1),
+                }
+            ]
+        ),
+    )
+
+    cfg = Settings(ENABLE_MSS_GATE=False, ENABLE_IRS_FILTER=False, MIN_AMOUNT=1, MIN_LIST_DAYS=1)
+    frame = select_candidates_frame(store, calc_date, cfg)
+    assert list(frame.columns) == ["code", "industry", "score", "filters_passed", "reject_reason", "liquidity_tag"]
+    assert frame.iloc[0]["filters_passed"] == "LIST_STATUS;HALT;ST;LIST_DAYS;AMOUNT"
+    assert frame.iloc[0]["reject_reason"] == ""
+    assert frame.iloc[0]["liquidity_tag"] in {"MEDIUM", "HIGH"}
     store.close()

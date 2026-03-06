@@ -8,6 +8,28 @@ import pandas as pd
 from src.config import Settings, get_settings
 from src.contracts import StockCandidate
 from src.data.store import Store
+from src.logging_utils import logger
+
+
+def _industry_priority_map(store: Store, calc_date: date) -> dict[str, float]:
+    rows = store.read_df(
+        """
+        SELECT industry, rank
+        FROM l3_irs_daily
+        WHERE date = ?
+        """,
+        (calc_date,),
+    )
+    if rows.empty:
+        return {}
+
+    max_rank = max(int(rows["rank"].max()), 1)
+    priority: dict[str, float] = {}
+    for _, row in rows.iterrows():
+        rank = int(row["rank"])
+        # rank 越高（数字越小）优先分越高，映射到 0-100。
+        priority[str(row["industry"])] = float((max_rank - rank + 1) / max_rank * 100.0)
+    return priority
 
 
 def _load_universe_snapshot(store: Store, calc_date: date) -> pd.DataFrame:
@@ -71,15 +93,30 @@ def _apply_basic_filters(df: pd.DataFrame, calc_date: date, config: Settings) ->
     work["list_status"] = work["list_status"].fillna("UNKNOWN")
     work["list_date"] = pd.to_datetime(work["list_date"], errors="coerce")
     work["list_days"] = (pd.Timestamp(calc_date) - work["list_date"]).dt.days
+    work["filters_passed"] = "LIST_STATUS;HALT;ST;LIST_DAYS;AMOUNT"
+    work["reject_reason"] = ""
+    work.loc[work["list_status"] != "L", "reject_reason"] = "NOT_LIVE"
+    work.loc[~work["reject_reason"].astype(bool) & work["is_halt"], "reject_reason"] = "HALTED"
+    work.loc[~work["reject_reason"].astype(bool) & work["is_st"], "reject_reason"] = "ST"
+    work.loc[
+        ~work["reject_reason"].astype(bool) & (work["list_days"].fillna(0) < config.min_list_days),
+        "reject_reason",
+    ] = "TOO_NEW"
+    work.loc[
+        ~work["reject_reason"].astype(bool) & (work["amount"].fillna(0) < config.min_amount),
+        "reject_reason",
+    ] = "LOW_LIQUIDITY"
+    work["liquidity_tag"] = np.where(
+        work["amount"].fillna(0) >= config.min_amount * 2,
+        "HIGH",
+        np.where(work["amount"].fillna(0) >= config.min_amount, "MEDIUM", "LOW"),
+    )
 
     # 粗筛目标：先剔除不可交易与明显质量差样本，再做排序。
-    filtered = work[
-        (work["list_status"] == "L")
-        & (~work["is_halt"])
-        & (~work["is_st"])
-        & (work["list_days"].fillna(0) >= config.min_list_days)
-        & (work["amount"].fillna(0) >= config.min_amount)
-    ].copy()
+    filtered = work[work["reject_reason"] == ""].copy()
+    # Stage 1 控制计算规模：先按流动性和活跃度预截断到约 200 只。
+    filtered["rough_rank_score"] = np.log1p(filtered["amount"].fillna(0)) + filtered["volume_ratio"].fillna(0)
+    filtered = filtered.sort_values("rough_rank_score", ascending=False).head(200)
     return filtered
 
 
@@ -119,25 +156,47 @@ def select_candidates(
     calc_date: date,
     config: Settings | None = None,
 ) -> list[StockCandidate]:
+    top = select_candidates_frame(store, calc_date, config=config)
+    if top.empty:
+        return []
+    return [
+        StockCandidate(code=str(row["code"]), industry=str(row["industry"]), score=float(row["score"]))
+        for _, row in top.iterrows()
+    ]
+
+
+def select_candidates_frame(
+    store: Store,
+    calc_date: date,
+    config: Settings | None = None,
+) -> pd.DataFrame:
     cfg = config or get_settings()
     universe = _load_universe_snapshot(store, calc_date)
     stage1 = _apply_basic_filters(universe, calc_date, cfg)
     stage2 = _apply_mss_gate(store, calc_date, cfg, stage1)
     stage3 = _apply_irs_filter(store, calc_date, cfg, stage2)
+    logger.info(
+        f"selector {calc_date}: universe={len(universe)}, "
+        f"stage1={len(stage1)}, stage2={len(stage2)}, stage3={len(stage3)}"
+    )
     if stage3.empty:
-        return []
+        return stage3
 
     # v0.01 候选评分只做排序，不参与 PAS 触发本身。
     data = stage3.copy()
+    irs_priority = _industry_priority_map(store, calc_date)
     data["liquidity_score"] = np.log1p(data["amount"].fillna(0))
-    data["stability_score"] = -data["pct_chg"].fillna(0).abs()
-    data["activity_score"] = data["volume_ratio"].fillna(0)
-    data["score"] = 0.4 * data["liquidity_score"] + 0.3 * data["stability_score"] + 0.3 * data[
-        "activity_score"
-    ]
+    data["stability_score"] = 100.0 - np.minimum(data["pct_chg"].fillna(0).abs() * 1000.0, 100.0)
+    data["industry_priority_score"] = data["industry"].map(irs_priority).fillna(0.0)
+    data["score"] = (
+        0.4 * data["liquidity_score"]
+        + 0.3 * data["stability_score"]
+        + 0.3 * data["industry_priority_score"]
+    )
 
-    top = data.sort_values("score", ascending=False).head(cfg.candidate_top_n)
-    return [
-        StockCandidate(code=str(row["code"]), industry=str(row["industry"]), score=float(row["score"]))
-        for _, row in top.iterrows()
-    ]
+    return (
+        data.sort_values("score", ascending=False)
+        .head(cfg.candidate_top_n)
+        .loc[:, ["code", "industry", "score", "filters_passed", "reject_reason", "liquidity_tag"]]
+        .reset_index(drop=True)
+    )

@@ -26,18 +26,19 @@ def safe_ratio_vec(
 
 
 def zscore_normalize(series: pd.Series, baseline_mean: float | None = None, baseline_std: float | None = None) -> pd.Series:
-    """标准化：默认用样本均值/标准差，也可注入基线参数。"""
+    """标准化到 0-100：默认用样本均值/标准差，也可注入基线参数。"""
     values = series.astype(float)
     mean = float(values.mean()) if baseline_mean is None else float(baseline_mean)
     std = float(values.std(ddof=0)) if baseline_std is None else float(baseline_std)
     if std == 0 or np.isnan(std):
-        return pd.Series(np.zeros(len(values)), index=series.index, dtype=float)
-    return (values - mean) / std
+        return pd.Series(np.full(len(values), 50.0), index=series.index, dtype=float)
+    z = (values - mean) / std
+    return pd.Series(np.clip((z + 3.0) / 6.0 * 100.0, 0.0, 100.0), index=series.index, dtype=float)
 
 
 def zscore_single(value: float, mean: float, std: float) -> float:
-    """单值标准化，避免在逐行纯函数里重复判断。"""
+    """单值标准化到 0-100，避免在逐行纯函数里重复判断。"""
     if std == 0 or np.isnan(std):
-        return 0.0
-    return (value - mean) / std
-
+        return 50.0
+    z = (value - mean) / std
+    return float(np.clip((z + 3.0) / 6.0 * 100.0, 0.0, 100.0))

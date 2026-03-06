@@ -31,7 +31,7 @@ def compute_irs_single(
 
     rs_score = zscore_single(rs_raw, base["rs_score_mean"], base["rs_score_std"])
     cf_score = zscore_single(cf_raw, base["cf_score_mean"], base["cf_score_std"])
-    total_score = 0.6 * rs_score + 0.4 * cf_score
+    total_score = 0.55 * rs_score + 0.45 * cf_score
     return rs_score, cf_score, total_score
 
 

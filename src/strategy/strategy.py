@@ -10,7 +10,7 @@ from src.data.store import Store
 from src.strategy.registry import get_active_detectors
 
 
-def _combine_signals(signals: list[Signal], mode: str = "ANY") -> list[Signal]:
+def _combine_signals(signals: list[Signal], active_detector_count: int, mode: str = "ANY") -> list[Signal]:
     """
     多检测器组合规则：
     - ANY: 任一触发即保留
@@ -20,17 +20,27 @@ def _combine_signals(signals: list[Signal], mode: str = "ANY") -> list[Signal]:
     if not signals:
         return []
     mode_norm = mode.upper()
-    if mode_norm == "ANY":
-        # 同股同日只保留强度最高的一条，避免重复下单。
-        best_by_key: dict[tuple[str, date], Signal] = {}
-        for s in signals:
-            key = (s.code, s.signal_date)
-            prev = best_by_key.get(key)
-            if prev is None or s.strength > prev.strength:
-                best_by_key[key] = s
-        return list(best_by_key.values())
-    # v0.01 阶段提供兼容分支，后续多形态时再细化门槛。
-    return signals
+    grouped: dict[tuple[str, date], list[Signal]] = {}
+    for signal in signals:
+        grouped.setdefault((signal.code, signal.signal_date), []).append(signal)
+
+    merged: list[Signal] = []
+    for group in grouped.values():
+        best = max(group, key=lambda s: s.strength)
+        unique_patterns = {s.pattern for s in group}
+        if mode_norm == "ANY":
+            merged.append(best)
+            continue
+        if mode_norm == "ALL":
+            if len(unique_patterns) >= active_detector_count:
+                merged.append(best)
+            continue
+        if mode_norm == "VOTE":
+            if len(unique_patterns) > active_detector_count / 2:
+                merged.append(best)
+            continue
+        raise ValueError(f"Unsupported PAS_COMBINATION mode: {mode}")
+    return merged
 
 
 def _load_code_history(store: Store, code: str, asof_date: date, lookback_days: int) -> pd.DataFrame:
@@ -42,7 +52,7 @@ def _load_code_history(store: Store, code: str, asof_date: date, lookback_days: 
         ORDER BY date DESC
         LIMIT ?
         """,
-        (code, asof_date, lookback_days),
+        (code, asof_date, lookback_days + 1),
     ).sort_values("date")
 
 
@@ -67,10 +77,9 @@ def generate_signals(
             if signal is not None:
                 all_signals.append(signal)
 
-    merged = _combine_signals(all_signals, cfg.pas_combination)
+    merged = _combine_signals(all_signals, len(detectors), cfg.pas_combination)
     if merged:
         rows = pd.DataFrame([s.model_dump() for s in merged])
         # 信号表必须 upsert：同 signal_id 重跑覆盖，不允许重复累积。
         store.bulk_upsert("l3_signals", rows)
     return merged
-
