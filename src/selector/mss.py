@@ -80,6 +80,7 @@ def _compute_mss_raw_components(row: pd.Series) -> dict[str, float]:
 
 def _normalize_mss_components(raw: dict[str, float], baseline: dict[str, float] | None = None) -> dict[str, float]:
     base = baseline or MSS_BASELINE
+    # v0.01 主链仍以 z-score 为正式口径；percentile 对照只放在实验模块中。
     return {
         "market_coefficient": zscore_single(
             raw["market_coefficient_raw"],

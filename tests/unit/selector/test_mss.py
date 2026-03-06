@@ -5,6 +5,7 @@ from datetime import date
 import pandas as pd
 
 from src.selector.mss import build_mss_raw_frame, calibrate_mss_baseline, compute_mss_single, score_mss_raw_frame
+from src.selector.mss_experiments import MssVariantSpec, score_mss_variant
 
 
 def test_mss_calibration_pipeline_builds_non_placeholder_baseline() -> None:
@@ -104,3 +105,95 @@ def test_compute_mss_single_respects_threshold_overrides() -> None:
     assert loose.score == tight.score
     assert loose.signal == "BULLISH"
     assert tight.signal == "NEUTRAL"
+
+
+def test_mss_percentile_variant_preserves_ordering() -> None:
+    raw_df = pd.DataFrame(
+        [
+            {
+                "date": date(2026, 1, 2),
+                "market_coefficient_raw": 0.20,
+                "profit_effect_raw": 0.01,
+                "loss_effect_raw": 0.08,
+                "continuity_raw": 0.05,
+                "extreme_raw": 0.10,
+                "volatility_raw": 0.30,
+            },
+            {
+                "date": date(2026, 1, 3),
+                "market_coefficient_raw": 0.45,
+                "profit_effect_raw": 0.03,
+                "loss_effect_raw": 0.04,
+                "continuity_raw": 0.10,
+                "extreme_raw": 0.20,
+                "volatility_raw": 0.20,
+            },
+            {
+                "date": date(2026, 1, 4),
+                "market_coefficient_raw": 0.70,
+                "profit_effect_raw": 0.06,
+                "loss_effect_raw": 0.01,
+                "continuity_raw": 0.20,
+                "extreme_raw": 0.35,
+                "volatility_raw": 0.10,
+            },
+        ]
+    )
+    baseline = calibrate_mss_baseline(raw_df)
+
+    scored = score_mss_variant(
+        raw_df,
+        MssVariantSpec(label="percentile_weighted6", normalization="percentile", aggregation="weighted6"),
+        baseline=baseline,
+    )
+
+    assert scored["score"].is_monotonic_increasing
+    assert scored.iloc[-1]["signal"] in {"BULLISH", "NEUTRAL"}
+
+
+def test_mss_core3_variant_differs_from_weighted6() -> None:
+    raw_df = pd.DataFrame(
+        [
+            {
+                "date": date(2026, 1, 2),
+                "market_coefficient_raw": 0.30,
+                "profit_effect_raw": 0.04,
+                "loss_effect_raw": 0.03,
+                "continuity_raw": 0.01,
+                "extreme_raw": 0.02,
+                "volatility_raw": 0.40,
+            },
+            {
+                "date": date(2026, 1, 3),
+                "market_coefficient_raw": 0.45,
+                "profit_effect_raw": 0.04,
+                "loss_effect_raw": 0.03,
+                "continuity_raw": 0.30,
+                "extreme_raw": 0.35,
+                "volatility_raw": 0.05,
+            },
+            {
+                "date": date(2026, 1, 4),
+                "market_coefficient_raw": 0.60,
+                "profit_effect_raw": 0.05,
+                "loss_effect_raw": 0.02,
+                "continuity_raw": 0.12,
+                "extreme_raw": 0.18,
+                "volatility_raw": 0.12,
+            },
+        ]
+    )
+    baseline = calibrate_mss_baseline(raw_df)
+
+    weighted = score_mss_variant(
+        raw_df,
+        MssVariantSpec(label="zscore_weighted6", normalization="zscore", aggregation="weighted6"),
+        baseline=baseline,
+    )
+    core3 = score_mss_variant(
+        raw_df,
+        MssVariantSpec(label="zscore_core3", normalization="zscore", aggregation="core3"),
+        baseline=baseline,
+    )
+
+    assert weighted["score"].tolist() != core3["score"].tolist()
