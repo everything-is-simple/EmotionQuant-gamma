@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+from pathlib import Path
 import time
 from abc import ABC, abstractmethod
 from datetime import date, timedelta
@@ -20,6 +22,7 @@ from src.logging_utils import logger
 from src.data.store import Store
 
 _retry_logger = logging.getLogger("emotionquant.fetcher.retry")
+_RAW_ATTACH_ALIAS = "rawdb_bootstrap"
 
 
 def _to_yyyymmdd(d: date) -> str:
@@ -296,6 +299,221 @@ class AKShareFetcher(DataFetcher):
         _ = ak
         logger.warning("AKShare trade_calendar mapping is minimal in v0.01.")
         return pd.DataFrame()
+
+
+@dataclass(frozen=True)
+class RawBootstrapResult:
+    source_db: Path
+    target_db: Path
+    trade_calendar_rows: int
+    stock_daily_rows: int
+    index_daily_rows: int
+    stock_info_rows: int
+    stock_info_effective_from_min: date | None
+    stock_info_effective_from_max: date | None
+
+
+def _escape_duckdb_path(path: Path) -> str:
+    return path.as_posix().replace("'", "''")
+
+
+def bootstrap_l1_from_raw_duckdb(
+    store: Store,
+    source_db: str | Path,
+    start: date,
+    end: date,
+    refresh_stock_info_only: bool = False,
+) -> RawBootstrapResult:
+    source = Path(source_db).expanduser().resolve()
+    if not source.exists():
+        raise FileNotFoundError(f"Raw DuckDB source not found: {source}")
+    if source == store.db_path:
+        raise ValueError("Raw DuckDB source must be different from target execution DB.")
+
+    attached = False
+    in_tx = False
+    try:
+        store.conn.execute(f"ATTACH '{_escape_duckdb_path(source)}' AS {_RAW_ATTACH_ALIAS}")
+        attached = True
+        store.conn.execute("BEGIN")
+        in_tx = True
+
+        # 兼容旧执行库：为 stock_info 补齐 list_status 列，避免导入失败。
+        store.conn.execute("ALTER TABLE l1_stock_info ADD COLUMN IF NOT EXISTS list_status VARCHAR DEFAULT 'L'")
+
+        if refresh_stock_info_only:
+            store.conn.execute("DELETE FROM l1_stock_info")
+        else:
+            for table in ("l1_trade_calendar", "l1_stock_daily", "l1_index_daily", "l1_stock_info"):
+                store.conn.execute(f"DELETE FROM {table}")
+
+            store.conn.execute(
+                f"""
+                INSERT INTO l1_trade_calendar(date, is_trade_day, prev_trade_day, next_trade_day)
+                WITH cal AS (
+                  SELECT
+                    STRPTIME(cal_date, '%Y%m%d')::DATE AS date,
+                    (is_open = 1) AS is_trade_day
+                  FROM {_RAW_ATTACH_ALIAS}.raw_trade_cal
+                  WHERE STRPTIME(cal_date, '%Y%m%d')::DATE BETWEEN ? AND ?
+                ),
+                td AS (
+                  SELECT date FROM cal WHERE is_trade_day = TRUE ORDER BY date
+                ),
+                td_link AS (
+                  SELECT
+                    date,
+                    LAG(date) OVER (ORDER BY date) AS prev_trade_day,
+                    LEAD(date) OVER (ORDER BY date) AS next_trade_day
+                  FROM td
+                )
+                SELECT c.date, c.is_trade_day, l.prev_trade_day, l.next_trade_day
+                FROM cal c LEFT JOIN td_link l USING(date)
+                ORDER BY c.date
+                """,
+                [start, end],
+            )
+
+            store.conn.execute(
+                f"""
+                INSERT INTO l1_index_daily(ts_code, date, open, high, low, close, pre_close, pct_chg, volume, amount)
+                SELECT
+                  ts_code,
+                  STRPTIME(trade_date, '%Y%m%d')::DATE AS date,
+                  open, high, low, close, pre_close, pct_chg,
+                  vol AS volume,
+                  amount
+                FROM {_RAW_ATTACH_ALIAS}.raw_index_daily
+                WHERE ts_code = '000001.SH'
+                  AND STRPTIME(trade_date, '%Y%m%d')::DATE BETWEEN ? AND ?
+                """,
+                [start, end],
+            )
+
+            store.conn.execute(
+                f"""
+                INSERT INTO l1_stock_daily(
+                  ts_code, date, open, high, low, close, pre_close, volume, amount, pct_chg,
+                  adj_factor, is_halt, up_limit, down_limit, total_mv, circ_mv
+                )
+                SELECT
+                  d.ts_code,
+                  STRPTIME(d.trade_date, '%Y%m%d')::DATE AS date,
+                  d.open, d.high, d.low, d.close, d.pre_close,
+                  d.vol AS volume,
+                  d.amount,
+                  d.pct_chg,
+                  1.0 AS adj_factor,
+                  (COALESCE(d.vol, 0) = 0) AS is_halt,
+                  NULL::DOUBLE AS up_limit,
+                  NULL::DOUBLE AS down_limit,
+                  b.total_mv,
+                  b.circ_mv
+                FROM {_RAW_ATTACH_ALIAS}.raw_daily d
+                LEFT JOIN {_RAW_ATTACH_ALIAS}.raw_daily_basic b
+                  ON d.ts_code = b.ts_code AND d.trade_date = b.trade_date
+                WHERE STRPTIME(d.trade_date, '%Y%m%d')::DATE BETWEEN ? AND ?
+                """,
+                [start, end],
+            )
+
+        store.conn.execute(
+            f"""
+            INSERT INTO l1_stock_info(
+              ts_code, name, industry, market, list_status, is_st, list_date, effective_from
+            )
+            WITH base AS (
+              SELECT
+                ts_code,
+                name,
+                industry,
+                market,
+                COALESCE(list_status, 'L') AS list_status,
+                list_date,
+                STRPTIME(trade_date, '%Y%m%d')::DATE AS effective_from
+              FROM {_RAW_ATTACH_ALIAS}.raw_stock_basic
+              WHERE STRPTIME(trade_date, '%Y%m%d')::DATE BETWEEN ? AND ?
+            ),
+            dedup_day AS (
+              SELECT *,
+                     ROW_NUMBER() OVER (
+                       PARTITION BY ts_code, effective_from
+                       ORDER BY effective_from DESC
+                     ) AS rn
+              FROM base
+            ),
+            clean AS (
+              SELECT ts_code, name, industry, market, list_status, list_date, effective_from
+              FROM dedup_day
+              WHERE rn = 1
+            ),
+            with_prev AS (
+              SELECT
+                *,
+                LAG(name) OVER (PARTITION BY ts_code ORDER BY effective_from) AS prev_name,
+                LAG(industry) OVER (PARTITION BY ts_code ORDER BY effective_from) AS prev_industry,
+                LAG(market) OVER (PARTITION BY ts_code ORDER BY effective_from) AS prev_market,
+                LAG(list_status) OVER (PARTITION BY ts_code ORDER BY effective_from) AS prev_list_status,
+                LAG(list_date) OVER (PARTITION BY ts_code ORDER BY effective_from) AS prev_list_date
+              FROM clean
+            ),
+            changed AS (
+              SELECT *
+              FROM with_prev
+              WHERE prev_name IS NULL
+                 OR COALESCE(name, '') <> COALESCE(prev_name, '')
+                 OR COALESCE(industry, '') <> COALESCE(prev_industry, '')
+                 OR COALESCE(market, '') <> COALESCE(prev_market, '')
+                 OR COALESCE(list_status, '') <> COALESCE(prev_list_status, '')
+                 OR COALESCE(list_date, '') <> COALESCE(prev_list_date, '')
+            )
+            SELECT
+              ts_code,
+              name,
+              industry,
+              market,
+              list_status,
+              (name LIKE '%ST%') AS is_st,
+              STRPTIME(list_date, '%Y%m%d')::DATE AS list_date,
+              effective_from
+            FROM changed
+            """,
+            [start, end],
+        )
+
+        stock_info_max = store.read_scalar("SELECT MAX(effective_from) FROM l1_stock_info")
+        store.update_fetch_progress("stock_info", stock_info_max, status="OK")
+        if not refresh_stock_info_only:
+            store.update_fetch_progress("trade_cal", store.get_max_date("l1_trade_calendar"), status="OK")
+            store.update_fetch_progress("index_daily", store.get_max_date("l1_index_daily"), status="OK")
+            store.update_fetch_progress("stock_daily", store.get_max_date("l1_stock_daily"), status="OK")
+
+        store.conn.execute("COMMIT")
+        in_tx = False
+    except Exception:
+        if in_tx:
+            store.conn.execute("ROLLBACK")
+        raise
+    finally:
+        if attached:
+            try:
+                store.conn.execute(f"DETACH {_RAW_ATTACH_ALIAS}")
+            except Exception:
+                pass
+
+    stock_info_range = store.conn.execute(
+        "SELECT MIN(effective_from), MAX(effective_from) FROM l1_stock_info"
+    ).fetchone()
+    return RawBootstrapResult(
+        source_db=source,
+        target_db=store.db_path,
+        trade_calendar_rows=int(store.read_scalar("SELECT COUNT(*) FROM l1_trade_calendar") or 0),
+        stock_daily_rows=int(store.read_scalar("SELECT COUNT(*) FROM l1_stock_daily") or 0),
+        index_daily_rows=int(store.read_scalar("SELECT COUNT(*) FROM l1_index_daily") or 0),
+        stock_info_rows=int(store.read_scalar("SELECT COUNT(*) FROM l1_stock_info") or 0),
+        stock_info_effective_from_min=stock_info_range[0] if stock_info_range else None,
+        stock_info_effective_from_max=stock_info_range[1] if stock_info_range else None,
+    )
 
 
 def _probe_tushare_channel(token: str, http_url: str | None) -> TuShareFetcher:

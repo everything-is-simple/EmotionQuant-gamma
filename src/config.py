@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     # Paths
     data_path: str = Field(default="", alias="DATA_PATH")
     log_path: str = Field(default="", alias="LOG_PATH")
+    raw_db_path: str = Field(default="", alias="RAW_DB_PATH")
 
     # Repo metadata
     repo_remote_url: str = Field(

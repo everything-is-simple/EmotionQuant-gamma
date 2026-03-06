@@ -14,7 +14,7 @@ from src.config import get_settings
 from src.backtest.engine import run_backtest
 from src.broker.broker import Broker
 from src.data.builder import build_layers
-from src.data.fetcher import create_fetcher, fetch_incremental
+from src.data.fetcher import bootstrap_l1_from_raw_duckdb, create_fetcher, fetch_incremental
 from src.logging_utils import configure_logger, logger
 from src.selector.selector import select_candidates
 from src.strategy.strategy import generate_signals
@@ -108,9 +108,33 @@ def cmd_fetch(args: argparse.Namespace) -> int:
         data_snapshot=f"fetch:{datetime.utcnow().isoformat()}",
     )
     try:
-        fetcher = create_fetcher(cfg)
         start = _parse_date(args.start) or cfg.history_start
         end = _parse_date(args.end) or date.today()
+        raw_db_path = args.from_raw_db or cfg.raw_db_path.strip() or None
+
+        if args.refresh_stock_info_only and not raw_db_path:
+            raise ValueError("--refresh-stock-info-only requires --from-raw-db or RAW_DB_PATH.")
+
+        if raw_db_path:
+            result = bootstrap_l1_from_raw_duckdb(
+                store=store,
+                source_db=raw_db_path,
+                start=start,
+                end=end,
+                refresh_stock_info_only=args.refresh_stock_info_only,
+            )
+            logger.info(
+                "fetch raw bootstrap completed: "
+                f"source={result.source_db}, trade_cal={result.trade_calendar_rows}, "
+                f"stock_daily={result.stock_daily_rows}, index_daily={result.index_daily_rows}, "
+                f"stock_info={result.stock_info_rows}, "
+                f"stock_info_effective_range={result.stock_info_effective_from_min}.."
+                f"{result.stock_info_effective_from_max}"
+            )
+            _finish_run(store, run_id, "SUCCESS")
+            return 0
+
+        fetcher = create_fetcher(cfg)
         total = 0
         # 先拉交易日历，再拉其他表，确保 T+1 / next_trade_date 有基准。
         total += fetch_incremental(store, fetcher, "trade_cal", "l1_trade_calendar", start, end)
@@ -253,6 +277,17 @@ def create_parser() -> argparse.ArgumentParser:
     fetch = sub.add_parser("fetch", help="Fetch L1 data")
     fetch.add_argument("--start", type=str, default=None, help="Start date (YYYY-MM-DD)")
     fetch.add_argument("--end", type=str, default=None, help="End date (YYYY-MM-DD)")
+    fetch.add_argument(
+        "--from-raw-db",
+        type=str,
+        default=None,
+        help="Bootstrap L1 tables from a local raw DuckDB instead of remote APIs",
+    )
+    fetch.add_argument(
+        "--refresh-stock-info-only",
+        action="store_true",
+        help="When bootstrapping from raw DB, refresh only l1_stock_info snapshots",
+    )
     fetch.set_defaults(func=cmd_fetch)
 
     build = sub.add_parser("build", help="Build L2/L3 data")
