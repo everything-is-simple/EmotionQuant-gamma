@@ -24,8 +24,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--patterns", default="bof", help="Comma-separated patterns")
     parser.add_argument(
         "--mss-thresholds",
-        default="55,58,60,62,65",
+        default="65",
         help="Comma-separated MSS bullish thresholds for ablation sweep",
+    )
+    parser.add_argument(
+        "--mss-gate-modes",
+        default="bearish_only,bullish_required,soft_gate",
+        help="Comma-separated MSS gate modes for ablation sweep",
+    )
+    parser.add_argument(
+        "--irs-top-ns",
+        default="10,15,20",
+        help="Comma-separated IRS Top-N values for ablation sweep",
     )
     parser.add_argument("--cash", type=float, default=None, help="Initial cash override")
     parser.add_argument("--db-path", default=None, help="Execution DuckDB path override")
@@ -54,6 +64,8 @@ def main() -> int:
     end = _parse_date(args.end)
     patterns = [item.strip().lower() for item in args.patterns.split(",") if item.strip()]
     mss_thresholds = [float(item.strip()) for item in args.mss_thresholds.split(",") if item.strip()]
+    mss_gate_modes = [item.strip().lower() for item in args.mss_gate_modes.split(",") if item.strip()]
+    irs_top_ns = [int(item.strip()) for item in args.irs_top_ns.split(",") if item.strip()]
     db_path = Path(args.db_path).expanduser().resolve() if args.db_path else cfg.db_path
     working_db_path = (
         Path(args.working_db_path).expanduser().resolve()
@@ -76,6 +88,8 @@ def main() -> int:
         rebuild_l3=not args.skip_rebuild_l3,
         working_db_path=working_db_path,
         mss_thresholds=mss_thresholds,
+        mss_gate_modes=mss_gate_modes,
+        irs_top_ns=irs_top_ns,
     )
     path = write_ablation_evidence(output_path, payload)
     print(f"ablation_evidence={path}")

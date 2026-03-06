@@ -11,6 +11,9 @@ from src.data.store import Store
 from src.logging_utils import logger
 
 
+MSS_GATE_MODES = {"bearish_only", "bullish_required", "soft_gate"}
+
+
 def _industry_priority_map(store: Store, calc_date: date) -> dict[str, float]:
     rows = store.read_df(
         """
@@ -127,14 +130,34 @@ def _apply_basic_filters(df: pd.DataFrame, calc_date: date, config: Settings) ->
     return filtered
 
 
-def _apply_mss_gate(store: Store, calc_date: date, config: Settings, df: pd.DataFrame) -> pd.DataFrame:
+def _load_mss_signal(store: Store, calc_date: date, config: Settings) -> str | None:
     if not config.enable_mss_gate:
-        return df
+        return None
     row = store.read_df("SELECT signal FROM l3_mss_daily WHERE date = ?", (calc_date,))
     if row.empty:
+        return None
+    return str(row.iloc[0]["signal"]).upper()
+
+
+def _apply_mss_gate(mss_signal: str | None, config: Settings, df: pd.DataFrame) -> pd.DataFrame:
+    if not config.enable_mss_gate:
+        return df
+    if mss_signal is None:
         # 缺 MSS 结果时，为防漂移直接返回空池，强制上游先补数据。
         return df.iloc[0:0]
-    if str(row.iloc[0]["signal"]).upper() == "BEARISH":
+    if config.mss_gate_mode not in MSS_GATE_MODES:
+        raise ValueError(
+            f"Unsupported MSS gate mode: {config.mss_gate_mode}. Expected one of {sorted(MSS_GATE_MODES)}."
+        )
+    if config.mss_gate_mode == "bearish_only":
+        if mss_signal == "BEARISH":
+            return df.iloc[0:0]
+        return df
+    if config.mss_gate_mode == "bullish_required":
+        if mss_signal != "BULLISH":
+            return df.iloc[0:0]
+        return df
+    if mss_signal == "BEARISH":
         return df.iloc[0:0]
     return df
 
@@ -180,13 +203,15 @@ def select_candidates_frame(
     cfg = config or get_settings()
     universe = _load_universe_snapshot(store, calc_date)
     stage1 = _apply_basic_filters(universe, calc_date, cfg)
-    stage2 = _apply_mss_gate(store, calc_date, cfg, stage1)
+    mss_signal = _load_mss_signal(store, calc_date, cfg)
+    stage2 = _apply_mss_gate(mss_signal, cfg, stage1)
     stage3 = _apply_irs_filter(store, calc_date, cfg, stage2)
-    logger.info(
-        f"selector {calc_date}: universe={len(universe)}, "
-        f"stage1={len(stage1)}, stage2={len(stage2)}, stage3={len(stage3)}"
-    )
     if stage3.empty:
+        logger.info(
+            f"selector {calc_date}: universe={len(universe)}, "
+            f"stage1={len(stage1)}, stage2={len(stage2)}, stage3={len(stage3)}, "
+            f"gate_mode={cfg.mss_gate_mode}, mss_signal={mss_signal or 'DISABLED'}"
+        )
         return stage3
 
     # v0.01 候选评分只做排序，不参与 PAS 触发本身。
@@ -201,9 +226,18 @@ def select_candidates_frame(
         + 0.3 * data["industry_priority_score"]
     )
 
-    return (
+    ranked = (
         data.sort_values("score", ascending=False)
         .head(cfg.candidate_top_n)
         .loc[:, ["code", "industry", "score", "filters_passed", "reject_reason", "liquidity_tag"]]
         .reset_index(drop=True)
     )
+    if cfg.enable_mss_gate and cfg.mss_gate_mode == "soft_gate" and mss_signal == "NEUTRAL":
+        ranked = ranked.head(max(1, cfg.mss_soft_gate_candidate_top_n)).reset_index(drop=True)
+
+    logger.info(
+        f"selector {calc_date}: universe={len(universe)}, "
+        f"stage1={len(stage1)}, stage2={len(stage2)}, stage3={len(stage3)}, "
+        f"final={len(ranked)}, gate_mode={cfg.mss_gate_mode}, mss_signal={mss_signal or 'DISABLED'}"
+    )
+    return ranked

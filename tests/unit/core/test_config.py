@@ -22,3 +22,9 @@ def test_default_mss_thresholds_match_v001_gate() -> None:
     cfg = Settings()
     assert cfg.mss_bullish_threshold == 65.0
     assert cfg.mss_bearish_threshold == 35.0
+
+
+def test_default_mss_gate_mode_and_soft_gate_limit() -> None:
+    cfg = Settings()
+    assert cfg.mss_gate_mode == "bearish_only"
+    assert cfg.mss_soft_gate_candidate_top_n == 30

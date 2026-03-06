@@ -45,6 +45,71 @@ def _seed_market_snapshot(store: Store, start: date, days: int) -> None:
     store.bulk_upsert("l2_market_snapshot", pd.DataFrame(rows))
 
 
+def _seed_selector_universe(store: Store, calc_date: date, codes: list[str]) -> None:
+    l2_rows = []
+    l1_rows = []
+    info_rows = []
+    for idx, code in enumerate(codes, start=1):
+        ts_code = f"{code}.SZ"
+        amount = float((len(codes) - idx + 1) * 1e8)
+        l2_rows.append(
+            {
+                "code": code,
+                "date": calc_date,
+                "adj_open": 10.0 + idx,
+                "adj_high": 10.2 + idx,
+                "adj_low": 9.8 + idx,
+                "adj_close": 10.0 + idx,
+                "volume": 10000,
+                "amount": amount,
+                "pct_chg": 0.01 * idx,
+                "ma5": 10.0,
+                "ma10": 10.0,
+                "ma20": 10.0,
+                "ma60": 10.0,
+                "volume_ma5": 9000,
+                "volume_ma20": 9000,
+                "volume_ratio": 1.1 + idx * 0.1,
+            }
+        )
+        l1_rows.append(
+            {
+                "ts_code": ts_code,
+                "date": calc_date,
+                "open": 10.0 + idx,
+                "high": 10.2 + idx,
+                "low": 9.8 + idx,
+                "close": 10.0 + idx,
+                "pre_close": 10.0 + idx,
+                "volume": 10000,
+                "amount": amount,
+                "pct_chg": 0.01 * idx,
+                "adj_factor": 1.0,
+                "is_halt": False,
+                "up_limit": 11.0 + idx,
+                "down_limit": 9.0 + idx,
+                "total_mv": 1e6,
+                "circ_mv": 8e5,
+            }
+        )
+        info_rows.append(
+            {
+                "ts_code": ts_code,
+                "name": f"样本股{idx}",
+                "industry": "银行",
+                "market": "主板",
+                "list_status": "L",
+                "is_st": False,
+                "list_date": date(2010, 1, 1),
+                "effective_from": date(2020, 1, 1),
+            }
+        )
+
+    store.bulk_upsert("l2_stock_adj_daily", pd.DataFrame(l2_rows))
+    store.bulk_upsert("l1_stock_daily", pd.DataFrame(l1_rows))
+    store.bulk_upsert("l1_stock_info", pd.DataFrame(info_rows))
+
+
 def test_mss_irs_and_selector_pipeline(tmp_path) -> None:
     db = tmp_path / "test.duckdb"
     store = Store(db)
@@ -766,6 +831,48 @@ def test_selector_returns_empty_when_mss_is_bearish(tmp_path) -> None:
 
     cfg = Settings(ENABLE_MSS_GATE=True, ENABLE_IRS_FILTER=False, MIN_AMOUNT=1, MIN_LIST_DAYS=1)
     assert select_candidates(store, calc_date, cfg) == []
+    store.close()
+
+
+def test_selector_bullish_required_blocks_neutral_environment(tmp_path) -> None:
+    db = tmp_path / "selector_bullish_required.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 10)
+
+    _seed_selector_universe(store, calc_date, ["000001"])
+    store.bulk_upsert("l3_mss_daily", pd.DataFrame([{"date": calc_date, "score": 50.0, "signal": "NEUTRAL"}]))
+
+    cfg = Settings(
+        ENABLE_MSS_GATE=True,
+        ENABLE_IRS_FILTER=False,
+        MSS_GATE_MODE="bullish_required",
+        MIN_AMOUNT=1,
+        MIN_LIST_DAYS=1,
+    )
+    assert select_candidates(store, calc_date, cfg) == []
+    store.close()
+
+
+def test_selector_soft_gate_trims_neutral_candidate_count(tmp_path) -> None:
+    db = tmp_path / "selector_soft_gate.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 10)
+
+    _seed_selector_universe(store, calc_date, ["000001", "000002", "000003"])
+    store.bulk_upsert("l3_mss_daily", pd.DataFrame([{"date": calc_date, "score": 52.0, "signal": "NEUTRAL"}]))
+
+    cfg = Settings(
+        ENABLE_MSS_GATE=True,
+        ENABLE_IRS_FILTER=False,
+        MSS_GATE_MODE="soft_gate",
+        MSS_SOFT_GATE_CANDIDATE_TOP_N=1,
+        CANDIDATE_TOP_N=3,
+        MIN_AMOUNT=1,
+        MIN_LIST_DAYS=1,
+    )
+    frame = select_candidates_frame(store, calc_date, cfg)
+    assert len(frame) == 1
+    assert frame.iloc[0]["code"] == "000001"
     store.close()
 
 
