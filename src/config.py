@@ -76,7 +76,8 @@ class Settings(BaseSettings):
     candidate_top_n: int = Field(default=100, alias="CANDIDATE_TOP_N")
     irs_top_n: int = Field(default=10, alias="IRS_TOP_N")
     min_list_days: int = Field(default=60, alias="MIN_LIST_DAYS")
-    min_amount: float = Field(default=50_000_000, alias="MIN_AMOUNT")
+    # TuShare amount 单位为千元；v0.01 基线默认流动性阈值为 5,000 万元 = 50,000（千元）。
+    min_amount: float = Field(default=50_000, alias="MIN_AMOUNT")
 
     # PAS parameters (v0.01 only BOF active)
     pas_patterns: str = Field(default="bof", alias="PAS_PATTERNS")

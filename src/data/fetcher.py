@@ -204,19 +204,27 @@ class TuShareFetcher(DataFetcher):
         return pd.concat(chunks, ignore_index=True)
 
     def fetch_stock_info(self) -> pd.DataFrame:
-        basic = self._call_api(
-            self.pro.stock_basic,
-            exchange="",
-            list_status="L",
-            fields="ts_code,name,industry,market,list_date",
-        )
-        if basic is None or basic.empty:
+        snapshots: list[pd.DataFrame] = []
+        for list_status in ("L", "D", "P"):
+            df = self._call_api(
+                self.pro.stock_basic,
+                exchange="",
+                list_status=list_status,
+                fields="ts_code,name,industry,market,list_status,list_date",
+            )
+            if df is None or df.empty:
+                continue
+            snapshots.append(df)
+
+        if not snapshots:
             return pd.DataFrame()
+        basic = pd.concat(snapshots, ignore_index=True)
+        basic = basic.drop_duplicates(subset=["ts_code"], keep="first")
         basic = basic.rename(columns={"list_date": "list_date_raw"})
         basic["is_st"] = basic["name"].str.contains("ST", na=False)
         basic["list_date"] = pd.to_datetime(basic["list_date_raw"], format="%Y%m%d", errors="coerce").dt.date
-        # 避免“单点快照”幸存者偏差：默认以 list_date 作为生效起点。
-        # 若 list_date 缺失，再回退到当天，保证字段非空。
+        # 现行 API 只能提供“当前快照”，这里至少保留 list_status。
+        # effective_from 仍以 list_date 优先；缺失时回退到抓取当天，保证主键非空。
         basic["effective_from"] = basic["list_date"].fillna(date.today())
         return basic[
             [
@@ -224,6 +232,7 @@ class TuShareFetcher(DataFetcher):
                 "name",
                 "industry",
                 "market",
+                "list_status",
                 "is_st",
                 "list_date",
                 "effective_from",

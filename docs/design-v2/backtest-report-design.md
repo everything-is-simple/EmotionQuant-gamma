@@ -22,6 +22,9 @@
 2. 中位数路径优先：以多窗口统计中位数结果作为主结论，不以最佳路径作为主结论。
 3. 成本压力：报告必须展示手续费+滑点后的净表现。
 4. 消融对照必做：`BOF baseline` / `BOF + MSS` / `BOF + MSS + IRS`。
+5. 诚信指标必出：`reject_rate`、`missing_rate`、`exposure_rate`、`failure_reason_breakdown`。
+6. 机会参与指标必出：`opportunity_count`、`filled_count`、`skip_*`、`participation_rate`。
+7. 幂等验收以 `l4_orders/l4_trades` 主键集合一致为准，不以汇总指标近似一致替代。
 
 ---
 
@@ -132,6 +135,7 @@ class EmotionQuantStrategy(bt.Strategy):
         回测末日强制平仓。
         这是 T+1 规则的回测终止结算例外：以最后一个交易日收盘价（含卖出滑点）对所有 open positions 生成 SELL Trade，
         确保 _pair_trades 的 BUY/SELL 数量一致。
+        该动作属于回测终止结算，不构成交易决策语义从 T+1 到 T 的修改。
         """
         open_positions = self.broker_engine.get_open_positions()
         if not open_positions:

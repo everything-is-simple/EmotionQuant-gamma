@@ -20,6 +20,13 @@ Broker 是系统中唯一有"钱"的模块：**接收信号 → 风控检查 →
 - **幂等**：同一信号不重复下单（signal_id 唯一约束）
 - **v0.01 失效优先**：入场后首个可评估日不延续则退出（避免低频钝刀消耗）
 
+### 1.1 v0.01 基线跑通后的实现约束补强
+
+- `Order/Trade` 主键保持确定性：`order_id = signal_id`，`trade_id = f"{order_id}_T"`；重跑必须覆盖同键，不得生成随机 ID。
+- Broker、Risk、Matcher 的全部时序判断都依赖显式传入的 `trade_date / today / today_date`；回测链路禁止使用 `date.today()`。
+- 信任状态机与连续亏损统计只读取已成交 `SELL` 交易；`BUY` 成交不得调用 `update_trust()`，也不得稀释连亏序列。
+- `paper` 持仓不是旁路样本，仍必须经过止损、止盈、组合回撤与 SELL 成交链路，保证 OBSERVE 的升级路径可验证。
+
 ---
 
 ## 2. 类结构
@@ -657,6 +664,10 @@ Order → l4_orders（每次生成/更新状态时写入）
 Trade → l4_trades（成交时写入，is_paper 标记模拟单）
 Trust → l4_stock_trust（降级/升级时更新）
 ```
+
+说明：
+- 幂等校验不能只看行数；至少要校验 `order_id_set` 与 `trade_id_set` 在重跑后保持一致。
+- `paper SELL` 也写入 `l4_trades`，否则 OBSERVE → ACTIVE 的升级证据链会断。
 
 ---
 

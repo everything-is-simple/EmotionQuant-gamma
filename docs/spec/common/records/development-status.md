@@ -1,8 +1,8 @@
 # EmotionQuant 开发状态（重启版模板）
 
 **状态**: Active（正式治理）  
-**最后更新**: 2026-03-04
-**当前阶段**: Rebuild Week 1（spec-01~05 文档校对完成，待进入实现）
+**最后更新**: 2026-03-06
+**当前阶段**: Rebuild Week 1（v0.01 文档口径已封口，Week1 Data Layer 差距审计已完成，正在准备实现收口）
 
 ---
 
@@ -26,7 +26,7 @@
 | 系统设计 | ✅ 已完成终审并定稿 | 16轮沙盘评审通过，S0/S1=0 |
 | 系统治理 | ✅ 已完成沙盘评审并定稿 | 11项偏差已修复，S0/S1=0 |
 | 根配置与入口文件 | ✅ 已完成终审并定稿 | 根文件审计 15 项偏差全部修复，S0/S1=0 |
-| 代码实现 | 待启动 | 按 Week1 -> Week4 推进 |
+| 代码实现 | 进行中 | 基线已跑通，当前按 Week1 差距审计结果收口 |
 
 ---
 
@@ -68,6 +68,10 @@
 | 2026-03-04 | v0.01 spec-01（Data Layer）文档校对：补齐校对证据落点并与 SoT/steering/record/顶层文件交叉核对 | completed | `docs/spec/v0.01/roadmap/v0.01-mvp-spec-01-data-layer.md` |
 | 2026-03-04 | v0.01 spec-02~05 文档校对：补齐校对证据落点并与 design/roadmap/steering/record/顶层文件交叉核对 | completed | `docs/spec/v0.01/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-03-strategy.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-05-backtest-report.md` |
 | 2026-03-04 | v0.01 实现前总校对收口：roadmap 增加“校对完成状态+追溯索引+七维勾选”，spec-01~05 增加 REV-ID 并同步 `docs/spec` | completed | `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-01-data-layer.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-03-strategy.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-05-backtest-report.md` |
+| 2026-03-06 | v0.01 基线跑通后回望审视：形成“保留不动 / v0.01 立即修订 / v0.02+ 延后”三分法清单 | completed | `docs/spec/v0.01/records/v0.01-post-baseline-retrospective-20260306.md` |
+| 2026-03-06 | v0.01 回望修订落地：按实战证据修正 roadmap/spec/design 的实现与验收口径 | completed | `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-01-data-layer.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-05-backtest-report.md`, `docs/design-v2/data-layer-design.md`, `docs/design-v2/backtest-report-design.md` |
+| 2026-03-06 | v0.01 Broker 回望修订落地：补齐确定性主键、显式回测日期、SELL-only trust update、paper 持仓退出约束 | completed | `docs/spec/v0.01/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/design-v2/broker-design.md` |
+| 2026-03-06 | Week1 Data Layer 差距审计：完成测试、最小命令验证，并修正 `MIN_AMOUNT` 与 `stock_info.list_status` 默认主链路口径 | completed | `docs/spec/v0.01/records/v0.01-week1-data-layer-gap-audit-20260306.md`, `src/config.py`, `src/data/fetcher.py`, `tests/unit/core/test_config.py`, `tests/unit/data/test_fetcher.py`, `.env.example` |
 
 ---
 
@@ -87,6 +91,10 @@
 | 2026-03-04 | v0.01 spec-01 文档校对（仅文档，不实现） | n/a | n/a | `docs/spec/v0.01/roadmap/v0.01-mvp-spec-01-data-layer.md` | 设计/路线图/steering/record/顶层文件一致性复核 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=已同步 |
 | 2026-03-04 | v0.01 spec-02~05 文档校对（仅文档，不实现） | n/a | n/a | `docs/spec/v0.01/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-03-strategy.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-05-backtest-report.md` | 设计/路线图/steering/record/顶层文件一致性复核 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=已同步 |
 | 2026-03-04 | v0.01 实现前最后一轮总校对（仅文档，不实现） | n/a | n/a | `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-01-data-layer.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-03-strategy.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-05-backtest-report.md` | 七维模板逐项勾选复核（Schema/调用链/幂等/状态机/时序/冲突/报告） | debts=无变化, status=已同步, assets=无变化, roadmap=已同步, spec=已同步 |
+| 2026-03-06 | v0.01 基线跑通后回望审视 | n/a | n/a | `docs/spec/v0.01/records/v0.01-post-baseline-retrospective-20260306.md` | 基于基线证据、runbook、勘误与路线图/实现卡的文件级修订审查 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=无变化（本轮先出审查记录） |
+| 2026-03-06 | v0.01 回望修订落地 | n/a | n/a | `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-01-data-layer.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-05-backtest-report.md`, `docs/design-v2/data-layer-design.md`, `docs/design-v2/backtest-report-design.md` | 按基线证据回写实现与验收口径，不触碰 Frozen 主干语义 | debts=无变化, status=已同步, assets=无变化, roadmap=已同步, spec=spec-01/spec-02/spec-05 已同步 |
+| 2026-03-06 | v0.01 Broker 回望修订落地 | n/a | n/a | `docs/spec/v0.01/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/design-v2/broker-design.md` | 基于基线经验补齐 Broker 的确定性、时序与信任链路约束，不改 Frozen 语义 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=spec-04 已同步 |
+| 2026-03-06 | Week1 Data Layer 差距审计 + 口径修正 | `python main.py build --layers=l2 --start 2026-01-01 --end 2026-01-02` | `pytest -q tests/unit/core/test_config.py tests/unit/data/test_fetcher.py tests/unit/data tests/unit/core/test_contracts.py tests/unit/selector/test_selector_strategy.py` | `docs/spec/v0.01/records/v0.01-week1-data-layer-gap-audit-20260306.md`, `src/config.py`, `src/data/fetcher.py`, `.env.example`, `tests/unit/core/test_config.py`, `tests/unit/data/test_fetcher.py` | 以 spec-01 为准完成 Gap Audit，并修正默认 `MIN_AMOUNT` 与 `list_status` 口径 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=spec-01 审计已同步 |
 
 ---
 
@@ -110,6 +118,9 @@
 | 2026-03-04 | v1.5 | 进入 Week1 文档校对：spec-01 补齐“校对证据”落点并完成跨文档一致性复核 |
 | 2026-03-04 | v1.6 | 完成 spec-02~05 文档校对与证据化留痕；v0.01 spec-01~05 校对闭环完成 |
 | 2026-03-04 | v1.7 | 实现前最后一轮总校对完成：roadmap 新增追溯索引与七维勾选，spec-01~05 统一 REV-ID |
+| 2026-03-06 | v1.8 | 完成 v0.01 基线跑通后的回望审视，形成“保留不动 / v0.01 立即修订 / v0.02+ 延后”三分法清单 |
+| 2026-03-06 | v1.9 | 完成 v0.01 回望修订首轮落地：roadmap、spec-01/spec-02/spec-05、data-layer/backtest-report 说明性口径已按实战证据更新 |
+| 2026-03-06 | v1.10 | 完成 spec-04 / broker-design 回望修订；完成 Week1 Data Layer Gap Audit，并修正 `MIN_AMOUNT` 与 `stock_info.list_status` 默认主链路口径 |
 
 
 
