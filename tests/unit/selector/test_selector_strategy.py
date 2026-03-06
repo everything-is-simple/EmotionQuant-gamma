@@ -364,6 +364,61 @@ def test_compute_irs_assigns_unique_ranks_when_scores_tie(tmp_path) -> None:
     store.close()
 
 
+def test_compute_irs_skips_days_below_min_industry_threshold(tmp_path) -> None:
+    db = tmp_path / "irs_min_industries.duckdb"
+    store = Store(db)
+    d0 = date(2026, 1, 1)
+
+    store.bulk_upsert(
+        "l1_index_daily",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SH",
+                    "date": d0,
+                    "open": 3000.0,
+                    "high": 3010.0,
+                    "low": 2990.0,
+                    "close": 3000.0,
+                    "pre_close": 3000.0,
+                    "pct_chg": 0.0,
+                    "volume": 1e8,
+                    "amount": 2e11,
+                }
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l2_industry_daily",
+        pd.DataFrame(
+            [
+                {
+                    "industry": "电子",
+                    "date": d0,
+                    "pct_chg": 0.0,
+                    "amount": 5e10,
+                    "stock_count": 40,
+                    "rise_count": 20,
+                    "fall_count": 20,
+                },
+                {
+                    "industry": "银行",
+                    "date": d0,
+                    "pct_chg": 0.0,
+                    "amount": 5e10,
+                    "stock_count": 30,
+                    "rise_count": 15,
+                    "fall_count": 15,
+                },
+            ]
+        ),
+    )
+
+    assert compute_irs(store, d0, d0, min_industries_per_day=3) == 0
+    assert store.read_df("SELECT * FROM l3_irs_daily").empty
+    store.close()
+
+
 def test_strategy_combine_modes() -> None:
     signal_date = date(2026, 1, 8)
     s1 = Signal(
@@ -792,4 +847,99 @@ def test_selector_frame_keeps_candidate_explainability_fields(tmp_path) -> None:
     assert frame.iloc[0]["filters_passed"] == "LIST_STATUS;HALT;ST;LIST_DAYS;AMOUNT"
     assert frame.iloc[0]["reject_reason"] == ""
     assert frame.iloc[0]["liquidity_tag"] in {"MEDIUM", "HIGH"}
+    store.close()
+
+
+def test_selector_prefers_sw_industry_over_legacy_stock_basic_industry(tmp_path) -> None:
+    db = tmp_path / "selector_sw_priority.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 10)
+
+    store.bulk_upsert(
+        "l2_stock_adj_daily",
+        pd.DataFrame(
+            [
+                {
+                    "code": "000001",
+                    "date": calc_date,
+                    "adj_open": 10.0,
+                    "adj_high": 10.2,
+                    "adj_low": 9.8,
+                    "adj_close": 10.0,
+                    "volume": 10000,
+                    "amount": 2e8,
+                    "pct_chg": 0.01,
+                    "ma5": 10.0,
+                    "ma10": 10.0,
+                    "ma20": 10.0,
+                    "ma60": 10.0,
+                    "volume_ma5": 9000,
+                    "volume_ma20": 9000,
+                    "volume_ratio": 1.2,
+                }
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_daily",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SZ",
+                    "date": calc_date,
+                    "open": 10.0,
+                    "high": 10.2,
+                    "low": 9.8,
+                    "close": 10.0,
+                    "pre_close": 10.0,
+                    "volume": 10000,
+                    "amount": 2e8,
+                    "pct_chg": 0.01,
+                    "adj_factor": 1.0,
+                    "is_halt": False,
+                    "up_limit": 11.0,
+                    "down_limit": 9.0,
+                    "total_mv": 1e6,
+                    "circ_mv": 8e5,
+                }
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_info",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SZ",
+                    "name": "样本股",
+                    "industry": "旧行业",
+                    "market": "主板",
+                    "list_status": "L",
+                    "is_st": False,
+                    "list_date": date(2010, 1, 1),
+                    "effective_from": date(2020, 1, 1),
+                }
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_sw_industry_member",
+        pd.DataFrame(
+            [
+                {
+                    "industry_code": "801780.SI",
+                    "industry_name": "银行",
+                    "ts_code": "000001.SZ",
+                    "in_date": date(1991, 4, 3),
+                    "out_date": None,
+                    "is_new": "Y",
+                    "source_trade_date": calc_date,
+                }
+            ]
+        ),
+    )
+
+    cfg = Settings(ENABLE_MSS_GATE=False, ENABLE_IRS_FILTER=False, MIN_AMOUNT=1, MIN_LIST_DAYS=1)
+    frame = select_candidates_frame(store, calc_date, cfg)
+    assert frame.iloc[0]["industry"] == "银行"
     store.close()

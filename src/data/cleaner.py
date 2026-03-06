@@ -33,10 +33,12 @@ def clean_stock_adj_daily(store: Store, start: date, end: date) -> int:
     lookback_start = start - timedelta(days=180)
     raw = store.read_df(
         """
-        SELECT ts_code, date, open, high, low, close, volume, amount, adj_factor, is_halt
-        FROM l1_stock_daily
-        WHERE date BETWEEN ? AND ?
-        ORDER BY ts_code, date
+        SELECT d.ts_code, d.date, d.open, d.high, d.low, d.close, d.volume, d.amount, d.adj_factor, d.is_halt
+        FROM l1_stock_daily d
+        INNER JOIN l1_trade_calendar cal
+            ON cal.date = d.date AND cal.is_trade_day = TRUE
+        WHERE d.date BETWEEN ? AND ?
+        ORDER BY d.ts_code, d.date
         """,
         (lookback_start, end),
     )
@@ -95,13 +97,21 @@ def _stock_daily_with_info(store: Store, start: date, end: date) -> pd.DataFrame
         SELECT
             d.ts_code, d.date, d.open, d.high, d.low, d.close, d.pre_close, d.volume, d.amount,
             d.pct_chg, d.is_halt, d.up_limit, d.down_limit,
-            (
+            COALESCE((
+                SELECT m.industry_name
+                FROM l1_sw_industry_member m
+                WHERE m.ts_code = d.ts_code
+                  AND m.in_date <= d.date
+                  AND (m.out_date IS NULL OR m.out_date >= d.date)
+                ORDER BY m.in_date DESC, m.industry_code ASC
+                LIMIT 1
+            ), (
                 SELECT i.industry
                 FROM l1_stock_info i
                 WHERE i.ts_code = d.ts_code AND i.effective_from <= d.date
                 ORDER BY i.effective_from DESC
                 LIMIT 1
-            ) AS industry,
+            )) AS industry,
             (
                 SELECT i.market
                 FROM l1_stock_info i
@@ -117,6 +127,8 @@ def _stock_daily_with_info(store: Store, start: date, end: date) -> pd.DataFrame
                 LIMIT 1
             ), FALSE) AS is_st
         FROM l1_stock_daily d
+        INNER JOIN l1_trade_calendar cal
+            ON cal.date = d.date AND cal.is_trade_day = TRUE
         WHERE d.date BETWEEN ? AND ?
         ORDER BY d.ts_code, d.date
         """,

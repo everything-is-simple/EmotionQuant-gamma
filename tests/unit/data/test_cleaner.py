@@ -85,3 +85,102 @@ def test_cleaners_generate_l2_tables(tmp_path) -> None:
     assert l2_stock.iloc[-1]["ma20"] is not None
     store.close()
 
+
+def test_clean_industry_daily_prefers_sw_membership_and_skips_non_trade_day(tmp_path) -> None:
+    db = tmp_path / "industry_sw.duckdb"
+    store = Store(db)
+    trade_day = date(2026, 1, 2)
+    weekend = date(2026, 1, 3)
+    store.bulk_upsert(
+        "l1_trade_calendar",
+        pd.DataFrame(
+            [
+                {"date": trade_day, "is_trade_day": True, "prev_trade_day": None, "next_trade_day": None},
+                {"date": weekend, "is_trade_day": False, "prev_trade_day": trade_day, "next_trade_day": None},
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_info",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SZ",
+                    "name": "平安银行",
+                    "industry": "旧行业",
+                    "market": "主板",
+                    "list_status": "L",
+                    "is_st": False,
+                    "list_date": date(2000, 1, 1),
+                    "effective_from": date(2000, 1, 1),
+                }
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_sw_industry_member",
+        pd.DataFrame(
+            [
+                {
+                    "industry_code": "801780.SI",
+                    "industry_name": "银行",
+                    "ts_code": "000001.SZ",
+                    "in_date": date(1991, 4, 3),
+                    "out_date": None,
+                    "is_new": "Y",
+                    "source_trade_date": trade_day,
+                }
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_daily",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SZ",
+                    "date": trade_day,
+                    "open": 10.0,
+                    "high": 10.2,
+                    "low": 9.8,
+                    "close": 10.1,
+                    "pre_close": 10.0,
+                    "volume": 1000,
+                    "amount": 10000,
+                    "pct_chg": 0.01,
+                    "adj_factor": 1.0,
+                    "is_halt": False,
+                    "up_limit": 11.0,
+                    "down_limit": 9.0,
+                    "total_mv": 1_000_000,
+                    "circ_mv": 900_000,
+                },
+                {
+                    "ts_code": "000001.SZ",
+                    "date": weekend,
+                    "open": 10.0,
+                    "high": 10.2,
+                    "low": 9.8,
+                    "close": 10.1,
+                    "pre_close": 10.0,
+                    "volume": 1000,
+                    "amount": 10000,
+                    "pct_chg": 0.01,
+                    "adj_factor": 1.0,
+                    "is_halt": False,
+                    "up_limit": 11.0,
+                    "down_limit": 9.0,
+                    "total_mv": 1_000_000,
+                    "circ_mv": 900_000,
+                },
+            ]
+        ),
+    )
+
+    assert clean_industry_daily(store, trade_day, weekend) == 1
+    industry = store.read_df("SELECT industry, date FROM l2_industry_daily ORDER BY date")
+    assert industry.to_dict(orient="records") == [{"industry": "银行", "date": pd.Timestamp(trade_day)}]
+    assert clean_stock_adj_daily(store, trade_day, weekend) == 1
+    dates = store.read_df("SELECT date FROM l2_stock_adj_daily ORDER BY date")
+    assert dates["date"].dt.date.tolist() == [trade_day]
+    store.close()

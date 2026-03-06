@@ -41,43 +41,57 @@ def _load_universe_snapshot(store: Store, calc_date: date) -> pd.DataFrame:
     """
     return store.read_df(
         """
-        WITH joined AS (
-            SELECT
-                l2.code,
-                l2.date,
-                l2.amount,
-                l2.pct_chg,
-                l2.volume_ratio,
-                l1.is_halt,
-                info.industry,
-                info.is_st,
-                info.list_status,
-                info.list_date,
-                ROW_NUMBER() OVER (
-                    PARTITION BY l2.code, l2.date
-                    ORDER BY info.effective_from DESC NULLS LAST
-                ) AS rn
-            FROM l2_stock_adj_daily l2
-            LEFT JOIN l1_stock_daily l1
-                ON split_part(l1.ts_code, '.', 1) = l2.code AND l1.date = l2.date
-            LEFT JOIN l1_stock_info info
-                ON split_part(info.ts_code, '.', 1) = l2.code
-               AND info.effective_from <= l2.date
-            WHERE l2.date = ?
-        )
         SELECT
-            code,
-            date,
-            amount,
-            pct_chg,
-            volume_ratio,
-            is_halt,
-            industry,
-            is_st,
-            list_status,
-            list_date
-        FROM joined
-        WHERE rn = 1
+            l2.code,
+            l2.date,
+            l2.amount,
+            l2.pct_chg,
+            l2.volume_ratio,
+            l1.is_halt,
+            COALESCE((
+                SELECT m.industry_name
+                FROM l1_sw_industry_member m
+                WHERE split_part(m.ts_code, '.', 1) = l2.code
+                  AND m.in_date <= l2.date
+                  AND (m.out_date IS NULL OR m.out_date >= l2.date)
+                ORDER BY m.in_date DESC, m.industry_code ASC
+                LIMIT 1
+            ), (
+                SELECT info.industry
+                FROM l1_stock_info info
+                WHERE split_part(info.ts_code, '.', 1) = l2.code
+                  AND info.effective_from <= l2.date
+                ORDER BY info.effective_from DESC
+                LIMIT 1
+            )) AS industry,
+            COALESCE((
+                SELECT info.is_st
+                FROM l1_stock_info info
+                WHERE split_part(info.ts_code, '.', 1) = l2.code
+                  AND info.effective_from <= l2.date
+                ORDER BY info.effective_from DESC
+                LIMIT 1
+            ), FALSE) AS is_st,
+            (
+                SELECT info.list_status
+                FROM l1_stock_info info
+                WHERE split_part(info.ts_code, '.', 1) = l2.code
+                  AND info.effective_from <= l2.date
+                ORDER BY info.effective_from DESC
+                LIMIT 1
+            ) AS list_status,
+            (
+                SELECT info.list_date
+                FROM l1_stock_info info
+                WHERE split_part(info.ts_code, '.', 1) = l2.code
+                  AND info.effective_from <= l2.date
+                ORDER BY info.effective_from DESC
+                LIMIT 1
+            ) AS list_date
+        FROM l2_stock_adj_daily l2
+        LEFT JOIN l1_stock_daily l1
+            ON split_part(l1.ts_code, '.', 1) = l2.code AND l1.date = l2.date
+        WHERE l2.date = ?
         """,
         (calc_date,),
     )

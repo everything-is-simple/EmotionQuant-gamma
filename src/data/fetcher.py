@@ -61,6 +61,10 @@ class DataFetcher(ABC):
     def fetch_trade_calendar(self, start: date, end: date) -> pd.DataFrame:
         pass
 
+    @abstractmethod
+    def fetch_sw_industry_members(self, start: date, end: date) -> pd.DataFrame:
+        pass
+
 
 class TuShareFetcher(DataFetcher):
     def __init__(self, token: str, http_url: str | None = None, sleep_interval: float = 0.3):
@@ -265,6 +269,62 @@ class TuShareFetcher(DataFetcher):
         cal["next_trade_day"] = cal["date"].map(next_map)
         return cal[["date", "is_trade_day", "prev_trade_day", "next_trade_day"]]
 
+    def fetch_sw_industry_members(self, start: date, end: date) -> pd.DataFrame:
+        """
+        远端模式优先拉取申万一级现行成分，并保留 in/out_date。
+        历史全量成员映射优先由 raw DuckDB bootstrap 提供。
+        """
+        classify = self._call_api(self.pro.index_classify, level="L1", src="SW2021")
+        if classify is None or classify.empty:
+            return pd.DataFrame()
+
+        member_api = getattr(self.pro, "index_member_all", None)
+        if member_api is None:
+            logger.warning("TuShare index_member_all API unavailable; skip SW industry members.")
+            return pd.DataFrame()
+
+        chunks: list[pd.DataFrame] = []
+        for l1_code in (
+            classify["index_code"].dropna().astype(str).drop_duplicates().sort_values().tolist()
+        ):
+            df = self._call_api(member_api, l1_code=l1_code, is_new="Y")
+            if df is None or df.empty:
+                continue
+            chunks.append(df)
+            time.sleep(self.sleep_interval)
+
+        if not chunks:
+            return pd.DataFrame()
+
+        members = pd.concat(chunks, ignore_index=True)
+        ts_values = members.get("ts_code")
+        if ts_values is None:
+            ts_values = members.get("con_code")
+        members["ts_code"] = ts_values.fillna("").astype(str)
+        members = members[members["ts_code"].str.strip() != ""].copy()
+        members["industry_code"] = members.get("l1_code", "").fillna("").astype(str)
+        members["industry_name"] = members.get("l1_name", "").fillna("").astype(str)
+        members["in_date"] = pd.to_datetime(members.get("in_date"), format="%Y%m%d", errors="coerce").dt.date
+        members["out_date"] = pd.to_datetime(members.get("out_date"), format="%Y%m%d", errors="coerce").dt.date
+        members["source_trade_date"] = end
+        members["is_new"] = members.get("is_new", "Y").fillna("Y").astype(str)
+        members = members.dropna(subset=["in_date"])
+        members = members[
+            (members["industry_code"].str.len() > 0) & (members["industry_name"].str.len() > 0)
+        ].copy()
+        members = members.drop_duplicates(subset=["industry_code", "ts_code", "in_date"], keep="first")
+        return members[
+            [
+                "industry_code",
+                "industry_name",
+                "ts_code",
+                "in_date",
+                "out_date",
+                "is_new",
+                "source_trade_date",
+            ]
+        ]
+
 
 class AKShareFetcher(DataFetcher):
     """
@@ -300,6 +360,13 @@ class AKShareFetcher(DataFetcher):
         logger.warning("AKShare trade_calendar mapping is minimal in v0.01.")
         return pd.DataFrame()
 
+    def fetch_sw_industry_members(self, start: date, end: date) -> pd.DataFrame:
+        import akshare as ak
+
+        _ = ak
+        logger.warning("AKShare sw industry member mapping is minimal in v0.01.")
+        return pd.DataFrame()
+
 
 @dataclass(frozen=True)
 class RawBootstrapResult:
@@ -309,6 +376,7 @@ class RawBootstrapResult:
     stock_daily_rows: int
     index_daily_rows: int
     stock_info_rows: int
+    sw_industry_member_rows: int
     stock_info_effective_from_min: date | None
     stock_info_effective_from_max: date | None
 
@@ -343,8 +411,15 @@ def bootstrap_l1_from_raw_duckdb(
 
         if refresh_stock_info_only:
             store.conn.execute("DELETE FROM l1_stock_info")
+            store.conn.execute("DELETE FROM l1_sw_industry_member")
         else:
-            for table in ("l1_trade_calendar", "l1_stock_daily", "l1_index_daily", "l1_stock_info"):
+            for table in (
+                "l1_trade_calendar",
+                "l1_stock_daily",
+                "l1_index_daily",
+                "l1_stock_info",
+                "l1_sw_industry_member",
+            ):
                 store.conn.execute(f"DELETE FROM {table}")
 
             store.conn.execute(
@@ -481,8 +556,86 @@ def bootstrap_l1_from_raw_duckdb(
             [start, end],
         )
 
+        try:
+            store.conn.execute(
+                f"""
+                INSERT INTO l1_sw_industry_member(
+                  industry_code, industry_name, ts_code, in_date, out_date, is_new, source_trade_date
+                )
+                WITH sw_l1 AS (
+                  SELECT index_code, industry_name
+                  FROM (
+                    SELECT
+                      index_code,
+                      industry_name,
+                      STRPTIME(trade_date, '%Y%m%d')::DATE AS snapshot_date,
+                      ROW_NUMBER() OVER (
+                        PARTITION BY index_code
+                        ORDER BY STRPTIME(trade_date, '%Y%m%d')::DATE DESC
+                      ) AS rn
+                    FROM {_RAW_ATTACH_ALIAS}.raw_index_classify
+                    WHERE src = 'SW2021'
+                      AND level = 'L1'
+                      AND industry_name NOT LIKE '行业%'
+                  )
+                  WHERE rn = 1
+                ),
+                dedup AS (
+                  SELECT
+                    m.index_code AS industry_code,
+                    sw.industry_name AS industry_name,
+                    COALESCE(NULLIF(m.ts_code, ''), NULLIF(m.con_code, '')) AS ts_code,
+                    STRPTIME(m.in_date, '%Y%m%d')::DATE AS in_date,
+                    CASE
+                      WHEN NULLIF(m.out_date, '') IS NULL THEN NULL
+                      ELSE STRPTIME(m.out_date, '%Y%m%d')::DATE
+                    END AS out_date,
+                    COALESCE(m.is_new, '') AS is_new,
+                    STRPTIME(m.trade_date, '%Y%m%d')::DATE AS source_trade_date,
+                    ROW_NUMBER() OVER (
+                      PARTITION BY
+                        m.index_code,
+                        COALESCE(NULLIF(m.ts_code, ''), NULLIF(m.con_code, '')),
+                        STRPTIME(m.in_date, '%Y%m%d')::DATE,
+                        CASE
+                          WHEN NULLIF(m.out_date, '') IS NULL THEN NULL
+                          ELSE STRPTIME(m.out_date, '%Y%m%d')::DATE
+                        END
+                      ORDER BY STRPTIME(m.trade_date, '%Y%m%d')::DATE DESC
+                    ) AS rn
+                  FROM {_RAW_ATTACH_ALIAS}.raw_index_member m
+                  INNER JOIN sw_l1 sw
+                    ON sw.index_code = m.index_code
+                  WHERE COALESCE(NULLIF(m.ts_code, ''), NULLIF(m.con_code, '')) IS NOT NULL
+                    AND STRPTIME(m.in_date, '%Y%m%d')::DATE <= ?
+                    AND (
+                      NULLIF(m.out_date, '') IS NULL
+                      OR STRPTIME(m.out_date, '%Y%m%d')::DATE >= ?
+                    )
+                )
+                SELECT
+                  industry_code,
+                  industry_name,
+                  ts_code,
+                  in_date,
+                  out_date,
+                  is_new,
+                  source_trade_date
+                FROM dedup
+                WHERE rn = 1
+                """,
+                [end, start],
+            )
+        except Exception as exc:
+            logger.warning(f"raw SW industry bootstrap skipped: {exc}")
+
         stock_info_max = store.read_scalar("SELECT MAX(effective_from) FROM l1_stock_info")
         store.update_fetch_progress("stock_info", stock_info_max, status="OK")
+        store.update_fetch_progress(
+            "sw_industry_member",
+            store.read_scalar("SELECT MAX(source_trade_date) FROM l1_sw_industry_member"),
+            status="OK",
+        )
         if not refresh_stock_info_only:
             store.update_fetch_progress("trade_cal", store.get_max_date("l1_trade_calendar"), status="OK")
             store.update_fetch_progress("index_daily", store.get_max_date("l1_index_daily"), status="OK")
@@ -511,6 +664,7 @@ def bootstrap_l1_from_raw_duckdb(
         stock_daily_rows=int(store.read_scalar("SELECT COUNT(*) FROM l1_stock_daily") or 0),
         index_daily_rows=int(store.read_scalar("SELECT COUNT(*) FROM l1_index_daily") or 0),
         stock_info_rows=int(store.read_scalar("SELECT COUNT(*) FROM l1_stock_info") or 0),
+        sw_industry_member_rows=int(store.read_scalar("SELECT COUNT(*) FROM l1_sw_industry_member") or 0),
         stock_info_effective_from_min=stock_info_range[0] if stock_info_range else None,
         stock_info_effective_from_max=stock_info_range[1] if stock_info_range else None,
     )
@@ -595,6 +749,8 @@ def fetch_incremental(
         df = fetcher.fetch_stock_daily(start_date, end_date)
     elif data_type == "index_daily":
         df = fetcher.fetch_index_daily(["000001.SH"], start_date, end_date)
+    elif data_type == "sw_industry_member":
+        df = fetcher.fetch_sw_industry_members(start_date, end_date)
     else:
         raise ValueError(f"Unsupported data_type: {data_type}")
 

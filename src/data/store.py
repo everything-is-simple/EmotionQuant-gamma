@@ -117,6 +117,18 @@ class Store:
             )
             """,
             """
+            CREATE TABLE IF NOT EXISTS l1_sw_industry_member (
+                industry_code     VARCHAR NOT NULL,
+                industry_name     VARCHAR NOT NULL,
+                ts_code           VARCHAR NOT NULL,
+                in_date           DATE    NOT NULL,
+                out_date          DATE,
+                is_new            VARCHAR,
+                source_trade_date DATE,
+                PRIMARY KEY (industry_code, ts_code, in_date)
+            )
+            """,
+            """
             CREATE TABLE IF NOT EXISTS l1_trade_calendar (
                 date           DATE NOT NULL PRIMARY KEY,
                 is_trade_day   BOOLEAN NOT NULL,

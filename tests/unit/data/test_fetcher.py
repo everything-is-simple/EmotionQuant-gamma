@@ -44,6 +44,44 @@ class _FakePro:
         }
         return pd.DataFrame(rows[list_status])
 
+    def index_classify(self, level: str, src: str) -> pd.DataFrame:
+        assert level == "L1"
+        assert src == "SW2021"
+        return pd.DataFrame(
+            [
+                {"index_code": "801780.SI", "industry_name": "银行"},
+                {"index_code": "801080.SI", "industry_name": "电子"},
+            ]
+        )
+
+    def index_member_all(self, l1_code: str, is_new: str) -> pd.DataFrame:
+        assert is_new == "Y"
+        rows = {
+            "801780.SI": [
+                {
+                    "l1_code": "801780.SI",
+                    "l1_name": "银行",
+                    "ts_code": "000001.SZ",
+                    "name": "平安银行",
+                    "in_date": "19910403",
+                    "out_date": "",
+                    "is_new": "Y",
+                }
+            ],
+            "801080.SI": [
+                {
+                    "l1_code": "801080.SI",
+                    "l1_name": "电子",
+                    "ts_code": "000100.SZ",
+                    "name": "样本电子股",
+                    "in_date": "20000101",
+                    "out_date": "",
+                    "is_new": "Y",
+                }
+            ],
+        }
+        return pd.DataFrame(rows.get(l1_code, []))
+
 
 def test_fetch_stock_info_keeps_list_status(monkeypatch) -> None:
     fake_ts = types.SimpleNamespace(pro_api=lambda token: _FakePro())
@@ -54,6 +92,18 @@ def test_fetch_stock_info_keeps_list_status(monkeypatch) -> None:
 
     assert set(df["list_status"]) == {"L", "D"}
     assert "effective_from" in df.columns
+
+
+def test_fetch_sw_industry_members_returns_l1_mapping(monkeypatch) -> None:
+    fake_ts = types.SimpleNamespace(pro_api=lambda token: _FakePro())
+    monkeypatch.setitem(sys.modules, "tushare", fake_ts)
+
+    fetcher = TuShareFetcher(token="dummy-token", sleep_interval=0.0)
+    df = fetcher.fetch_sw_industry_members(start=date(2026, 1, 1), end=date(2026, 1, 5))
+
+    assert set(df["industry_name"]) == {"银行", "电子"}
+    assert set(df["ts_code"]) == {"000001.SZ", "000100.SZ"}
+    assert "source_trade_date" in df.columns
 
 
 def test_bootstrap_l1_from_raw_duckdb_loads_tables_and_updates_progress(tmp_path) -> None:
@@ -157,6 +207,46 @@ def test_bootstrap_l1_from_raw_duckdb_loads_tables_and_updates_progress(tmp_path
         ('000001.SZ', '平安银行', '银行', '主板', 'D', '19910403', '20260105')
         """
     )
+    con.execute(
+        """
+        CREATE TABLE raw_index_classify (
+            index_code VARCHAR,
+            industry_name VARCHAR,
+            level VARCHAR,
+            industry_code VARCHAR,
+            src VARCHAR,
+            trade_date VARCHAR,
+            is_pub VARCHAR,
+            parent_code VARCHAR
+        )
+        """
+    )
+    con.execute(
+        """
+        INSERT INTO raw_index_classify VALUES
+        ('801780.SI', '银行', 'L1', '801780', 'SW2021', '20240701', '1', NULL)
+        """
+    )
+    con.execute(
+        """
+        CREATE TABLE raw_index_member (
+            index_code VARCHAR,
+            con_code VARCHAR,
+            in_date VARCHAR,
+            out_date VARCHAR,
+            trade_date VARCHAR,
+            ts_code VARCHAR,
+            stock_code VARCHAR,
+            is_new VARCHAR
+        )
+        """
+    )
+    con.execute(
+        """
+        INSERT INTO raw_index_member VALUES
+        ('801780.SI', '000001.SZ', '19910403', '', '20260102', '000001.SZ', '000001', 'Y')
+        """
+    )
     con.close()
 
     store = Store(target_db)
@@ -172,10 +262,12 @@ def test_bootstrap_l1_from_raw_duckdb_loads_tables_and_updates_progress(tmp_path
         assert result.index_daily_rows == 1
         assert result.stock_daily_rows == 1
         assert result.stock_info_rows == 2
+        assert result.sw_industry_member_rows == 1
         assert store.get_fetch_progress("trade_cal") == date(2026, 1, 5)
         assert store.get_fetch_progress("index_daily") == date(2026, 1, 2)
         assert store.get_fetch_progress("stock_daily") == date(2026, 1, 2)
         assert store.get_fetch_progress("stock_info") == date(2026, 1, 5)
+        assert store.get_fetch_progress("sw_industry_member") == date(2026, 1, 2)
 
         stock_info = store.read_df(
             "SELECT ts_code, list_status, effective_from FROM l1_stock_info ORDER BY effective_from"
@@ -184,6 +276,13 @@ def test_bootstrap_l1_from_raw_duckdb_loads_tables_and_updates_progress(tmp_path
         assert stock_info.to_dict(orient="records") == [
             {"ts_code": "000001.SZ", "list_status": "L", "effective_from": date(2026, 1, 2)},
             {"ts_code": "000001.SZ", "list_status": "D", "effective_from": date(2026, 1, 5)},
+        ]
+        sw_map = store.read_df(
+            "SELECT industry_name, ts_code, in_date FROM l1_sw_industry_member ORDER BY ts_code, in_date"
+        )
+        sw_map["in_date"] = pd.to_datetime(sw_map["in_date"]).dt.date
+        assert sw_map.to_dict(orient="records") == [
+            {"industry_name": "银行", "ts_code": "000001.SZ", "in_date": date(1991, 4, 3)}
         ]
     finally:
         store.close()

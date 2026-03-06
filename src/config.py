@@ -76,6 +76,7 @@ class Settings(BaseSettings):
     # Selector/Strategy defaults (v0.01)
     candidate_top_n: int = Field(default=100, alias="CANDIDATE_TOP_N")
     irs_top_n: int = Field(default=10, alias="IRS_TOP_N")
+    irs_min_industries_per_day: int = Field(default=25, alias="IRS_MIN_INDUSTRIES_PER_DAY")
     min_list_days: int = Field(default=60, alias="MIN_LIST_DAYS")
     # TuShare amount 单位为千元；v0.01 基线默认流动性阈值为 5,000 万元 = 50,000（千元）。
     min_amount: float = Field(default=50_000, alias="MIN_AMOUNT")

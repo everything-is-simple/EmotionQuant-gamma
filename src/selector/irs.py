@@ -40,6 +40,7 @@ def compute_irs(
     start: date,
     end: date,
     baseline: dict[str, float] | None = None,
+    min_industries_per_day: int = 1,
 ) -> int:
     """
     批量计算 IRS 并写入 l3_irs_daily。
@@ -99,6 +100,8 @@ def compute_irs(
                 }
             )
         day_scores_df = pd.DataFrame(day_scores)
+        if len(day_scores_df) < max(1, min_industries_per_day):
+            continue
         # 部分日期可能因原始缺失导致分数非有限值；按 0 兜底，保证日内排序稳定可执行。
         day_scores_df["score"] = pd.to_numeric(day_scores_df["score"], errors="coerce").fillna(0.0)
         # v0.01 验收要求“当日行业排名无重复”，即使分数并列也要给出稳定唯一顺序。

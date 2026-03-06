@@ -73,7 +73,7 @@ def build_l3(store: Store, config: Settings, start: date | None, end: date | Non
 
     # L3 在 v0.01 只构建 MSS/IRS；signal 仍由 Strategy 运行时写入。
     n1 = compute_mss(store, begin, finish)
-    n2 = compute_irs(store, begin, finish)
+    n2 = compute_irs(store, begin, finish, min_industries_per_day=config.irs_min_industries_per_day)
     return n1 + n2
 
 
