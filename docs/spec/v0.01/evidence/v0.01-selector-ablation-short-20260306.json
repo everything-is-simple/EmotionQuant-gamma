@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-06T03:39:57Z",
+  "generated_at": "2026-03-06T05:11:47Z",
   "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
   "db_path": "G:\\EmotionQuant-gamma\\.tmp\\backtest\\selector-ablation-short-20260306.duckdb",
   "start": "2026-01-05",
@@ -15,11 +15,33 @@
       "enable_irs_filter": false,
       "trade_days": 30,
       "trade_count": 12,
+      "win_rate": 0.4166666666666667,
+      "avg_win": 0.032790851493605506,
+      "avg_loss": 0.04199311635386671,
       "expected_value": -0.010833129750753285,
       "profit_factor": 0.7808625398811616,
       "max_drawdown": 0.021103092790372455,
+      "reject_rate": 0.0,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.8,
+      "opportunity_count": 12.0,
+      "filled_count": 12.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 1.0,
       "signals_count": 12,
-      "trades_count": 24
+      "trades_count": 24,
+      "environment_breakdown": {
+        "NEUTRAL": {
+          "trade_count": 12.0,
+          "win_rate": 0.4166666666666667,
+          "avg_win": 0.032790851493605506,
+          "avg_loss": 0.04199311635386671,
+          "profit_factor": 0.7808625398811616,
+          "expected_value": -0.010833129750753285,
+          "median_pnl_pct": -0.014051031535218644
+        }
+      }
     },
     {
       "label": "bof_plus_mss",
@@ -27,23 +49,57 @@
       "enable_irs_filter": false,
       "trade_days": 30,
       "trade_count": 12,
+      "win_rate": 0.4166666666666667,
+      "avg_win": 0.032790851493605506,
+      "avg_loss": 0.04199311635386671,
       "expected_value": -0.010833129750753285,
       "profit_factor": 0.7808625398811616,
       "max_drawdown": 0.021103092790372455,
+      "reject_rate": 0.0,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.8,
+      "opportunity_count": 12.0,
+      "filled_count": 12.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 1.0,
       "signals_count": 12,
-      "trades_count": 24
+      "trades_count": 24,
+      "environment_breakdown": {
+        "NEUTRAL": {
+          "trade_count": 12.0,
+          "win_rate": 0.4166666666666667,
+          "avg_win": 0.032790851493605506,
+          "avg_loss": 0.04199311635386671,
+          "profit_factor": 0.7808625398811616,
+          "expected_value": -0.010833129750753285,
+          "median_pnl_pct": -0.014051031535218644
+        }
+      }
     },
     {
       "label": "bof_plus_mss_plus_irs",
       "enable_mss_gate": true,
       "enable_irs_filter": true,
       "trade_days": 30,
-      "trade_count": 2,
-      "expected_value": -0.014101550629840054,
-      "profit_factor": 0.3194636926635059,
+      "trade_count": 0,
+      "win_rate": 0.0,
+      "avg_win": 0.0,
+      "avg_loss": 0.0,
+      "expected_value": 0.0,
+      "profit_factor": 0.0,
       "max_drawdown": 0.0,
-      "signals_count": 2,
-      "trades_count": 4
+      "reject_rate": 0.0,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.0,
+      "opportunity_count": 0.0,
+      "filled_count": 0.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 0.0,
+      "signals_count": 0,
+      "trades_count": 0,
+      "environment_breakdown": {}
     }
   ]
 }

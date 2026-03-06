@@ -25,6 +25,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--cash", type=float, default=None, help="Initial cash override")
     parser.add_argument("--db-path", default=None, help="Execution DuckDB path override")
     parser.add_argument(
+        "--skip-rebuild-l3",
+        action="store_true",
+        help="Reuse existing l3_mss_daily/l3_irs_daily in the working DB instead of rebuilding them",
+    )
+    parser.add_argument(
         "--working-db-path",
         default=None,
         help="Optional working copy DuckDB path; when set the ablation runs on the copy instead of the live DB",
@@ -62,6 +67,7 @@ def main() -> int:
         end=end,
         patterns=patterns or ["bof"],
         initial_cash=args.cash,
+        rebuild_l3=not args.skip_rebuild_l3,
         working_db_path=working_db_path,
     )
     path = write_ablation_evidence(output_path, payload)

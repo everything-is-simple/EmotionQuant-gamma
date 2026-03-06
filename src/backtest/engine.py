@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
+from typing import Any
 
 import pandas as pd
 
@@ -21,10 +22,22 @@ class BacktestResult:
     start: date
     end: date
     trade_days: int
+    win_rate: float
+    avg_win: float
+    avg_loss: float
     expected_value: float
     profit_factor: float
     max_drawdown: float
     trade_count: int
+    reject_rate: float
+    missing_rate: float
+    exposure_rate: float
+    opportunity_count: float
+    filled_count: float
+    skip_cash_count: float
+    skip_maxpos_count: float
+    participation_rate: float
+    environment_breakdown: dict[str, dict[str, Any]]
 
 
 def _iter_trade_days(store: Store, start: date, end: date) -> list[date]:
@@ -171,10 +184,22 @@ def run_backtest(
             start=start,
             end=end,
             trade_days=len(trade_days),
+            win_rate=float(metrics["win_rate"]),
+            avg_win=float(metrics["avg_win"]),
+            avg_loss=float(metrics["avg_loss"]),
             expected_value=float(metrics["expected_value"]),
             profit_factor=float(metrics["profit_factor"]),
             max_drawdown=float(metrics["max_drawdown"]),
             trade_count=int(metrics["trade_count"]),
+            reject_rate=float(metrics["reject_rate"]),
+            missing_rate=float(metrics["missing_rate"]),
+            exposure_rate=float(metrics["exposure_rate"]),
+            opportunity_count=float(metrics["opportunity_count"]),
+            filled_count=float(metrics["filled_count"]),
+            skip_cash_count=float(metrics["skip_cash_count"]),
+            skip_maxpos_count=float(metrics["skip_maxpos_count"]),
+            participation_rate=float(metrics["participation_rate"]),
+            environment_breakdown=dict(metrics["environment_breakdown"]),
         )
     finally:
         store.close()

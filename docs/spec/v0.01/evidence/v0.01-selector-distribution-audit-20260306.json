@@ -1,0 +1,50 @@
+{
+  "generated_at": "2026-03-06T05:07:51Z",
+  "start": "2023-01-03",
+  "end": "2026-02-24",
+  "mss": {
+    "days": 768,
+    "signal_counts": {
+      "NEUTRAL": 768
+    },
+    "signal_ratios": {
+      "NEUTRAL": 1.0
+    },
+    "score_quantiles": {
+      "p05": 50.648113877270674,
+      "p25": 51.17516080418595,
+      "p50": 51.635678796568286,
+      "p75": 52.287372139680535,
+      "p95": 52.99983044641781
+    }
+  },
+  "irs": {
+    "rows": 83797,
+    "days": 768,
+    "distinct_industries": 111,
+    "score_quantiles": {
+      "p05": 38.13162708032793,
+      "p25": 45.3333244998816,
+      "p50": 49.994573833713815,
+      "p75": 55.017457983401975,
+      "p95": 64.94689412426129
+    },
+    "rank_range": {
+      "min": 1,
+      "max": 111
+    },
+    "industries_per_day": {
+      "min": 1,
+      "median": 111.0,
+      "max": 111
+    },
+    "ranks_per_day": {
+      "min": 1,
+      "median": 111.0,
+      "max": 111
+    },
+    "duplicate_rank_days": 0
+  },
+  "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "db_path": "G:\\EmotionQuant-gamma\\.tmp\\audit\\selector-distribution-20260306.duckdb"
+}

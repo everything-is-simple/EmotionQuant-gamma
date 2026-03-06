@@ -101,7 +101,9 @@ def compute_irs(
         day_scores_df = pd.DataFrame(day_scores)
         # 部分日期可能因原始缺失导致分数非有限值；按 0 兜底，保证日内排序稳定可执行。
         day_scores_df["score"] = pd.to_numeric(day_scores_df["score"], errors="coerce").fillna(0.0)
-        day_scores_df["rank"] = day_scores_df["score"].rank(method="dense", ascending=False).astype(int)
+        # v0.01 验收要求“当日行业排名无重复”，即使分数并列也要给出稳定唯一顺序。
+        day_scores_df = day_scores_df.sort_values(["score", "industry"], ascending=[False, True]).reset_index(drop=True)
+        day_scores_df["rank"] = np.arange(1, len(day_scores_df) + 1, dtype=int)
         output_rows.extend(day_scores_df.to_dict(orient="records"))
 
     if not output_rows:

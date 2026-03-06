@@ -307,6 +307,63 @@ def test_compute_irs_ranks_stronger_industry_first(tmp_path) -> None:
     store.close()
 
 
+def test_compute_irs_assigns_unique_ranks_when_scores_tie(tmp_path) -> None:
+    db = tmp_path / "irs_tie_rank.duckdb"
+    store = Store(db)
+    d0 = date(2026, 1, 1)
+
+    store.bulk_upsert(
+        "l1_index_daily",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SH",
+                    "date": d0,
+                    "open": 3000.0,
+                    "high": 3010.0,
+                    "low": 2990.0,
+                    "close": 3000.0,
+                    "pre_close": 3000.0,
+                    "pct_chg": 0.0,
+                    "volume": 1e8,
+                    "amount": 2e11,
+                }
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l2_industry_daily",
+        pd.DataFrame(
+            [
+                {
+                    "industry": "电子",
+                    "date": d0,
+                    "pct_chg": 0.0,
+                    "amount": 5e10,
+                    "stock_count": 40,
+                    "rise_count": 20,
+                    "fall_count": 20,
+                },
+                {
+                    "industry": "银行",
+                    "date": d0,
+                    "pct_chg": 0.0,
+                    "amount": 5e10,
+                    "stock_count": 30,
+                    "rise_count": 15,
+                    "fall_count": 15,
+                },
+            ]
+        ),
+    )
+
+    assert compute_irs(store, d0, d0) == 2
+    ranked = store.read_df("SELECT industry, rank FROM l3_irs_daily WHERE date = ? ORDER BY rank ASC", (d0,))
+    assert ranked["rank"].tolist() == [1, 2]
+    assert len(set(ranked["rank"].tolist())) == 2
+    store.close()
+
+
 def test_strategy_combine_modes() -> None:
     signal_date = date(2026, 1, 8)
     s1 = Signal(

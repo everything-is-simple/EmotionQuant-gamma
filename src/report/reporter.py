@@ -253,13 +253,94 @@ def _compute_opportunity_metrics(orders_df: pd.DataFrame, signals_count: int) ->
     }
 
 
+def _attach_entry_environment(store: Store, paired: pd.DataFrame) -> pd.DataFrame:
+    if paired.empty:
+        out = paired.copy()
+        out["signal_date"] = pd.NaT
+        out["market_environment"] = "UNKNOWN"
+        out["market_score"] = None
+        return out
+
+    tagged = paired.copy()
+    tagged["entry_date"] = pd.to_datetime(tagged["entry_date"]).dt.normalize()
+    start = tagged["entry_date"].min().date()
+    end = tagged["entry_date"].max().date()
+
+    calendar = store.read_df(
+        """
+        SELECT date, prev_trade_day
+        FROM l1_trade_calendar
+        WHERE date BETWEEN ? AND ?
+        """,
+        (start, end),
+    )
+    if calendar.empty:
+        tagged["signal_date"] = pd.NaT
+        tagged["market_environment"] = "UNKNOWN"
+        tagged["market_score"] = None
+        return tagged
+
+    calendar["date"] = pd.to_datetime(calendar["date"]).dt.normalize()
+    calendar["signal_date"] = pd.to_datetime(calendar["prev_trade_day"]).dt.normalize()
+    tagged = tagged.merge(calendar[["date", "signal_date"]], left_on="entry_date", right_on="date", how="left")
+    tagged = tagged.drop(columns=["date"])
+
+    signal_dates = tagged["signal_date"].dropna()
+    if signal_dates.empty:
+        tagged["market_environment"] = "UNKNOWN"
+        tagged["market_score"] = None
+        return tagged
+
+    mss = store.read_df(
+        """
+        SELECT date, signal, score
+        FROM l3_mss_daily
+        WHERE date BETWEEN ? AND ?
+        """,
+        (signal_dates.min().date(), signal_dates.max().date()),
+    )
+    if mss.empty:
+        tagged["market_environment"] = "UNKNOWN"
+        tagged["market_score"] = None
+        return tagged
+
+    mss["signal_date"] = pd.to_datetime(mss["date"]).dt.normalize()
+    tagged = tagged.merge(mss[["signal_date", "signal", "score"]], on="signal_date", how="left")
+    tagged["market_environment"] = tagged["signal"].fillna("UNKNOWN")
+    tagged["market_score"] = pd.to_numeric(tagged["score"], errors="coerce")
+    return tagged.drop(columns=["signal", "score"])
+
+
+def _compute_environment_breakdown(store: Store, paired: pd.DataFrame) -> dict[str, dict[str, float]]:
+    tagged = _attach_entry_environment(store, paired)
+    if tagged.empty:
+        return {}
+
+    breakdown: dict[str, dict[str, float]] = {}
+    for env in ("BULLISH", "NEUTRAL", "BEARISH", "UNKNOWN"):
+        group = tagged[tagged["market_environment"] == env].copy()
+        if group.empty:
+            continue
+        exp = _compute_expectation(group)
+        breakdown[env] = {
+            "trade_count": float(len(group)),
+            "win_rate": float(exp["win_rate"]),
+            "avg_win": float(exp["avg_win"]),
+            "avg_loss": float(exp["avg_loss"]),
+            "profit_factor": float(exp["profit_factor"]),
+            "expected_value": float(exp["expected_value"]),
+            "median_pnl_pct": float(group["pnl_pct"].median()),
+        }
+    return breakdown
+
+
 def generate_backtest_report(
     store: Store,
     config: Settings,
     start: date,
     end: date,
     initial_cash: float,
-) -> dict[str, float]:
+) -> dict:
     """
     生成最小实验证据：EV / PF / MDD / trade_count。
     结果会回写 l4_daily_report，便于后续 Gate 对照。
@@ -305,6 +386,7 @@ def generate_backtest_report(
     exposure_rate = _compute_exposure_rate(store, start, end)
     failure_breakdown = _compute_failure_reason_breakdown(orders)
     opportunity = _compute_opportunity_metrics(orders, signals_count)
+    environment_breakdown = _compute_environment_breakdown(store, paired)
 
     row = pd.DataFrame(
         [
@@ -347,6 +429,9 @@ def generate_backtest_report(
 
     return {
         "trade_count": float(trade_count),
+        "win_rate": float(exp["win_rate"]),
+        "avg_win": float(exp["avg_win"]),
+        "avg_loss": float(exp["avg_loss"]),
         "expected_value": float(expected_value),
         "profit_factor": float(profit_factor),
         "max_drawdown": float(max_dd),
@@ -358,4 +443,5 @@ def generate_backtest_report(
         "skip_cash_count": float(opportunity["skip_cash_count"]),
         "skip_maxpos_count": float(opportunity["skip_maxpos_count"]),
         "participation_rate": float(opportunity["participation_rate"]),
+        "environment_breakdown": environment_breakdown,
     }

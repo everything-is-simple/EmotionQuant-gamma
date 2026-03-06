@@ -27,11 +27,23 @@ class AblationRunResult:
     enable_irs_filter: bool
     trade_days: int
     trade_count: int
+    win_rate: float | None
+    avg_win: float | None
+    avg_loss: float | None
     expected_value: float | None
     profit_factor: float | None
     max_drawdown: float | None
+    reject_rate: float | None
+    missing_rate: float | None
+    exposure_rate: float | None
+    opportunity_count: float | None
+    filled_count: float | None
+    skip_cash_count: float | None
+    skip_maxpos_count: float | None
+    participation_rate: float | None
     signals_count: int
     trades_count: int
+    environment_breakdown: dict[str, dict[str, float | None]]
 
 
 def build_selector_ablation_scenarios() -> list[AblationScenario]:
@@ -72,6 +84,15 @@ def _snapshot_ablation_metrics(store: Store, start: date, end: date) -> tuple[in
         or 0
     )
     return signals_count, trades_count
+
+
+def _normalize_environment_breakdown(
+    payload: dict[str, dict[str, float | int | None]]
+) -> dict[str, dict[str, float | None]]:
+    normalized: dict[str, dict[str, float | None]] = {}
+    for env, metrics in payload.items():
+        normalized[env] = {key: _finite_or_none(value) for key, value in metrics.items()}
+    return normalized
 
 
 def prepare_working_db(source_db: str | Path, working_db: str | Path) -> Path:
@@ -148,11 +169,23 @@ def run_selector_ablation(
                 enable_irs_filter=scenario.enable_irs_filter,
                 trade_days=result.trade_days,
                 trade_count=result.trade_count,
+                win_rate=_finite_or_none(result.win_rate),
+                avg_win=_finite_or_none(result.avg_win),
+                avg_loss=_finite_or_none(result.avg_loss),
                 expected_value=_finite_or_none(result.expected_value),
                 profit_factor=_finite_or_none(result.profit_factor),
                 max_drawdown=_finite_or_none(result.max_drawdown),
+                reject_rate=_finite_or_none(result.reject_rate),
+                missing_rate=_finite_or_none(result.missing_rate),
+                exposure_rate=_finite_or_none(result.exposure_rate),
+                opportunity_count=_finite_or_none(result.opportunity_count),
+                filled_count=_finite_or_none(result.filled_count),
+                skip_cash_count=_finite_or_none(result.skip_cash_count),
+                skip_maxpos_count=_finite_or_none(result.skip_maxpos_count),
+                participation_rate=_finite_or_none(result.participation_rate),
                 signals_count=signals_count,
                 trades_count=trades_count,
+                environment_breakdown=_normalize_environment_breakdown(result.environment_breakdown),
             )
         )
 
