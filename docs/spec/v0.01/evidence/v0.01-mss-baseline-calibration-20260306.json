@@ -1,0 +1,74 @@
+{
+  "generated_at": "2026-03-06T07:58:25Z",
+  "start": "2023-01-03",
+  "end": "2026-02-24",
+  "days": 757,
+  "baseline": {
+    "market_coefficient_mean": 0.4773860533555573,
+    "market_coefficient_std": 0.23364959561646687,
+    "profit_effect_mean": 0.02001627879301641,
+    "profit_effect_std": 0.02405607273268048,
+    "loss_effect_mean": 0.01498781726283301,
+    "loss_effect_std": 0.030001566738781904,
+    "continuity_mean": 0.1929883692056652,
+    "continuity_std": 0.09005146213678802,
+    "extreme_mean": 0.41160185981493663,
+    "extreme_std": 0.13036907349337296,
+    "volatility_mean": 0.18112868209847394,
+    "volatility_std": 0.05756783616858019
+  },
+  "score_quantiles": {
+    "p05": 37.82648672497869,
+    "p25": 45.89684155962421,
+    "p50": 49.742457462604165,
+    "p75": 54.374431295119145,
+    "p95": 61.62114534182417
+  },
+  "signal_counts_at_65_35": {
+    "BEARISH": 23,
+    "BULLISH": 20,
+    "NEUTRAL": 714
+  },
+  "threshold_sensitivity": [
+    {
+      "threshold": 55.0,
+      "bullish_days": 165,
+      "bullish_ratio": 0.21796565389696168,
+      "monthly_avg_bullish_days": 4.577278731836195,
+      "longest_bullish_streak": 6,
+      "longest_dry_spell": 76
+    },
+    {
+      "threshold": 58.0,
+      "bullish_days": 88,
+      "bullish_ratio": 0.11624834874504623,
+      "monthly_avg_bullish_days": 2.4412153236459706,
+      "longest_bullish_streak": 6,
+      "longest_dry_spell": 158
+    },
+    {
+      "threshold": 60.0,
+      "bullish_days": 50,
+      "bullish_ratio": 0.06605019815059446,
+      "monthly_avg_bullish_days": 1.3870541611624834,
+      "longest_bullish_streak": 4,
+      "longest_dry_spell": 158
+    },
+    {
+      "threshold": 62.0,
+      "bullish_days": 34,
+      "bullish_ratio": 0.04491413474240423,
+      "monthly_avg_bullish_days": 0.9431968295904887,
+      "longest_bullish_streak": 4,
+      "longest_dry_spell": 159
+    },
+    {
+      "threshold": 65.0,
+      "bullish_days": 20,
+      "bullish_ratio": 0.026420079260237782,
+      "monthly_avg_bullish_days": 0.5548216644649934,
+      "longest_bullish_streak": 4,
+      "longest_dry_spell": 239
+    }
+  ]
+}

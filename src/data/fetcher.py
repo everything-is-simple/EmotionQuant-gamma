@@ -20,6 +20,7 @@ from tenacity import (
 from src.config import Settings
 from src.logging_utils import logger
 from src.data.store import Store
+from src.data.sw_industry import build_l1_sw_industry_member_rows, normalize_sw_l1_classify
 
 _retry_logger = logging.getLogger("emotionquant.fetcher.retry")
 _RAW_ATTACH_ALIAS = "rawdb_bootstrap"
@@ -271,11 +272,12 @@ class TuShareFetcher(DataFetcher):
 
     def fetch_sw_industry_members(self, start: date, end: date) -> pd.DataFrame:
         """
-        远端模式优先拉取申万一级现行成分，并保留 in/out_date。
-        历史全量成员映射优先由 raw DuckDB bootstrap 提供。
+        远端模式拉取 SW2021 一级行业完整成员快照。
+        当前成员(Y) + 历史移出成员(N) 一起拉取，避免执行库只看到现行成分。
         """
         classify = self._call_api(self.pro.index_classify, level="L1", src="SW2021")
-        if classify is None or classify.empty:
+        normalized_classify = normalize_sw_l1_classify(classify)
+        if normalized_classify.empty:
             return pd.DataFrame()
 
         member_api = getattr(self.pro, "index_member_all", None)
@@ -283,47 +285,15 @@ class TuShareFetcher(DataFetcher):
             logger.warning("TuShare index_member_all API unavailable; skip SW industry members.")
             return pd.DataFrame()
 
-        chunks: list[pd.DataFrame] = []
-        for l1_code in (
-            classify["index_code"].dropna().astype(str).drop_duplicates().sort_values().tolist()
-        ):
-            df = self._call_api(member_api, l1_code=l1_code, is_new="Y")
-            if df is None or df.empty:
-                continue
-            chunks.append(df)
-            time.sleep(self.sleep_interval)
+        member_frames: list[pd.DataFrame] = []
+        for l1_code in normalized_classify["index_code"].tolist():
+            for is_new in ("Y", "N"):
+                df = self._call_api(member_api, l1_code=l1_code, is_new=is_new)
+                if df is not None and not df.empty:
+                    member_frames.append(df)
+                time.sleep(self.sleep_interval)
 
-        if not chunks:
-            return pd.DataFrame()
-
-        members = pd.concat(chunks, ignore_index=True)
-        ts_values = members.get("ts_code")
-        if ts_values is None:
-            ts_values = members.get("con_code")
-        members["ts_code"] = ts_values.fillna("").astype(str)
-        members = members[members["ts_code"].str.strip() != ""].copy()
-        members["industry_code"] = members.get("l1_code", "").fillna("").astype(str)
-        members["industry_name"] = members.get("l1_name", "").fillna("").astype(str)
-        members["in_date"] = pd.to_datetime(members.get("in_date"), format="%Y%m%d", errors="coerce").dt.date
-        members["out_date"] = pd.to_datetime(members.get("out_date"), format="%Y%m%d", errors="coerce").dt.date
-        members["source_trade_date"] = end
-        members["is_new"] = members.get("is_new", "Y").fillna("Y").astype(str)
-        members = members.dropna(subset=["in_date"])
-        members = members[
-            (members["industry_code"].str.len() > 0) & (members["industry_name"].str.len() > 0)
-        ].copy()
-        members = members.drop_duplicates(subset=["industry_code", "ts_code", "in_date"], keep="first")
-        return members[
-            [
-                "industry_code",
-                "industry_name",
-                "ts_code",
-                "in_date",
-                "out_date",
-                "is_new",
-                "source_trade_date",
-            ]
-        ]
+        return build_l1_sw_industry_member_rows(classify, member_frames, source_trade_date=end)
 
 
 class AKShareFetcher(DataFetcher):
@@ -580,32 +550,34 @@ def bootstrap_l1_from_raw_duckdb(
                   )
                   WHERE rn = 1
                 ),
-                dedup AS (
-                  SELECT
-                    m.index_code AS industry_code,
-                    sw.industry_name AS industry_name,
-                    COALESCE(NULLIF(m.ts_code, ''), NULLIF(m.con_code, '')) AS ts_code,
+                  dedup AS (
+                    SELECT
+                      m.index_code AS industry_code,
+                      sw.industry_name AS industry_name,
+                      COALESCE(NULLIF(m.ts_code, ''), NULLIF(m.con_code, '')) AS ts_code,
                     STRPTIME(m.in_date, '%Y%m%d')::DATE AS in_date,
                     CASE
                       WHEN NULLIF(m.out_date, '') IS NULL THEN NULL
                       ELSE STRPTIME(m.out_date, '%Y%m%d')::DATE
                     END AS out_date,
-                    COALESCE(m.is_new, '') AS is_new,
-                    STRPTIME(m.trade_date, '%Y%m%d')::DATE AS source_trade_date,
-                    ROW_NUMBER() OVER (
-                      PARTITION BY
-                        m.index_code,
-                        COALESCE(NULLIF(m.ts_code, ''), NULLIF(m.con_code, '')),
-                        STRPTIME(m.in_date, '%Y%m%d')::DATE,
-                        CASE
-                          WHEN NULLIF(m.out_date, '') IS NULL THEN NULL
-                          ELSE STRPTIME(m.out_date, '%Y%m%d')::DATE
-                        END
-                      ORDER BY STRPTIME(m.trade_date, '%Y%m%d')::DATE DESC
-                    ) AS rn
-                  FROM {_RAW_ATTACH_ALIAS}.raw_index_member m
-                  INNER JOIN sw_l1 sw
-                    ON sw.index_code = m.index_code
+                      COALESCE(m.is_new, '') AS is_new,
+                      STRPTIME(m.trade_date, '%Y%m%d')::DATE AS source_trade_date,
+                      ROW_NUMBER() OVER (
+                        PARTITION BY
+                          m.index_code,
+                          COALESCE(NULLIF(m.ts_code, ''), NULLIF(m.con_code, '')),
+                          STRPTIME(m.in_date, '%Y%m%d')::DATE
+                        ORDER BY
+                          CASE WHEN NULLIF(m.out_date, '') IS NULL THEN 1 ELSE 0 END ASC,
+                          CASE
+                            WHEN NULLIF(m.out_date, '') IS NULL THEN NULL
+                            ELSE STRPTIME(m.out_date, '%Y%m%d')::DATE
+                          END DESC,
+                          STRPTIME(m.trade_date, '%Y%m%d')::DATE DESC
+                      ) AS rn
+                    FROM {_RAW_ATTACH_ALIAS}.raw_index_member m
+                    INNER JOIN sw_l1 sw
+                      ON sw.index_code = m.index_code
                   WHERE COALESCE(NULLIF(m.ts_code, ''), NULLIF(m.con_code, '')) IS NOT NULL
                     AND STRPTIME(m.in_date, '%Y%m%d')::DATE <= ?
                     AND (

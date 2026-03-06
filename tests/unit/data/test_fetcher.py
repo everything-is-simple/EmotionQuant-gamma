@@ -15,6 +15,7 @@ class _FakePro:
     def __init__(self) -> None:
         self._DataApi__token = ""
         self._DataApi__http_url = ""
+        self.member_calls: list[tuple[str, str]] = []
 
     def stock_basic(self, exchange: str, list_status: str, fields: str) -> pd.DataFrame:
         assert exchange == ""
@@ -55,9 +56,9 @@ class _FakePro:
         )
 
     def index_member_all(self, l1_code: str, is_new: str) -> pd.DataFrame:
-        assert is_new == "Y"
+        self.member_calls.append((l1_code, is_new))
         rows = {
-            "801780.SI": [
+            ("801780.SI", "Y"): [
                 {
                     "l1_code": "801780.SI",
                     "l1_name": "银行",
@@ -68,7 +69,18 @@ class _FakePro:
                     "is_new": "Y",
                 }
             ],
-            "801080.SI": [
+            ("801780.SI", "N"): [
+                {
+                    "l1_code": "801780.SI",
+                    "l1_name": "银行",
+                    "ts_code": "600001.SH",
+                    "name": "历史银行股",
+                    "in_date": "20000101",
+                    "out_date": "20100101",
+                    "is_new": "N",
+                }
+            ],
+            ("801080.SI", "Y"): [
                 {
                     "l1_code": "801080.SI",
                     "l1_name": "电子",
@@ -79,8 +91,9 @@ class _FakePro:
                     "is_new": "Y",
                 }
             ],
+            ("801080.SI", "N"): [],
         }
-        return pd.DataFrame(rows.get(l1_code, []))
+        return pd.DataFrame(rows.get((l1_code, is_new), []))
 
 
 def test_fetch_stock_info_keeps_list_status(monkeypatch) -> None:
@@ -95,14 +108,21 @@ def test_fetch_stock_info_keeps_list_status(monkeypatch) -> None:
 
 
 def test_fetch_sw_industry_members_returns_l1_mapping(monkeypatch) -> None:
-    fake_ts = types.SimpleNamespace(pro_api=lambda token: _FakePro())
+    fake_pro = _FakePro()
+    fake_ts = types.SimpleNamespace(pro_api=lambda token: fake_pro)
     monkeypatch.setitem(sys.modules, "tushare", fake_ts)
 
     fetcher = TuShareFetcher(token="dummy-token", sleep_interval=0.0)
     df = fetcher.fetch_sw_industry_members(start=date(2026, 1, 1), end=date(2026, 1, 5))
 
     assert set(df["industry_name"]) == {"银行", "电子"}
-    assert set(df["ts_code"]) == {"000001.SZ", "000100.SZ"}
+    assert set(df["ts_code"]) == {"000001.SZ", "000100.SZ", "600001.SH"}
+    assert set(fake_pro.member_calls) == {
+        ("801780.SI", "Y"),
+        ("801780.SI", "N"),
+        ("801080.SI", "Y"),
+        ("801080.SI", "N"),
+    }
     assert "source_trade_date" in df.columns
 
 
@@ -244,7 +264,8 @@ def test_bootstrap_l1_from_raw_duckdb_loads_tables_and_updates_progress(tmp_path
     con.execute(
         """
         INSERT INTO raw_index_member VALUES
-        ('801780.SI', '000001.SZ', '19910403', '', '20260102', '000001.SZ', '000001', 'Y')
+        ('801780.SI', '000001.SZ', '19910403', '', '20260102', '000001.SZ', '000001', 'Y'),
+        ('801780.SI', '000001.SZ', '19910403', '20260104', '20260105', '000001.SZ', '000001', 'N')
         """
     )
     con.close()
@@ -267,7 +288,7 @@ def test_bootstrap_l1_from_raw_duckdb_loads_tables_and_updates_progress(tmp_path
         assert store.get_fetch_progress("index_daily") == date(2026, 1, 2)
         assert store.get_fetch_progress("stock_daily") == date(2026, 1, 2)
         assert store.get_fetch_progress("stock_info") == date(2026, 1, 5)
-        assert store.get_fetch_progress("sw_industry_member") == date(2026, 1, 2)
+        assert store.get_fetch_progress("sw_industry_member") == date(2026, 1, 5)
 
         stock_info = store.read_df(
             "SELECT ts_code, list_status, effective_from FROM l1_stock_info ORDER BY effective_from"
@@ -278,11 +299,19 @@ def test_bootstrap_l1_from_raw_duckdb_loads_tables_and_updates_progress(tmp_path
             {"ts_code": "000001.SZ", "list_status": "D", "effective_from": date(2026, 1, 5)},
         ]
         sw_map = store.read_df(
-            "SELECT industry_name, ts_code, in_date FROM l1_sw_industry_member ORDER BY ts_code, in_date"
+            "SELECT industry_name, ts_code, in_date, out_date, is_new "
+            "FROM l1_sw_industry_member ORDER BY ts_code, in_date"
         )
         sw_map["in_date"] = pd.to_datetime(sw_map["in_date"]).dt.date
+        sw_map["out_date"] = pd.to_datetime(sw_map["out_date"]).dt.date
         assert sw_map.to_dict(orient="records") == [
-            {"industry_name": "银行", "ts_code": "000001.SZ", "in_date": date(1991, 4, 3)}
+            {
+                "industry_name": "银行",
+                "ts_code": "000001.SZ",
+                "in_date": date(1991, 4, 3),
+                "out_date": date(2026, 1, 4),
+                "is_new": "N",
+            }
         ]
     finally:
         store.close()

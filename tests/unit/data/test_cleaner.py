@@ -184,3 +184,62 @@ def test_clean_industry_daily_prefers_sw_membership_and_skips_non_trade_day(tmp_
     dates = store.read_df("SELECT date FROM l2_stock_adj_daily ORDER BY date")
     assert dates["date"].dt.date.tolist() == [trade_day]
     store.close()
+
+
+def test_clean_industry_daily_without_sw_mapping_falls_back_to_unknown(tmp_path) -> None:
+    db = tmp_path / "industry_unknown.duckdb"
+    store = Store(db)
+    trade_day = date(2026, 1, 2)
+    store.bulk_upsert(
+        "l1_trade_calendar",
+        pd.DataFrame(
+            [{"date": trade_day, "is_trade_day": True, "prev_trade_day": None, "next_trade_day": None}]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_info",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SZ",
+                    "name": "平安银行",
+                    "industry": "旧行业",
+                    "market": "主板",
+                    "list_status": "L",
+                    "is_st": False,
+                    "list_date": date(2000, 1, 1),
+                    "effective_from": date(2000, 1, 1),
+                }
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_daily",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SZ",
+                    "date": trade_day,
+                    "open": 10.0,
+                    "high": 10.2,
+                    "low": 9.8,
+                    "close": 10.1,
+                    "pre_close": 10.0,
+                    "volume": 1000,
+                    "amount": 10000,
+                    "pct_chg": 0.01,
+                    "adj_factor": 1.0,
+                    "is_halt": False,
+                    "up_limit": 11.0,
+                    "down_limit": 9.0,
+                    "total_mv": 1_000_000,
+                    "circ_mv": 900_000,
+                }
+            ]
+        ),
+    )
+
+    assert clean_industry_daily(store, trade_day, trade_day) == 1
+    industry = store.read_df("SELECT industry FROM l2_industry_daily")
+    assert industry["industry"].tolist() == ["未知"]
+    store.close()

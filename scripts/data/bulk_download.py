@@ -38,6 +38,7 @@ import duckdb
 import pandas as pd
 
 from src.config import Settings
+from src.data.sw_industry import build_sw_l1_classify_snapshot, build_sw_l1_member_snapshot
 
 # --------------------------------------------------------------------------- #
 #  常量定义
@@ -193,6 +194,7 @@ class DualTokenClient:
             "limit_list": "limit_list_d",
             "index_daily": "index_daily",
             "index_member": "index_member",
+            "index_member_all": "index_member_all",
             "index_classify": "index_classify",
             "stock_basic": "stock_basic",
         }
@@ -298,8 +300,8 @@ def normalize_rows(
         ):
             item["stock_code"] = ts_code[:6]
 
-        # index_member: con_code → ts_code / stock_code
-        if api_name == "index_member":
+        # index_member / index_member_all: con_code → ts_code / stock_code
+        if api_name in {"index_member", "index_member_all"}:
             con_code = str(item.get("con_code", "")).strip()
             if not ts_code and con_code:
                 item["ts_code"] = con_code
@@ -568,6 +570,20 @@ def fetch_low_frequency_tables(
     """拉取低频数据集（stock_basic / index_member / index_classify）。"""
     print("[2/4] 拉取低频数据集 ...")
     total = 0
+    snapshot_date = datetime.now().strftime("%Y%m%d")
+    sw_classify_rows: list[dict[str, Any]] | None = None
+    sw_classify_snapshot: list[dict[str, Any]] | None = None
+
+    def _ensure_sw_snapshot() -> list[dict[str, Any]]:
+        nonlocal sw_classify_rows, sw_classify_snapshot
+        if sw_classify_snapshot is not None:
+            return sw_classify_snapshot
+        sw_classify_rows = client.call("index_classify", {"src": "SW2021", "level": "L1"})
+        sw_classify_snapshot = build_sw_l1_classify_snapshot(
+            pd.DataFrame(normalize_rows("index_classify", sw_classify_rows)),
+            snapshot_date=snapshot_date,
+        ).to_dict(orient="records")
+        return sw_classify_snapshot
 
     for table_name, api_name in LOW_FREQ_TABLES.items():
         if tables_filter and table_name not in tables_filter:
@@ -576,17 +592,27 @@ def fetch_low_frequency_tables(
         try:
             if api_name == "stock_basic":
                 rows = client.call("stock_basic", {"list_status": "L"})
+                normalized = normalize_rows(api_name, rows)
             elif api_name == "index_classify":
-                rows = client.call("index_classify", {"src": "SW2021"})
+                normalized = _ensure_sw_snapshot()
             elif api_name == "index_member":
-                rows = client.call("index_member", {
-                    "start_date": "20100101",
-                    "end_date": datetime.now().strftime("%Y%m%d"),
-                })
+                classify_snapshot = _ensure_sw_snapshot()
+                member_frames: list[pd.DataFrame] = []
+                for row in classify_snapshot:
+                    index_code = str(row.get("index_code", "")).strip()
+                    if not index_code:
+                        continue
+                    for is_new in ("Y", "N"):
+                        member_rows = client.call("index_member_all", {"l1_code": index_code, "is_new": is_new})
+                        member_frames.append(pd.DataFrame(normalize_rows("index_member_all", member_rows)))
+                normalized = build_sw_l1_member_snapshot(
+                    pd.DataFrame(classify_snapshot),
+                    member_frames,
+                    snapshot_date=snapshot_date,
+                ).to_dict(orient="records")
             else:
                 continue
 
-            normalized = normalize_rows(api_name, rows)
             count = writer.write_batch(table_name, normalized)
             write_parquet(parquet_root, table_name, normalized)
             print(f"  {table_name}: {count} 行")

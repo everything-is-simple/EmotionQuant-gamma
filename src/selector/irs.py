@@ -75,6 +75,10 @@ def compute_irs(
         }
 
     industry_df = industry_df.copy()
+    industry_df["industry"] = industry_df["industry"].fillna("未知").astype(str)
+    industry_df = industry_df[industry_df["industry"] != "未知"].copy()
+    if industry_df.empty:
+        return 0
     industry_df["market_total_amount"] = industry_df.groupby("date")["amount"].transform("sum")
     # 资金流向动量：10 日成交额变化，窗口不足时置 0，避免噪声放大。
     industry_df["amount_delta_10d"] = (

@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date, timedelta
 
 import pandas as pd
+import pytest
 
 from src.contracts import Signal
 from src.config import Settings
@@ -219,7 +220,7 @@ def test_bof_detector_does_not_trigger_without_close_recovery() -> None:
     assert signal is None
 
 
-def test_mss_single_all_zero_is_neutral_around_50() -> None:
+def test_mss_single_all_zero_is_still_neutral_under_calibrated_baseline() -> None:
     score = compute_mss_single(
         pd.Series(
             {
@@ -244,7 +245,7 @@ def test_mss_single_all_zero_is_neutral_around_50() -> None:
             }
         )
     )
-    assert 49.0 <= score.score <= 51.0
+    assert score.score == pytest.approx(40.5409421919409, abs=1e-9)
     assert score.signal == "NEUTRAL"
 
 

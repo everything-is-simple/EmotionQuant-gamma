@@ -10,6 +10,15 @@ from src.data.store import Store
 from src.selector.baseline import MSS_BASELINE
 from src.selector.normalize import safe_ratio, zscore_single
 
+MSS_FACTOR_NAMES = [
+    "market_coefficient",
+    "profit_effect",
+    "loss_effect",
+    "continuity",
+    "extreme",
+    "volatility",
+]
+
 
 def _signal_from_score(score: float) -> str:
     if score >= 65:
@@ -19,12 +28,7 @@ def _signal_from_score(score: float) -> str:
     return "NEUTRAL"
 
 
-def _compute_mss_components(
-    row: pd.Series,
-    baseline: dict[str, float] | None = None,
-) -> tuple[date, float, str, float, float, float, float, float, float]:
-    base = baseline or MSS_BASELINE
-
+def _compute_mss_raw_components(row: pd.Series) -> dict[str, float]:
     total_stocks = row.get("total_stocks", 0) or 0
     limit_up_count = row.get("limit_up_count", 0) or 0
     new_high_count = row.get("new_100d_high_count", 0) or 0
@@ -64,29 +68,74 @@ def _compute_mss_components(
     amount_vol_ratio = amount_vol / (amount_vol + 1e6) if amount_vol > 0 else 0.0
     volatility_raw = 0.5 * pct_chg_std + 0.5 * amount_vol_ratio
 
-    market_coefficient = zscore_single(
-        market_coefficient_raw,
-        base["market_coefficient_mean"],
-        base["market_coefficient_std"],
-    )
-    profit_effect = zscore_single(profit_effect_raw, base["profit_effect_mean"], base["profit_effect_std"])
-    loss_effect = zscore_single(loss_effect_raw, base["loss_effect_mean"], base["loss_effect_std"])
-    continuity = zscore_single(continuity_raw, base["continuity_mean"], base["continuity_std"])
-    extreme = zscore_single(extreme_raw, base["extreme_mean"], base["extreme_std"])
-    volatility = zscore_single(volatility_raw, base["volatility_mean"], base["volatility_std"])
+    return {
+        "market_coefficient_raw": market_coefficient_raw,
+        "profit_effect_raw": profit_effect_raw,
+        "loss_effect_raw": loss_effect_raw,
+        "continuity_raw": continuity_raw,
+        "extreme_raw": extreme_raw,
+        "volatility_raw": volatility_raw,
+    }
 
-    score = float(
+
+def _normalize_mss_components(raw: dict[str, float], baseline: dict[str, float] | None = None) -> dict[str, float]:
+    base = baseline or MSS_BASELINE
+    return {
+        "market_coefficient": zscore_single(
+            raw["market_coefficient_raw"],
+            base["market_coefficient_mean"],
+            base["market_coefficient_std"],
+        ),
+        "profit_effect": zscore_single(
+            raw["profit_effect_raw"],
+            base["profit_effect_mean"],
+            base["profit_effect_std"],
+        ),
+        "loss_effect": zscore_single(
+            raw["loss_effect_raw"],
+            base["loss_effect_mean"],
+            base["loss_effect_std"],
+        ),
+        "continuity": zscore_single(
+            raw["continuity_raw"],
+            base["continuity_mean"],
+            base["continuity_std"],
+        ),
+        "extreme": zscore_single(
+            raw["extreme_raw"],
+            base["extreme_mean"],
+            base["extreme_std"],
+        ),
+        "volatility": zscore_single(
+            raw["volatility_raw"],
+            base["volatility_mean"],
+            base["volatility_std"],
+        ),
+    }
+
+
+def _aggregate_mss_score(components: dict[str, float]) -> float:
+    return float(
         np.clip(
-            0.17 * market_coefficient
-            + 0.34 * profit_effect
-            + 0.34 * (100.0 - loss_effect)
-            + 0.05 * continuity
-            + 0.05 * extreme
-            + 0.05 * (100.0 - volatility),
+            0.17 * components["market_coefficient"]
+            + 0.34 * components["profit_effect"]
+            + 0.34 * (100.0 - components["loss_effect"])
+            + 0.05 * components["continuity"]
+            + 0.05 * components["extreme"]
+            + 0.05 * (100.0 - components["volatility"]),
             0.0,
             100.0,
         )
     )
+
+
+def _compute_mss_components(
+    row: pd.Series,
+    baseline: dict[str, float] | None = None,
+) -> tuple[date, float, str, float, float, float, float, float, float]:
+    raw = _compute_mss_raw_components(row)
+    components = _normalize_mss_components(raw, baseline=baseline)
+    score = _aggregate_mss_score(components)
 
     d = row["date"]
     if isinstance(d, pd.Timestamp):
@@ -95,13 +144,65 @@ def _compute_mss_components(
         d,
         score,
         _signal_from_score(score),
-        market_coefficient,
-        profit_effect,
-        loss_effect,
-        continuity,
-        extreme,
-        volatility,
+        components["market_coefficient"],
+        components["profit_effect"],
+        components["loss_effect"],
+        components["continuity"],
+        components["extreme"],
+        components["volatility"],
     )
+
+
+def build_mss_raw_frame(snapshot_df: pd.DataFrame) -> pd.DataFrame:
+    if snapshot_df is None or snapshot_df.empty:
+        return pd.DataFrame(columns=["date"] + [f"{name}_raw" for name in MSS_FACTOR_NAMES])
+    records: list[dict[str, float | date]] = []
+    for _, row in snapshot_df.iterrows():
+        d = row["date"]
+        if isinstance(d, pd.Timestamp):
+            d = d.date()
+        raw = _compute_mss_raw_components(row)
+        records.append({"date": d, **raw})
+    return pd.DataFrame(records)
+
+
+def calibrate_mss_baseline(raw_df: pd.DataFrame) -> dict[str, float]:
+    baseline: dict[str, float] = {}
+    for factor in MSS_FACTOR_NAMES:
+        values = pd.to_numeric(raw_df.get(f"{factor}_raw"), errors="coerce").dropna()
+        mean = float(values.mean()) if not values.empty else 0.0
+        std = float(values.std(ddof=0)) if not values.empty else 1.0
+        baseline[f"{factor}_mean"] = mean
+        baseline[f"{factor}_std"] = std if std > 0 else 1.0
+    return baseline
+
+
+def score_mss_raw_frame(
+    raw_df: pd.DataFrame,
+    baseline: dict[str, float] | None = None,
+    bullish_threshold: float = 65.0,
+    bearish_threshold: float = 35.0,
+) -> pd.DataFrame:
+    if raw_df is None or raw_df.empty:
+        return pd.DataFrame(columns=["date", "score", "signal"] + MSS_FACTOR_NAMES)
+
+    base = baseline or MSS_BASELINE
+    rows: list[dict[str, float | str | date]] = []
+    for _, row in raw_df.iterrows():
+        raw = {key: float(row[key]) for key in raw_df.columns if key.endswith("_raw")}
+        components = _normalize_mss_components(raw, baseline=base)
+        score = _aggregate_mss_score(components)
+        if score >= bullish_threshold:
+            signal = "BULLISH"
+        elif score <= bearish_threshold:
+            signal = "BEARISH"
+        else:
+            signal = "NEUTRAL"
+        d = row["date"]
+        if isinstance(d, pd.Timestamp):
+            d = d.date()
+        rows.append({"date": d, "score": score, "signal": signal, **components})
+    return pd.DataFrame(rows)
 
 
 def compute_mss_single(row: pd.Series, baseline: dict[str, float] | None = None) -> MarketScore:
