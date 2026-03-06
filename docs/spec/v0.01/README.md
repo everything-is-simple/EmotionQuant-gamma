@@ -15,4 +15,5 @@
 - Gate 主入口：`docs/spec/v0.01/governance/v0.01-gate-checklist.md`
 - 历史 GO 基线：`docs/spec/v0.01/evidence/v0.01-bof-baseline-evidence-20260305.md`
 - 当前代码路径全周期 A/B：`docs/spec/v0.01/evidence/v0.01-selector-ablation-mss-fullcycle-ab-20260306.json`
+- 当前证据总评审：`docs/spec/v0.01/evidence/v0.01-evidence-review-20260306.md`
 - 删除候选清单：`docs/spec/v0.01/records/cleanup-candidates-20260306.md`

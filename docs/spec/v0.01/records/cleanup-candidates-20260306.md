@@ -58,3 +58,16 @@
 4. `docs/spec/v0.01/evidence/v0.01-selector-ablation-mss-gatemode-ab-short-20260306.json`
    - 原因：均为 2026-03-06 当日的中间探索产物，已被更聚焦的 `v0.01-mss-variant-comparison-20260306.json` 与 `v0.01-selector-ablation-mss-fullcycle-ab-20260306.json` 覆盖。
    - 处理：已统一删除，仅保留当前可追溯且不互相打架的最终证据。
+
+## 6. 二次收口（2026-03-06 晚）
+
+1. `docs/spec/v0.01.tar`
+2. `docs/spec/v0.01/evidence.tar`
+   - 原因：均为人工导出的归档包，不属于当前 `docs/spec/v0.01/` 的正式执行/证据产物；保留在仓库树内有误提交风险。
+   - 处理：已移出仓库工作树，不纳入版本控制。
+3. `docs/spec/v0.01/evidence/v0.01-base-baseline-evidence-20260306.json`
+   - 原因：为未正式纳管的 draft baseline 产物；当前 v0.01 已有历史 `GO baseline`、当前 full-cycle A/B 和证据总评审三层入口，继续保留该草稿会制造“当前正式 baseline 是否已封板”的歧义。
+   - 处理：已删除草稿，不纳入当前正式证据链。
+4. `docs/spec/v0.01/evidence/v0.01-evidence-review-20260306.md`
+   - 原因：为本轮证据总评审汇总页，用于统一收口现有 `12` 份正式证据。
+   - 处理：新增并保留，作为当前证据入口之一。
