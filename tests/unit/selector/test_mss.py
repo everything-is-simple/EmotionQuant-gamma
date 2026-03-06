@@ -4,7 +4,7 @@ from datetime import date
 
 import pandas as pd
 
-from src.selector.mss import build_mss_raw_frame, calibrate_mss_baseline, score_mss_raw_frame
+from src.selector.mss import build_mss_raw_frame, calibrate_mss_baseline, compute_mss_single, score_mss_raw_frame
 
 
 def test_mss_calibration_pipeline_builds_non_placeholder_baseline() -> None:
@@ -59,3 +59,48 @@ def test_mss_calibration_pipeline_builds_non_placeholder_baseline() -> None:
     assert baseline["market_coefficient_std"] > 0
     assert baseline["profit_effect_mean"] != 0
     assert set(scored["signal"]) == {"BULLISH", "BEARISH"}
+
+
+def test_compute_mss_single_respects_threshold_overrides() -> None:
+    row = pd.Series(
+        {
+            "date": date(2026, 1, 2),
+            "total_stocks": 100,
+            "rise_count": 60,
+            "strong_up_count": 10,
+            "limit_up_count": 5,
+            "touched_limit_up_count": 1,
+            "new_100d_high_count": 8,
+            "limit_down_count": 2,
+            "strong_down_count": 3,
+            "new_100d_low_count": 4,
+            "continuous_limit_up_2d": 2,
+            "continuous_limit_up_3d_plus": 1,
+            "continuous_new_high_2d_plus": 3,
+            "high_open_low_close_count": 2,
+            "low_open_high_close_count": 1,
+            "pct_chg_std": 0.02,
+            "amount_volatility": 100000.0,
+        }
+    )
+    baseline = {
+        "market_coefficient_mean": 0.0,
+        "market_coefficient_std": 1.0,
+        "profit_effect_mean": 0.0,
+        "profit_effect_std": 1.0,
+        "loss_effect_mean": 0.0,
+        "loss_effect_std": 1.0,
+        "continuity_mean": 0.0,
+        "continuity_std": 1.0,
+        "extreme_mean": 0.0,
+        "extreme_std": 1.0,
+        "volatility_mean": 0.0,
+        "volatility_std": 1.0,
+    }
+
+    loose = compute_mss_single(row, baseline=baseline, bullish_threshold=50.0, bearish_threshold=35.0)
+    tight = compute_mss_single(row, baseline=baseline, bullish_threshold=95.0, bearish_threshold=35.0)
+
+    assert loose.score == tight.score
+    assert loose.signal == "BULLISH"
+    assert tight.signal == "NEUTRAL"

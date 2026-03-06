@@ -18,6 +18,8 @@ class AblationScenario:
     label: str
     enable_mss_gate: bool
     enable_irs_filter: bool
+    mss_bullish_threshold: float
+    mss_bearish_threshold: float
 
 
 @dataclass(frozen=True)
@@ -25,6 +27,8 @@ class AblationRunResult:
     label: str
     enable_mss_gate: bool
     enable_irs_filter: bool
+    mss_bullish_threshold: float
+    mss_bearish_threshold: float
     trade_days: int
     trade_count: int
     win_rate: float | None
@@ -46,12 +50,41 @@ class AblationRunResult:
     environment_breakdown: dict[str, dict[str, float | None]]
 
 
-def build_selector_ablation_scenarios() -> list[AblationScenario]:
-    return [
-        AblationScenario(label="bof_baseline", enable_mss_gate=False, enable_irs_filter=False),
-        AblationScenario(label="bof_plus_mss", enable_mss_gate=True, enable_irs_filter=False),
-        AblationScenario(label="bof_plus_mss_plus_irs", enable_mss_gate=True, enable_irs_filter=True),
+def build_selector_ablation_scenarios(
+    mss_thresholds: list[float] | None = None,
+    bearish_threshold: float = 35.0,
+) -> list[AblationScenario]:
+    thresholds = mss_thresholds or [65.0]
+    scenarios = [
+        AblationScenario(
+            label="bof_baseline",
+            enable_mss_gate=False,
+            enable_irs_filter=False,
+            mss_bullish_threshold=float(thresholds[-1]),
+            mss_bearish_threshold=float(bearish_threshold),
+        )
     ]
+    for threshold in thresholds:
+        threshold_label = int(threshold) if float(threshold).is_integer() else threshold
+        scenarios.append(
+            AblationScenario(
+                label=f"bof_plus_mss_t{threshold_label}",
+                enable_mss_gate=True,
+                enable_irs_filter=False,
+                mss_bullish_threshold=float(threshold),
+                mss_bearish_threshold=float(bearish_threshold),
+            )
+        )
+        scenarios.append(
+            AblationScenario(
+                label=f"bof_plus_mss_plus_irs_t{threshold_label}",
+                enable_mss_gate=True,
+                enable_irs_filter=True,
+                mss_bullish_threshold=float(threshold),
+                mss_bearish_threshold=float(bearish_threshold),
+            )
+        )
+    return scenarios
 
 
 def clear_runtime_tables(store: Store) -> None:
@@ -120,6 +153,7 @@ def run_selector_ablation(
     initial_cash: float | None = None,
     rebuild_l3: bool = True,
     working_db_path: str | Path | None = None,
+    mss_thresholds: list[float] | None = None,
 ) -> dict:
     source_db = Path(db_path).expanduser().resolve()
     db_file = (
@@ -128,15 +162,25 @@ def run_selector_ablation(
         else source_db
     )
 
-    if rebuild_l3:
-        store = Store(db_file)
-        try:
-            build_layers(store, config, layers=["l3"], start=start, end=end, force=True)
-        finally:
-            store.close()
-
+    scenarios = build_selector_ablation_scenarios(
+        mss_thresholds=mss_thresholds or [config.mss_bullish_threshold],
+        bearish_threshold=config.mss_bearish_threshold,
+    )
     runs: list[AblationRunResult] = []
-    for scenario in build_selector_ablation_scenarios():
+    built_thresholds: set[tuple[float, float]] = set()
+    for scenario in scenarios:
+        threshold_key = (scenario.mss_bullish_threshold, scenario.mss_bearish_threshold)
+        if rebuild_l3 and scenario.enable_mss_gate and threshold_key not in built_thresholds:
+            cfg_l3 = config.model_copy(deep=True)
+            cfg_l3.mss_bullish_threshold = scenario.mss_bullish_threshold
+            cfg_l3.mss_bearish_threshold = scenario.mss_bearish_threshold
+            store = Store(db_file)
+            try:
+                build_layers(store, cfg_l3, layers=["l3"], start=start, end=end, force=True)
+            finally:
+                store.close()
+            built_thresholds.add(threshold_key)
+
         clr = Store(db_file)
         try:
             clear_runtime_tables(clr)
@@ -146,6 +190,8 @@ def run_selector_ablation(
         cfg = config.model_copy(deep=True)
         cfg.enable_mss_gate = scenario.enable_mss_gate
         cfg.enable_irs_filter = scenario.enable_irs_filter
+        cfg.mss_bullish_threshold = scenario.mss_bullish_threshold
+        cfg.mss_bearish_threshold = scenario.mss_bearish_threshold
 
         result = run_backtest(
             db_path=db_file,
@@ -167,6 +213,8 @@ def run_selector_ablation(
                 label=scenario.label,
                 enable_mss_gate=scenario.enable_mss_gate,
                 enable_irs_filter=scenario.enable_irs_filter,
+                mss_bullish_threshold=scenario.mss_bullish_threshold,
+                mss_bearish_threshold=scenario.mss_bearish_threshold,
                 trade_days=result.trade_days,
                 trade_count=result.trade_count,
                 win_rate=_finite_or_none(result.win_rate),
@@ -197,6 +245,8 @@ def run_selector_ablation(
         "end": end.isoformat(),
         "patterns": patterns or ["bof"],
         "initial_cash": float(initial_cash if initial_cash is not None else config.backtest_initial_cash),
+        "mss_thresholds": [float(value) for value in (mss_thresholds or [config.mss_bullish_threshold])],
+        "mss_bearish_threshold": float(config.mss_bearish_threshold),
         "runs": [asdict(run) for run in runs],
     }
 

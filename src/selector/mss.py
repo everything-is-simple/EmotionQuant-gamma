@@ -20,10 +20,10 @@ MSS_FACTOR_NAMES = [
 ]
 
 
-def _signal_from_score(score: float) -> str:
-    if score >= 65:
+def _signal_from_score(score: float, bullish_threshold: float = 65.0, bearish_threshold: float = 35.0) -> str:
+    if score >= bullish_threshold:
         return "BULLISH"
-    if score <= 35:
+    if score <= bearish_threshold:
         return "BEARISH"
     return "NEUTRAL"
 
@@ -132,6 +132,8 @@ def _aggregate_mss_score(components: dict[str, float]) -> float:
 def _compute_mss_components(
     row: pd.Series,
     baseline: dict[str, float] | None = None,
+    bullish_threshold: float = 65.0,
+    bearish_threshold: float = 35.0,
 ) -> tuple[date, float, str, float, float, float, float, float, float]:
     raw = _compute_mss_raw_components(row)
     components = _normalize_mss_components(raw, baseline=baseline)
@@ -143,7 +145,7 @@ def _compute_mss_components(
     return (
         d,
         score,
-        _signal_from_score(score),
+        _signal_from_score(score, bullish_threshold=bullish_threshold, bearish_threshold=bearish_threshold),
         components["market_coefficient"],
         components["profit_effect"],
         components["loss_effect"],
@@ -205,12 +207,22 @@ def score_mss_raw_frame(
     return pd.DataFrame(rows)
 
 
-def compute_mss_single(row: pd.Series, baseline: dict[str, float] | None = None) -> MarketScore:
+def compute_mss_single(
+    row: pd.Series,
+    baseline: dict[str, float] | None = None,
+    bullish_threshold: float = 65.0,
+    bearish_threshold: float = 35.0,
+) -> MarketScore:
     """
     MSS 单日纯函数：
     输入是一行 l2_market_snapshot，输出 MarketScore。
     """
-    d, score, signal, *_ = _compute_mss_components(row, baseline=baseline)
+    d, score, signal, *_ = _compute_mss_components(
+        row,
+        baseline=baseline,
+        bullish_threshold=bullish_threshold,
+        bearish_threshold=bearish_threshold,
+    )
     return MarketScore(date=d, score=score, signal=signal)
 
 
@@ -219,6 +231,8 @@ def compute_mss(
     start: date,
     end: date,
     baseline: dict[str, float] | None = None,
+    bullish_threshold: float = 65.0,
+    bearish_threshold: float = 35.0,
 ) -> int:
     """
     批量计算 MSS 并写入 l3_mss_daily（幂等 upsert）。
@@ -246,7 +260,12 @@ def compute_mss(
             continuity,
             extreme,
             volatility,
-        ) = _compute_mss_components(row, baseline=baseline)
+        ) = _compute_mss_components(
+            row,
+            baseline=baseline,
+            bullish_threshold=bullish_threshold,
+            bearish_threshold=bearish_threshold,
+        )
         records.append(
             {
                 "date": score_date,
