@@ -7,7 +7,7 @@
 **变更规则**: 仅允许勘误与说明性修订；执行语义变更需进入 v0.02+。
 **对应模块**: `src/data/`（fetcher.py, cleaner.py, builder.py, store.py）
 **上游文档**: `architecture-master.md` §4.1
-**运维记录**: `docs/spec/v0.01/data-rebuild-runbook-20260303.md`（L1 保留、L2/L3/L4 清理与重建链路）
+**运维记录**: `docs/spec/v0.01/records/data-rebuild-runbook-20260303.md`（L1 保留、L2/L3/L4 清理与重建链路）
 
 ---
 

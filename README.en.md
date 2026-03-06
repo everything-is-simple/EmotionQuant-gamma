@@ -32,9 +32,9 @@ pytest -v
 - `tests/` — Automated tests
 - `docs/` — Documentation entry (see `docs/README.md`)
 - `docs/design-v2/` — System-level baseline and module designs (no stage-specific files)
-- `docs/spec/` — Stage archives (v0.01+, including roadmap/spec/runbook/errata/release notes)
+- `docs/spec/` — Single-track stage documentation entry (v0.01+, versioned into roadmap/governance/evidence/records)
+- `docs/spec/common/records/` — Cross-version governance records (development-status / debts / reusable-assets)
 - `docs/reference/` — External references and methodology notes
-- `.kiro/roadmap/` — Active execution working set (versioned subdirectories)
 
 ## Configuration
 

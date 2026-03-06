@@ -23,5 +23,4 @@
 ## 配套目录
 
 1. `docs/design-v2/`：系统级总设计与模块设计（不放阶段材料）
-2. `.kiro/roadmap/`：当前正在实现版本的工作副本
-
+2. `docs/spec/common/records/`：跨阶段治理记录（development-status / debts / reusable-assets）

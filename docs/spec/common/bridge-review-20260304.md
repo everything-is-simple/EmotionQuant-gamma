@@ -1,8 +1,8 @@
 # 路线图-设计桥接审查记录（2026-03-04）
 
 **审查范围**:
-- `docs/spec/v0.01/v0.01-mvp.md` ~ `docs/spec/v0.06/v0.06-portfolio.md`
-- `docs/design-v2/architecture-master.md`、`docs/design-v2/backtest-report-design.md`、`docs/design-v2/broker-design.md`、`docs/design-v2/data-layer-design.md`、`docs/spec/v0.01/data-rebuild-runbook-20260303.md`、`docs/design-v2/system-baseline.md`、`docs/spec/v0.01/release-v0.01-formal.md`、`docs/design-v2/sandbox-review-standard.md`、`docs/design-v2/selector-design.md`、`docs/design-v2/strategy-design.md`、`docs/design-v2/volman-ytc-mapping.md`
+- `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md` ~ `docs/spec/v0.06/roadmap/v0.06-portfolio.md`
+- `docs/design-v2/architecture-master.md`、`docs/design-v2/backtest-report-design.md`、`docs/design-v2/broker-design.md`、`docs/design-v2/data-layer-design.md`、`docs/spec/v0.01/records/data-rebuild-runbook-20260303.md`、`docs/design-v2/system-baseline.md`、`docs/spec/v0.01/records/release-v0.01-formal.md`、`docs/design-v2/sandbox-review-standard.md`、`docs/design-v2/selector-design.md`、`docs/design-v2/strategy-design.md`、`docs/design-v2/volman-ytc-mapping.md`
 - `docs/reference/未来之路/god_view_8_perspectives_report_v0.01.md`
 
 **审查基线**:

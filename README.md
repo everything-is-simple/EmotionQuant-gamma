@@ -7,7 +7,7 @@ EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
 唯一权威入口：[`docs/design-v2/system-baseline.md`](docs/design-v2/system-baseline.md)
 
 系统文档基线：`v0.01 正式版`（封版日期：`2026-03-03`；后续仅允许勘误与链接修复，不修改执行口径）
-封版记录：[`docs/spec/v0.01/release-v0.01-formal.md`](docs/spec/v0.01/release-v0.01-formal.md)
+封版记录：[`docs/spec/v0.01/records/release-v0.01-formal.md`](docs/spec/v0.01/records/release-v0.01-formal.md)
 
 涵盖：6 模块架构、MSS/IRS/PAS 因子体系、L1-L4 数据分层、pydantic 契约、四周落地计划。
 
@@ -32,9 +32,9 @@ pytest -v
 - `tests/` — 自动化测试
 - `docs/` — 文档总入口（见 `docs/README.md`）
 - `docs/design-v2/` — 系统级总纲与模块设计（不放分阶段文件）
-- `docs/spec/` — 各阶段归档（v0.01+，含路线图/实现卡/runbook/勘误/发布记录）
+- `docs/spec/` — 各阶段文档单轨入口（v0.01+，按版本目录组织 roadmap/governance/evidence/records）
+- `docs/spec/common/records/` — 跨版本治理记录（development-status / debts / reusable-assets）
 - `docs/reference/` — 外部参考资料与方法论材料
-- `.kiro/roadmap/` — 当前执行阶段工作副本（按版本子目录）
 
 ## 环境配置
 

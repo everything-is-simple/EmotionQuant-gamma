@@ -105,9 +105,9 @@ Details: `docs/design-v2/system-baseline.md` (data and boundary sections).
 | Directory | Role |
 |-----------|------|
 | `docs/design-v2/` | System-level design documents (system-baseline.md is sole authoritative entry) |
-| `docs/spec/` | Stage archives (v0.01+; roadmap/spec/runbook/errata/release notes) |
+| `docs/spec/` | Single-track stage documentation entry (v0.01+; versioned into roadmap/governance/evidence/records) |
+| `docs/spec/common/records/` | Cross-version governance records (development-status / debts / reusable-assets) |
 | `docs/reference/` | Reference and external methodology materials (non-execution source) |
-| `.kiro/roadmap/` | Active stage working set (versioned subdirectories) |
 
 ### 8.2 Single Source of Truth (SoT)
 
@@ -115,8 +115,9 @@ Details: `docs/design-v2/system-baseline.md` (data and boundary sections).
 
 ### 8.3 Archive Rules
 
-- Stage documents are archived by version under: `docs/spec/<version>/`
-- Active-stage working copies are maintained under: `.kiro/roadmap/<version>/`
+- Stage documents use versioned directories under: `docs/spec/<version>/`
+- Active execution and archive share the same versioned directories: `docs/spec/<version>/`
+- Cross-version governance records are stored under: `docs/spec/common/records/`
 - System-level design documents are stored only in: `docs/design-v2/`
 
 ---
@@ -166,8 +167,9 @@ Details: `docs/design-v2/system-baseline.md` (current version).
 ## 13. Historical Notes
 
 System baseline authoritative entry: `docs/design-v2/system-baseline.md`
-Stage full archives: `docs/spec/`
-Active-stage working set: `.kiro/roadmap/`
+Single-track stage docs entry: `docs/spec/`
+Cross-version governance records: `docs/spec/common/records/`
+Active execution entry: `docs/spec/`
 Reference materials: `docs/reference/`
 
 ---

@@ -105,9 +105,9 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 | 目录 | 定位 |
 |------|------|
 | `docs/design-v2/` | 系统级设计文档（system-baseline.md 为唯一权威入口） |
-| `docs/spec/` | 分阶段归档（v0.01+；路线图/实现卡/runbook/勘误/发布记录） |
+| `docs/spec/` | 分阶段文档单轨入口（v0.01+；按版本目录组织 roadmap/governance/evidence/records） |
+| `docs/spec/common/records/` | 跨版本治理记录（development-status / debts / reusable-assets） |
 | `docs/reference/` | 参考资料与外部方法论（非执行口径） |
-| `.kiro/roadmap/` | 当前执行阶段工作副本（按版本子目录） |
 
 ### 8.2 单一事实源（SoT）
 
@@ -115,8 +115,9 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 
 ### 8.3 归档规则
 
-- 分阶段文档统一使用版本目录归档：`docs/spec/<version>/`
-- 当前执行阶段工作副本统一位于：`.kiro/roadmap/<version>/`
+- 分阶段文档统一使用版本目录：`docs/spec/<version>/`
+- 当前执行与归档使用同一套版本目录：`docs/spec/<version>/`
+- 跨版本治理记录统一位于：`docs/spec/common/records/`
 - 系统级设计文档仅存放于：`docs/design-v2/`
 
 ---
@@ -166,8 +167,9 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 ## 13. 历史说明
 
 系统总纲权威入口：`docs/design-v2/system-baseline.md`
-分阶段全量归档：`docs/spec/`
-当前执行阶段工作副本：`.kiro/roadmap/`
+分阶段文档单轨入口：`docs/spec/`
+跨版本治理记录：`docs/spec/common/records/`
+当前执行入口：`docs/spec/`
 外部参考资料：`docs/reference/`
 
 ---

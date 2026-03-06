@@ -9,7 +9,7 @@
 
 > **v0.01 口径说明**：本文件用于形态语义映射与增强参考，不作为 v0.01 的硬触发判定来源。  
 > v0.01 的交易触发以 `strategy-design.md` 中 BOF 量化规则为准。
-> 文中关于 `PAS_BPB`、Week2/Week4 的实现节奏均属历史研究草案，执行计划以 `system-baseline.md` 与 `.kiro/roadmap` 为准。
+> 文中关于 `PAS_BPB`、Week2/Week4 的实现节奏均属历史研究草案，执行计划以 `system-baseline.md` 与 `docs/spec` 为准。
 
 ---
 
