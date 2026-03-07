@@ -176,6 +176,7 @@
 | 2026-03-07 | 实现风险 | raw/execution 覆盖异常已修复；`IRS` 已证明会进入 `Top-N / MAX_POSITIONS / BUY 数量` 约束，但这种执行差异是否能稳定转化为收益改善仍未说明 | 继续补更长窗口收益归因、失败模式说明与 `GO / NO-GO` 判定 | open |
 | 2026-03-08 | 实现风险 | `BOF` 第一轮内存优化已让更长窗口五场景全部在 `4GB` 下跑通，但 `top1_pos2 / top2_pos2` 的 `EV/MDD` 改善与 `PF` 变差并存，收益结构仍不稳 | 当前结论先定为 `NO-GO`：保留 legacy 为默认运行路径，继续在 `v0.01-plus` 线内收七维评审与收益稳定性解释 | open |
 | 2026-03-08 | 实现风险 | 初选消融已证明 `candidate_top_n / preselect_score_mode` 会直接改变交易结果；短窗下 `volume_ratio_only` 显著优于当前默认，但证据仍局限于短窗 | 暂不直接翻默认；先将 `volume_ratio_only` 作为候选默认值，待更长窗口复核后再决定是否切换 | open |
+| 2026-03-08 | 治理决策 | 更长窗口初选消融已完成：当前主线默认初选不切到 `volume_ratio_only` | 继续保持 `CANDIDATE_TOP_N=100` 与 `PRESELECT_SCORE_MODE=amount_plus_volume_ratio`；`volume_ratio_only` 降级为专项实验候选 | closed |
 
 ---
 
