@@ -6,23 +6,33 @@
 
 ---
 
-## 📌 使用说明
+## 使用说明
 
-本文件是 `DATA-SOURCE-AND-MIGRATION.md` 的模板文件。
+本文件是 `data-source-and-migration.md` 的脱敏模板。
 
-**实际使用步骤**：
-1. 复制本文件为 `DATA-SOURCE-AND-MIGRATION.md`
-2. 填写实际的 Token 信息和数据库路径
-3. `DATA-SOURCE-AND-MIGRATION.md` 已被 `.gitignore` 排除，不会提交到 Git
+仓库内允许保留：
 
-**禁止操作**：
-- ❌ 不要在本模板文件中填写真实 Token
-- ❌ 不要删除 `.gitignore` 中的 `DATA-SOURCE-AND-MIGRATION.md` 规则
-- ❌ 不要将包含 Token 的文件提交到 Git
+1. 字段说明
+2. 路径结构
+3. 迁移步骤
+4. 脱敏示例
+
+仓库内禁止保留：
+
+1. 真实 Token
+2. 真实网关地址
+3. 私有分享链接
+4. 任何足以直接登录外部数据源的敏感值
+
+实际使用建议：
+
+1. 复制本模板为本地敏感副本，放在仓库外目录
+2. 仓库内 `data-source-and-migration.md` 只保留脱敏版
+3. 真实凭据统一写入 `.env` 或仓库外本地记录
 
 ---
 
-## 🔑 数据源配置
+## 数据源配置
 
 ### TuShare 数据源（双 Key 配置）
 

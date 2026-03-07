@@ -188,7 +188,7 @@
 1. 七维检查全部完成，且有证据记录。
 2. `S0/S1 = 0`。
 3. 连环失效检测完成，kill-chain 回放通过。
-4. 三组消融链路完整可复现：`BOF baseline -> BOF+MSS -> BOF+MSS+IRS`。
+4. 当前主开发线的最小消融矩阵完整可复现：`legacy_bof_baseline -> v0_01_dtt_bof_only -> v0_01_dtt_bof_plus_irs_score -> v0_01_dtt_bof_plus_irs_mss_score`。
 5. 幂等重跑通过（同输入重跑不新增脏数据）。
 6. T+1 语义与末日强平例外在文档中显式并列。
 
