@@ -78,19 +78,19 @@ docs/
 **定位**：回答"系统设计成什么样"
 
 **核心文档**：
-- `system-baseline.md` - 系统基线（单一事实源）⭐
-- `architecture-master.md` - 架构总览
-- `core-algorithms/` - 算法级 SoT
-  - `mss-algorithm.md` - MSS 算法设计
-  - `irs-algorithm.md` - IRS 算法设计
-  - `pas-algorithm.md` - PAS 算法设计
-  - `down-to-top-integration.md` - 集成模式演进
-- 模块级设计：
+- `01-system/system-baseline.md` - 系统基线（单一事实源）⭐
+- `01-system/architecture-master.md` - 架构总览
+- `02-modules/` - 模块级设计
   - `data-layer-design.md` - Data 模块
   - `selector-design.md` - Selector 模块
   - `strategy-design.md` - Strategy 模块
   - `broker-design.md` - Broker 模块
   - `backtest-report-design.md` - Backtest & Report 模块
+- `03-algorithms/core-algorithms/` - 算法级 SoT
+  - `mss-algorithm.md` - MSS 算法设计
+  - `irs-algorithm.md` - IRS 算法设计
+  - `pas-algorithm.md` - PAS 算法设计
+  - `down-to-top-integration.md` - 集成模式演进
 
 **使用场景**：
 - 新功能开发前查阅设计规范
