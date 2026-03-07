@@ -1,6 +1,7 @@
 # 📊 docs/ 目录完整整理报告
 
 > 历史整理记录：保留用于追溯 2026-03-07 的目录整理动作，不作为当前主导航入口。
+> 当前主开发线口径以 `docs/spec/v0.01-plus/` 与 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` 为准；`system-baseline.md` 仅作为 `v0.01 Frozen` 历史基线。
 
 **整理日期**：2026-03-07  
 **整理范围**：`docs/` 全目录  

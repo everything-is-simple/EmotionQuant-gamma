@@ -21,7 +21,7 @@
 1. `docs/spec/<version>/` 存放单版本路线图、治理、证据与 records。
 2. `docs/spec/common/` 存放跨版本治理记录与共用清单。
 3. 一次性桥接审计、瘦身审计等历史材料保留追溯价值，但不作为当前主入口。
-4. 版本材料与系统设计冲突时，以 `docs/design-v2/01-system/system-baseline.md` 为准。
+4. 版本材料若涉及 `v0.01 Frozen` 历史口径，以 `docs/design-v2/01-system/system-baseline.md` 为准；若涉及 `v0.01-plus` 当前主开发线，以 `docs/spec/v0.01-plus/` 与 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` 为准。
 
 ## 当前版本映射
 

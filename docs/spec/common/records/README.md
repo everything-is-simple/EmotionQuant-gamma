@@ -4,7 +4,7 @@
 
 `docs/spec/common/records/` 存放跨版本持续维护的治理记录与审计留痕。
 
-这里回答的是“当前治理状态、技术债、资产复用和审计记录放在哪里”，不是“单个版本证据放在哪里”。系统设计 SoT 以 `docs/design-v2/01-system/system-baseline.md` 为准；版本归档入口统一在 `docs/spec/`。
+这里回答的是“当前治理状态、技术债、资产复用和审计记录放在哪里”，不是“单个版本证据放在哪里”。当前主线与历史基线的判定以 `development-status.md` 为准；版本归档入口统一在 `docs/spec/`。
 
 ## 当前入口
 
@@ -21,11 +21,12 @@
 1. 本目录只记录跨版本治理信息，不记录单个版本专属证据。
 2. 单版本 runbook、勘误、发布记录仍放在 `docs/spec/<version>/records/`。
 3. 当前治理状态与是否恢复实现，以 `development-status.md` 为准。
-4. 若与系统设计口径冲突，以 `docs/design-v2/01-system/system-baseline.md` 为准。
+4. 若涉及 `v0.01 Frozen` 历史口径，以 `docs/design-v2/01-system/system-baseline.md` 为准；若涉及 `v0.01-plus` 当前主开发线，以 `docs/spec/v0.01-plus/` 与 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` 为准。
 
 ## 相关文档
 
 - `docs/design-v2/01-system/system-baseline.md`
+- `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
 - `docs/spec/common/records/development-status.md`
 - `docs/spec/README.md`
 - `docs/spec/common/README.md`

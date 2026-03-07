@@ -22,7 +22,8 @@
 
 | 类型 | 路径 | 用途 |
 |---|---|---|
-| 设计 SoT | `docs/design-v2/01-system/system-baseline.md` | 当前唯一系统设计口径 |
+| v0.01 历史基线 | `docs/design-v2/01-system/system-baseline.md` | 冻结历史基线，用于对照、回退与回归验证 |
+| 当前主开发线设计 | `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` | `v0.01-plus` 当前主开发线设计入口 |
 | 当前状态 | `docs/spec/common/records/development-status.md` | 当前治理状态、历史分段、重启条件 |
 | 工作流 | `docs/workflow/6A-WORKFLOW.md` | 固定执行流程 |
 | 文档总导航 | `docs/README.md` | 全局入口 |
@@ -47,9 +48,10 @@
 
 ### 1. 想确认“现在系统到底按什么口径执行”
 
-1. `docs/design-v2/01-system/system-baseline.md`
-2. `docs/steering/product.md`
-3. `docs/spec/common/records/development-status.md`
+1. `docs/spec/common/records/development-status.md`
+2. `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+3. `docs/steering/product.md`
+4. 若要回看旧系统，再查看 `docs/design-v2/01-system/system-baseline.md`
 
 ### 2. 想开始一个实现/修订任务
 
@@ -83,11 +85,11 @@
 
 若文档之间出现冲突，按以下优先级处理：
 
-1. `docs/design-v2/01-system/system-baseline.md`
-2. `docs/steering/`
-3. `docs/design-v2/` 其他文档
-4. `docs/observatory/` 的评审标准
-5. `docs/spec/common/records/development-status.md` 的当前状态说明
+1. `docs/spec/common/records/development-status.md` 中对“当前主线/历史基线”的判定
+2. 当前主开发线：`docs/spec/v0.01-plus/` + `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+3. `docs/steering/`
+4. `docs/design-v2/` 其他文档
+5. `docs/observatory/` 的评审标准
 6. `docs/spec/` 其他历史归档
 7. `docs/Strategy/` 与 `docs/reference/`
 
@@ -115,4 +117,3 @@
 
 **维护责任**：项目负责人  
 **更新原则**：仅在目录角色、主入口或优先级发生变化时更新
-

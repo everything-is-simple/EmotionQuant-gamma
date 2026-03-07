@@ -4,7 +4,7 @@
 
 `docs/Strategy/` 存放 MSS / IRS / PAS 的理论来源、方法论梳理与研究映射。
 
-这里回答的是“为什么这样设计”，不是“当前系统必须怎么执行”。当前执行口径仍以 `docs/design-v2/01-system/system-baseline.md` 为准。
+这里回答的是“为什么这样设计”，不是“当前系统必须怎么执行”。`v0.01 Frozen` 历史执行口径见 `docs/design-v2/01-system/system-baseline.md`；`v0.01-plus` 当前主开发线设计入口见 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`。
 
 ## 当前入口
 
@@ -37,7 +37,7 @@ Strategy/
 ## 使用规则
 
 1. `Strategy/` 只提供理论依据、研究材料和映射说明，不直接充当执行 SoT。
-2. 理论与实现冲突时，以 `design-v2/` 和 `steering/` 为准。
+2. 理论与实现冲突时，以 `design-v2/`、`steering/` 和当前版本 `spec/` 为准。
 3. 新增研究材料时，优先补充映射关系与“采用 / 适配 / 不采用”边界，不必在 README 重复展开全文摘要。
 4. 阶段性实现证据、回测结果、版本验收，不放在 `Strategy/`，统一归档到 `docs/spec/<version>/`。
 
@@ -45,9 +45,9 @@ Strategy/
 
 | 领域 | 当前状态 | 备注 |
 |---|---|---|
-| MSS | 已有 2 份核心材料 | 足够支撑 v0.01 当前实现理解 |
-| IRS | 已有申万行业分类材料 | 当前行业口径来源明确 |
-| PAS | 已有 4 份核心材料 + 1 份关键映射 | 足够支撑 BOF/YTC 主链路 |
+| MSS | 已有 2 份核心材料 | 足够支撑 `MSS-full` 理论溯源；当前在线实现为 `MSS-lite` |
+| IRS | 已有申万行业分类材料 | 足够支撑 `IRS-lite` 行业口径来源；轮动/牛股基因仍在升级 |
+| PAS | 已有 4 份核心材料 + 1 份关键映射 | 足够支撑 `PAS-full` 理论溯源；当前在线实现为 `PAS-trigger` |
 | 深度补充 | 仍缺 2 份候选研究材料 | 不阻塞当前文档治理与 v0.01 重启判断 |
 
 ## 相邻目录边界
