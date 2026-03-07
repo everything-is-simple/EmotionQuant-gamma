@@ -22,6 +22,7 @@
 3. 涉及版本路线图、Gate、evidence、records，统一进入 `docs/spec/<version>/`。
 4. `data-source-and-migration.md` 视为本地敏感文件；仓库内只保留 `.template`。
 5. 一次性检查报告保留为追溯记录，不进入主入口首屏导航。
+6. 仓库根目录 `G:\\EmotionQuant-gamma` 只放代码与文档；数据库统一在 `G:\\EmotionQuant_data`，临时文件统一在 `G:\\EmotionQuant-temp`。
 
 ## 相邻目录边界
 

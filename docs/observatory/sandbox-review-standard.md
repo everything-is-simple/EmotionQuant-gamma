@@ -16,6 +16,12 @@
 
 本标准是 `system-baseline.md` 的配套评审规范；若与主文档冲突，以 `system-baseline.md` 为准。
 
+补充说明：
+
+1. 本文的冻结定稿口径首先服务 `v0.01 Frozen` 历史基线。
+2. 当前主开发线 `v0.01-plus` 继续沿用“七维评审 + 证据闭环”的方法，但具体 Go/No-Go 结论应回写到 `docs/spec/v0.01-plus/`。
+3. 若 `v0.01-plus` 与本文固定示例冲突，以当前主开发线的 Gate、路线图和 evidence 记录为准。
+
 ---
 
 ## 2. 七维评审框架（固定口径 + 可执行检查清单）
@@ -185,6 +191,11 @@
 4. 三组消融链路完整可复现：`BOF baseline -> BOF+MSS -> BOF+MSS+IRS`。
 5. 幂等重跑通过（同输入重跑不新增脏数据）。
 6. T+1 语义与末日强平例外在文档中显式并列。
+
+当前主开发线补充：
+
+- 当前主开发线允许把消融链路替换为 `legacy_bof_baseline / v0_01_dtt_bof_only / v0_01_dtt_bof_plus_irs_score / v0_01_dtt_bof_plus_irs_mss_score`
+- 但评审方法、证据要求和风险分级规则保持不变
 
 ---
 

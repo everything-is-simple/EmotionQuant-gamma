@@ -21,6 +21,7 @@
 3. 当前状态、治理结论与重启条件，以 `docs/spec/common/records/development-status.md` 为准。
 4. 版本路线图、证据、runbook、发布记录统一进入 `docs/spec/<version>/`，不回堆到 `reference/`。
 5. 若参考摘录与交易所或数据源官方最新规则冲突，应以官方规则为准，并回写设计/治理文档修正仓库口径。
+6. 当前主开发线若与历史参考描述冲突，以 `docs/spec/v0.01-plus/` 与对应算法 SoT 为准。
 
 ## 相邻目录边界
 

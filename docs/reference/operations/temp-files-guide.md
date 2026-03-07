@@ -1,5 +1,10 @@
 # 临时文件与缓存目录说明
 
+> 当前目录纪律优先级高于下文旧示例：
+> - 仓库根目录不放运行时缓存、临时 DuckDB、测试临时目录
+> - 临时文件统一放 `G:\EmotionQuant-temp`
+> - 数据文件统一放 `G:\EmotionQuant_data`
+
 本文档说明 EmotionQuant 项目中各种临时文件和缓存目录的作用，以及为什么不彻底删除它们。
 
 ---
@@ -78,7 +83,7 @@
 
 ### 5. 临时文件（开发过程）
 
-#### `TEMP_PATH/`
+#### `G:\EmotionQuant-temp`
 - **作用**：临时文件统一落点（工作副本、pytest、ruff/mypy cache、临时脚本）
 - **内容**：
   - `TEMP_PATH/codex-home/`：MCP 服务配置
@@ -95,7 +100,7 @@
 
 ### 6. 运行时产物（脚本输出）
 
-#### `TEMP_PATH/artifacts/`
+#### `G:\EmotionQuant-temp\artifacts`
 - **作用**：脚本运行产生的中间文件
 - **内容**：
   - `bulk_download_progress.json`：批量下载进度记录

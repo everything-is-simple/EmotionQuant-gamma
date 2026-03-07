@@ -1,5 +1,10 @@
 # EmotionQuant 环境配置指南
 
+> 当前目录纪律：
+> - `G:\EmotionQuant-gamma` 只放代码和文档
+> - `G:\EmotionQuant_data` 只放数据库与日志
+> - `G:\EmotionQuant-temp` 只放临时文件与运行时产物
+
 本指南帮助你快速配置 EmotionQuant 的开发和运行环境。
 
 ---
@@ -15,7 +20,7 @@ G:\
 │   ├── tests/                   # 测试
 │   ├── docs/                    # 文档
 │   ├── scripts/                 # 工具脚本
-│   ├── .env                     # 环境变量配置
+│   ├── .env                     # 环境变量配置（不提交真实值）
 │   └── ...
 │
 ├── EmotionQuant_data\           # 本地数据库（不进 Git）
@@ -100,11 +105,10 @@ LOG_LEVEL=INFO
 ENVIRONMENT=development
 
 # ========================================
-# 漏斗开关（v0.01 默认关闭）
+# 主线模式（当前以 v0.01-plus 为主）
 # ========================================
-ENABLE_MSS_GATE=false
-ENABLE_IRS_FILTER=false
-ENABLE_GENE_FILTER=false
+PIPELINE_MODE=dtt
+DTT_VARIANT=v0_01_dtt_bof_plus_irs_score
 
 # ========================================
 # 回测与交易参数
@@ -128,12 +132,11 @@ RISK_FREE_RATE=0.015
 # Selector / Strategy 默认参数
 # ========================================
 MSS_VARIANT=zscore_weighted6
-MSS_GATE_MODE=bearish_only
-MSS_SOFT_GATE_CANDIDATE_TOP_N=30
-IRS_TOP_N=10
 MSS_BULLISH_THRESHOLD=65
 MSS_BEARISH_THRESHOLD=35
 MIN_AMOUNT=50000
+CANDIDATE_TOP_N=100
+PRESELECT_SCORE_MODE=amount_plus_volume_ratio
 ```
 
 ---
@@ -198,7 +201,7 @@ python main.py build --layers all
 ### 3. 运行回测
 
 ```powershell
-# 运行 BOF 形态回测
+# 运行当前主线回测
 python main.py backtest --start 2020-01-01 --end 2024-12-31 --patterns bof
 
 # 指定初始资金

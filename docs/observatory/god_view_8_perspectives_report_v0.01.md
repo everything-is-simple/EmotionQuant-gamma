@@ -4,15 +4,28 @@
 > **从属基线**: `docs/design-v2/01-system/system-baseline.md`（Frozen）
 > **冲突规则**: 本文与冻结基线冲突时，以基线为准（与 `system-baseline.md` §8.2 一致）
 > **纳入执行口径的前提**: 各视角仅在对应版本评审通过后纳入执行口径
+> **当前主开发线说明**: `v0.01-plus` 当前主线不再直接按本文旧漏斗语义执行；当前入口以 `docs/spec/v0.01-plus/` 与 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` 为准
 
 ---
 
 ## 0. 背景与定位
 
-低频量化项目的骨架设计已完成：
+低频量化项目的早期骨架设计曾采用：
 - **Selector 漏斗**（MSS + IRS + 基础过滤）把全市场压缩到候选池（50–100）。
 - **PAS / Pattern Registry** 将 YTC 五形态（区间3、趋势2）注册在册，并支持单形态独立回测与淘汰。
 - **Broker 内核**统一回测/纸上/实盘撮合与风控语义（T+1）。
+
+当前主开发线已经切换为：
+
+- `Selector 初选 -> PAS-trigger(BOF) -> IRS 排序 -> MSS 控仓位 -> Broker 执行`
+
+因此本文后续内容应视为：
+
+- 历史研究视角
+- 观察补充框架
+- 路线思考素材
+
+而不是当前主开发线的直接实现条款
 
 “上帝之眼”并不是再加新策略，而是：
 - 用更高维度的**统计与运营视角**去监控系统健康度；

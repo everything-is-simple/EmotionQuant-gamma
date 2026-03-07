@@ -20,6 +20,10 @@
 2. 本仓库环境配置与敏感模板，统一进入 `docs/operations/`。
 3. 当前治理状态与是否恢复实现，统一查看 `docs/spec/common/records/development-status.md`。
 4. 若清理策略与仓库脚本、`.gitignore` 或正式运维文档冲突，以正式运维入口和脚本为准。
+5. 当前目录纪律固定为：
+   - `G:\\EmotionQuant-gamma` 只放代码和文档
+   - `G:\\EmotionQuant_data` 只放数据库
+   - `G:\\EmotionQuant-temp` 只放临时文件
 
 ## 相关文档
 

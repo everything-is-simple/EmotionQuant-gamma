@@ -21,6 +21,7 @@
 2. 若参考摘录与交易所、监管或数据源官方最新规则冲突，应以官方规则为准，并回写 `design-v2 / steering / spec` 修正仓库口径。
 3. 仓库内固定执行语义、A 股约束实现边界，优先查看 `docs/steering/a-stock-rules.md` 与 `docs/design-v2/01-system/system-baseline.md`。
 4. 版本证据、回归结果与阶段记录，统一进入 `docs/spec/<version>/`，不堆回本目录。
+5. 当前主开发线若对行业聚合、涨跌停校验、停牌处理有更细实现，以 `design-v2` 算法/模块设计为准，而不是以本目录文字直接替代实现。
 
 ## 相邻目录边界
 
