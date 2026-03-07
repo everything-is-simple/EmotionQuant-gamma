@@ -82,7 +82,7 @@
 
 | 任务 | 负责人 | 开始日期 | 状态 | 阻塞 |
 |---|---|---|---|---|
-| v0.01-plus 主线开工准备（Gate / run 命名 / sidecar / script） | wangweiyun | 2026-03-07 | DOING | 正在落地 schema、写入链路、默认路径与主线脚本 |
+| v0.01-plus 主线开工准备（Gate / run 命名 / sidecar / script） | wangweiyun | 2026-03-07 | DOING | 短窗矩阵、默认 DTT 幂等、覆盖修复与执行约束敏感性已完成；当前阻塞转为更长窗口收益归因、EG5 七维评审与 EG6 GO/NO-GO |
 
 ### 4.3 文档治理期（2026-03-07）
 
@@ -99,6 +99,8 @@
 | 2026-03-07 | `v0.01-plus` 版本切分与文档骨架建立 | completed | `docs/spec/v0.01-plus/README.md`, `docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md`, `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`, `docs/spec/v0.01-plus/governance/v0.01-plus-gate-checklist.md`, `docs/spec/v0.01-plus/governance/v0.01-plus-data-contract-table.md`, `docs/design-v2/01-system/system-baseline.md`, `docs/design-v2/02-modules/selector-design.md`, `docs/spec/README.md` |
 | 2026-03-07 | `v0.01-plus` 主线升格：独立实验版 -> 当前主开发线 | completed | `docs/spec/v0.01-plus/README.md`, `docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md`, `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`, `docs/spec/v0.01-plus/governance/v0.01-plus-gate-checklist.md`, `docs/spec/v0.01-plus/governance/v0.01-plus-data-contract-table.md`, `docs/spec/common/records/development-status.md`, `docs/spec/README.md`, `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` |
 | 2026-03-07 | `v0.01-plus` 运行命名、sidecar 与默认路径收口 | in_progress | `docs/spec/v0.01-plus/governance/v0.01-plus-run-artifact-rules.md`, `src/config.py`, `src/data/store.py`, `src/strategy/ranker.py`, `src/strategy/strategy.py`, `src/backtest/engine.py`, `scripts/backtest/run_v001_plus_dtt_matrix.py`, `scripts/ops/preflight.ps1` |
+| 2026-03-07 | `v0.01-plus` 首轮短窗矩阵 + 默认 DTT 幂等 | completed | `docs/spec/v0.01-plus/evidence/matrix_summary_dtt_v0_01_dtt_bof_plus_irs_score_w20260105_20260224_t151041__dtt_matrix.json`, `docs/spec/v0.01-plus/evidence/idempotency_dtt_v0_01_dtt_bof_plus_irs_score_w20260105_20260224_t151843__idempotency_check.json`, `docs/spec/v0.01-plus/records/v0.01-plus-short-window-matrix-20260307.md`, `scripts/backtest/check_idempotency.py` |
+| 2026-03-07 | `v0.01-plus` 数据覆盖审计 + 排序拆解 | completed | `docs/spec/v0.01-plus/evidence/coverage_audit_dtt_v0_01_dtt_bof_plus_irs_score_w20260210_20260213_t154048__coverage_audit.json`, `docs/spec/v0.01-plus/evidence/rank_decomposition_dtt_v0_01_dtt_bof_plus_irs_score_w20260105_20260224_t154940__rank_decomposition.json`, `docs/spec/v0.01-plus/records/v0.01-plus-coverage-and-rank-audit-20260307.md`, `scripts/data/audit_trade_date_coverage.py`, `scripts/backtest/run_v001_plus_rank_decomposition.py` |
 
 ### 4.4 旧实现期（2026-03-02 ~ 2026-03-06）阶段摘要
 
@@ -144,6 +146,7 @@
 | 2026-03-07 | 文档治理收口：正式路径 + 当前状态 + 检查脚本 | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_doc_links.ps1` | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_doc_links.ps1` | `README.md`, `README.en.md`, `docs/spec/common/records/development-status.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md`, `scripts/ops/check_doc_links.ps1` | 路径扫描 + 断链复核 + 当前状态一致性复核 | debts=无变化, status=已同步, assets=无变化, roadmap=已同步, spec=development-status/v0.01 roadmap 已同步 |
 | 2026-03-07 | 次级 README 清理 + 权威入口脚本化审计 | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_doc_authority.ps1` | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_doc_authority.ps1`; `powershell -ExecutionPolicy Bypass -File scripts/ops/check_doc_links.ps1` | `docs/reference/a-stock-rules/README.md`, `docs/design-v2/03-algorithms/core-algorithms/README.md`, `docs/spec/README.md`, `docs/spec/common/README.md`, `docs/spec/common/records/README.md`, `docs/spec/v0.01/README.md` ~ `docs/spec/v0.06/README.md`, `AGENTS.md`, `scripts/ops/check_doc_authority.ps1` | README 入口复核 + 机器检查回归 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=authority-entry-audit/development-status 已同步 |
 | 2026-03-07 | `v0.01-plus` 独立实验版切分：版本包 + Frozen 边界收口 | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_docs.ps1` | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_docs.ps1` | `docs/spec/v0.01-plus/README.md`, `docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md`, `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`, `docs/spec/v0.01-plus/governance/v0.01-plus-gate-checklist.md`, `docs/spec/v0.01-plus/governance/v0.01-plus-data-contract-table.md`, `docs/design-v2/01-system/system-baseline.md`, `docs/design-v2/02-modules/selector-design.md`, `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`, `docs/spec/README.md`, `docs/spec/common/records/development-status.md` | Frozen / Draft 边界复核 + 版本入口复核 | debts=无变化, status=已同步, assets=无变化, roadmap=v0.01-plus 已同步, spec=v0.01-plus/development-status 已同步 |
+| 2026-03-07 | `v0.01-plus` 数据覆盖修复 + 执行约束敏感性 | `python scripts/data/bulk_download.py --start 20260210 --end 20260213 --tables raw_daily,raw_daily_basic,raw_index_daily,raw_limit_list`; `python scripts/data/repair_l1_partitions_from_raw_duckdb.py --start 2026-02-10 --end 2026-02-13`; `python main.py build --layers l2,l3 --start 2026-02-09 --end 2026-02-24`; `python scripts/data/audit_trade_date_coverage.py --dates 2026-02-10 2026-02-11 2026-02-13`; `python scripts/backtest/run_v001_plus_dtt_matrix.py --start 2026-01-05 --end 2026-02-24 --skip-rebuild-l3`; `python scripts/backtest/run_v001_plus_execution_sensitivity.py --start 2026-01-05 --end 2026-02-24 --skip-rebuild-l3` | `python -m pytest tests/unit/data/test_fetcher.py tests/unit/data/test_cleaner.py tests/patches/selector/test_irs_nan_score_regression.py tests/unit/backtest/test_execution_sensitivity.py -q`; `powershell -ExecutionPolicy Bypass -File scripts/ops/check_docs.ps1`; `powershell -ExecutionPolicy Bypass -File scripts/ops/preflight.ps1 -Profile full` | `docs/spec/v0.01-plus/evidence/coverage_audit_dtt_v0_01_dtt_bof_plus_irs_score_w20260210_20260213_t163939__coverage_audit.json`, `docs/spec/v0.01-plus/evidence/matrix_summary_dtt_v0_01_dtt_bof_plus_irs_score_w20260105_20260224_t160708__dtt_matrix.json`, `docs/spec/v0.01-plus/evidence/execution_sensitivity_dtt_v0_01_dtt_bof_only_vs_v0_01_dtt_bof_plus_irs_score_w20260105_20260224_t162521__execution_sensitivity.json`, `docs/spec/v0.01-plus/records/v0.01-plus-short-window-matrix-20260307.md`, `docs/spec/v0.01-plus/records/v0.01-plus-coverage-and-rank-audit-20260307.md`, `scripts/data/audit_trade_date_coverage.py`, `scripts/data/repair_l1_partitions_from_raw_duckdb.py`, `scripts/backtest/run_v001_plus_execution_sensitivity.py`, `src/data/fetcher.py`, `src/data/cleaner.py`, `src/selector/irs.py`, `src/selector/mss_experiments.py` | raw 分区修复、执行库分区重建、DTT 宽约束重跑与 Top-N/仓位敏感性复核 | debts=无变化, status=已同步, assets=无变化, roadmap=v0.01-plus 已同步, spec=records 已同步 |
 
 ### 5.2 旧实现期（2026-03-02 ~ 2026-03-06）摘要索引
 
@@ -167,6 +170,7 @@
 | 2026-03-07 | 治理决策 | README / AGENTS / docs/*/README 的权威入口表述统一为 baseline + development-status + docs/spec | 已完成 reference / operations / steering 收口，并留存一致性审计记录 | closed |
 | 2026-03-07 | 治理决策 | 次级 README 与 spec 各级 README 已补齐统一入口，后续用脚本做回归检查 | 以 `check_doc_authority.ps1` 与 `check_doc_links.ps1` 双脚本做回归 | closed |
 | 2026-03-07 | 治理决策 | `v0.01-plus` 从独立实验版升格为当前主开发线，用于替代 legacy top-down | 仍保留 legacy 对照与回退路径；`v0.02` 不承接本次链路替代工作 | open |
+| 2026-03-07 | 实现风险 | raw/execution 覆盖异常已修复；`IRS` 已证明会进入 `Top-N / MAX_POSITIONS / BUY 数量` 约束，但这种执行差异是否能稳定转化为收益改善仍未说明 | 继续补更长窗口收益归因、失败模式说明与 `GO / NO-GO` 判定 | open |
 
 ---
 
@@ -188,6 +192,9 @@
 | 2026-03-07 | v1.11 | 安装 `dev` 依赖并接通 `preflight.ps1 -Profile full`；补齐 `mypy/ruff` 配置与回测集成测试前置 |
 | 2026-03-07 | v1.12 | 完成 `v0.01-plus` 独立实验版切分：新增 spec 骨架，并将 `system-baseline` / `selector-design` 收回纯 `v0.01 Frozen` 口径 |
 | 2026-03-07 | v1.13 | 治理决策翻转：`v0.01` 冻结为历史尝试，`v0.01-plus` 升格为当前主开发线；同步改写 plus 目录、状态入口与 DTT 设计定位 |
+| 2026-03-07 | v1.14 | 完成 `v0.01-plus` 首轮短窗矩阵与默认 DTT 幂等验证；Spec-01 验收项与 Gate 前半段回写完成 |
+| 2026-03-07 | v1.15 | 完成 `v0.01-plus` 数据覆盖审计与 DTT 排序拆解：确认 raw 源库截断根因，并证明 `IRS` 已影响名次 |
+| 2026-03-07 | v1.16 | 完成 raw/execution 覆盖修复、宽约束短窗重跑与 `Top-N / max_positions` 敏感性矩阵：确认 `IRS` 已进入 `Top-N / MAX_POSITIONS / BUY 数量` 约束 |
 
 
 

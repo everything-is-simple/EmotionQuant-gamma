@@ -11,6 +11,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from src.backtest.ablation import prepare_working_db
 from src.backtest.engine import run_backtest
 from src.config import get_settings
 from src.data.store import Store
@@ -87,6 +88,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--patterns", default="bof")
     p.add_argument("--cash", type=float, default=1_000_000)
     p.add_argument("--min-amount", type=float, default=None)
+    p.add_argument("--db-path", default=None, help="Source DuckDB path override")
+    p.add_argument(
+        "--working-db-path",
+        default=None,
+        help="Optional working copy DuckDB path; default uses TEMP_PATH/backtest",
+    )
     p.add_argument("--output", default=None)
     return p
 
@@ -101,12 +108,20 @@ def main() -> int:
         cfg.min_amount = args.min_amount
 
     patterns = [p.strip().lower() for p in args.patterns.split(",") if p.strip()]
+    source_db = Path(args.db_path).expanduser().resolve() if args.db_path else cfg.db_path
+    working_db_path = (
+        Path(args.working_db_path).expanduser().resolve()
+        if args.working_db_path
+        else cfg.resolved_temp_path / "backtest" / f"idempotency-{date.today():%Y%m%d}.duckdb"
+    )
+    # 幂等验证只在工作副本上清 runtime tables，避免污染正式执行库。
+    db_file = prepare_working_db(source_db, working_db_path)
 
-    store = Store(cfg.db_path)
+    store = Store(db_file)
     _clear_runtime_tables(store)
     store.close()
 
-    meta1 = Store(cfg.db_path)
+    meta1 = Store(db_file)
     run1 = start_run(
         store=meta1,
         scope="idempotency",
@@ -121,7 +136,7 @@ def main() -> int:
 
     try:
         first = run_backtest(
-            db_path=cfg.db_path,
+            db_path=db_file,
             config=cfg,
             start=start,
             end=end,
@@ -129,27 +144,27 @@ def main() -> int:
             initial_cash=args.cash,
             run_id=run1.run_id,
         )
-        fin1 = Store(cfg.db_path)
+        fin1 = Store(db_file)
         try:
             finish_run(fin1, run1.run_id, "SUCCESS")
         finally:
             fin1.close()
     except Exception as exc:
-        fin1 = Store(cfg.db_path)
+        fin1 = Store(db_file)
         try:
             finish_run(fin1, run1.run_id, "FAILED", str(exc))
         finally:
             fin1.close()
         raise
-    s1 = Store(cfg.db_path)
+    s1 = Store(db_file)
     snap1 = _snapshot(s1, start, end)
     s1.close()
 
-    sclr = Store(cfg.db_path)
+    sclr = Store(db_file)
     _clear_runtime_tables(sclr)
     sclr.close()
 
-    meta2 = Store(cfg.db_path)
+    meta2 = Store(db_file)
     run2 = start_run(
         store=meta2,
         scope="idempotency",
@@ -164,7 +179,7 @@ def main() -> int:
 
     try:
         second = run_backtest(
-            db_path=cfg.db_path,
+            db_path=db_file,
             config=cfg,
             start=start,
             end=end,
@@ -172,19 +187,19 @@ def main() -> int:
             initial_cash=args.cash,
             run_id=run2.run_id,
         )
-        fin2 = Store(cfg.db_path)
+        fin2 = Store(db_file)
         try:
             finish_run(fin2, run2.run_id, "SUCCESS")
         finally:
             fin2.close()
     except Exception as exc:
-        fin2 = Store(cfg.db_path)
+        fin2 = Store(db_file)
         try:
             finish_run(fin2, run2.run_id, "FAILED", str(exc))
         finally:
             fin2.close()
         raise
-    s2 = Store(cfg.db_path)
+    s2 = Store(db_file)
     snap2 = _snapshot(s2, start, end)
     s2.close()
 
@@ -197,6 +212,8 @@ def main() -> int:
         "patterns": patterns,
         "cash": args.cash,
         "min_amount": args.min_amount,
+        "source_db_path": str(source_db),
+        "db_path": str(db_file),
         "first": _to_jsonable(asdict(first)),
         "second": _to_jsonable(asdict(second)),
         "order_id_set_equal": key_equal,

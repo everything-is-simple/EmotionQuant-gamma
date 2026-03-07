@@ -58,3 +58,65 @@ def test_compute_irs_handles_nan_score_without_crash(tmp_path) -> None:
     assert float(out.iloc[0]["score"]) == 0.0
     assert int(out.iloc[0]["rank"]) == 1
     store.close()
+
+
+def test_compute_irs_clears_stale_rows_when_partial_rebuild_shrinks_day(tmp_path) -> None:
+    db = tmp_path / "irs_clear_range.duckdb"
+    store = Store(db)
+
+    day = date(2026, 1, 2)
+    store.bulk_upsert(
+        "l1_index_daily",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SH",
+                    "date": day,
+                    "open": 3000.0,
+                    "high": 3010.0,
+                    "low": 2990.0,
+                    "close": 3005.0,
+                    "pre_close": 3000.0,
+                    "pct_chg": 0.001,
+                    "volume": 1e8,
+                    "amount": 2e11,
+                }
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l2_industry_daily",
+        pd.DataFrame(
+            [
+                {
+                    "industry": "银行",
+                    "date": day,
+                    "pct_chg": 0.01,
+                    "amount": 100.0,
+                    "stock_count": 5,
+                    "rise_count": 3,
+                    "fall_count": 2,
+                }
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l3_irs_daily",
+        pd.DataFrame(
+            [
+                {
+                    "date": day,
+                    "industry": "电子",
+                    "score": 88.0,
+                    "rank": 1,
+                    "rs_score": 88.0,
+                    "cf_score": 88.0,
+                }
+            ]
+        ),
+    )
+
+    written = compute_irs(store, day, day, min_industries_per_day=2)
+    assert written == 0
+    assert store.read_df("SELECT * FROM l3_irs_daily WHERE date = ?", (day,)).empty
+    store.close()

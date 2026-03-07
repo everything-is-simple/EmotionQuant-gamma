@@ -351,6 +351,16 @@ class RawBootstrapResult:
     stock_info_effective_from_max: date | None
 
 
+@dataclass(frozen=True)
+class RawPartitionRepairResult:
+    source_db: Path
+    target_db: Path
+    start: date
+    end: date
+    stock_daily_rows: int
+    index_daily_rows: int
+
+
 def _escape_duckdb_path(path: Path) -> str:
     return path.as_posix().replace("'", "''")
 
@@ -639,6 +649,107 @@ def bootstrap_l1_from_raw_duckdb(
         sw_industry_member_rows=int(store.read_scalar("SELECT COUNT(*) FROM l1_sw_industry_member") or 0),
         stock_info_effective_from_min=stock_info_range[0] if stock_info_range else None,
         stock_info_effective_from_max=stock_info_range[1] if stock_info_range else None,
+    )
+
+
+def repair_l1_partitions_from_raw_duckdb(
+    store: Store,
+    source_db: str | Path,
+    start: date,
+    end: date,
+) -> RawPartitionRepairResult:
+    source = Path(source_db).expanduser().resolve()
+    if not source.exists():
+        raise FileNotFoundError(f"Raw DuckDB source not found: {source}")
+    if source == store.db_path:
+        raise ValueError("Raw DuckDB source must be different from target execution DB.")
+    if start > end:
+        raise ValueError(f"Invalid repair range: {start} > {end}")
+
+    attached = False
+    in_tx = False
+    try:
+        store.conn.execute(f"ATTACH '{_escape_duckdb_path(source)}' AS {_RAW_ATTACH_ALIAS}")
+        attached = True
+        store.conn.execute("BEGIN")
+        in_tx = True
+
+        # 只替换目标日期分区，避免局部修复时误删整张执行表。
+        store.conn.execute("DELETE FROM l1_stock_daily WHERE date BETWEEN ? AND ?", [start, end])
+        store.conn.execute(
+            f"""
+            INSERT INTO l1_stock_daily(
+              ts_code, date, open, high, low, close, pre_close, volume, amount, pct_chg,
+              adj_factor, is_halt, up_limit, down_limit, total_mv, circ_mv
+            )
+            SELECT
+              d.ts_code,
+              STRPTIME(d.trade_date, '%Y%m%d')::DATE AS date,
+              d.open, d.high, d.low, d.close, d.pre_close,
+              d.vol AS volume,
+              d.amount,
+              d.pct_chg,
+              1.0 AS adj_factor,
+              (COALESCE(d.vol, 0) = 0) AS is_halt,
+              NULL::DOUBLE AS up_limit,
+              NULL::DOUBLE AS down_limit,
+              b.total_mv,
+              b.circ_mv
+            FROM {_RAW_ATTACH_ALIAS}.raw_daily d
+            LEFT JOIN {_RAW_ATTACH_ALIAS}.raw_daily_basic b
+              ON d.ts_code = b.ts_code AND d.trade_date = b.trade_date
+            WHERE STRPTIME(d.trade_date, '%Y%m%d')::DATE BETWEEN ? AND ?
+            """,
+            [start, end],
+        )
+
+        # index_daily 当前执行库只消费上证指数分区；局部修复时保持同一口径。
+        store.conn.execute("DELETE FROM l1_index_daily WHERE date BETWEEN ? AND ?", [start, end])
+        store.conn.execute(
+            f"""
+            INSERT INTO l1_index_daily(ts_code, date, open, high, low, close, pre_close, pct_chg, volume, amount)
+            SELECT
+              ts_code,
+              STRPTIME(trade_date, '%Y%m%d')::DATE AS date,
+              open, high, low, close, pre_close, pct_chg,
+              vol AS volume,
+              amount
+            FROM {_RAW_ATTACH_ALIAS}.raw_index_daily
+            WHERE ts_code = '000001.SH'
+              AND STRPTIME(trade_date, '%Y%m%d')::DATE BETWEEN ? AND ?
+            """,
+            [start, end],
+        )
+
+        stock_daily_max = store.get_max_date("l1_stock_daily")
+        index_daily_max = store.get_max_date("l1_index_daily")
+        store.update_fetch_progress("stock_daily", stock_daily_max, status="OK")
+        store.update_fetch_progress("index_daily", index_daily_max, status="OK")
+
+        store.conn.execute("COMMIT")
+        in_tx = False
+    except Exception:
+        if in_tx:
+            store.conn.execute("ROLLBACK")
+        raise
+    finally:
+        if attached:
+            try:
+                store.conn.execute(f"DETACH {_RAW_ATTACH_ALIAS}")
+            except Exception:
+                pass
+
+    return RawPartitionRepairResult(
+        source_db=source,
+        target_db=store.db_path,
+        start=start,
+        end=end,
+        stock_daily_rows=int(
+            store.read_scalar("SELECT COUNT(*) FROM l1_stock_daily WHERE date BETWEEN ? AND ?", (start, end)) or 0
+        ),
+        index_daily_rows=int(
+            store.read_scalar("SELECT COUNT(*) FROM l1_index_daily WHERE date BETWEEN ? AND ?", (start, end)) or 0
+        ),
     )
 
 

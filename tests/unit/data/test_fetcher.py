@@ -7,7 +7,11 @@ from datetime import date
 import duckdb
 import pandas as pd
 
-from src.data.fetcher import TuShareFetcher, bootstrap_l1_from_raw_duckdb
+from src.data.fetcher import (
+    TuShareFetcher,
+    bootstrap_l1_from_raw_duckdb,
+    repair_l1_partitions_from_raw_duckdb,
+)
 from src.data.store import Store
 
 
@@ -312,6 +316,147 @@ def test_bootstrap_l1_from_raw_duckdb_loads_tables_and_updates_progress(tmp_path
                 "out_date": date(2026, 1, 4),
                 "is_new": "N",
             }
+        ]
+    finally:
+        store.close()
+
+
+def test_repair_l1_partitions_from_raw_duckdb_replaces_range_only(tmp_path) -> None:
+    source_db = tmp_path / "raw_repair.duckdb"
+    target_db = tmp_path / "target_repair.duckdb"
+
+    con = duckdb.connect(str(source_db))
+    con.execute(
+        """
+        CREATE TABLE raw_daily (
+            ts_code VARCHAR,
+            trade_date VARCHAR,
+            open DOUBLE,
+            high DOUBLE,
+            low DOUBLE,
+            close DOUBLE,
+            pre_close DOUBLE,
+            vol DOUBLE,
+            amount DOUBLE,
+            pct_chg DOUBLE
+        )
+        """
+    )
+    con.execute(
+        """
+        INSERT INTO raw_daily VALUES
+        ('000001.SZ', '20260210', 10, 10.5, 9.8, 10.2, 10.0, 1000, 10000, 2.0),
+        ('000002.SZ', '20260210', 20, 20.5, 19.8, 20.2, 20.0, 2000, 20000, 1.0),
+        ('000001.SZ', '20260211', 10.2, 10.6, 10.0, 10.4, 10.2, 1100, 11000, 1.5)
+        """
+    )
+    con.execute(
+        """
+        CREATE TABLE raw_daily_basic (
+            ts_code VARCHAR,
+            trade_date VARCHAR,
+            total_mv DOUBLE,
+            circ_mv DOUBLE
+        )
+        """
+    )
+    con.execute(
+        """
+        INSERT INTO raw_daily_basic VALUES
+        ('000001.SZ', '20260210', 1000000, 800000),
+        ('000002.SZ', '20260210', 2000000, 1500000),
+        ('000001.SZ', '20260211', 1001000, 801000)
+        """
+    )
+    con.execute(
+        """
+        CREATE TABLE raw_index_daily (
+            ts_code VARCHAR,
+            trade_date VARCHAR,
+            open DOUBLE,
+            high DOUBLE,
+            low DOUBLE,
+            close DOUBLE,
+            pre_close DOUBLE,
+            pct_chg DOUBLE,
+            vol DOUBLE,
+            amount DOUBLE
+        )
+        """
+    )
+    con.execute(
+        """
+        INSERT INTO raw_index_daily VALUES
+        ('000001.SH', '20260210', 1, 1, 1, 1, 1, 0, 10, 10),
+        ('000001.SH', '20260211', 1, 1, 1, 1, 1, 0, 10, 10)
+        """
+    )
+    con.close()
+
+    store = Store(target_db)
+    try:
+        store.bulk_upsert(
+            "l1_stock_daily",
+            pd.DataFrame(
+                [
+                    {
+                        "ts_code": "000099.SZ",
+                        "date": date(2026, 2, 9),
+                        "open": 1.0,
+                        "high": 1.0,
+                        "low": 1.0,
+                        "close": 1.0,
+                        "pre_close": 1.0,
+                        "volume": 1.0,
+                        "amount": 1.0,
+                        "pct_chg": 0.0,
+                        "adj_factor": 1.0,
+                        "is_halt": False,
+                        "up_limit": None,
+                        "down_limit": None,
+                        "total_mv": 1.0,
+                        "circ_mv": 1.0,
+                    },
+                    {
+                        "ts_code": "000001.SZ",
+                        "date": date(2026, 2, 10),
+                        "open": 99.0,
+                        "high": 99.0,
+                        "low": 99.0,
+                        "close": 99.0,
+                        "pre_close": 99.0,
+                        "volume": 99.0,
+                        "amount": 99.0,
+                        "pct_chg": 0.0,
+                        "adj_factor": 1.0,
+                        "is_halt": False,
+                        "up_limit": None,
+                        "down_limit": None,
+                        "total_mv": 99.0,
+                        "circ_mv": 99.0,
+                    },
+                ]
+            ),
+        )
+
+        result = repair_l1_partitions_from_raw_duckdb(
+            store=store,
+            source_db=source_db,
+            start=date(2026, 2, 10),
+            end=date(2026, 2, 11),
+        )
+
+        assert result.stock_daily_rows == 3
+        assert result.index_daily_rows == 2
+        stock_daily = store.read_df(
+            "SELECT ts_code, date, close FROM l1_stock_daily ORDER BY date, ts_code"
+        )
+        stock_daily["date"] = pd.to_datetime(stock_daily["date"]).dt.date
+        assert stock_daily.to_dict(orient="records") == [
+            {"ts_code": "000099.SZ", "date": date(2026, 2, 9), "close": 1.0},
+            {"ts_code": "000001.SZ", "date": date(2026, 2, 10), "close": 10.2},
+            {"ts_code": "000002.SZ", "date": date(2026, 2, 10), "close": 20.2},
+            {"ts_code": "000001.SZ", "date": date(2026, 2, 11), "close": 10.4},
         ]
     finally:
         store.close()

@@ -44,6 +44,8 @@ def compute_irs(
     """
     批量计算 IRS 并写入 l3_irs_daily。
     """
+    # IRS 支持按日期局部重建；先清分区，避免行业集合变小时残留旧 rank。
+    store.conn.execute("DELETE FROM l3_irs_daily WHERE date BETWEEN ? AND ?", [start, end])
     industry_df = store.read_df(
         """
         SELECT * FROM l2_industry_daily

@@ -243,3 +243,76 @@ def test_clean_industry_daily_without_sw_mapping_falls_back_to_unknown(tmp_path)
     industry = store.read_df("SELECT industry FROM l2_industry_daily")
     assert industry["industry"].tolist() == ["未知"]
     store.close()
+
+
+def test_clean_stock_adj_daily_clears_stale_rows_in_target_range(tmp_path) -> None:
+    db = tmp_path / "cleaner_stale_range.duckdb"
+    store = Store(db)
+    try:
+        day_before = date(2026, 2, 9)
+        target_day = date(2026, 2, 10)
+        store.bulk_upsert(
+            "l1_trade_calendar",
+            pd.DataFrame(
+                [
+                    {"date": day_before, "is_trade_day": True, "prev_trade_day": None, "next_trade_day": target_day},
+                    {"date": target_day, "is_trade_day": True, "prev_trade_day": day_before, "next_trade_day": None},
+                ]
+            ),
+        )
+        store.bulk_upsert(
+            "l1_stock_daily",
+            pd.DataFrame(
+                [
+                    {
+                        "ts_code": "000001.SZ",
+                        "date": day_before,
+                        "open": 10.0,
+                        "high": 10.2,
+                        "low": 9.8,
+                        "close": 10.1,
+                        "pre_close": 10.0,
+                        "volume": 1000,
+                        "amount": 10000,
+                        "pct_chg": 0.01,
+                        "adj_factor": 1.0,
+                        "is_halt": False,
+                        "up_limit": 11.0,
+                        "down_limit": 9.0,
+                        "total_mv": 1_000_000,
+                        "circ_mv": 900_000,
+                    }
+                ]
+            ),
+        )
+        store.bulk_upsert(
+            "l2_stock_adj_daily",
+            pd.DataFrame(
+                [
+                    {
+                        "code": "999999",
+                        "date": target_day,
+                        "adj_open": 1.0,
+                        "adj_high": 1.0,
+                        "adj_low": 1.0,
+                        "adj_close": 1.0,
+                        "volume": 1.0,
+                        "amount": 1.0,
+                        "pct_chg": 0.0,
+                        "ma5": None,
+                        "ma10": None,
+                        "ma20": None,
+                        "ma60": None,
+                        "volume_ma5": None,
+                        "volume_ma20": None,
+                        "volume_ratio": None,
+                    }
+                ]
+            ),
+        )
+
+        assert clean_stock_adj_daily(store, target_day, target_day) == 0
+        out = store.read_df("SELECT * FROM l2_stock_adj_daily WHERE date = ?", (target_day,))
+        assert out.empty
+    finally:
+        store.close()

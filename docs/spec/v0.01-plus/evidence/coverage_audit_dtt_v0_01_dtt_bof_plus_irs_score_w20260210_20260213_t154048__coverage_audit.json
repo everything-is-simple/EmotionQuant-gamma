@@ -1,0 +1,210 @@
+{
+  "run_id": "coverage_audit_dtt_v0_01_dtt_bof_plus_irs_score_w20260210_20260213_t154048",
+  "db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "raw_db_path": "G:\\EmotionQuant_data\\duckdb\\emotionquant.duckdb",
+  "focus_dates": [
+    "2026-02-10",
+    "2026-02-11",
+    "2026-02-13"
+  ],
+  "context_dates": [
+    "2026-02-09",
+    "2026-02-10",
+    "2026-02-11",
+    "2026-02-13",
+    "2026-02-24"
+  ],
+  "execution_counts": {
+    "2026-02-09": {
+      "l1_stock_daily": 5465,
+      "l2_stock_adj_daily": 5465,
+      "l2_industry_daily": 31,
+      "l3_mss_daily": 1,
+      "l3_irs_daily": 31
+    },
+    "2026-02-10": {
+      "l1_stock_daily": 31,
+      "l2_stock_adj_daily": 31,
+      "l2_industry_daily": 20,
+      "l3_mss_daily": 1,
+      "l3_irs_daily": 0
+    },
+    "2026-02-11": {
+      "l1_stock_daily": 31,
+      "l2_stock_adj_daily": 31,
+      "l2_industry_daily": 20,
+      "l3_mss_daily": 1,
+      "l3_irs_daily": 0
+    },
+    "2026-02-13": {
+      "l1_stock_daily": 31,
+      "l2_stock_adj_daily": 31,
+      "l2_industry_daily": 20,
+      "l3_mss_daily": 1,
+      "l3_irs_daily": 0
+    },
+    "2026-02-24": {
+      "l1_stock_daily": 5474,
+      "l2_stock_adj_daily": 5474,
+      "l2_industry_daily": 31,
+      "l3_mss_daily": 1,
+      "l3_irs_daily": 31
+    }
+  },
+  "raw_counts": {
+    "2026-02-09": {
+      "raw_daily": 5465,
+      "raw_daily_basic": 5465
+    },
+    "2026-02-10": {
+      "raw_daily": 31,
+      "raw_daily_basic": 31
+    },
+    "2026-02-11": {
+      "raw_daily": 31,
+      "raw_daily_basic": 31
+    },
+    "2026-02-13": {
+      "raw_daily": 31,
+      "raw_daily_basic": 31
+    },
+    "2026-02-24": {
+      "raw_daily": 5474,
+      "raw_daily_basic": 5474
+    }
+  },
+  "market_distribution": {
+    "2026-02-10": [
+      {
+        "market": "主板",
+        "stock_count": 30
+      },
+      {
+        "market": "NULL",
+        "stock_count": 1
+      }
+    ],
+    "2026-02-11": [
+      {
+        "market": "主板",
+        "stock_count": 30
+      },
+      {
+        "market": "NULL",
+        "stock_count": 1
+      }
+    ],
+    "2026-02-13": [
+      {
+        "market": "主板",
+        "stock_count": 30
+      },
+      {
+        "market": "NULL",
+        "stock_count": 1
+      }
+    ]
+  },
+  "sample_ts_codes": {
+    "2026-02-10": [
+      "000001.SZ",
+      "000002.SZ",
+      "000003.SZ",
+      "000004.SZ",
+      "000005.SZ",
+      "000006.SZ",
+      "000007.SZ",
+      "000008.SZ",
+      "000009.SZ",
+      "000010.SZ",
+      "000011.SZ",
+      "000012.SZ",
+      "000013.SZ",
+      "000014.SZ",
+      "000015.SZ",
+      "000016.SZ",
+      "000017.SZ",
+      "000018.SZ",
+      "000019.SZ",
+      "000020.SZ",
+      "000021.SZ",
+      "000022.SZ",
+      "000023.SZ",
+      "000024.SZ",
+      "000025.SZ",
+      "000026.SZ",
+      "000027.SZ",
+      "000028.SZ",
+      "000029.SZ",
+      "000030.SZ",
+      "000031.SZ"
+    ],
+    "2026-02-11": [
+      "000001.SZ",
+      "000002.SZ",
+      "000003.SZ",
+      "000004.SZ",
+      "000005.SZ",
+      "000006.SZ",
+      "000007.SZ",
+      "000008.SZ",
+      "000009.SZ",
+      "000010.SZ",
+      "000011.SZ",
+      "000012.SZ",
+      "000013.SZ",
+      "000014.SZ",
+      "000015.SZ",
+      "000016.SZ",
+      "000017.SZ",
+      "000018.SZ",
+      "000019.SZ",
+      "000020.SZ",
+      "000021.SZ",
+      "000022.SZ",
+      "000023.SZ",
+      "000024.SZ",
+      "000025.SZ",
+      "000026.SZ",
+      "000027.SZ",
+      "000028.SZ",
+      "000029.SZ",
+      "000030.SZ",
+      "000031.SZ"
+    ],
+    "2026-02-13": [
+      "000001.SZ",
+      "000002.SZ",
+      "000003.SZ",
+      "000004.SZ",
+      "000005.SZ",
+      "000006.SZ",
+      "000007.SZ",
+      "000008.SZ",
+      "000009.SZ",
+      "000010.SZ",
+      "000011.SZ",
+      "000012.SZ",
+      "000013.SZ",
+      "000014.SZ",
+      "000015.SZ",
+      "000016.SZ",
+      "000017.SZ",
+      "000018.SZ",
+      "000019.SZ",
+      "000020.SZ",
+      "000021.SZ",
+      "000022.SZ",
+      "000023.SZ",
+      "000024.SZ",
+      "000025.SZ",
+      "000026.SZ",
+      "000027.SZ",
+      "000028.SZ",
+      "000029.SZ",
+      "000030.SZ",
+      "000031.SZ"
+    ]
+  },
+  "diagnosis": "异常根因在 raw 源库，不在 Selector。 这几天 raw_daily/raw_daily_basic 仅有 31 行，执行库只是如实镜像；L2 与 IRS 的覆盖坍缩是上游原始日线快照被截断后的连锁结果。"
+}

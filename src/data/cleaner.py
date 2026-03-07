@@ -12,6 +12,11 @@ def ts_code_to_code(ts_code: str) -> str:
     return ts_code.split(".")[0]
 
 
+def _clear_date_range(store: Store, table: str, start: date, end: date, date_col: str = "date") -> None:
+    # 局部重建必须先清目标分区，否则 source 缩小后会残留旧行，破坏幂等。
+    store.conn.execute(f"DELETE FROM {table} WHERE {date_col} BETWEEN ? AND ?", [start, end])
+
+
 def _rolling_on_valid_days(
     df: pd.DataFrame, value_col: str, window: int, halt_col: str = "is_halt"
 ) -> pd.Series:
@@ -30,6 +35,7 @@ def _rolling_on_valid_days(
 
 
 def clean_stock_adj_daily(store: Store, start: date, end: date) -> int:
+    _clear_date_range(store, "l2_stock_adj_daily", start, end)
     lookback_start = start - timedelta(days=180)
     raw = store.read_df(
         """
@@ -131,6 +137,7 @@ def _stock_daily_with_info(store: Store, start: date, end: date) -> pd.DataFrame
 
 
 def clean_industry_daily(store: Store, start: date, end: date) -> int:
+    _clear_date_range(store, "l2_industry_daily", start, end)
     df = _stock_daily_with_info(store, start, end)
     if df.empty:
         return 0
@@ -167,6 +174,7 @@ def _streak_lengths(flag: pd.Series) -> pd.Series:
 
 
 def clean_market_snapshot(store: Store, start: date, end: date) -> int:
+    _clear_date_range(store, "l2_market_snapshot", start, end)
     lookback_start = start - timedelta(days=220)
     df = _stock_daily_with_info(store, lookback_start, end)
     if df.empty:

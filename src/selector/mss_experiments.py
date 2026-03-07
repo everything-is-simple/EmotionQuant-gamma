@@ -170,6 +170,8 @@ def compute_mss_variant(
     bullish_threshold: float = 65.0,
     bearish_threshold: float = 35.0,
 ) -> int:
+    # MSS 支持按日期局部重建；先清分区，避免源数据收缩后保留旧结果。
+    store.conn.execute("DELETE FROM l3_mss_daily WHERE date BETWEEN ? AND ?", [start, end])
     variant = get_mss_variant_spec(variant_label)
     score_df = store.read_df(
         """
