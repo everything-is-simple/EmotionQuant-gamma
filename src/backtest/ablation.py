@@ -1,21 +1,24 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-from datetime import date, datetime
 import json
 import math
-from pathlib import Path
 import shutil
+from dataclasses import asdict, dataclass
+from datetime import date, datetime
+from pathlib import Path
 
 from src.backtest.engine import run_backtest
 from src.config import Settings
 from src.data.builder import build_layers
 from src.data.store import Store
+from src.run_metadata import finish_run, start_run
 
 
 @dataclass(frozen=True)
 class AblationScenario:
     label: str
+    pipeline_mode: str
+    dtt_variant: str
     enable_mss_gate: bool
     enable_irs_filter: bool
     mss_variant: str
@@ -28,6 +31,8 @@ class AblationScenario:
 @dataclass(frozen=True)
 class AblationRunResult:
     label: str
+    pipeline_mode: str
+    dtt_variant: str
     enable_mss_gate: bool
     enable_irs_filter: bool
     mss_variant: str
@@ -35,6 +40,7 @@ class AblationRunResult:
     mss_bullish_threshold: float
     mss_bearish_threshold: float
     irs_top_n: int
+    run_id: str
     trade_days: int
     trade_count: int
     win_rate: float | None
@@ -52,67 +58,75 @@ class AblationRunResult:
     skip_maxpos_count: float | None
     participation_rate: float | None
     signals_count: int
+    ranked_signals_count: int
     trades_count: int
     environment_breakdown: dict[str, dict[str, float | None]]
 
 
-def build_selector_ablation_scenarios(
-    mss_thresholds: list[float] | None = None,
-    bearish_threshold: float = 35.0,
-    gate_modes: list[str] | None = None,
-    irs_top_ns: list[int] | None = None,
-    mss_variants: list[str] | None = None,
-) -> list[AblationScenario]:
-    thresholds = mss_thresholds or [65.0]
-    modes = gate_modes or ["bearish_only"]
-    top_ns = irs_top_ns or [10]
-    variants = mss_variants or ["zscore_weighted6"]
-    scenarios = [
+def build_selector_ablation_scenarios(config: Settings) -> list[AblationScenario]:
+    # 主线矩阵固定为 1 组 legacy 对照 + 3 组 DTT，不再沿用 week2 的阈值扫参模型。
+    return [
         AblationScenario(
-            label="bof_baseline",
+            label="legacy_bof_baseline",
+            pipeline_mode="legacy",
+            dtt_variant="legacy_bof_baseline",
+            enable_mss_gate=True,
+            enable_irs_filter=True,
+            mss_variant=config.mss_variant,
+            mss_gate_mode=config.mss_gate_mode,
+            mss_bullish_threshold=config.mss_bullish_threshold,
+            mss_bearish_threshold=config.mss_bearish_threshold,
+            irs_top_n=config.irs_top_n,
+        ),
+        AblationScenario(
+            label="v0_01_dtt_bof_only",
+            pipeline_mode="dtt",
+            dtt_variant="v0_01_dtt_bof_only",
             enable_mss_gate=False,
             enable_irs_filter=False,
-            mss_variant=variants[0],
-            mss_gate_mode="disabled",
-            mss_bullish_threshold=float(thresholds[-1]),
-            mss_bearish_threshold=float(bearish_threshold),
-            irs_top_n=int(top_ns[0]),
-        )
+            mss_variant=config.mss_variant,
+            mss_gate_mode=config.mss_gate_mode,
+            mss_bullish_threshold=config.mss_bullish_threshold,
+            mss_bearish_threshold=config.mss_bearish_threshold,
+            irs_top_n=config.irs_top_n,
+        ),
+        AblationScenario(
+            label="v0_01_dtt_bof_plus_irs_score",
+            pipeline_mode="dtt",
+            dtt_variant="v0_01_dtt_bof_plus_irs_score",
+            enable_mss_gate=False,
+            enable_irs_filter=False,
+            mss_variant=config.mss_variant,
+            mss_gate_mode=config.mss_gate_mode,
+            mss_bullish_threshold=config.mss_bullish_threshold,
+            mss_bearish_threshold=config.mss_bearish_threshold,
+            irs_top_n=config.irs_top_n,
+        ),
+        AblationScenario(
+            label="v0_01_dtt_bof_plus_irs_mss_score",
+            pipeline_mode="dtt",
+            dtt_variant="v0_01_dtt_bof_plus_irs_mss_score",
+            enable_mss_gate=False,
+            enable_irs_filter=False,
+            mss_variant=config.mss_variant,
+            mss_gate_mode=config.mss_gate_mode,
+            mss_bullish_threshold=config.mss_bullish_threshold,
+            mss_bearish_threshold=config.mss_bearish_threshold,
+            irs_top_n=config.irs_top_n,
+        ),
     ]
-    for threshold in thresholds:
-        threshold_label = int(threshold) if float(threshold).is_integer() else threshold
-        for variant in variants:
-            for mode in modes:
-                scenarios.append(
-                    AblationScenario(
-                        label=f"bof_plus_mss_{variant}_{mode}_t{threshold_label}",
-                        enable_mss_gate=True,
-                        enable_irs_filter=False,
-                        mss_variant=variant,
-                        mss_gate_mode=mode,
-                        mss_bullish_threshold=float(threshold),
-                        mss_bearish_threshold=float(bearish_threshold),
-                        irs_top_n=int(top_ns[0]),
-                    )
-                )
-                for top_n in top_ns:
-                    scenarios.append(
-                        AblationScenario(
-                            label=f"bof_plus_mss_plus_irs_{variant}_{mode}_t{threshold_label}_top{int(top_n)}",
-                            enable_mss_gate=True,
-                            enable_irs_filter=True,
-                            mss_variant=variant,
-                            mss_gate_mode=mode,
-                            mss_bullish_threshold=float(threshold),
-                            mss_bearish_threshold=float(bearish_threshold),
-                            irs_top_n=int(top_n),
-                        )
-                    )
-    return scenarios
 
 
 def clear_runtime_tables(store: Store) -> None:
-    for table in ("l4_pattern_stats", "l4_daily_report", "l4_trades", "l4_orders", "l4_stock_trust", "l3_signals"):
+    for table in (
+        "l4_pattern_stats",
+        "l4_daily_report",
+        "l4_trades",
+        "l4_orders",
+        "l4_stock_trust",
+        "l3_signals",
+        "l3_signal_rank_exp",
+    ):
         store.conn.execute(f"DELETE FROM {table}")
 
 
@@ -125,10 +139,17 @@ def _finite_or_none(value: float | int | None) -> float | None:
     return cast
 
 
-def _snapshot_ablation_metrics(store: Store, start: date, end: date) -> tuple[int, int]:
+def _snapshot_ablation_metrics(store: Store, start: date, end: date) -> tuple[int, int, int]:
     signals_count = int(
         store.read_scalar(
             "SELECT COUNT(*) FROM l3_signals WHERE signal_date BETWEEN ? AND ?",
+            (start, end),
+        )
+        or 0
+    )
+    ranked_signals_count = int(
+        store.read_scalar(
+            "SELECT COUNT(*) FROM l3_signal_rank_exp WHERE signal_date BETWEEN ? AND ?",
             (start, end),
         )
         or 0
@@ -140,7 +161,7 @@ def _snapshot_ablation_metrics(store: Store, start: date, end: date) -> tuple[in
         )
         or 0
     )
-    return signals_count, trades_count
+    return signals_count, ranked_signals_count, trades_count
 
 
 def _normalize_environment_breakdown(
@@ -177,48 +198,33 @@ def run_selector_ablation(
     initial_cash: float | None = None,
     rebuild_l3: bool = True,
     working_db_path: str | Path | None = None,
-    mss_thresholds: list[float] | None = None,
-    mss_gate_modes: list[str] | None = None,
-    irs_top_ns: list[int] | None = None,
-    mss_variants: list[str] | None = None,
+    artifact_root: str | Path | None = None,
 ) -> dict:
     source_db = Path(db_path).expanduser().resolve()
-    db_file = (
-        prepare_working_db(source_db, working_db_path)
-        if working_db_path is not None
-        else source_db
-    )
+    db_file = prepare_working_db(source_db, working_db_path) if working_db_path is not None else source_db
+    scenarios = build_selector_ablation_scenarios(config)
+    artifact_root_path = Path(artifact_root).expanduser().resolve() if artifact_root is not None else db_file.parent
+    artifact_root_path.mkdir(parents=True, exist_ok=True)
 
-    scenarios = build_selector_ablation_scenarios(
-        mss_thresholds=mss_thresholds or [config.mss_bullish_threshold],
-        bearish_threshold=config.mss_bearish_threshold,
-        gate_modes=mss_gate_modes or [config.mss_gate_mode],
-        irs_top_ns=irs_top_ns or [config.irs_top_n],
-        mss_variants=mss_variants or [config.mss_variant],
-    )
-    runs: list[AblationRunResult] = []
-    built_thresholds: set[tuple[str, float, float]] = set()
-    for scenario in scenarios:
-        threshold_key = (scenario.mss_variant, scenario.mss_bullish_threshold, scenario.mss_bearish_threshold)
-        if rebuild_l3 and scenario.enable_mss_gate and threshold_key not in built_thresholds:
-            cfg_l3 = config.model_copy(deep=True)
-            cfg_l3.mss_variant = scenario.mss_variant
-            cfg_l3.mss_bullish_threshold = scenario.mss_bullish_threshold
-            cfg_l3.mss_bearish_threshold = scenario.mss_bearish_threshold
-            store = Store(db_file)
-            try:
-                build_layers(store, cfg_l3, layers=["l3"], start=start, end=end, force=True)
-            finally:
-                store.close()
-            built_thresholds.add(threshold_key)
-
-        clr = Store(db_file)
+    if rebuild_l3:
+        build_store = Store(db_file)
         try:
-            clear_runtime_tables(clr)
+            build_layers(build_store, config, layers=["l3"], start=start, end=end, force=True)
         finally:
-            clr.close()
+            build_store.close()
+
+    runs: list[AblationRunResult] = []
+    for scenario in scenarios:
+        clear_store = Store(db_file)
+        try:
+            clear_runtime_tables(clear_store)
+        finally:
+            clear_store.close()
 
         cfg = config.model_copy(deep=True)
+        cfg.pipeline_mode = scenario.pipeline_mode
+        cfg.enable_dtt_mode = scenario.pipeline_mode == "dtt"
+        cfg.dtt_variant = scenario.dtt_variant
         cfg.enable_mss_gate = scenario.enable_mss_gate
         cfg.enable_irs_filter = scenario.enable_irs_filter
         cfg.mss_variant = scenario.mss_variant
@@ -227,24 +233,54 @@ def run_selector_ablation(
         cfg.mss_bearish_threshold = scenario.mss_bearish_threshold
         cfg.irs_top_n = scenario.irs_top_n
 
-        result = run_backtest(
-            db_path=db_file,
+        meta_store = Store(db_file)
+        run = start_run(
+            store=meta_store,
+            scope="matrix",
+            modules=["backtest", "selector", "strategy", "broker", "report"],
             config=cfg,
+            runtime_env="script",
+            artifact_root=str(artifact_root_path),
             start=start,
             end=end,
-            patterns=patterns,
-            initial_cash=initial_cash,
         )
+        meta_store.close()
+
+        try:
+            # 每个 scenario 独立生成 run_id，便于把 sidecar 和证据文件一一追回到矩阵项。
+            result = run_backtest(
+                db_path=db_file,
+                config=cfg,
+                start=start,
+                end=end,
+                patterns=patterns,
+                initial_cash=initial_cash,
+                run_id=run.run_id,
+            )
+            finish_store = Store(db_file)
+            try:
+                finish_run(finish_store, run.run_id, "SUCCESS")
+            finally:
+                finish_store.close()
+        except Exception as exc:
+            finish_store = Store(db_file)
+            try:
+                finish_run(finish_store, run.run_id, "FAILED", str(exc))
+            finally:
+                finish_store.close()
+            raise
 
         snap = Store(db_file)
         try:
-            signals_count, trades_count = _snapshot_ablation_metrics(snap, start, end)
+            signals_count, ranked_signals_count, trades_count = _snapshot_ablation_metrics(snap, start, end)
         finally:
             snap.close()
 
         runs.append(
             AblationRunResult(
                 label=scenario.label,
+                pipeline_mode=scenario.pipeline_mode,
+                dtt_variant=scenario.dtt_variant,
                 enable_mss_gate=scenario.enable_mss_gate,
                 enable_irs_filter=scenario.enable_irs_filter,
                 mss_variant=scenario.mss_variant,
@@ -252,6 +288,7 @@ def run_selector_ablation(
                 mss_bullish_threshold=scenario.mss_bullish_threshold,
                 mss_bearish_threshold=scenario.mss_bearish_threshold,
                 irs_top_n=scenario.irs_top_n,
+                run_id=run.run_id,
                 trade_days=result.trade_days,
                 trade_count=result.trade_count,
                 win_rate=_finite_or_none(result.win_rate),
@@ -269,6 +306,7 @@ def run_selector_ablation(
                 skip_maxpos_count=_finite_or_none(result.skip_maxpos_count),
                 participation_rate=_finite_or_none(result.participation_rate),
                 signals_count=signals_count,
+                ranked_signals_count=ranked_signals_count,
                 trades_count=trades_count,
                 environment_breakdown=_normalize_environment_breakdown(result.environment_breakdown),
             )
@@ -278,15 +316,11 @@ def run_selector_ablation(
         "generated_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
         "source_db_path": str(source_db),
         "db_path": str(db_file),
+        "artifact_root": str(artifact_root_path),
         "start": start.isoformat(),
         "end": end.isoformat(),
         "patterns": patterns or ["bof"],
         "initial_cash": float(initial_cash if initial_cash is not None else config.backtest_initial_cash),
-        "mss_thresholds": [float(value) for value in (mss_thresholds or [config.mss_bullish_threshold])],
-        "mss_bearish_threshold": float(config.mss_bearish_threshold),
-        "mss_variants": list(mss_variants or [config.mss_variant]),
-        "mss_gate_modes": list(mss_gate_modes or [config.mss_gate_mode]),
-        "irs_top_ns": [int(value) for value in (irs_top_ns or [config.irs_top_n])],
         "runs": [asdict(run) for run in runs],
     }
 

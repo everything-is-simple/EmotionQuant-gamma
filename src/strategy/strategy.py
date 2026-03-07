@@ -7,6 +7,7 @@ import pandas as pd
 from src.config import Settings, get_settings
 from src.contracts import Signal, StockCandidate
 from src.data.store import Store
+from src.strategy.ranker import build_dtt_rank_frame, materialize_ranked_signals
 from src.strategy.registry import get_active_detectors
 
 
@@ -61,6 +62,7 @@ def generate_signals(
     candidates: list[StockCandidate],
     asof_date: date,
     config: Settings | None = None,
+    run_id: str | None = None,
 ) -> list[Signal]:
     cfg = config or get_settings()
     detectors = get_active_detectors(cfg)
@@ -78,8 +80,39 @@ def generate_signals(
                 all_signals.append(signal)
 
     merged = _combine_signals(all_signals, len(detectors), cfg.pas_combination)
-    if merged:
-        rows = pd.DataFrame([s.model_dump() for s in merged])
-        # 信号表必须 upsert：同 signal_id 重跑覆盖，不允许重复累积。
+    if not merged:
+        return []
+
+    prepared = [
+        signal
+        if signal.bof_strength is not None
+        else signal.model_copy(update={"bof_strength": float(signal.strength)})
+        for signal in merged
+    ]
+
+    if not cfg.use_dtt_pipeline:
+        # legacy 对照链继续沿用旧 formal schema，只做 BOF 输出。
+        rows = pd.DataFrame([signal.to_formal_signal_row() for signal in prepared])
         store.bulk_upsert("l3_signals", rows)
-    return merged
+        return prepared
+
+    if run_id is None or not run_id.strip():
+        raise ValueError("DTT pipeline requires run_id for l3_signal_rank_exp traceability.")
+
+    # DTT 主线先写 sidecar 真相源，再把入选 Top-N 的正式信号写回 l3_signals。
+    rank_frame = build_dtt_rank_frame(
+        store=store,
+        signals=prepared,
+        candidates=candidates,
+        asof_date=asof_date,
+        run_id=run_id.strip(),
+        config=cfg,
+    )
+    if not rank_frame.empty:
+        store.bulk_upsert("l3_signal_rank_exp", rank_frame)
+
+    selected = materialize_ranked_signals(prepared, rank_frame)
+    if selected:
+        rows = pd.DataFrame([signal.to_formal_signal_row() for signal in selected])
+        store.bulk_upsert("l3_signals", rows)
+    return selected

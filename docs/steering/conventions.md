@@ -1,5 +1,18 @@
 # 编码规范
 
+**版本**: `v0.01 正式版`  
+**状态**: `Frozen`  
+**封版日期**: `2026-03-03`  
+**变更规则**: `仅允许勘误、链接修复与说明性澄清；若治理口径调整，必须先修订上游 baseline。`  
+**上游文档**: `docs/design-v2/01-system/system-baseline.md`
+
+## 冻结区与冲突处理
+
+1. 本文档属于冻结区；默认只允许勘误、链接修复与说明性澄清。若涉及执行语义、模块边界或口径调整，必须进入后续版本处理。
+2. 若本文档与 `docs/design-v2/01-system/system-baseline.md` 冲突，以 baseline 为准，并应同步回写本文档。
+3. 当前治理状态与是否恢复实现，以 `docs/spec/common/records/development-status.md` 为准。
+4. 版本证据、回归结果与阶段记录，统一归档到 `docs/spec/<version>/`。
+
 ## Python 版本
 ≥ 3.10（使用 `X | Y` 联合类型语法）
 
@@ -105,3 +118,8 @@ def safe_ratio(numerator, denominator, default=0.0):
 | 触发记录标识 | `trigger_id` | `bof_000001_20260302` |
 | 形态大类 | `setup_type` | `range_bof` |
 | 环境标签 | `env_regime` | `bull / sideways / bear` |
+
+
+
+
+

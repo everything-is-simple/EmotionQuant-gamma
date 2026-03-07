@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import json
 from collections import deque
 from datetime import date
-import json
 
 import pandas as pd
 

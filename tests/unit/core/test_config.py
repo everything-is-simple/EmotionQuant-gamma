@@ -29,3 +29,11 @@ def test_default_mss_gate_mode_and_soft_gate_limit() -> None:
     assert cfg.mss_variant == "zscore_weighted6"
     assert cfg.mss_gate_mode == "bearish_only"
     assert cfg.mss_soft_gate_candidate_top_n == 30
+
+
+def test_default_pipeline_mode_uses_dtt_mainline() -> None:
+    cfg = Settings()
+    assert cfg.use_dtt_pipeline is True
+    assert cfg.pipeline_mode_normalized == "dtt"
+    assert cfg.dtt_variant == "v0_01_dtt_bof_plus_irs_score"
+    assert cfg.dtt_top_n == 50

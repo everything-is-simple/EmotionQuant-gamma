@@ -1,65 +1,37 @@
-# 参考资料目录
+# Reference（参考资料）
 
-本目录存放外部参考资料、规则说明、操作指南等非执行口径的文档。
+## 定位
 
-## 📂 目录结构
+`docs/reference/` 存放外部规则摘录、运维参考与辅助说明材料。
 
-```
-reference/
-├── a-stock-rules/              # A股市场规则参考
-│   ├── A股市场交易规则-tushare版.md
-│   ├── A股涨跌停板制度-tushare版.md
-│   ├── A股申万行业指数-tushare版.md
-│   └── README.md
-├── operations/                 # 运维操作指南
-│   ├── temp-files-guide.md
-│   └── README.md
-└── README.md                   # 本文件
-```
+这里回答的是“有哪些外部资料可供查阅”，不是“当前系统必须怎么执行”。系统执行口径仍以 `docs/design-v2/01-system/system-baseline.md` 为准，当前治理状态以 `docs/spec/common/records/development-status.md` 为准。
 
-## 📋 分类说明
+## 当前入口
 
-### 1. `a-stock-rules/` - A股市场规则
+| 类型 | 路径 | 用途 |
+|---|---|---|
+| A 股规则参考 | `a-stock-rules/README.md` | 查询交易制度、涨跌停与行业分类参考 |
+| 运维参考 | `operations/README.md` | 查询临时文件、环境清理与提交前检查参考 |
+| 执行 SoT | `docs/design-v2/01-system/system-baseline.md` | 遇到执行口径问题时回到权威入口 |
 
-存放 A 股市场相关的交易规则、制度说明和行业分类标准：
+## 使用规则
 
-- 交易时间、涨跌幅限制、停牌规则
-- 涨跌停板制度（主板/科创板/创业板）
-- 申万行业分类标准（一级/二级/三级）
+1. `reference/` 只提供查阅材料，不直接充当设计 SoT、当前状态入口或版本归档入口。
+2. 仓库内执行边界、模块契约与固定流程，以 `docs/design-v2/`、`docs/steering/`、`docs/workflow/` 为准。
+3. 当前状态、治理结论与重启条件，以 `docs/spec/common/records/development-status.md` 为准。
+4. 版本路线图、证据、runbook、发布记录统一进入 `docs/spec/<version>/`，不回堆到 `reference/`。
+5. 若参考摘录与交易所或数据源官方最新规则冲突，应以官方规则为准，并回写设计/治理文档修正仓库口径。
 
-**使用场景**：
-- 开发交易逻辑时查阅规则
-- 测试验证代码符合 A 股规则
-- IRS 模块行业轮动分析
+## 相邻目录边界
 
-### 2. `operations/` - 运维操作指南
+- `docs/design-v2/`：定义系统设计与执行语义。
+- `docs/steering/`：定义不可变约束与治理快照。
+- `docs/operations/`：存放仓库本地运维文档与敏感配置模板说明。
+- `docs/spec/`：存放分版本路线图、证据与历史记录。
 
-存放系统运维、开发环境管理相关的操作指南：
+## 相关文档
 
-- 临时文件管理（缓存、配置、产物）
-- 清理策略与最佳实践
-- 环境检查与问题排查
-
-**使用场景**：
-- 定期清理临时文件
-- 提交前检查
-- 问题排查
-
-## 🎯 文档定位
-
-- **参考资料**：非执行口径，仅供查阅
-- **执行口径**：见 `docs/design-v2/` 和 `docs/steering/`
-- **工作流程**：见 `docs/workflow/`
-
-## ⚠️ 注意事项
-
-1. **时效性**：参考资料可能过时，需定期更新
-2. **优先级**：如有冲突，以官方规则或系统设计文档为准
-3. **用途**：仅作参考，不作为系统实现的唯一依据
-
-## 📚 相关文档
-
-- 系统设计：`docs/design-v2/`
-- 治理铁律：`docs/steering/`
-- 工作流程：`docs/workflow/`
-- 分阶段归档：`docs/spec/`
+- `docs/design-v2/01-system/system-baseline.md`
+- `docs/spec/common/records/development-status.md`
+- `docs/reference/a-stock-rules/README.md`
+- `docs/reference/operations/README.md`

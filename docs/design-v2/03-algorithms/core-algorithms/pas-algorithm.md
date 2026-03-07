@@ -1,12 +1,13 @@
 # PAS 算法设计
 
-**版本**: v0.01 正式版  
-**创建日期**: 2026-03-06  
-**最后更新**: 2026-03-07  
-**状态**: Active（算法级 SoT，执行语义仍受 `system-baseline.md` 冻结约束）  
-**变更规则**: 允许在不改变 v0.01 执行语义前提下，对形态检测器框架与算法细案做受控纠偏。  
+**版本**: `v0.01 正式版`  
+**状态**: `Active`（算法级 SoT，执行语义仍受 `system-baseline.md` 冻结约束）  
+**封版日期**: `不适用（Active SoT）`  
+**变更规则**: `允许在不改变 v0.01 执行语义前提下，对形态检测器框架与算法细案做受控纠偏。`  
+**上游文档**: `docs/design-v2/01-system/system-baseline.md`, `docs/design-v2/02-modules/strategy-design.md`, `docs/design-v2/01-system/architecture-master.md`  
+**创建日期**: `2026-03-06`  
+**最后更新**: `2026-03-07`  
 **对应模块**: `src/strategy/pattern_base.py`, `src/strategy/pas_bof.py`, `src/strategy/registry.py`, `src/strategy/strategy.py`  
-**上游文档**: `system-baseline.md`, `strategy-design.md`, `architecture-master.md`  
 **理论来源**: `docs/Strategy/PAS/`
 
 ---
@@ -463,6 +464,7 @@ PAS 的主问题不是架构，而是版本范围。
 2. `docs/Strategy/PAS/xu-jiachong-naked-kline-analysis.md` - BOF 详细实现
 3. `docs/Strategy/PAS/volman-ytc-mapping.md` - 形态映射关系
 4. `docs/Strategy/PAS/tachibana-yoshimasa-analysis.md` - 极端情况处理
-5. `docs/design-v2/system-baseline.md` - 执行语义
-6. `docs/design-v2/strategy-design.md` - Strategy 模块设计
-7. `docs/design-v2/down-to-top-integration.md` - v0.02 软评分模式
+5. `docs/design-v2/01-system/system-baseline.md` - 执行语义
+6. `docs/design-v2/02-modules/strategy-design.md` - Strategy 模块设计
+7. `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` - v0.02 软评分模式
+

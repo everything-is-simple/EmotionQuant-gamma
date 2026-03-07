@@ -1,7 +1,7 @@
 # EmotionQuant / 低频量化项目：上帝之眼八大视角评审报告（v0.01 附录）
 
 > **文档定位**: 研究附录（非强制执行条款）
-> **从属基线**: `docs/design-v2/system-baseline.md`（Frozen）
+> **从属基线**: `docs/design-v2/01-system/system-baseline.md`（Frozen）
 > **冲突规则**: 本文与冻结基线冲突时，以基线为准（与 `system-baseline.md` §8.2 一致）
 > **纳入执行口径的前提**: 各视角仅在对应版本评审通过后纳入执行口径
 

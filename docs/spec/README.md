@@ -1,11 +1,27 @@
 # Spec 文档入口（统一规则）
 
+## 定位
+
+`docs/spec/` 是分版本路线图、证据、records 与治理归档的统一入口。
+
+这里回答的是“每个版本的材料放在哪里、当前状态怎么看”，不是“系统设计本身怎么定义”。`docs/design-v2/01-system/system-baseline.md` 继续作为 `v0.01 Frozen` 的历史基线；`docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` 作为 `v0.01-plus` 当前主开发线的设计入口；当前治理状态与重启条件以 `docs/spec/common/records/development-status.md` 为准。
+
+## 当前入口
+
+| 类型 | 路径 | 用途 |
+|---|---|---|
+| 当前状态 | `docs/spec/common/records/development-status.md` | 查看当前治理阶段、历史摘要与重启条件 |
+| 跨版本治理 | `docs/spec/common/README.md` | 查看 common 层的 records 与冻结清单 |
+| v0.01 | `docs/spec/v0.01/README.md` | 查看冻结版本材料与历史证据 |
+| v0.01-plus | `docs/spec/v0.01-plus/README.md` | 查看当前主开发线的 DTT 路线、Gate 与契约补充 |
+| 后续版本 | `docs/spec/v0.02/README.md` ~ `docs/spec/v0.06/README.md` | 查看规划阶段路线图与实现卡 |
+
 ## 存放规则
 
-1. `docs/spec/` 是全量归档目录：存放所有版本（v0.01+）阶段性材料。
-2. 每个版本使用独立子目录：`docs/spec/<version>/`。
-3. 跨版本文件放在 `docs/spec/common/`。
-4. 每个阶段目录可包含：路线图、实现卡、勘误、runbook、发布记录、评审证据等。
+1. `docs/spec/<version>/` 存放单版本路线图、治理、证据与 records。
+2. `docs/spec/common/` 存放跨版本治理记录与共用清单。
+3. 一次性桥接审计、瘦身审计等历史材料保留追溯价值，但不作为当前主入口。
+4. 版本材料与系统设计冲突时，以 `docs/design-v2/01-system/system-baseline.md` 为准。
 
 ## 当前版本映射
 
@@ -16,17 +32,17 @@
   - `v0.01/roadmap/v0.01-mvp-spec-03-strategy.md`
   - `v0.01/roadmap/v0.01-mvp-spec-04-broker.md`
   - `v0.01/roadmap/v0.01-mvp-spec-05-backtest-report.md`
-  - `v0.01/roadmap/v0.01-implementation-card-template.md`
   - `v0.01/governance/v0.01-boundary-deterministic-rules.md`
   - `v0.01/governance/v0.01-data-contract-table.md`
   - `v0.01/governance/v0.01-gate-checklist.md`
-  - `v0.01/evidence/v0.01-bof-baseline-evidence-20260305.md`（历史 GO 基线）
-  - `v0.01/evidence/v0.01-selector-ablation-mss-fullcycle-ab-20260306.json`（当前代码路径 full-cycle 对照）
-  - `v0.01/evidence/v0.01-g6-asof-evidence-20260305.md`
-  - `v0.01/records/data-rebuild-runbook-20260303.md`
-  - `v0.01/records/rebuild-v0.01-errata-20260304.md`
-  - `v0.01/records/release-v0.01-formal.md`
-  - `v0.01/records/cleanup-candidates-20260306.md`
+  - `v0.01/evidence/`
+  - `v0.01/records/`
+- v0.01-plus
+  - `v0.01-plus/README.md`
+  - `v0.01-plus/roadmap/v0.01-plus-roadmap.md`
+  - `v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`
+  - `v0.01-plus/governance/v0.01-plus-gate-checklist.md`
+  - `v0.01-plus/governance/v0.01-plus-data-contract-table.md`
 - v0.02
   - `v0.02/roadmap/v0.02-multi-pattern.md`
   - `v0.02/roadmap/v0.02-multi-pattern-spec-01-selector-strategy.md`
@@ -43,9 +59,13 @@
   - `v0.06/roadmap/v0.06-portfolio.md`
   - `v0.06/roadmap/v0.06-portfolio-spec-01-portfolio-layer.md`
 - common
-  - `common/v0.02-v0.06-freeze-min-checklist.md`
-  - `common/bridge-review-20260304.md`
   - `common/records/development-status.md`
   - `common/records/debts.md`
   - `common/records/reusable-assets.md`
+  - `common/records/authority-entry-audit-20260307.md`
 
+## 相关文档
+
+- `docs/design-v2/01-system/system-baseline.md`
+- `docs/spec/common/records/development-status.md`
+- `docs/README.md`

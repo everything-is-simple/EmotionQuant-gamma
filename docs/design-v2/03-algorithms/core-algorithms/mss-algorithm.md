@@ -1,12 +1,13 @@
 # MSS 算法设计
 
-**版本**: v0.01 正式版  
-**创建日期**: 2026-03-06  
-**最后更新**: 2026-03-07  
-**状态**: Active（算法级 SoT，执行语义仍受 `system-baseline.md` 冻结约束）  
-**变更规则**: 允许在不改变 v0.01 执行语义前提下，对算法细案、baseline 口径与证据回写做受控纠偏。  
+**版本**: `v0.01 正式版`  
+**状态**: `Active`（算法级 SoT，执行语义仍受 `system-baseline.md` 冻结约束）  
+**封版日期**: `不适用（Active SoT）`  
+**变更规则**: `允许在不改变 v0.01 执行语义前提下，对算法细案、baseline 口径与证据回写做受控纠偏。`  
+**上游文档**: `docs/design-v2/01-system/system-baseline.md`, `docs/design-v2/02-modules/selector-design.md`, `docs/design-v2/01-system/architecture-master.md`  
+**创建日期**: `2026-03-06`  
+**最后更新**: `2026-03-07`  
 **对应模块**: `src/selector/mss.py`, `src/selector/baseline.py`, `src/selector/normalize.py`  
-**上游文档**: `system-baseline.md`, `selector-design.md`, `architecture-master.md`  
 **理论来源**: `docs/Strategy/MSS/`
 
 ---
@@ -359,6 +360,7 @@ MSS 在 v0.01 的正式定义应为：
 
 1. `docs/Strategy/MSS/market-sentiment-system-2024-analysis.md` - 理论框架
 2. `docs/Strategy/MSS/manual-sentiment-tracking-experience.md` - 实践经验
-3. `docs/design-v2/system-baseline.md` - 执行语义
-4. `docs/design-v2/down-to-top-integration.md` - v0.02 软评分模式
+3. `docs/design-v2/01-system/system-baseline.md` - 执行语义
+4. `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` - v0.02 软评分模式
 5. `docs/spec/v0.01/evidence/v0.01-evidence-review-20260306.md` - 消融证据
+

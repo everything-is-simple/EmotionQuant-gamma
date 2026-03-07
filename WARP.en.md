@@ -12,8 +12,10 @@ This file provides minimal, executable repository rules for automated agents. Co
 ## 1. Document Positioning
 
 - Purpose: minimal, executable repository rules for automated agents.
-- **Authoritative design entry**: `docs/design-v2/system-baseline.md` (rebuild design document, single source of truth)
+- **v0.01 historical baseline entry**: `docs/design-v2/01-system/system-baseline.md` (frozen system baseline)
+- **Current mainline entry**: `docs/spec/v0.01-plus/README.md` (replacement line; design entry is `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`)
 - Stage documents are archived under `docs/spec/`; reference materials are under `docs/reference/`
+- **Current governance status**: `docs/spec/common/records/development-status.md` (current state, historical summary, and restart gates)
 
 ---
 
@@ -40,7 +42,7 @@ EmotionQuant is a sentiment-driven quantitative system for China A-shares.
 9. **No hardcoded paths/secrets** — all injected via config.py.
 10. **Execution semantics fixed to T+1 Open**: signal_date=T, execute_date=T+1, fill price=T+1 Open.
 
-Details: `docs/design-v2/system-baseline.md` (current version is authoritative).
+Details: `docs/design-v2/01-system/system-baseline.md` (current version is authoritative).
 
 ---
 
@@ -64,7 +66,7 @@ Inter-module data passed as pydantic objects (contracts.py):
 Code in English, comments/docs/UI in Chinese. Uniform `snake_case`.
 L1 layer uses `ts_code` (TuShare format), L2+ layers use `code` (6-digit pure code).
 
-Details: `docs/design-v2/system-baseline.md` (result-contract section).
+Details: `docs/design-v2/01-system/system-baseline.md` (result-contract section).
 
 ---
 
@@ -81,7 +83,7 @@ DuckDB single-database storage, decoupled via L1-L4 layers. Data root injected v
 
 **Dependency rule**: L2 reads only L1; L3 reads only L1/L2; L4 reads only L1/L2/L3. Reverse dependencies forbidden.
 
-Details: `docs/design-v2/system-baseline.md` (data and boundary sections).
+Details: `docs/design-v2/01-system/system-baseline.md` (data and boundary sections).
 
 ---
 
@@ -104,14 +106,14 @@ Details: `docs/design-v2/system-baseline.md` (data and boundary sections).
 
 | Directory | Role |
 |-----------|------|
-| `docs/design-v2/` | System-level design documents (system-baseline.md is sole authoritative entry) |
+| `docs/design-v2/` | System-level design documents (`system-baseline.md` is the `v0.01 Frozen` historical baseline; `v0.01-plus` design entry is `down-to-top-integration.md`) |
 | `docs/spec/` | Single-track stage documentation entry (v0.01+; versioned into roadmap/governance/evidence/records) |
 | `docs/spec/common/records/` | Cross-version governance records (development-status / debts / reusable-assets) |
 | `docs/reference/` | Reference and external methodology materials (non-execution source) |
 
 ### 8.2 Single Source of Truth (SoT)
 
-`docs/design-v2/system-baseline.md` is the sole authoritative design document (current version/sections prevail).
+`docs/design-v2/01-system/system-baseline.md` is the historical authoritative file for `v0.01 Frozen`; the current mainline follows `docs/spec/v0.01-plus/README.md` and `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`.
 
 ### 8.3 Archive Rules
 
@@ -140,7 +142,7 @@ Details: `docs/design-v2/system-baseline.md` (data and boundary sections).
 - Each raw observation belongs to exactly one factor — no cross-factor double counting
 - Modules only pass "result contracts" (pydantic objects) — no internal intermediate features
 
-Details: `docs/design-v2/system-baseline.md` (iron laws, module boundaries, trigger sections).
+Details: `docs/design-v2/01-system/system-baseline.md` (iron laws, module boundaries, trigger sections).
 
 ---
 
@@ -152,7 +154,7 @@ Details: `docs/design-v2/system-baseline.md` (iron laws, module boundaries, trig
 - Backtesting: backtrader single engine (clock/data-feed only, trading kernel is in-house Broker)
 - GUI: CLI only for MVP, GUI deferred
 
-Details: `docs/design-v2/system-baseline.md` (current version).
+Details: `docs/design-v2/01-system/system-baseline.md` (current version).
 
 ---
 
@@ -166,7 +168,8 @@ Details: `docs/design-v2/system-baseline.md` (current version).
 
 ## 13. Historical Notes
 
-System baseline authoritative entry: `docs/design-v2/system-baseline.md`
+v0.01 historical baseline entry: `docs/design-v2/01-system/system-baseline.md`
+Current mainline entry: `docs/spec/v0.01-plus/README.md`
 Single-track stage docs entry: `docs/spec/`
 Cross-version governance records: `docs/spec/common/records/`
 Active execution entry: `docs/spec/`
@@ -176,7 +179,7 @@ Reference materials: `docs/reference/`
 
 ## 14. Execution Plan
 
-Current execution plan: see `docs/design-v2/system-baseline.md` (current version).
+Current execution plan: see `docs/spec/v0.01-plus/README.md` and `docs/spec/common/records/development-status.md`; the `v0.01` historical execution plan remains in `docs/design-v2/01-system/system-baseline.md`.
 
 ## 15. Git Auth Baseline
 
@@ -233,3 +236,4 @@ Bootstrap:
 2. Classify by domain: `scripts/data/`, `scripts/backtest/`, `scripts/report/`, `scripts/ops/`, etc.
 3. Tools under `scripts/` must not become runtime dependencies for `src/`
 4. New tools must be placed in the matching category folder, never at repository root
+

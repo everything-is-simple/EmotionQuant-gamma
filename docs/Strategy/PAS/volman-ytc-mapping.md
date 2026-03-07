@@ -880,7 +880,7 @@ def generate_adverse_condition_warnings(positions, market_data):
    - 卷4：资金管理
 
 3. **EmotionQuant-gamma 设计文档**:
-   - `docs/design-v2/architecture-master.md` §4.3 PAS模块
+   - `docs/design-v2/01-system/architecture-master.md` §4.3 PAS模块
    - `plans/7f7d1b26-e7b6-444d-a6f2-607720c2488c` PAS+Strategy实现计划
 
 ---

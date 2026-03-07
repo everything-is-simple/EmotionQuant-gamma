@@ -203,8 +203,8 @@
 
 证据入口：
 
-1. `docs/design-v2/system-baseline.md` §9（A-S 偏差闭环）
-2. `docs/design-v2/architecture-master.md` / `broker-design.md` / `data-layer-design.md` 对齐记录
+1. `docs/design-v2/01-system/system-baseline.md` §9（A-S 偏差闭环）
+2. `docs/design-v2/01-system/architecture-master.md` / `broker-design.md` / `data-layer-design.md` 对齐记录
 
 ---
 
@@ -212,7 +212,7 @@
 
 本标准文件固定放置于：
 
-`docs/design-v2/sandbox-review-standard.md`
+`docs/observatory/sandbox-review-standard.md`
 
 职责边界：
 

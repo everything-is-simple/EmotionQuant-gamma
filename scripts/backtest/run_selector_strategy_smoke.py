@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import argparse
-from datetime import date, datetime
 import json
-from pathlib import Path
 import sys
+from datetime import date, datetime
+from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -15,6 +15,7 @@ from src.config import get_settings
 from src.contracts import StockCandidate
 from src.data.builder import build_layers
 from src.data.store import Store
+from src.run_metadata import build_artifact_name, finish_run, start_run
 from src.selector.selector import select_candidates_frame
 from src.strategy.strategy import generate_signals
 
@@ -35,7 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output",
         default=None,
-        help="Output JSON path, default docs/spec/v0.01/evidence/v0.01-selector-strategy-smoke-YYYYMMDD.json",
+        help="Output JSON path, default docs/spec/v0.01-plus/evidence/<run_id>__selector_strategy_smoke.json",
     )
     return parser
 
@@ -48,28 +49,46 @@ def main() -> int:
     working_db_path = (
         Path(args.working_db_path).expanduser().resolve()
         if args.working_db_path
-        else REPO_ROOT / ".tmp" / "backtest" / f"selector-strategy-smoke-{date.today():%Y%m%d}.duckdb"
+        else cfg.resolved_temp_path / "backtest" / f"selector-strategy-smoke-{date.today():%Y%m%d}.duckdb"
     )
     db_path = prepare_working_db(source_db_path, working_db_path)
+
+    store = Store(db_path)
+    output_root = REPO_ROOT / "docs" / "spec" / "v0.01-plus" / "evidence"
+    run = start_run(
+        store=store,
+        scope="smoke",
+        modules=["selector", "strategy"],
+        config=cfg,
+        runtime_env="script",
+        artifact_root=str(output_root.resolve()),
+        signal_date=calc_date,
+    )
     output_path = (
         Path(args.output).expanduser().resolve()
         if args.output
-        else REPO_ROOT / "docs" / "spec" / "v0.01" / "evidence" / f"v0.01-selector-strategy-smoke-{date.today():%Y%m%d}.json"
+        else output_root / build_artifact_name(run.run_id, "selector_strategy_smoke", "json")
     )
-
-    store = Store(db_path)
     try:
         clear_runtime_tables(store)
         build_rows = build_layers(store, cfg, layers=["l3"], start=calc_date, end=calc_date, force=False)
         candidates_df = select_candidates_frame(store, calc_date, cfg)
         candidates = [
-            StockCandidate(code=str(row["code"]), industry=str(row["industry"]), score=float(row["score"]))
+            StockCandidate(
+                code=str(row["code"]),
+                industry=str(row["industry"]),
+                score=float(row["score"]),
+                preselect_score=float(row["preselect_score"]) if "preselect_score" in row else float(row["score"]),
+            )
             for _, row in candidates_df.iterrows()
         ]
-        signals = generate_signals(store, candidates, calc_date, cfg)
+        signals = generate_signals(store, candidates, calc_date, cfg, run_id=run.run_id)
 
         payload = {
             "generated_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+            "run_id": run.run_id,
+            "mode": run.mode,
+            "variant": run.variant,
             "source_db_path": str(source_db_path),
             "db_path": str(db_path),
             "calc_date": calc_date.isoformat(),
@@ -79,6 +98,10 @@ def main() -> int:
             "sample_candidates": candidates_df.head(10).to_dict(orient="records"),
             "sample_signals": [signal.model_dump(mode="json") for signal in signals[:10]],
         }
+        finish_run(store, run.run_id, "SUCCESS")
+    except Exception as exc:
+        finish_run(store, run.run_id, "FAILED", str(exc))
+        raise
     finally:
         store.close()
 

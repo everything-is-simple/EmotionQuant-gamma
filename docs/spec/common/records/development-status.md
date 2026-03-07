@@ -1,8 +1,8 @@
 # EmotionQuant 开发状态（重启版模板）
 
-**状态**: Active（正式治理）  
-**最后更新**: 2026-03-06
-**当前阶段**: Rebuild Week 1（v0.01 文档口径已封口，Week1 Data Layer 差距审计已完成，正在准备实现收口）
+**状态**: Active（v0.01 Frozen + v0.01-plus 主线替代切换）  
+**最后更新**: 2026-03-07
+**当前阶段**: Mainline Reboot Preparation（`v0.01` 已冻结为历史尝试；`v0.01-plus` 已升格为当前主开发线，当前先收口 Gate、契约迁移与主线切换前置条件）
 
 ---
 
@@ -10,10 +10,13 @@
 
 | 类型 | 路径 | 说明 |
 |---|---|---|
-| 设计总纲 | `docs/design-v2/system-baseline.md` | 当前唯一设计口径 |
-| 路线图 | `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md` | 周级推进计划 |
-| 模块实现卡 | `docs/spec/v0.01/roadmap/v0.01-mvp-spec-*.md` | 模块拆解与验收 |
-| 工作流 | `.kiro/steering/6A-WORKFLOW.md` | 固定执行流程 |
+| v0.01 历史基线 | `docs/design-v2/01-system/system-baseline.md` | 已冻结的历史设计基线 |
+| v0.01-plus 设计入口 | `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` | 当前主开发线的 DTT 设计入口 |
+| v0.01 历史路线图 | `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md` | v0.01 冻结执行计划（历史参考） |
+| 当前主线 | `docs/spec/v0.01-plus/README.md` | v0.01-plus 当前主开发线入口 |
+| 当前主线实现卡 | `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md` | Selector / Strategy 主线替代实现卡 |
+| 工作流 | `docs/workflow/6A-WORKFLOW.md` | 固定执行流程 |
+| 当前状态 | `docs/spec/common/records/development-status.md` | 当前治理状态、历史摘要与重启条件 |
 | 技术债 | `docs/spec/common/records/debts.md` | 风险与欠账追踪 |
 | 资产复用 | `docs/spec/common/records/reusable-assets.md` | 可复用沉淀 |
 
@@ -23,98 +26,133 @@
 
 | 项目 | 结论 | 备注 |
 |---|---|---|
-| 系统设计 | ✅ 已完成终审并定稿 | 16轮沙盘评审通过，S0/S1=0 |
-| 系统治理 | ✅ 已完成沙盘评审并定稿 | 11项偏差已修复，S0/S1=0 |
+| 系统设计 | ✅ 已完成终审并定稿 | 16 轮沙盘评审通过，S0/S1=0 |
+| 系统治理 | ✅ 已完成沙盘评审并定稿 | 11 项偏差已修复，S0/S1=0 |
 | 根配置与入口文件 | ✅ 已完成终审并定稿 | 根文件审计 15 项偏差全部修复，S0/S1=0 |
-| 代码实现 | 进行中 | 基线已跑通，当前按 Week1 差距审计结果收口 |
+| 文档路径与状态口径 | ✅ 已完成 | 正式入口、断链修复与检查脚本已收口 |
+| 权威入口一致性审计 | ✅ 已完成 | README / AGENTS / docs/*/README 的 SoT、状态与版本入口已统一复核 |
+| 入口机器检查 | ✅ 已完成 | `check_doc_authority.ps1` 已覆盖 README / AGENTS / docs/*/README |
+| 统一预检入口 | ✅ 已完成 | `preflight.ps1` 已收口为统一入口，默认覆盖 docs + config，完整模式可扩展 lint + test |
+| 文档状态语义 | ✅ 已完成 | `Frozen / Active / Draft` 已形成单独治理规则，避免各目录自行发散 |
+| 开发依赖与 full 预检 | ✅ 已完成 | `ruff / mypy / pytest` 已接通；受限沙箱会话下完整 `pytest` 可能需要提权执行 |
+| v0.01-plus 版本决策 | ✅ 已完成 | 定义为当前主开发线，用于替代 legacy top-down；`v0.01` 保持 Frozen 历史基线 |
+| v0.01-plus 文档骨架 | ✅ 已完成 | `README / roadmap / spec / gate / data-contract` 已建立 |
+| 主线切换口径 | ✅ 已完成 | `v0.01-plus` 目录、状态记录与设计草案已按“主线替代版”重写 |
+| 代码实现 | 进行中 | 当前已开始落地 `variant / run_id / sidecar / selector / strategy / backtest` 的主线切换 |
 
 ---
 
-## 3. 迭代看板（四周）
+## 3. 当前工作看板（2026-03-07）
 
-| 周次 | 目标 | 对应 spec | 状态 |
+| 工作项 | 目标 | 主要落点 | 状态 |
 |---|---|---|---|
-| Week 1 | Data 层可运行闭环 | `v0.01-mvp-spec-01-data-layer.md` | TODO |
-| Week 2 | Selector + Strategy（BOF） | `v0.01-mvp-spec-02-selector.md`, `v0.01-mvp-spec-03-strategy.md` | TODO |
-| Week 3 | Broker + Backtest | `v0.01-mvp-spec-04-broker.md`, `v0.01-mvp-spec-05-backtest-report.md`（engine.py 部分） | TODO |
-| Week 4 | Report + 联调 + 纸上交易 | `v0.01-mvp-spec-05-backtest-report.md` | TODO |
+| 路径收口 | 统一 SoT / 评审标准 / 模块设计 / 算法设计 / 观察台入口 | `README*`, `AGENTS*`, `docs/`, `docs/spec/` | completed |
+| 状态收口 | 将当前仓库状态回写为“暂停 v0.01 实现，先做文档治理” | `README*`, `development-status.md`, `v0.01-mvp-roadmap.md` | completed |
+| 检查脚本 | 增加文档路径与链接检查，避免旧路径回流 | `scripts/ops/check_doc_links.ps1` | completed |
+| 文档瘦身 | 历史入口降级、总导航去重、子目录 README 去重 | `docs/README.md`, `docs/*/README.md` | completed |
+| 历史分段 | 将旧实现期整理为阶段摘要 + 关键证据索引 | `development-status.md` | completed |
+| 入口一致性审计 | 统一 README / AGENTS / docs/*/README 对 SoT、状态与版本入口的表述 | `docs/reference/README.md`, `docs/operations/README.md`, `docs/steering/README.md`, `docs/spec/common/records/authority-entry-audit-20260307.md` | completed |
+| 次级 README 清理与口径脚本 | 收口次级 README 并新增口径一致性机器检查 | `docs/reference/a-stock-rules/README.md`, `docs/design-v2/03-algorithms/core-algorithms/README.md`, `docs/spec/*/README.md`, `scripts/ops/check_doc_authority.ps1` | completed |
+| 统一预检入口与状态语义 | 将 `preflight` 扩成统一开发入口，并冻结文档状态语义 | `scripts/ops/preflight.ps1`, `scripts/ops/check_repo_config.ps1`, `docs/steering/document-status.md` | completed |
+| 文档状态语义机器检查 | 将 `Frozen / Active / Draft` 规则脚本化并并入 docs gate | `scripts/ops/check_doc_status.ps1`, `scripts/ops/check_docs.ps1` | completed |
+| 开发依赖与 full 预检打通 | 安装 `dev` 依赖并跑通 `ruff / mypy / pytest` | `pyproject.toml`, `scripts/ops/preflight.ps1`, `tests/integration/backtest/test_backtest_engine.py` | completed |
+| v0.01-plus 版本切分 | 将 `v0.01-plus` 从 `v0.01 Frozen` 中切出并建立单独版本目录 | `docs/spec/v0.01-plus/`, `system-baseline.md`, `selector-design.md` | completed |
+| v0.01-plus 主线升格 | 将 `v0.01-plus` 从独立实验版提升为当前主开发线 | `docs/spec/v0.01-plus/`, `development-status.md`, `down-to-top-integration.md` | completed |
+| v0.01-plus 主线开工 Gate | 固化主线切换矩阵、run 命名、sidecar 与脚本入口 | `docs/spec/v0.01-plus/roadmap/`, `docs/spec/v0.01-plus/governance/`, `src/`, `scripts/backtest/` | in_progress |
 
 ---
 
 ## 4. 本周执行区（滚动维护）
 
+分段说明：`2026-03-07` 起归入“文档治理期”；`2026-03-02` 至 `2026-03-06` 的实现与联调记录归入“旧实现期（历史摘要）”。
+
 ### 4.1 本周目标
 
-- [ ] 填写本周目标（1-3 条）
+- [x] 收口旧路径与真实断链
+- [x] 统一当前状态口径
+- [x] 增加文档路径检查脚本
+- [x] 历史报告入口降级与临时归档审查
+- [x] 合并总导航重复叙述并分段整理历史记录
+- [x] 完成 README / AGENTS / docs/*/README 权威入口一致性审计
+- [x] 完成次级 README 清理与权威入口机器检查脚本
+- [x] 完成 `v0.01-plus` 独立实验版切分与最小文档骨架
+- [x] 完成 `v0.01-plus` 从独立实验版到当前主开发线的治理切换
 
 ### 4.2 进行中任务
 
 | 任务 | 负责人 | 开始日期 | 状态 | 阻塞 |
 |---|---|---|---|---|
-| v0.01 Week1 实现准备（Data Layer） | wangweiyun | 2026-03-04 | TODO | 无 |
+| v0.01-plus 主线开工准备（Gate / run 命名 / sidecar / script） | wangweiyun | 2026-03-07 | DOING | 正在落地 schema、写入链路、默认路径与主线脚本 |
 
-### 4.3 已完成任务
+### 4.3 文档治理期（2026-03-07）
 
 | 日期 | 任务 | 结果 | 证据 |
 |---|---|---|---|
-| 2026-03-02 | 治理重启：record 三件套 + 6A 正式版模板落地 | completed | `docs/spec/common/records/*.md`, `.kiro/steering/6A-WORKFLOW.md` |
-| 2026-03-02 | 治理补丁：6A v1.2 强化 + architecture Order 修正 + 设计文档 4 项修复 | completed | `6A-WORKFLOW.md` v1.2, `architecture.md`, 4 design-v2 docs |
-| 2026-03-03 | 设计终审：16轮沙盘评审 + 5项修复 + 定稿门禁通过 | completed | `design-v2/` 全部文档 v1.0, `sandbox-review-standard.md` |
-| 2026-03-03 | 治理评审：.kiro 文件沙盘评审 + 11项偏差修复 | completed | `.kiro/` 全部文件 |
-| 2026-03-03 | 治理省察：steering/record 对标 sandbox-review-standard + god_view 审计，3项 record 同步修复 | completed | `development-status.md` Week3 spec引用修复, `reusable-assets.md` DES-007新增 |
-| 2026-03-03 | 根配置文件省察+15项修复：.env.example 重写、pyproject.toml 依赖栈重建、README 字段同步、CLAUDE/WARP §9质量门控对齐 | completed | `.env.example` `.gitignore` `pyproject.toml` `README{.en}.md` `CLAUDE{.en}.md` `WARP{.en}.md` |
-| 2026-03-03 | v0.01 正式版封版：全部文档层通过定稿门禁（sandbox-review-standard §6），spec-01–05 全部 Active | completed | 封版基线：16轮沙盘评审 S0/S1=0，5个文档层通过审计，15项根配置偏差全部封线 |
-| 2026-03-03 | 根配置文件终审：.env/pyproject/README/WARP/CLAUDE 对标审计 + 15项偏差修复；roadmap + spec-01~05 状态升格 Active | completed | `.env.example`, `pyproject.toml`, `README*.md`, `WARP*.md`, `CLAUDE*.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-01-data-layer.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-03-strategy.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-05-backtest-report.md` |
-| 2026-03-04 | v0.01 spec-01（Data Layer）文档校对：补齐校对证据落点并与 SoT/steering/record/顶层文件交叉核对 | completed | `docs/spec/v0.01/roadmap/v0.01-mvp-spec-01-data-layer.md` |
-| 2026-03-04 | v0.01 spec-02~05 文档校对：补齐校对证据落点并与 design/roadmap/steering/record/顶层文件交叉核对 | completed | `docs/spec/v0.01/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-03-strategy.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-05-backtest-report.md` |
-| 2026-03-04 | v0.01 实现前总校对收口：roadmap 增加“校对完成状态+追溯索引+七维勾选”，spec-01~05 增加 REV-ID 并同步 `docs/spec` | completed | `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-01-data-layer.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-03-strategy.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-05-backtest-report.md` |
-| 2026-03-06 | v0.01 基线跑通后回望审视：形成“保留不动 / v0.01 立即修订 / v0.02+ 延后”三分法清单 | completed | `docs/spec/v0.01/records/v0.01-post-baseline-retrospective-20260306.md` |
-| 2026-03-06 | v0.01 回望修订落地：按实战证据修正 roadmap/spec/design 的实现与验收口径 | completed | `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-01-data-layer.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-05-backtest-report.md`, `docs/design-v2/data-layer-design.md`, `docs/design-v2/backtest-report-design.md` |
-| 2026-03-06 | v0.01 Broker 回望修订落地：补齐确定性主键、显式回测日期、SELL-only trust update、paper 持仓退出约束 | completed | `docs/spec/v0.01/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/design-v2/broker-design.md` |
-| 2026-03-06 | Week1 Data Layer 差距审计：完成测试、最小命令验证，并修正 `MIN_AMOUNT` 与 `stock_info.list_status` 默认主链路口径 | completed | `docs/spec/v0.01/records/v0.01-week1-data-layer-gap-audit-20260306.md`, `src/config.py`, `src/data/fetcher.py`, `tests/unit/core/test_config.py`, `tests/unit/data/test_fetcher.py`, `.env.example` |
-| 2026-03-06 | 数据存储口径收口：明确执行库 / raw 源库 / Parquet / logs / cache 的职责边界，并补齐 raw bootstrap 主入口 | completed | `docs/spec/v0.01/records/v0.01-data-storage-decision-20260306.md`, `docs/spec/v0.01/records/data-root-layout-20260306.md`, `main.py`, `src/config.py`, `src/data/fetcher.py`, `scripts/data/load_l1_from_raw_duckdb.py`, `tests/unit/data/test_fetcher.py` |
-| 2026-03-06 | Week2 Selector/Strategy 首批收口：对齐 MSS/IRS 归一化与阈值、补齐候选解释性、完善组合模式与 lookback 语义 | completed | `src/selector/normalize.py`, `src/selector/mss.py`, `src/selector/irs.py`, `src/selector/selector.py`, `src/strategy/strategy.py`, `tests/unit/selector/test_selector_strategy.py` |
-| 2026-03-06 | Week2 联调入口落地：新增消融对照脚本与 selector→strategy smoke 入口，并补齐对应测试 | completed | `src/backtest/ablation.py`, `scripts/backtest/run_week2_ablation.py`, `scripts/backtest/run_selector_strategy_smoke.py`, `tests/unit/backtest/test_ablation.py`, `tests/integration/selector/test_selector_strategy_pipeline.py` |
-| 2026-03-06 | Week2 初轮证据落地：消融与 smoke 改为 working copy 执行，产出短窗对照结果与一条真实 BOF 信号样例 | completed | `docs/spec/v0.01/evidence/v0.01-week2-selector-strategy-evidence-20260306.md`, `docs/spec/v0.01/evidence/v0.01-selector-ablation-short-20260306.json`, `docs/spec/v0.01/evidence/v0.01-selector-strategy-smoke-20260306-v2.json`, `src/backtest/ablation.py`, `scripts/backtest/run_week2_ablation.py`, `scripts/backtest/run_selector_strategy_smoke.py`, `src/config.py`, `src/strategy/registry.py`, `src/strategy/strategy.py`, `tests/unit/core/test_config.py`, `tests/unit/selector/test_selector_strategy.py`, `tests/integration/selector/test_selector_strategy_pipeline.py` |
-| 2026-03-06 | Week2 分布审计与风险暴露：补齐 MSS/IRS 真实分布证据，修正 IRS 唯一排名，并确认全周期三场消融存在性能阻塞 | completed | `docs/spec/v0.01/evidence/v0.01-selector-distribution-audit-20260306-v2.json`, `docs/spec/v0.01/evidence/v0.01-week2-selector-strategy-evidence-20260306.md`, `src/selector/audit.py`, `scripts/backtest/run_week2_distribution_audit.py`, `src/selector/irs.py`, `src/report/reporter.py`, `src/backtest/engine.py`, `src/backtest/ablation.py`, `tests/unit/report/test_reporter.py`, `tests/unit/selector/test_selector_strategy.py` |
-| 2026-03-06 | v0.01 当前版算法设计落地：基于旧版 `core-algorithms` 与当前实现，收口 MSS/IRS/PAS 三份“当前可执行算法设计”文档 | completed | `docs/design-v2/mss-algorithm.md`, `docs/design-v2/irs-algorithm.md`, `docs/design-v2/pas-algorithm.md` |
-| 2026-03-06 | Selector 口径审查与 SW31 修正：确认旧行业桶误用 `stock_basic.industry`，落地申万一级成员映射优先、交易日过滤与 IRS 日级最小覆盖约束 | completed | `docs/spec/v0.01/records/v0.01-selector-review-and-sw31-decision-20260306.md`, `main.py`, `src/config.py`, `src/data/store.py`, `src/data/fetcher.py`, `src/data/cleaner.py`, `src/data/builder.py`, `src/selector/selector.py`, `src/selector/irs.py`, `tests/unit/data/test_fetcher.py`, `tests/unit/data/test_cleaner.py`, `tests/unit/core/test_config.py`, `tests/unit/selector/test_selector_strategy.py` |
-| 2026-03-06 | design-v2 受控纠偏：将 MSS/IRS/PAS 三份算法 SoT 正式收回 `design-v2`，并补齐系统级入口与模块级引用 | completed | `docs/design-v2/mss-algorithm.md`, `docs/design-v2/irs-algorithm.md`, `docs/design-v2/pas-algorithm.md`, `docs/design-v2/system-baseline.md`, `docs/design-v2/architecture-master.md`, `docs/design-v2/README.md`, `docs/design-v2/selector-design.md`, `docs/design-v2/strategy-design.md` |
-| 2026-03-06 | SW31 数据链路收口 + MSS baseline 校准：raw 申万成员补采/清洗、执行库 taxonomy 收紧到正式 31 行业、MSS 从占位 baseline 切到真实经验基线 | completed | `docs/spec/v0.01/records/v0.01-sw31-and-mss-calibration-20260306.md`, `docs/spec/v0.01/evidence/v0.01-mss-baseline-calibration-20260306.json`, `docs/spec/v0.01/evidence/v0.01-selector-distribution-audit-20260306-v2.json`, `scripts/data/bulk_download.py`, `scripts/backtest/run_mss_baseline_calibration.py`, `src/data/sw_industry.py`, `src/data/fetcher.py`, `src/data/cleaner.py`, `src/selector/selector.py`, `src/selector/irs.py`, `src/selector/mss.py`, `src/selector/baseline.py`, `tests/unit/data/test_sw_industry.py`, `tests/unit/selector/test_mss.py` |
-| 2026-03-06 | MSS 阈值短窗消融：把 `55/58/60/62/65` 纳入 `BOF baseline / +MSS / +MSS+IRS` 对照，并确认在当前 `BEARISH-only` gate 语义下 bullish threshold 对交易结果是 no-op | completed | `docs/spec/v0.01/records/v0.01-threshold-ablation-short-20260306.md`, `docs/spec/v0.01/evidence/v0.01-selector-ablation-threshold-short-20260306.json`, `scripts/backtest/run_week2_ablation.py`, `src/backtest/ablation.py`, `src/config.py`, `src/data/builder.py`, `src/selector/mss.py`, `tests/unit/backtest/test_ablation.py`, `tests/unit/core/test_config.py`, `tests/unit/selector/test_mss.py` |
+| 2026-03-07 | 第二轮文档瘦身 | completed | `README.md`, `README.en.md`, `docs/operations/README.md`, `docs/spec/common/records/doc-thinning-audit-20260307.md` |
+| 2026-03-07 | 第三轮文档收口 | completed | `docs/README.md`, `docs/design-v2/README.md`, `docs/Strategy/README.md`, `docs/observatory/README.md`, `docs/spec/common/records/development-status.md` |
+| 2026-03-07 | 权威入口一致性审计 | completed | `docs/reference/README.md`, `docs/operations/README.md`, `docs/steering/README.md`, `docs/reference/operations/README.md`, `docs/spec/common/records/authority-entry-audit-20260307.md` |
+| 2026-03-07 | 次级 README 清理与脚本化审计 | completed | `docs/reference/a-stock-rules/README.md`, `docs/design-v2/03-algorithms/core-algorithms/README.md`, `docs/spec/README.md`, `docs/spec/common/README.md`, `docs/spec/common/records/README.md`, `docs/spec/v0.01/README.md` ~ `docs/spec/v0.06/README.md`, `AGENTS.md`, `scripts/ops/check_doc_authority.ps1` |
+| 2026-03-07 | 文档路径检查脚本落地并回归 | completed | `scripts/ops/check_doc_links.ps1` |
+| 2026-03-07 | 统一预检入口与文档状态语义 | completed | `scripts/ops/preflight.ps1`, `scripts/ops/check_repo_config.ps1`, `docs/steering/document-status.md`, `.githooks/pre-commit` |
+| 2026-03-07 | 文档状态语义机器检查 | completed | `scripts/ops/check_doc_status.ps1`, `scripts/ops/check_docs.ps1`, `docs/steering/document-status.md` |
+| 2026-03-07 | 开发依赖与 full 预检打通 | completed | `python -m pip install -e .[dev]`, `scripts/ops/preflight.ps1 -Profile full`, `tests/integration/backtest/test_backtest_engine.py`, `pyproject.toml` |
+| 2026-03-07 | `v0.01-plus` 版本切分与文档骨架建立 | completed | `docs/spec/v0.01-plus/README.md`, `docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md`, `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`, `docs/spec/v0.01-plus/governance/v0.01-plus-gate-checklist.md`, `docs/spec/v0.01-plus/governance/v0.01-plus-data-contract-table.md`, `docs/design-v2/01-system/system-baseline.md`, `docs/design-v2/02-modules/selector-design.md`, `docs/spec/README.md` |
+| 2026-03-07 | `v0.01-plus` 主线升格：独立实验版 -> 当前主开发线 | completed | `docs/spec/v0.01-plus/README.md`, `docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md`, `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`, `docs/spec/v0.01-plus/governance/v0.01-plus-gate-checklist.md`, `docs/spec/v0.01-plus/governance/v0.01-plus-data-contract-table.md`, `docs/spec/common/records/development-status.md`, `docs/spec/README.md`, `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` |
+| 2026-03-07 | `v0.01-plus` 运行命名、sidecar 与默认路径收口 | in_progress | `docs/spec/v0.01-plus/governance/v0.01-plus-run-artifact-rules.md`, `src/config.py`, `src/data/store.py`, `src/strategy/ranker.py`, `src/strategy/strategy.py`, `src/backtest/engine.py`, `scripts/backtest/run_v001_plus_dtt_matrix.py`, `scripts/ops/preflight.ps1` |
+
+### 4.4 旧实现期（2026-03-02 ~ 2026-03-06）阶段摘要
+
+| 阶段 | 日期 | 摘要 | 关键证据 |
+|---|---|---|---|
+| 治理重启与封版 | 2026-03-02 ~ 2026-03-03 | 完成治理模板、设计终审、根配置终审与 v0.01 正式版封版 | `docs/spec/v0.01/records/release-v0.01-formal.md`, `docs/observatory/sandbox-review-standard.md` |
+| 文档校对闭环 | 2026-03-04 | 完成 roadmap 与 spec-01~05 文档校对、REV-ID 与七维勾选收口 | `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-01-data-layer.md` ~ `spec-05` |
+| Week1 Data Layer 收口 | 2026-03-06 | 明确执行库 / raw 源库边界，补齐 Data Layer gap audit 与主入口口径 | `docs/spec/v0.01/records/v0.01-week1-data-layer-gap-audit-20260306.md`, `docs/spec/v0.01/records/v0.01-data-storage-decision-20260306.md`, `docs/spec/v0.01/records/data-root-layout-20260306.md` |
+| Week2 Selector / Strategy 联调 | 2026-03-06 | 完成 MSS/IRS/BOF 首批实现收口、smoke、ablation 与分布审计 | `docs/spec/v0.01/evidence/v0.01-week2-selector-strategy-evidence-20260306.md`, `docs/spec/v0.01/evidence/v0.01-selector-distribution-audit-20260306-v2.json`, `docs/spec/v0.01/evidence/v0.01-selector-ablation-short-20260306.json` |
+| 算法 SoT 与口径纠偏 | 2026-03-06 | 将 MSS/IRS/PAS 当前算法设计正式收回 `design-v2`，并完成 SW31 / MSS baseline 收口 | `docs/design-v2/03-algorithms/core-algorithms/`, `docs/spec/v0.01/records/v0.01-sw31-and-mss-calibration-20260306.md`, `docs/spec/v0.01/records/v0.01-selector-review-and-sw31-decision-20260306.md` |
+| 基线回望与阈值实验 | 2026-03-06 | 完成基线回望、Broker 回望修订与 MSS threshold sweep 短窗消融 | `docs/spec/v0.01/records/v0.01-post-baseline-retrospective-20260306.md`, `docs/spec/v0.01/records/v0.01-threshold-ablation-short-20260306.md` |
+
+### 4.5 旧实现期关键证据索引
+
+| 类别 | 关键文件 | 用途 |
+|---|---|---|
+| 封版与冻结 | `docs/spec/v0.01/records/release-v0.01-formal.md` | 查看 v0.01 正式版冻结口径 |
+| 路线图 | `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md` | 查看冻结执行计划与阶段验收口径 |
+| Data Layer | `docs/spec/v0.01/records/v0.01-week1-data-layer-gap-audit-20260306.md` | 查看 Week1 差距审计 |
+| 数据存储 | `docs/spec/v0.01/records/v0.01-data-storage-decision-20260306.md` | 查看执行库 / raw 源库决策 |
+| Selector / Strategy | `docs/spec/v0.01/evidence/v0.01-week2-selector-strategy-evidence-20260306.md` | 查看联调与短窗证据 |
+| 分布审计 | `docs/spec/v0.01/evidence/v0.01-selector-distribution-audit-20260306-v2.json` | 查看 MSS/IRS 真实分布 |
+| 算法 SoT | `docs/design-v2/03-algorithms/core-algorithms/` | 查看当前算法级设计 |
+| SW31 / MSS 校准 | `docs/spec/v0.01/records/v0.01-sw31-and-mss-calibration-20260306.md` | 查看行业链路与 baseline 校准 |
+| 回望修订 | `docs/spec/v0.01/records/v0.01-post-baseline-retrospective-20260306.md` | 查看基线跑通后的三分法结论 |
+| 阈值实验 | `docs/spec/v0.01/records/v0.01-threshold-ablation-short-20260306.md` | 查看 MSS threshold sweep 结论 |
 
 ---
 
 ## 5. 每次任务收口必填（A6）
 
-每个任务完成时，必须在本节追加一行：
+当前按阶段分段维护；旧实现期不再逐条展开流水账，仅保留摘要索引。
+
+### 5.1 文档治理期（2026-03-07）
 
 | 日期 | 任务/PR | run | test | artifact | review | 记录同步 |
 |---|---|---|---|---|---|---|
-| 2026-03-02 | 治理重启模板落地 | n/a | n/a | `docs/spec/common/records/*.md`, `.kiro/steering/6A-WORKFLOW.md` | 本次治理评审结论 | debts/status/assets/roadmap 已同步，spec=N/A（治理任务） |
-| 2026-03-02 | 治理补丁：6A v1.2 + architecture Order + 设计文档修复 | n/a | n/a | `6A-WORKFLOW.md` v1.2, `architecture.md`, design-v2 docs | 治理评审 | debts=无变化, status=已同步, assets=无变化, roadmap=N/A, spec=N/A（治理任务） |
-| 2026-03-03 | 设计终审 + 治理评审 | n/a | n/a | `design-v2/` v1.0定稿, `.kiro/` 11项偏差修复 | 沙盘评审标准 7维检查 | debts=无变化, status=已同步, assets=无变化, roadmap=已同步, spec=N/A（治理任务） |
-| 2026-03-03 | 治理省察：steering/record 审计 | n/a | n/a | `development-status.md` Week3 spec引用修复, `reusable-assets.md` DES-007新增 | sandbox-review-standard + god_view 交叉验证 | debts=无变化, status=已同步, assets=已同步, roadmap=无变化, spec=无变化 |
-| 2026-03-03 | 根配置文件省察+15项修复 | n/a | n/a | `.env.example`/`pyproject.toml`/`README{.en}.md`/`CLAUDE{.en}.md`/`WARP{.en}.md` | sandbox-review-standard 定稿门禁 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=无变化 |
-| 2026-03-03 | v0.01 正式版封版 | n/a | n/a | 全部 spec-01–05 Active、roadmap Active（正式版）、设计文档 Frozen、根配置对齐 v0.01 | sandbox-review-standard §6 + god_view 全维考核 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=spec-01 Draft→Active |
-| 2026-03-03 | 根配置文件终审 + 文档状态升格（roadmap/spec） | n/a | n/a | `.env.example`, `pyproject.toml`, `README*.md`, `WARP*.md`, `CLAUDE*.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-01-data-layer.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-03-strategy.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-05-backtest-report.md` | sandbox-review-standard §6 定稿门禁 + god_view v0.01 对照 | debts=无变化, status=已同步, assets=无变化, roadmap=已同步, spec=已同步 |
-| 2026-03-04 | v0.01 spec-01 文档校对（仅文档，不实现） | n/a | n/a | `docs/spec/v0.01/roadmap/v0.01-mvp-spec-01-data-layer.md` | 设计/路线图/steering/record/顶层文件一致性复核 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=已同步 |
-| 2026-03-04 | v0.01 spec-02~05 文档校对（仅文档，不实现） | n/a | n/a | `docs/spec/v0.01/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-03-strategy.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-05-backtest-report.md` | 设计/路线图/steering/record/顶层文件一致性复核 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=已同步 |
-| 2026-03-04 | v0.01 实现前最后一轮总校对（仅文档，不实现） | n/a | n/a | `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-01-data-layer.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-03-strategy.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-05-backtest-report.md` | 七维模板逐项勾选复核（Schema/调用链/幂等/状态机/时序/冲突/报告） | debts=无变化, status=已同步, assets=无变化, roadmap=已同步, spec=已同步 |
-| 2026-03-06 | v0.01 基线跑通后回望审视 | n/a | n/a | `docs/spec/v0.01/records/v0.01-post-baseline-retrospective-20260306.md` | 基于基线证据、runbook、勘误与路线图/实现卡的文件级修订审查 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=无变化（本轮先出审查记录） |
-| 2026-03-06 | v0.01 回望修订落地 | n/a | n/a | `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-01-data-layer.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-02-selector.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-spec-05-backtest-report.md`, `docs/design-v2/data-layer-design.md`, `docs/design-v2/backtest-report-design.md` | 按基线证据回写实现与验收口径，不触碰 Frozen 主干语义 | debts=无变化, status=已同步, assets=无变化, roadmap=已同步, spec=spec-01/spec-02/spec-05 已同步 |
-| 2026-03-06 | v0.01 Broker 回望修订落地 | n/a | n/a | `docs/spec/v0.01/roadmap/v0.01-mvp-spec-04-broker.md`, `docs/design-v2/broker-design.md` | 基于基线经验补齐 Broker 的确定性、时序与信任链路约束，不改 Frozen 语义 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=spec-04 已同步 |
-| 2026-03-06 | Week1 Data Layer 差距审计 + 口径修正 | `python main.py build --layers=l2 --start 2026-01-01 --end 2026-01-02` | `pytest -q tests/unit/core/test_config.py tests/unit/data/test_fetcher.py tests/unit/data tests/unit/core/test_contracts.py tests/unit/selector/test_selector_strategy.py` | `docs/spec/v0.01/records/v0.01-week1-data-layer-gap-audit-20260306.md`, `src/config.py`, `src/data/fetcher.py`, `.env.example`, `tests/unit/core/test_config.py`, `tests/unit/data/test_fetcher.py` | 以 spec-01 为准完成 Gap Audit，并修正默认 `MIN_AMOUNT` 与 `list_status` 口径 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=spec-01 审计已同步 |
-| 2026-03-06 | 数据存储口径收口 + raw bootstrap 主入口 | `python main.py fetch --help` | `pytest -q tests/unit/data/test_fetcher.py tests/unit/core/test_config.py tests/unit/data tests/unit/core/test_contracts.py tests/unit/selector/test_selector_strategy.py` | `docs/spec/v0.01/records/v0.01-data-storage-decision-20260306.md`, `docs/spec/v0.01/records/data-root-layout-20260306.md`, `main.py`, `src/config.py`, `src/data/fetcher.py`, `scripts/data/load_l1_from_raw_duckdb.py`, `tests/unit/data/test_fetcher.py` | 将“执行库 + raw 源库 + 辅助目录”口径写实，并把 raw 导入收敛为主入口能力 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=spec-01 已同步 |
-| 2026-03-06 | Week2 Selector/Strategy 首批收口 | n/a | `pytest -q tests/unit/selector/test_selector_strategy.py tests/unit/data/test_fetcher.py tests/unit/data/test_cleaner.py tests/unit/core/test_contracts.py tests/unit/core/test_config.py` | `src/selector/normalize.py`, `src/selector/mss.py`, `src/selector/irs.py`, `src/selector/selector.py`, `src/strategy/strategy.py`, `tests/unit/selector/test_selector_strategy.py` | 对齐 spec-02/spec-03 的 MSS/IRS 评分口径、候选解释性、组合模式与 lookback 语义 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=spec-02/spec-03 首批实现已同步 |
-| 2026-03-06 | Week2 消融入口 + selector→strategy smoke | `python scripts/backtest/run_week2_ablation.py --help` / `python scripts/backtest/run_selector_strategy_smoke.py --help` | `pytest -q tests/unit/backtest/test_ablation.py tests/integration/selector/test_selector_strategy_pipeline.py tests/unit/selector/test_selector_strategy.py tests/unit/data/test_fetcher.py tests/unit/data/test_cleaner.py tests/unit/core/test_contracts.py tests/unit/core/test_config.py` | `src/backtest/ablation.py`, `scripts/backtest/run_week2_ablation.py`, `scripts/backtest/run_selector_strategy_smoke.py`, `tests/unit/backtest/test_ablation.py`, `tests/integration/selector/test_selector_strategy_pipeline.py` | 落地 spec-02 的三组消融入口与证据输出路径，并把 spec-03 的 select_candidates -> generate_signals 主链做成可跑 smoke | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=spec-02/spec-03 联调入口已同步 |
-| 2026-03-06 | Week2 初轮证据落地 + working copy 保护 | `python scripts/backtest/run_selector_strategy_smoke.py --calc-date 2026-01-09 --output docs/spec/v0.01/evidence/v0.01-selector-strategy-smoke-20260306-v2.json --working-db-path .tmp/backtest/selector-strategy-smoke-20260306.duckdb` / `python scripts/backtest/run_week2_ablation.py --start 2026-01-05 --end 2026-02-24 --patterns bof --output docs/spec/v0.01/evidence/v0.01-selector-ablation-short-20260306.json --working-db-path .tmp/backtest/selector-ablation-short-20260306.duckdb` | `pytest -q tests/unit/core/test_config.py tests/unit/selector/test_selector_strategy.py tests/unit/backtest/test_ablation.py tests/integration/selector/test_selector_strategy_pipeline.py` | `docs/spec/v0.01/evidence/v0.01-week2-selector-strategy-evidence-20260306.md`, `docs/spec/v0.01/evidence/v0.01-selector-ablation-short-20260306.json`, `docs/spec/v0.01/evidence/v0.01-selector-strategy-smoke-20260306-v2.json`, `src/backtest/ablation.py`, `scripts/backtest/run_week2_ablation.py`, `scripts/backtest/run_selector_strategy_smoke.py`, `src/config.py`, `src/strategy/registry.py`, `src/strategy/strategy.py`, `tests/unit/core/test_config.py`, `tests/unit/selector/test_selector_strategy.py`, `tests/integration/selector/test_selector_strategy_pipeline.py` | 将消融与 smoke 固定到工作副本，避免误改执行库，并补齐短窗 A/B/C 对照和一条真实 BOF 信号样例 | debts=无变化, status=已同步, assets=无变化, roadmap=spec-02/spec-03 已同步, spec=spec-02/spec-03 已同步 |
-| 2026-03-06 | Week2 分布审计 + IRS 唯一排名修正 | `python main.py build --layers=l3 --start=2023-01-03 --end=2026-02-24 --force` / `python scripts/backtest/run_week2_distribution_audit.py --start 2023-01-03 --end 2026-02-24 --output docs/spec/v0.01/evidence/v0.01-selector-distribution-audit-20260306.json --working-db-path .tmp/audit/selector-distribution-20260306.duckdb` | `pytest -q tests/unit/report/test_reporter.py tests/unit/selector/test_selector_strategy.py tests/unit/backtest/test_ablation.py tests/integration/selector/test_selector_strategy_pipeline.py tests/unit/core/test_config.py` | `docs/spec/v0.01/evidence/v0.01-selector-distribution-audit-20260306-v2.json`, `docs/spec/v0.01/evidence/v0.01-selector-ablation-short-20260306.json`, `docs/spec/v0.01/evidence/v0.01-week2-selector-strategy-evidence-20260306.md`, `src/selector/audit.py`, `scripts/backtest/run_week2_distribution_audit.py`, `src/selector/irs.py`, `src/report/reporter.py`, `src/backtest/engine.py`, `src/backtest/ablation.py`, `tests/unit/report/test_reporter.py`, `tests/unit/selector/test_selector_strategy.py` | 初轮分布审计已由后续 SW31 收口与 MSS baseline 校准覆盖；当前权威证据以 `v0.01-selector-distribution-audit-20260306-v2.json` 为准 | debts=无变化, status=已同步, assets=无变化, roadmap=spec-02 已同步, spec=spec-02 已同步 |
-| 2026-03-06 | v0.01 当前版算法设计文档（MSS/IRS/PAS） | n/a | n/a | `docs/design-v2/mss-algorithm.md`, `docs/design-v2/irs-algorithm.md`, `docs/design-v2/pas-algorithm.md` | 初始 records 草案已在同日转正到 `design-v2`，当前算法 SoT 以 `design-v2` 为准 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=无变化（SoT 已迁移） |
-| 2026-03-06 | Selector 评审 + SW31 行业链路修正 | `DATA_PATH=.tmp/verify-sw-chain RAW_DB_PATH=G:\\EmotionQuant_data\\duckdb\\emotionquant.duckdb python main.py fetch --from-raw-db ... --start 2026-01-02 --end 2026-01-31` / `DATA_PATH=.tmp/verify-sw-chain python main.py build --layers l2,l3 --start 2026-01-02 --end 2026-01-31 --force` | `pytest -q tests/unit/data/test_fetcher.py tests/unit/data/test_cleaner.py tests/unit/core/test_config.py tests/unit/selector/test_selector_strategy.py tests/integration/selector/test_selector_strategy_pipeline.py` | `docs/spec/v0.01/records/v0.01-selector-review-and-sw31-decision-20260306.md`, `main.py`, `src/config.py`, `src/data/store.py`, `src/data/fetcher.py`, `src/data/cleaner.py`, `src/data/builder.py`, `src/selector/selector.py`, `src/selector/irs.py`, `tests/unit/data/test_fetcher.py`, `tests/unit/data/test_cleaner.py`, `tests/unit/core/test_config.py`, `tests/unit/selector/test_selector_strategy.py` | 确认旧实现误用 `stock_basic.industry`，切到申万一级成员映射优先，并补上交易日过滤与 IRS 最小行业数门槛；短窗真链路已从 `111` 桶收敛到 `27+未知`，暴露 raw 申万成员源数据仍不完整 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=spec-01/spec-02 records 已同步 |
-| 2026-03-06 | design-v2 算法 SoT 收口 | n/a | n/a | `docs/design-v2/mss-algorithm.md`, `docs/design-v2/irs-algorithm.md`, `docs/design-v2/pas-algorithm.md`, `docs/design-v2/system-baseline.md`, `docs/design-v2/architecture-master.md`, `docs/design-v2/README.md`, `docs/design-v2/selector-design.md`, `docs/design-v2/strategy-design.md` | 在不改变 v0.01 执行语义前提下，正式补齐算法级 SoT 入口并消除 `design-v2 / records / reference` 三头并存的权威歧义 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=无变化（design-v2 受控纠偏） |
-| 2026-03-06 | SW31 收口 + MSS baseline calibration | `python scripts/data/bulk_download.py --start 20260301 --end 20260306 --tables raw_index_classify,raw_index_member` / `python main.py fetch --from-raw-db G:\\EmotionQuant_data\\duckdb\\emotionquant.duckdb --start 2023-01-03 --end 2026-03-06 --refresh-stock-info-only` / `python main.py build --layers l2,l3 --start 2023-01-03 --end 2026-02-24 --force` / `python scripts/backtest/run_mss_baseline_calibration.py --start 2023-01-03 --end 2026-02-24` | `pytest -q tests/unit/selector/test_mss.py tests/unit/data/test_sw_industry.py tests/unit/data/test_fetcher.py tests/unit/data/test_cleaner.py tests/unit/core/test_config.py tests/unit/selector/test_selector_strategy.py` | `docs/spec/v0.01/records/v0.01-sw31-and-mss-calibration-20260306.md`, `docs/spec/v0.01/evidence/v0.01-mss-baseline-calibration-20260306.json`, `docs/spec/v0.01/evidence/v0.01-selector-distribution-audit-20260306-v2.json`, `scripts/data/bulk_download.py`, `scripts/backtest/run_mss_baseline_calibration.py`, `src/data/sw_industry.py`, `src/data/fetcher.py`, `src/data/cleaner.py`, `src/selector/selector.py`, `src/selector/irs.py`, `src/selector/mss.py`, `src/selector/baseline.py`, `tests/unit/data/test_sw_industry.py`, `tests/unit/selector/test_mss.py` | raw 与执行库正式收口到 SW31；IRS 重新回到 `31` 行业、`rank 1..31`、`duplicate_rank_days=0`；MSS baseline 由占位参数改为真实经验基线，`65/35` 下分布更新为 `BULLISH=20 / BEARISH=23 / NEUTRAL=714` | debts=无变化, status=已同步, assets=无变化, roadmap=Week2 证据已更新, spec=spec-02 相关证据已更新 |
-| 2026-03-06 | MSS 阈值 sweep 短窗消融 | `python scripts/backtest/run_week2_ablation.py --start 2026-01-05 --end 2026-02-24 --patterns bof --mss-thresholds 55,58,60,62,65 --working-db-path .tmp/backtest/selector-ablation-threshold-short-20260306.duckdb --output docs/spec/v0.01/evidence/v0.01-selector-ablation-threshold-short-20260306.json` | `pytest -q tests/unit/backtest/test_ablation.py tests/unit/core/test_config.py tests/unit/selector/test_mss.py tests/unit/selector/test_selector_strategy.py` | `docs/spec/v0.01/records/v0.01-threshold-ablation-short-20260306.md`, `docs/spec/v0.01/evidence/v0.01-selector-ablation-threshold-short-20260306.json`, `scripts/backtest/run_week2_ablation.py`, `src/backtest/ablation.py`, `src/config.py`, `src/data/builder.py`, `src/selector/mss.py`, `tests/unit/backtest/test_ablation.py`, `tests/unit/core/test_config.py`, `tests/unit/selector/test_mss.py` | 在当前 `BEARISH-only` MSS gate 下，`55/58/60/62/65` 只改变 `BULLISH/NEUTRAL` 标签，不改变交易阻断，因此 `+MSS` 与 `+MSS+IRS` 的 trade metrics 对 bullish threshold 呈 no-op | debts=无变化, status=已同步, assets=无变化, roadmap=Week2 阈值对照已补, spec=spec-02 风险结论待同步 |
+| 2026-03-07 | 第二轮文档瘦身：历史入口降级 + temp/archive 审查 | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_doc_links.ps1` | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_doc_links.ps1` | `README.md`, `README.en.md`, `docs/operations/README.md`, `docs/spec/README.md`, `docs/spec/INDEX.md`, `docs/spec/common/README.md`, `docs/spec/common/records/README.md`, `docs/spec/common/records/doc-thinning-audit-20260307.md` | 主入口/历史入口分层复核 + temp/archive 候选复核 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=common README/records 已同步 |
+| 2026-03-07 | 第三轮文档收口：总导航去重 + 历史记录分段 | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_doc_links.ps1` | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_doc_links.ps1` | `docs/README.md`, `docs/design-v2/README.md`, `docs/Strategy/README.md`, `docs/observatory/README.md`, `docs/spec/common/records/development-status.md` | 总导航去重复核 + 子目录 README 复核 + development-status 分段复核 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=development-status 已同步 |
+| 2026-03-07 | 权威入口一致性审计：reference / operations / steering 收口 | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_doc_links.ps1` | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_doc_links.ps1` | `docs/reference/README.md`, `docs/operations/README.md`, `docs/steering/README.md`, `docs/reference/operations/README.md`, `docs/spec/common/records/authority-entry-audit-20260307.md` | SoT / 当前状态 / 版本入口一致性复核 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=authority-entry-audit 已同步 |
+| 2026-03-07 | 统一预检入口 + 文档状态语义冻结 | `powershell -ExecutionPolicy Bypass -File scripts/ops/preflight.ps1 -Profile hook` | `powershell -ExecutionPolicy Bypass -File scripts/ops/preflight.ps1`; `powershell -ExecutionPolicy Bypass -File scripts/ops/preflight.ps1 -Profile full`（lint 依赖未安装，预期失败） | `scripts/ops/preflight.ps1`, `scripts/ops/check_repo_config.ps1`, `.githooks/pre-commit`, `docs/steering/document-status.md`, `docs/steering/README.md`, `docs/operations/README.md`, `docs/README.md` | 统一入口、hook、配置基线与状态语义复核 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=development-status 已同步 |
+| 2026-03-07 | 文档状态语义机器检查并入 docs gate | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_docs.ps1` | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_docs.ps1` | `scripts/ops/check_doc_status.ps1`, `scripts/ops/check_docs.ps1`, `docs/steering/document-status.md`, `docs/operations/README.md`, `docs/README.md` | 状态字段与封版日期语义复核 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=development-status 已同步 |
+| 2026-03-07 | 文档治理收口：正式路径 + 当前状态 + 检查脚本 | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_doc_links.ps1` | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_doc_links.ps1` | `README.md`, `README.en.md`, `docs/spec/common/records/development-status.md`, `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md`, `scripts/ops/check_doc_links.ps1` | 路径扫描 + 断链复核 + 当前状态一致性复核 | debts=无变化, status=已同步, assets=无变化, roadmap=已同步, spec=development-status/v0.01 roadmap 已同步 |
+| 2026-03-07 | 次级 README 清理 + 权威入口脚本化审计 | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_doc_authority.ps1` | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_doc_authority.ps1`; `powershell -ExecutionPolicy Bypass -File scripts/ops/check_doc_links.ps1` | `docs/reference/a-stock-rules/README.md`, `docs/design-v2/03-algorithms/core-algorithms/README.md`, `docs/spec/README.md`, `docs/spec/common/README.md`, `docs/spec/common/records/README.md`, `docs/spec/v0.01/README.md` ~ `docs/spec/v0.06/README.md`, `AGENTS.md`, `scripts/ops/check_doc_authority.ps1` | README 入口复核 + 机器检查回归 | debts=无变化, status=已同步, assets=无变化, roadmap=无变化, spec=authority-entry-audit/development-status 已同步 |
+| 2026-03-07 | `v0.01-plus` 独立实验版切分：版本包 + Frozen 边界收口 | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_docs.ps1` | `powershell -ExecutionPolicy Bypass -File scripts/ops/check_docs.ps1` | `docs/spec/v0.01-plus/README.md`, `docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md`, `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`, `docs/spec/v0.01-plus/governance/v0.01-plus-gate-checklist.md`, `docs/spec/v0.01-plus/governance/v0.01-plus-data-contract-table.md`, `docs/design-v2/01-system/system-baseline.md`, `docs/design-v2/02-modules/selector-design.md`, `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`, `docs/spec/README.md`, `docs/spec/common/records/development-status.md` | Frozen / Draft 边界复核 + 版本入口复核 | debts=无变化, status=已同步, assets=无变化, roadmap=v0.01-plus 已同步, spec=v0.01-plus/development-status 已同步 |
+
+### 5.2 旧实现期（2026-03-02 ~ 2026-03-06）摘要索引
+
+| 阶段 | run / test 摘要 | artifact / review 摘要 |
+|---|---|---|
+| 治理重启与封版 | 以模板落地、文档定稿与门禁审计为主，非代码实现期 | `release-v0.01-formal.md`, `sandbox-review-standard.md`, `v0.01-mvp-roadmap.md` |
+| Week1 Data Layer | 完成 Data Layer 最小命令验证与对应 pytest 组合 | `v0.01-week1-data-layer-gap-audit-20260306.md`, `v0.01-data-storage-decision-20260306.md` |
+| Week2 Selector / Strategy | 完成 smoke、ablation、distribution audit 与对应 pytest 组合 | `v0.01-week2-selector-strategy-evidence-20260306.md`, `v0.01-selector-distribution-audit-20260306-v2.json` |
+| 算法 SoT / SW31 / baseline | 完成 SoT 迁移、SW31 收口、MSS baseline calibration 与 threshold sweep | `core-algorithms/`, `v0.01-sw31-and-mss-calibration-20260306.md`, `v0.01-threshold-ablation-short-20260306.md` |
 
 ---
 
@@ -122,8 +160,13 @@
 
 | 日期 | 类型 | 内容 | 处理策略 | 状态 |
 |---|---|---|---|---|
-| 2026-03-02 | 治理决策 | 工作流取舍：6A 作为唯一执行流程，RIPER-5 仅保留条件评审思想 | 已并入 `.kiro/steering/6A-WORKFLOW.md`，reference 索引同步修订 | closed |
+| 2026-03-02 | 治理决策 | 工作流取舍：6A 作为唯一执行流程，RIPER-5 仅保留条件评审思想 | 已并入 `docs/workflow/6A-WORKFLOW.md`，reference 索引同步修订 | closed |
 | 2026-03-06 | 实现风险 | Week2 审计显示：MSS 全区间 `768/768` 为 `NEUTRAL`；IRS 旧实现误用 `stock_basic.industry` 形成 `111` 行业桶；全周期三场消融超过 `75` 分钟未收口 | 已落地 SW31 优先与交易日过滤；后续优先处理 MSS baseline 校准、raw 申万成员数据补采/清洗与 ablation 性能问题 | open |
+| 2026-03-07 | 治理决策 | `v0.01` 定位收口为冻结的历史尝试；后续实现重启不再回到 `v0.01`，而转入 `v0.01-plus` 主开发线 | `v0.01` 保留为对照与回退参考；当前主线切换工作全部归入 `v0.01-plus` | closed |
+| 2026-03-07 | 治理决策 | 历史整理报告与一次性检查报告保留但降级，不再作为主入口导航 | 仅保留追溯价值；当前入口统一回到 `README/docs/spec/common/records` | closed |
+| 2026-03-07 | 治理决策 | README / AGENTS / docs/*/README 的权威入口表述统一为 baseline + development-status + docs/spec | 已完成 reference / operations / steering 收口，并留存一致性审计记录 | closed |
+| 2026-03-07 | 治理决策 | 次级 README 与 spec 各级 README 已补齐统一入口，后续用脚本做回归检查 | 以 `check_doc_authority.ps1` 与 `check_doc_links.ps1` 双脚本做回归 | closed |
+| 2026-03-07 | 治理决策 | `v0.01-plus` 从独立实验版升格为当前主开发线，用于替代 legacy top-down | 仍保留 legacy 对照与回退路径；`v0.02` 不承接本次链路替代工作 | open |
 
 ---
 
@@ -134,25 +177,17 @@
 | 2026-03-02 | v1.0 | 重启清零：建立正式模板并切换到 `.kiro` 治理基线 |
 | 2026-03-03 | v1.1 | 设计终审定稿 + 治理沙盘评审完成，状态同步 |
 | 2026-03-03 | v1.2 | 治理省察完成：steering/record 审计 + 3项 record 同步修复 |
-| 2026-03-03 | v1.3 | 根配置文件省察 + 15项偏差修复 + v0.01 正式版封版：全部文档层均通过定稿门禁 |
-| 2026-03-03 | v1.4 | 根配置文件终审（15项偏差修复）+ roadmap/spec-01~05 状态升格 Active |
-| 2026-03-04 | v1.5 | 进入 Week1 文档校对：spec-01 补齐“校对证据”落点并完成跨文档一致性复核 |
-| 2026-03-04 | v1.6 | 完成 spec-02~05 文档校对与证据化留痕；v0.01 spec-01~05 校对闭环完成 |
-| 2026-03-04 | v1.7 | 实现前最后一轮总校对完成：roadmap 新增追溯索引与七维勾选，spec-01~05 统一 REV-ID |
-| 2026-03-06 | v1.8 | 完成 v0.01 基线跑通后的回望审视，形成“保留不动 / v0.01 立即修订 / v0.02+ 延后”三分法清单 |
-| 2026-03-06 | v1.9 | 完成 v0.01 回望修订首轮落地：roadmap、spec-01/spec-02/spec-05、data-layer/backtest-report 说明性口径已按实战证据更新 |
-| 2026-03-06 | v1.10 | 完成 spec-04 / broker-design 回望修订；完成 Week1 Data Layer Gap Audit，并修正 `MIN_AMOUNT` 与 `stock_info.list_status` 默认主链路口径 |
-| 2026-03-06 | v1.11 | 明确数据存储口径：执行库 / raw 源库 / Parquet / logs / cache 边界固定，并将 raw bootstrap 并入主入口 |
-| 2026-03-06 | v1.12 | 进入 Week2 首批实现收口：MSS/IRS 归一化与阈值对齐，候选解释性与组合模式补齐 |
-| 2026-03-06 | v1.13 | Week2 联调入口落地：三组消融对照脚本与 selector→strategy smoke 入口可执行，相关单测/集成测试通过 |
-| 2026-03-06 | v1.14 | Week2 初轮证据落地：短窗消融与真实 smoke 证据已产出，working copy 保护补齐，spec-02/spec-03 勾选同步更新 |
-| 2026-03-06 | v1.15 | Week2 分布审计完成：IRS 唯一排名修正，MSS/IRS 全区间证据落地，并明确 MSS 全中性 / IRS 111 桶 / 全周期三场消融性能阻塞为当前 open risk |
-| 2026-03-06 | v1.16 | 补齐 v0.01 当前版算法设计：形成 Overview + MSS + IRS + PAS 四份实现级算法文档，明确旧版参考与当前可执行口径的边界 |
-| 2026-03-06 | v1.17 | 完成 Selector 评审与 SW31 修正：行业链路切到申万一级成员映射优先，L2 仅处理交易日，IRS 增加最小行业覆盖门槛，并确认 raw 申万成员源数据仍待补采 |
-| 2026-03-06 | v1.18 | 启动 design-v2 受控纠偏：正式新增 MSS/IRS/PAS 三份算法级 SoT，并补齐 system-baseline / architecture-master / 模块设计的算法入口说明 |
-| 2026-03-06 | v1.19 | 完成 SW31 数据链路收口与 MSS baseline calibration：raw/执行库行业口径回到正式 31 行业，IRS 不再混入 `stock_basic.industry` 桶，MSS baseline 已从占位参数切换为真实经验基线 |
-| 2026-03-06 | v1.20 | 完成 MSS threshold sweep 短窗消融：确认 bullish threshold 在当前 `BEARISH-only` gate 语义下不会改变交易结果，下一步应转向 gate mode 或 bearish threshold 实验 |
-
+| 2026-03-03 | v1.3 | 根配置文件省察 + 15项偏差修复 + v0.01 正式版封版 |
+| 2026-03-04 | v1.4 | 完成 roadmap 与 spec-01~05 文档校对闭环 |
+| 2026-03-06 | v1.5 | 完成 Week1 / Week2 的 Data、Selector、Strategy、算法 SoT、SW31、baseline 与阈值实验收口 |
+| 2026-03-07 | v1.6 | 文档治理收口：路径修复、入口降级、README 去重、development-status 历史摘要化 |
+| 2026-03-07 | v1.7 | 权威入口一致性审计：reference / operations / steering 收口并统一入口表述 |
+| 2026-03-07 | v1.8 | 次级 README 清理：a-stock-rules / core-algorithms / spec 各级 README 补齐统一入口，并新增 `check_doc_authority.ps1` |
+| 2026-03-07 | v1.9 | `preflight.ps1` 扩成统一开发预检入口，新增 `check_repo_config.ps1`，并冻结 `Frozen / Active / Draft` 文档状态语义 |
+| 2026-03-07 | v1.10 | 新增 `check_doc_status.ps1`，将文档状态语义并入 docs gate |
+| 2026-03-07 | v1.11 | 安装 `dev` 依赖并接通 `preflight.ps1 -Profile full`；补齐 `mypy/ruff` 配置与回测集成测试前置 |
+| 2026-03-07 | v1.12 | 完成 `v0.01-plus` 独立实验版切分：新增 spec 骨架，并将 `system-baseline` / `selector-design` 收回纯 `v0.01 Frozen` 口径 |
+| 2026-03-07 | v1.13 | 治理决策翻转：`v0.01` 冻结为历史尝试，`v0.01-plus` 升格为当前主开发线；同步改写 plus 目录、状态入口与 DTT 设计定位 |
 
 
 

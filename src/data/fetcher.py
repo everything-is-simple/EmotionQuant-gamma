@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from pathlib import Path
+import logging
 import time
 from abc import ABC, abstractmethod
+from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import date, timedelta
-from typing import Callable
-import logging
+from pathlib import Path
 
 import pandas as pd
 from tenacity import (
@@ -18,9 +18,9 @@ from tenacity import (
 )
 
 from src.config import Settings
-from src.logging_utils import logger
 from src.data.store import Store
 from src.data.sw_industry import build_l1_sw_industry_member_rows, normalize_sw_l1_classify
+from src.logging_utils import logger
 
 _retry_logger = logging.getLogger("emotionquant.fetcher.retry")
 _RAW_ATTACH_ALIAS = "rawdb_bootstrap"

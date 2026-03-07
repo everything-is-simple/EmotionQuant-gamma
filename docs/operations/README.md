@@ -1,64 +1,48 @@
-# 运维文档目录
+# Operations（仓库运维）
 
-本目录存放 EmotionQuant 系统的运维相关文档。
+## 定位
 
-## 📋 文档清单
+`docs/operations/` 存放本仓库的运维文档、环境落地说明与敏感配置模板入口。
 
-### 1. 环境配置
+这里回答的是“这个仓库怎么落地、怎么维护、怎么排查”，不是“当前系统设计怎么执行”或“某个版本现在推进到哪里”。执行口径以 `docs/design-v2/01-system/system-baseline.md` 为准，当前状态以 `docs/spec/common/records/development-status.md` 为准。
 
-- **setup-guide.md** - 环境配置详细指南
-  - 推荐目录结构（代码/数据/临时文件分离）
-  - 详细的配置步骤和验证方法
-  - 常见问题解答（Q&A）
-  - 配置完成检查清单
+## 当前入口
 
-### 2. 数据源管理
+| 类型 | 路径 | 用途 |
+|---|---|---|
+| 环境落地 | `setup-guide.md` | 配置仓库、本地目录与基础检查 |
+| 数据源模板 | `data-source-and-migration.md.template` | 本地填写 Token、路径与迁移配置模板 |
+| 数据源实配 | `data-source-and-migration.md` | 本地敏感配置与迁移记录，不提交 Git |
+| 历史审计 | `root-files-check-report.md` | 追溯 2026-03-07 根入口检查，不作为当前主入口 |
 
-- **data-source-and-migration.md** - 数据源配置与数据库迁移记录
-  - TuShare 双 Key 配置（官方账号 + 共享网关）
-  - 数据库迁移指南（旧库 → 新库）
-  - 数据完整性检查方法
-  - Token 续费提醒和维护清单
-  - ⚠️ 包含敏感信息，不提交到 Git
+## 使用规则
 
-- **data-source-and-migration.md.template** - 数据源配置模板
-  - 不包含敏感信息，可以提交到 Git
-  - 其他开发者可以复制模板填写自己的配置
+1. `operations/` 只存放仓库本地运维说明，不承载系统 SoT、治理状态或版本证据。
+2. 涉及当前是否继续推进、是否满足重启条件，统一查看 `docs/spec/common/records/development-status.md`。
+3. 涉及版本路线图、Gate、evidence、records，统一进入 `docs/spec/<version>/`。
+4. `data-source-and-migration.md` 视为本地敏感文件；仓库内只保留 `.template`。
+5. 一次性检查报告保留为追溯记录，不进入主入口首屏导航。
 
-### 3. 检查报告
+## 相邻目录边界
 
-- **root-files-check-report.md** - 根目录入口文件检查报告
-  - 18 个入口文件的检查结果
-  - 配置完整性验证
-  - 维护建议
+- `docs/reference/operations/`：存放通用运维参考与临时文件说明，不包含仓库敏感配置。
+- `docs/design-v2/`：定义系统设计与边界，不负责环境落地步骤。
+- `docs/spec/`：存放版本材料与历史证据，不存放本地 Token/路径配置。
+- `scripts/ops/`：存放可执行运维脚本；文档只解释目的和入口，不替代脚本。
 
-## 🎯 使用场景
+## 相关文档
 
-### 新人入职
+- `docs/spec/common/records/development-status.md`
+- `docs/design-v2/01-system/system-baseline.md`
+- `docs/reference/operations/README.md`
+- `scripts/ops/preflight.ps1`：统一开发预检入口（默认 `docs + config`，`-Profile full` 增加 `lint + test`；受限沙箱会话中，完整 `pytest` 可能需要提权执行）
+- `scripts/ops/check_repo_config.ps1`：hooks / pyproject / 预检入口配置检查
+- `scripts/ops/check_docs.ps1`：文档 gate（authority + status + links）
+- `scripts/ops/check_doc_status.ps1`：文档状态语义检查
+- `scripts/ops/check_doc_links.ps1`：链接与路径回归检查
+- `scripts/ops/check_doc_authority.ps1`：权威入口一致性检查
+- `.githooks/pre-commit`：提交前自动执行 `preflight.ps1 -Profile hook`
 
-1. 阅读 `setup-guide.md` 配置环境
-2. 复制 `data-source-and-migration.md.template` 为 `data-source-and-migration.md`
-3. 填写实际的 Token 信息和数据库路径
 
-### 日常运维
 
-1. 参考 `data-source-and-migration.md` 检查 Token 有效期
-2. 按照维护清单定期检查数据完整性
-3. 定期备份数据库文件
 
-### 问题排查
-
-1. 查看 `setup-guide.md` 的常见问题解答
-2. 检查 `root-files-check-report.md` 确认配置文件状态
-
-## 🔗 相关文档
-
-- 系统设计：`docs/design-v2/`
-- 参考资料：`docs/reference/operations/`
-- 工作流程：`docs/workflow/`
-
-## ⚠️ 安全提醒
-
-- `data-source-and-migration.md` 包含敏感 Token 信息，已被 `.gitignore` 排除
-- 不要将包含 Token 的文件提交到 Git
-- 不要在公开场合分享 Token

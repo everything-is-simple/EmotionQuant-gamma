@@ -10,7 +10,6 @@ from src.contracts import StockCandidate
 from src.data.store import Store
 from src.logging_utils import logger
 
-
 MSS_GATE_MODES = {"bearish_only", "bullish_required", "soft_gate"}
 
 
@@ -30,7 +29,7 @@ def _industry_priority_map(store: Store, calc_date: date) -> dict[str, float]:
     priority: dict[str, float] = {}
     for _, row in rows.iterrows():
         rank = int(row["rank"])
-        # rank 越高（数字越小）优先分越高，映射到 0-100。
+        # legacy 对照链仍保留行业优先分，便于和历史漏斗结果对齐。
         priority[str(row["industry"])] = float((max_rank - rank + 1) / max_rank * 100.0)
     return priority
 
@@ -121,13 +120,7 @@ def _apply_basic_filters(df: pd.DataFrame, calc_date: date, config: Settings) ->
         "HIGH",
         np.where(work["amount"].fillna(0) >= config.min_amount, "MEDIUM", "LOW"),
     )
-
-    # 粗筛目标：先剔除不可交易与明显质量差样本，再做排序。
-    filtered = work[work["reject_reason"] == ""].copy()
-    # Stage 1 控制计算规模：先按流动性和活跃度预截断到约 200 只。
-    filtered["rough_rank_score"] = np.log1p(filtered["amount"].fillna(0)) + filtered["volume_ratio"].fillna(0)
-    filtered = filtered.sort_values("rough_rank_score", ascending=False).head(200)
-    return filtered
+    return work[work["reject_reason"] == ""].copy()
 
 
 def _load_mss_signal(store: Store, calc_date: date, config: Settings) -> str | None:
@@ -143,7 +136,7 @@ def _apply_mss_gate(mss_signal: str | None, config: Settings, df: pd.DataFrame) 
     if not config.enable_mss_gate:
         return df
     if mss_signal is None:
-        # 缺 MSS 结果时，为防漂移直接返回空池，强制上游先补数据。
+        # legacy 对照链在 MSS 缺失时直接返回空池，确保和历史门控口径一致。
         return df.iloc[0:0]
     if config.mss_gate_mode not in MSS_GATE_MODES:
         raise ValueError(
@@ -181,40 +174,59 @@ def _apply_irs_filter(store: Store, calc_date: date, config: Settings, df: pd.Da
     return df[df["industry"].isin(allowed)].copy()
 
 
-def select_candidates(
+def _select_dtt_candidates_frame(
     store: Store,
     calc_date: date,
-    config: Settings | None = None,
-) -> list[StockCandidate]:
-    top = select_candidates_frame(store, calc_date, config=config)
-    if top.empty:
-        return []
-    return [
-        StockCandidate(code=str(row["code"]), industry=str(row["industry"]), score=float(row["score"]))
-        for _, row in top.iterrows()
-    ]
-
-
-def select_candidates_frame(
-    store: Store,
-    calc_date: date,
-    config: Settings | None = None,
+    cfg: Settings,
+    universe: pd.DataFrame,
 ) -> pd.DataFrame:
-    cfg = config or get_settings()
-    universe = _load_universe_snapshot(store, calc_date)
+    filtered = _apply_basic_filters(universe, calc_date, cfg)
+    if filtered.empty:
+        logger.info(f"selector {calc_date}: mode=dtt, universe={len(universe)}, filtered=0, final=0")
+        return filtered
+
+    data = filtered.copy()
+    # DTT 主线里的 preselect_score 只服务于算力调度，不承载 MSS/IRS 交易语义。
+    data["preselect_score"] = np.log1p(data["amount"].fillna(0)) + data["volume_ratio"].fillna(0)
+    data["score"] = data["preselect_score"]
+    ranked = (
+        data.sort_values(["preselect_score", "code"], ascending=[False, True])
+        .head(max(1, int(cfg.candidate_top_n)))
+        .loc[
+            :,
+            ["code", "industry", "preselect_score", "score", "filters_passed", "reject_reason", "liquidity_tag"],
+        ]
+        .reset_index(drop=True)
+    )
+    logger.info(
+        f"selector {calc_date}: mode=dtt, universe={len(universe)}, filtered={len(filtered)}, final={len(ranked)}"
+    )
+    return ranked
+
+
+def _select_legacy_candidates_frame(
+    store: Store,
+    calc_date: date,
+    cfg: Settings,
+    universe: pd.DataFrame,
+) -> pd.DataFrame:
     stage1 = _apply_basic_filters(universe, calc_date, cfg)
+    if not stage1.empty:
+        # legacy 对照链继续保留“先粗筛再门控”的历史行为，用于 compare / rollback。
+        stage1 = stage1.copy()
+        stage1["rough_rank_score"] = np.log1p(stage1["amount"].fillna(0)) + stage1["volume_ratio"].fillna(0)
+        stage1 = stage1.sort_values("rough_rank_score", ascending=False).head(200)
     mss_signal = _load_mss_signal(store, calc_date, cfg)
     stage2 = _apply_mss_gate(mss_signal, cfg, stage1)
     stage3 = _apply_irs_filter(store, calc_date, cfg, stage2)
     if stage3.empty:
         logger.info(
-            f"selector {calc_date}: universe={len(universe)}, "
+            f"selector {calc_date}: mode=legacy, universe={len(universe)}, "
             f"stage1={len(stage1)}, stage2={len(stage2)}, stage3={len(stage3)}, "
             f"gate_mode={cfg.mss_gate_mode}, mss_signal={mss_signal or 'DISABLED'}"
         )
         return stage3
 
-    # v0.01 候选评分只做排序，不参与 PAS 触发本身。
     data = stage3.copy()
     irs_priority = _industry_priority_map(store, calc_date)
     data["liquidity_score"] = np.log1p(data["amount"].fillna(0))
@@ -236,8 +248,44 @@ def select_candidates_frame(
         ranked = ranked.head(max(1, cfg.mss_soft_gate_candidate_top_n)).reset_index(drop=True)
 
     logger.info(
-        f"selector {calc_date}: universe={len(universe)}, "
+        f"selector {calc_date}: mode=legacy, universe={len(universe)}, "
         f"stage1={len(stage1)}, stage2={len(stage2)}, stage3={len(stage3)}, "
         f"final={len(ranked)}, gate_mode={cfg.mss_gate_mode}, mss_signal={mss_signal or 'DISABLED'}"
     )
     return ranked
+
+
+def select_candidates(
+    store: Store,
+    calc_date: date,
+    config: Settings | None = None,
+) -> list[StockCandidate]:
+    top = select_candidates_frame(store, calc_date, config=config)
+    if top.empty:
+        return []
+    candidates: list[StockCandidate] = []
+    for _, row in top.iterrows():
+        preselect_score = row["preselect_score"] if "preselect_score" in row else row["score"]
+        candidates.append(
+            StockCandidate(
+                code=str(row["code"]),
+                industry=str(row["industry"]),
+                score=float(row["score"]),
+                preselect_score=float(preselect_score),
+                filter_reason=str(row.get("reject_reason", "")),
+                liquidity_tag=str(row.get("liquidity_tag", "")),
+            )
+        )
+    return candidates
+
+
+def select_candidates_frame(
+    store: Store,
+    calc_date: date,
+    config: Settings | None = None,
+) -> pd.DataFrame:
+    cfg = config or get_settings()
+    universe = _load_universe_snapshot(store, calc_date)
+    if cfg.use_dtt_pipeline:
+        return _select_dtt_candidates_frame(store, calc_date, cfg, universe)
+    return _select_legacy_candidates_frame(store, calc_date, cfg, universe)

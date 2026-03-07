@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from datetime import date
 from pathlib import Path
-import sys
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -11,6 +11,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from src.backtest.ablation import run_selector_ablation, write_ablation_evidence
 from src.config import get_settings
+from src.run_metadata import build_artifact_name, build_run_id, resolve_mode_variant
 
 
 def _parse_date(text: str) -> date:
@@ -18,7 +19,7 @@ def _parse_date(text: str) -> date:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run Week2 Selector/Strategy ablation scenarios")
+    parser = argparse.ArgumentParser(description="Run v0.01-plus DTT matrix scenarios")
     parser.add_argument("--start", required=True, help="Backtest start date (YYYY-MM-DD)")
     parser.add_argument("--end", required=True, help="Backtest end date (YYYY-MM-DD)")
     parser.add_argument("--patterns", default="bof", help="Comma-separated patterns")
@@ -57,7 +58,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--output",
         default=None,
-        help="Output JSON path, default docs/spec/v0.01/evidence/v0.01-selector-ablation-YYYYMMDD.json",
+        help="Output JSON path, default docs/spec/v0.01-plus/evidence/<run_id>__selector_ablation.json",
     )
     return parser
 
@@ -68,20 +69,19 @@ def main() -> int:
     start = _parse_date(args.start)
     end = _parse_date(args.end)
     patterns = [item.strip().lower() for item in args.patterns.split(",") if item.strip()]
-    mss_thresholds = [float(item.strip()) for item in args.mss_thresholds.split(",") if item.strip()]
-    mss_gate_modes = [item.strip().lower() for item in args.mss_gate_modes.split(",") if item.strip()]
-    mss_variants = [item.strip().lower() for item in args.mss_variants.split(",") if item.strip()]
-    irs_top_ns = [int(item.strip()) for item in args.irs_top_ns.split(",") if item.strip()]
     db_path = Path(args.db_path).expanduser().resolve() if args.db_path else cfg.db_path
     working_db_path = (
         Path(args.working_db_path).expanduser().resolve()
         if args.working_db_path
-        else REPO_ROOT / ".tmp" / "backtest" / f"selector-ablation-{date.today():%Y%m%d}.duckdb"
+        else cfg.resolved_temp_path / "backtest" / f"selector-ablation-{date.today():%Y%m%d}.duckdb"
     )
+    output_root = REPO_ROOT / "docs" / "spec" / "v0.01-plus" / "evidence"
+    mode, variant = resolve_mode_variant(cfg)
+    summary_run_id = build_run_id(scope="matrix_summary", mode=mode, variant=variant, start=start, end=end)
     output_path = (
         Path(args.output).expanduser().resolve()
         if args.output
-        else REPO_ROOT / "docs" / "spec" / "v0.01" / "evidence" / f"v0.01-selector-ablation-{date.today():%Y%m%d}.json"
+        else output_root / build_artifact_name(summary_run_id, "selector_ablation", "json")
     )
 
     payload = run_selector_ablation(
@@ -93,11 +93,9 @@ def main() -> int:
         initial_cash=args.cash,
         rebuild_l3=not args.skip_rebuild_l3,
         working_db_path=working_db_path,
-        mss_thresholds=mss_thresholds,
-        mss_gate_modes=mss_gate_modes,
-        irs_top_ns=irs_top_ns,
-        mss_variants=mss_variants,
+        artifact_root=cfg.resolved_temp_path / "artifacts",
     )
+    payload["summary_run_id"] = summary_run_id
     path = write_ablation_evidence(output_path, payload)
     print(f"ablation_evidence={path}")
     return 0

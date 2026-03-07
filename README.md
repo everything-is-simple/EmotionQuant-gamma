@@ -4,10 +4,12 @@ EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
 
 ## 设计文档
 
-唯一权威入口：[`docs/design-v2/system-baseline.md`](docs/design-v2/system-baseline.md)
+`v0.01` 历史基线入口：[`docs/design-v2/01-system/system-baseline.md`](docs/design-v2/01-system/system-baseline.md)
 
 系统文档基线：`v0.01 正式版`（封版日期：`2026-03-03`；后续仅允许勘误与链接修复，不修改执行口径）
 封版记录：[`docs/spec/v0.01/records/release-v0.01-formal.md`](docs/spec/v0.01/records/release-v0.01-formal.md)
+当前主开发线：[`docs/spec/v0.01-plus/README.md`](docs/spec/v0.01-plus/README.md)
+当前仓库状态：`v0.01` 已冻结为历史尝试；后续实现重启转入 `v0.01-plus` 主开发线。具体 Gate、状态与切换节奏以 `docs/spec/common/records/development-status.md` 的最新状态为准。
 
 涵盖：6 模块架构、MSS/IRS/PAS 因子体系、L1-L4 数据分层、pydantic 契约、四周落地计划。
 
@@ -85,7 +87,7 @@ EmotionQuant-gamma/
 │   └── setup/              # 环境配置工具
 ├── docs/                   # 文档总入口（见 docs/README.md）
 │   ├── design-v2/          # 系统设计（单一事实源）
-│   │   ├── 01-system/      # 系统级设计（system-baseline.md 为 SoT）
+│   │   ├── 01-system/      # 系统级设计（v0.01 Frozen 历史基线）
 │   │   ├── 02-modules/     # 模块级设计
 │   │   └── 03-algorithms/  # 算法级设计（MSS/IRS/PAS）
 │   ├── Strategy/           # 策略理论基础（MSS/IRS/PAS）
@@ -111,20 +113,20 @@ EmotionQuant-gamma/
 - **三大支撑**：`steering/`（治理铁律）、`spec/`（分阶段归档）、`workflow/`（工作流程）
 - **两大辅助**：`reference/`（参考资料）、`README.md`（总导航）
 
-详见：[`docs/README.md`](docs/README.md) 和 [`docs/REORGANIZATION-COMPLETE-REPORT.md`](docs/REORGANIZATION-COMPLETE-REPORT.md)
+详见：[`docs/README.md`](docs/README.md)。历史整理报告保留在 [`docs/REORGANIZATION-COMPLETE-REPORT.md`](docs/REORGANIZATION-COMPLETE-REPORT.md)，仅供追溯。
 
 ## 相关文档
 
 - 📖 **配置指南**：[`docs/operations/setup-guide.md`](docs/operations/setup-guide.md) - 环境配置详细步骤
-- 📖 **系统设计**：[`docs/design-v2/system-baseline.md`](docs/design-v2/system-baseline.md) - 系统基线（SoT）
+- 📖 **v0.01 历史基线**：[`docs/design-v2/01-system/system-baseline.md`](docs/design-v2/01-system/system-baseline.md) - 冻结版系统基线
+- 📖 **当前主开发线**：[`docs/spec/v0.01-plus/README.md`](docs/spec/v0.01-plus/README.md) - `v0.01-plus` 主线替代版入口
 - 📖 **文档导航**：[`docs/README.md`](docs/README.md) - 完整文档索引
+- 📖 **当前状态**：[`docs/spec/common/records/development-status.md`](docs/spec/common/records/development-status.md) - 当前治理状态与重启条件
 - 📖 **开发规则**：[`AGENTS.md`](AGENTS.md) - Agent 开发规则
-- 📖 **整理报告**：[`docs/REORGANIZATION-COMPLETE-REPORT.md`](docs/REORGANIZATION-COMPLETE-REPORT.md) - 文档整理报告
 
 ## 许可证
 
 MIT（见 [`LICENSE`](LICENSE)）
-
 
 
 

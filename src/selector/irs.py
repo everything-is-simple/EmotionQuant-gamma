@@ -5,7 +5,6 @@ from datetime import date
 import numpy as np
 import pandas as pd
 
-from src.contracts import IndustryScore
 from src.data.store import Store
 from src.selector.baseline import IRS_BASELINE
 from src.selector.normalize import safe_ratio, zscore_single

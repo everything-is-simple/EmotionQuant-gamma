@@ -1,44 +1,27 @@
 # common 跨版本文档（归档）
 
-本目录存放跨版本共用文档，避免在各版本目录中重复维护。
+## 定位
 
-## 📂 目录结构
+`docs/spec/common/` 存放跨版本共用的治理记录、冻结清单与历史审计材料。
 
-```
-common/
-├── records/                          # 跨版本治理记录
-│   ├── development-status.md         # 阶段进展与 A6 收口记录
-│   ├── debts.md                      # 技术债登记
-│   ├── reusable-assets.md            # 可复用资产清单
-│   └── README.md                     # 治理记录说明
-├── bridge-review-20260304.md         # 跨版本桥接评审记录
-└── v0.02-v0.06-freeze-min-checklist.md  # 跨版本冻结清单
-```
+这里回答的是“哪些材料需要跨版本持续维护”，不是“当前系统设计怎么定义”。系统设计 SoT 以 `docs/design-v2/01-system/system-baseline.md` 为准；当前治理状态与重启条件以 `docs/spec/common/records/development-status.md` 为准；版本归档入口统一在 `docs/spec/`。
 
-## 📋 文档说明
+## 当前入口
 
-### 1. `records/` - 跨版本治理记录
+| 类型 | 路径 | 用途 |
+|---|---|---|
+| 治理记录 | `records/README.md` | 查看跨版本 records 的结构与边界 |
+| 当前状态 | `records/development-status.md` | 查看当前治理阶段与历史摘要 |
+| 冻结清单 | `v0.02-v0.06-freeze-min-checklist.md` | 查看后续版本冻结门槛 |
+| 历史桥接 | `bridge-review-20260304.md` | 查看历史桥接审计，不作为当前执行入口 |
 
-存放需要跨版本持续维护的治理信息：
+## 使用规则
 
-- **development-status.md**：记录各阶段开发进展、A6 收口状态
-- **debts.md**：登记技术债务、待优化项、已知问题
-- **reusable-assets.md**：可复用的代码、配置、脚本清单
+1. 只存放跨版本共用材料，不重复存放单版本路线图、证据或发布记录。
+2. 单版本专属 records 统一放在 `docs/spec/<version>/records/`。
+3. 若与系统设计口径冲突，以 `docs/design-v2/01-system/system-baseline.md` 为准。
+4. 当前状态、重启条件和治理节奏，以 `records/development-status.md` 为准。
 
-### 2. 跨版本评审与清单
-
-- **bridge-review-20260304.md**：版本间桥接评审记录
-- **v0.02-v0.06-freeze-min-checklist.md**：v0.02-v0.06 最小冻结清单
-
-## 🔗 使用规则
-
-1. **跨版本信息统一存放**：避免在各版本目录重复维护
-2. **单版本专属信息分开存放**：runbook、勘误、发布记录仍放在 `docs/spec/<version>/records/`
-3. **引用路径统一**：使用 `docs/spec/common/` 或 `docs/spec/common/records/`
-
-## 📚 相关文档
-
-- 版本归档入口：`docs/spec/README.md`
-- 版本索引：`docs/spec/INDEX.md`
-- 各版本材料：`docs/spec/v0.01/` ~ `docs/spec/v0.06/`
-
+## 相关文档- `docs/design-v2/01-system/system-baseline.md`
+- `docs/spec/common/records/development-status.md`
+- `docs/spec/README.md`

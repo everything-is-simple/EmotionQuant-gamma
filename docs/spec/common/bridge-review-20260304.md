@@ -1,14 +1,16 @@
 # 路线图-设计桥接审查记录（2026-03-04）
 
+> 历史桥接审计记录：保留用于追溯 2026-03-04 的路线图与设计桥接修复，不作为当前执行入口。
+
 **审查范围**:
 - `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md` ~ `docs/spec/v0.06/roadmap/v0.06-portfolio.md`
-- `docs/design-v2/architecture-master.md`、`docs/design-v2/backtest-report-design.md`、`docs/design-v2/broker-design.md`、`docs/design-v2/data-layer-design.md`、`docs/spec/v0.01/records/data-rebuild-runbook-20260303.md`、`docs/design-v2/system-baseline.md`、`docs/spec/v0.01/records/release-v0.01-formal.md`、`docs/design-v2/sandbox-review-standard.md`、`docs/design-v2/selector-design.md`、`docs/design-v2/strategy-design.md`、`docs/design-v2/volman-ytc-mapping.md`
-- `docs/reference/未来之路/god_view_8_perspectives_report_v0.01.md`
+- `docs/design-v2/01-system/architecture-master.md`、`docs/design-v2/02-modules/backtest-report-design.md`、`docs/design-v2/02-modules/broker-design.md`、`docs/design-v2/02-modules/data-layer-design.md`、`docs/spec/v0.01/records/data-rebuild-runbook-20260303.md`、`docs/design-v2/01-system/system-baseline.md`、`docs/spec/v0.01/records/release-v0.01-formal.md`、`docs/observatory/sandbox-review-standard.md`、`docs/design-v2/02-modules/selector-design.md`、`docs/design-v2/02-modules/strategy-design.md`、`docs/Strategy/PAS/volman-ytc-mapping.md`
+- `docs/observatory/god_view_8_perspectives_report_v0.01.md`
 
 **审查基线**:
-- 执行口径：`docs/design-v2/system-baseline.md`
-- 评审口径：`docs/design-v2/sandbox-review-standard.md`
-- 未来规划附录：`docs/reference/未来之路/god_view_8_perspectives_report_v0.01.md`
+- 执行口径：`docs/design-v2/01-system/system-baseline.md`
+- 评审口径：`docs/observatory/sandbox-review-standard.md`
+- 未来规划附录：`docs/observatory/god_view_8_perspectives_report_v0.01.md`
 
 ## 1. 宏观层结论（目标与演进）
 
@@ -31,7 +33,7 @@
 ## 4. 发现问题与修复（按严重度）
 
 1. `S1`：v0.01 路线图引用不存在的 `spec-01~05` 文件，桥接失效。  
-   修复：改为指向现有 `docs/design-v2/data-layer-design.md`、`selector-design.md`、`strategy-design.md`、`broker-design.md`、`backtest-report-design.md`。
+   修复：改为指向现有 `docs/design-v2/02-modules/data-layer-design.md`、`selector-design.md`、`strategy-design.md`、`broker-design.md`、`backtest-report-design.md`。
 2. `S1`：v0.02-v0.06 缺少定稿门禁证据落点（七维证据/kill-chain/幂等重跑/Go-No-Go）。  
    修复：逐文件新增“评审证据与 Go/No-Go 门禁（补充）”章节。
 3. `S1`：v0.05 文档内自相矛盾（正文“自动禁用” vs 风险段“仅建议模式”）。  

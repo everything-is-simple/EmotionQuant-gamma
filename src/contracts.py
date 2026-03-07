@@ -5,7 +5,6 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-
 ActionType = Literal["BUY", "SELL"]
 SignalActionType = Literal["BUY"]
 # v0.01 勘误补充：订单生命周期允许 EXPIRED，避免 PENDING 无穷挂单。
@@ -45,6 +44,9 @@ class StockCandidate(ContractBase):
     code: str = Field(..., description="6-digit pure stock code")
     industry: str
     score: float
+    preselect_score: float | None = None
+    filter_reason: str | None = None
+    liquidity_tag: str | None = None
 
 
 class Signal(ContractBase):
@@ -55,6 +57,25 @@ class Signal(ContractBase):
     strength: float
     pattern: str
     reason_code: str
+    # 兼容迁移期运行时扩展字段：正式 l3_signals 仍只落旧字段，DTT 额外真相源写 sidecar。
+    bof_strength: float | None = None
+    irs_score: float | None = None
+    mss_score: float | None = None
+    final_score: float | None = None
+    final_rank: int | None = None
+    variant: str | None = None
+
+    def to_formal_signal_row(self) -> dict[str, object]:
+        """只导出正式 l3_signals 兼容字段，避免迁移期扩展字段污染 frozen schema。"""
+        return {
+            "signal_id": self.signal_id,
+            "code": self.code,
+            "signal_date": self.signal_date,
+            "action": self.action,
+            "strength": self.strength,
+            "pattern": self.pattern,
+            "reason_code": self.reason_code,
+        }
 
 
 class Order(ContractBase):

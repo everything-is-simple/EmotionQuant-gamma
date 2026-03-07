@@ -5,8 +5,8 @@ from datetime import date, timedelta
 import pandas as pd
 import pytest
 
-from src.contracts import Signal
 from src.config import Settings
+from src.contracts import Signal
 from src.data.store import Store
 from src.selector.irs import compute_irs
 from src.selector.mss import compute_mss, compute_mss_single
@@ -219,7 +219,7 @@ def test_mss_irs_and_selector_pipeline(tmp_path) -> None:
     store.bulk_upsert("l1_stock_daily", stock_l1)
     store.bulk_upsert("l2_stock_adj_daily", stock_l2)
 
-    cfg = Settings(ENABLE_MSS_GATE=False, ENABLE_IRS_FILTER=False, MIN_AMOUNT=1)
+    cfg = Settings(PIPELINE_MODE="dtt", ENABLE_MSS_GATE=False, ENABLE_IRS_FILTER=False, MIN_AMOUNT=1)
     candidates = select_candidates(store, d0 + timedelta(days=9), cfg)
     assert len(candidates) == 1
     assert candidates[0].code == "000001"
@@ -623,7 +623,13 @@ def test_selector_asof_prefers_latest_status_snapshot(tmp_path) -> None:
         ),
     )
 
-    cfg = Settings(ENABLE_MSS_GATE=False, ENABLE_IRS_FILTER=False, MIN_AMOUNT=1, MIN_LIST_DAYS=1)
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        ENABLE_MSS_GATE=False,
+        ENABLE_IRS_FILTER=False,
+        MIN_AMOUNT=1,
+        MIN_LIST_DAYS=1,
+    )
     cands = select_candidates(store, calc_date, cfg)
     assert cands == []
     store.close()
@@ -748,7 +754,13 @@ def test_selector_filters_out_non_live_status(tmp_path) -> None:
         ),
     )
 
-    cfg = Settings(ENABLE_MSS_GATE=False, ENABLE_IRS_FILTER=False, MIN_AMOUNT=1, MIN_LIST_DAYS=1)
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        ENABLE_MSS_GATE=False,
+        ENABLE_IRS_FILTER=False,
+        MIN_AMOUNT=1,
+        MIN_LIST_DAYS=1,
+    )
     cands = select_candidates(store, calc_date, cfg)
     assert len(cands) == 1
     assert cands[0].code == "000001"
@@ -829,7 +841,13 @@ def test_selector_returns_empty_when_mss_is_bearish(tmp_path) -> None:
     )
     store.bulk_upsert("l3_mss_daily", pd.DataFrame([{"date": calc_date, "score": 20.0, "signal": "BEARISH"}]))
 
-    cfg = Settings(ENABLE_MSS_GATE=True, ENABLE_IRS_FILTER=False, MIN_AMOUNT=1, MIN_LIST_DAYS=1)
+    cfg = Settings(
+        PIPELINE_MODE="legacy",
+        ENABLE_MSS_GATE=True,
+        ENABLE_IRS_FILTER=False,
+        MIN_AMOUNT=1,
+        MIN_LIST_DAYS=1,
+    )
     assert select_candidates(store, calc_date, cfg) == []
     store.close()
 
@@ -843,6 +861,7 @@ def test_selector_bullish_required_blocks_neutral_environment(tmp_path) -> None:
     store.bulk_upsert("l3_mss_daily", pd.DataFrame([{"date": calc_date, "score": 50.0, "signal": "NEUTRAL"}]))
 
     cfg = Settings(
+        PIPELINE_MODE="legacy",
         ENABLE_MSS_GATE=True,
         ENABLE_IRS_FILTER=False,
         MSS_GATE_MODE="bullish_required",
@@ -862,6 +881,7 @@ def test_selector_soft_gate_trims_neutral_candidate_count(tmp_path) -> None:
     store.bulk_upsert("l3_mss_daily", pd.DataFrame([{"date": calc_date, "score": 52.0, "signal": "NEUTRAL"}]))
 
     cfg = Settings(
+        PIPELINE_MODE="legacy",
         ENABLE_MSS_GATE=True,
         ENABLE_IRS_FILTER=False,
         MSS_GATE_MODE="soft_gate",
@@ -949,12 +969,27 @@ def test_selector_frame_keeps_candidate_explainability_fields(tmp_path) -> None:
         ),
     )
 
-    cfg = Settings(ENABLE_MSS_GATE=False, ENABLE_IRS_FILTER=False, MIN_AMOUNT=1, MIN_LIST_DAYS=1)
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        ENABLE_MSS_GATE=False,
+        ENABLE_IRS_FILTER=False,
+        MIN_AMOUNT=1,
+        MIN_LIST_DAYS=1,
+    )
     frame = select_candidates_frame(store, calc_date, cfg)
-    assert list(frame.columns) == ["code", "industry", "score", "filters_passed", "reject_reason", "liquidity_tag"]
+    assert list(frame.columns) == [
+        "code",
+        "industry",
+        "preselect_score",
+        "score",
+        "filters_passed",
+        "reject_reason",
+        "liquidity_tag",
+    ]
     assert frame.iloc[0]["filters_passed"] == "LIST_STATUS;HALT;ST;LIST_DAYS;AMOUNT"
     assert frame.iloc[0]["reject_reason"] == ""
     assert frame.iloc[0]["liquidity_tag"] in {"MEDIUM", "HIGH"}
+    assert frame.iloc[0]["preselect_score"] == frame.iloc[0]["score"]
     store.close()
 
 
@@ -1047,7 +1082,13 @@ def test_selector_prefers_sw_industry_over_legacy_stock_basic_industry(tmp_path)
         ),
     )
 
-    cfg = Settings(ENABLE_MSS_GATE=False, ENABLE_IRS_FILTER=False, MIN_AMOUNT=1, MIN_LIST_DAYS=1)
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        ENABLE_MSS_GATE=False,
+        ENABLE_IRS_FILTER=False,
+        MIN_AMOUNT=1,
+        MIN_LIST_DAYS=1,
+    )
     frame = select_candidates_frame(store, calc_date, cfg)
     assert frame.iloc[0]["industry"] == "银行"
     store.close()

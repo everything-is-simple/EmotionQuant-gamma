@@ -1,24 +1,18 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
-import json
-import subprocess
-from datetime import date, datetime
-from pathlib import Path
-from typing import Sequence
+from datetime import date
 
-import pandas as pd
-
-from src.config import get_settings
 from src.backtest.engine import run_backtest
 from src.broker.broker import Broker
+from src.config import get_settings
 from src.data.builder import build_layers
 from src.data.fetcher import bootstrap_l1_from_raw_duckdb, create_fetcher, fetch_incremental
+from src.data.store import Store
 from src.logging_utils import configure_logger, logger
+from src.run_metadata import finish_run, start_run
 from src.selector.selector import select_candidates
 from src.strategy.strategy import generate_signals
-from src.data.store import Store
 
 
 def _parse_date(value: str | None) -> date | None:
@@ -27,89 +21,23 @@ def _parse_date(value: str | None) -> date | None:
     return date.fromisoformat(value)
 
 
-def _git_commit() -> str | None:
-    try:
-        output = subprocess.check_output(
-            ["git", "rev-parse", "HEAD"],
-            stderr=subprocess.DEVNULL,
-            text=True,
-            cwd=Path(__file__).resolve().parent,
-        ).strip()
-        return output or None
-    except Exception:
-        return None
-
-
-def _config_hash(payload: dict) -> str:
-    body = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
-    return hashlib.sha256(body).hexdigest()
-
-
-def _start_run(store: Store, modules: Sequence[str], config_hash: str, data_snapshot: str) -> str:
-    # 运行级可复现锚点：每次运行必须绑定配置哈希 + 数据快照 + 代码版本。
-    run_id = f"{date.today().isoformat()}_{datetime.utcnow().strftime('%H%M%S')}"
-    row = pd.DataFrame(
-        [
-            {
-                "run_id": run_id,
-                "start_time": datetime.utcnow(),
-                "end_time": None,
-                "modules": ",".join(modules),
-                "status": "RUNNING",
-                "error_summary": None,
-                "config_hash": config_hash,
-                "data_snapshot": data_snapshot,
-                "git_commit": _git_commit(),
-                "runtime_env": "cli",
-            }
-        ]
-    )
-    store.bulk_upsert("_meta_runs", row)
-    return run_id
-
-
-def _finish_run(store: Store, run_id: str, status: str, error_summary: str | None = None) -> None:
-    row = pd.DataFrame(
-        [
-            {
-                "run_id": run_id,
-                "start_time": store.read_scalar(
-                    "SELECT start_time FROM _meta_runs WHERE run_id = ?", (run_id,)
-                ),
-                "end_time": datetime.utcnow(),
-                "modules": store.read_scalar("SELECT modules FROM _meta_runs WHERE run_id = ?", (run_id,)),
-                "status": status,
-                "error_summary": error_summary,
-                "config_hash": store.read_scalar(
-                    "SELECT config_hash FROM _meta_runs WHERE run_id = ?", (run_id,)
-                ),
-                "data_snapshot": store.read_scalar(
-                    "SELECT data_snapshot FROM _meta_runs WHERE run_id = ?", (run_id,)
-                ),
-                "git_commit": store.read_scalar(
-                    "SELECT git_commit FROM _meta_runs WHERE run_id = ?", (run_id,)
-                ),
-                "runtime_env": store.read_scalar(
-                    "SELECT runtime_env FROM _meta_runs WHERE run_id = ?", (run_id,)
-                ),
-            }
-        ]
-    )
-    store.bulk_upsert("_meta_runs", row)
-
-
 def cmd_fetch(args: argparse.Namespace) -> int:
     cfg = get_settings()
     store = Store(cfg.db_path)
-    run_id = _start_run(
+    start = _parse_date(args.start) or cfg.history_start
+    end = _parse_date(args.end) or date.today()
+    artifact_root = str((cfg.resolved_temp_path / "fetch").resolve())
+    run = start_run(
         store=store,
+        scope="fetch",
         modules=["fetch"],
-        config_hash=_config_hash(cfg.model_dump(mode="json")),
-        data_snapshot=f"fetch:{datetime.utcnow().isoformat()}",
+        config=cfg,
+        runtime_env="cli",
+        artifact_root=artifact_root,
+        start=start,
+        end=end,
     )
     try:
-        start = _parse_date(args.start) or cfg.history_start
-        end = _parse_date(args.end) or date.today()
         raw_db_path = args.from_raw_db or cfg.raw_db_path.strip() or None
 
         if args.refresh_stock_info_only and not raw_db_path:
@@ -131,7 +59,7 @@ def cmd_fetch(args: argparse.Namespace) -> int:
                 f"stock_info_effective_range={result.stock_info_effective_from_min}.."
                 f"{result.stock_info_effective_from_max}"
             )
-            _finish_run(store, run_id, "SUCCESS")
+            finish_run(store, run.run_id, "SUCCESS")
             return 0
 
         fetcher = create_fetcher(cfg)
@@ -143,11 +71,11 @@ def cmd_fetch(args: argparse.Namespace) -> int:
         total += fetch_incremental(store, fetcher, "index_daily", "l1_index_daily", start, end)
         total += fetch_incremental(store, fetcher, "stock_daily", "l1_stock_daily", start, end)
         logger.info(f"fetch completed, written rows={total}")
-        _finish_run(store, run_id, "SUCCESS")
+        finish_run(store, run.run_id, "SUCCESS")
         return 0
     except Exception as exc:
         logger.exception("fetch failed")
-        _finish_run(store, run_id, "FAILED", str(exc))
+        finish_run(store, run.run_id, "FAILED", str(exc))
         return 1
     finally:
         store.close()
@@ -157,27 +85,34 @@ def cmd_build(args: argparse.Namespace) -> int:
     cfg = get_settings()
     store = Store(cfg.db_path)
     layers = [part.strip() for part in args.layers.split(",") if part.strip()]
-    run_id = _start_run(
+    start = _parse_date(args.start)
+    end = _parse_date(args.end)
+    artifact_root = str((cfg.resolved_temp_path / "build").resolve())
+    run = start_run(
         store=store,
+        scope="build",
         modules=["build"] + layers,
-        config_hash=_config_hash(cfg.model_dump(mode="json")),
-        data_snapshot=f"build:{datetime.utcnow().isoformat()}",
+        config=cfg,
+        runtime_env="cli",
+        artifact_root=artifact_root,
+        start=start,
+        end=end,
     )
     try:
         written = build_layers(
             store=store,
             config=cfg,
             layers=layers,
-            start=_parse_date(args.start),
-            end=_parse_date(args.end),
+            start=start,
+            end=end,
             force=args.force,
         )
         logger.info(f"build completed, upsert rows={written}")
-        _finish_run(store, run_id, "SUCCESS")
+        finish_run(store, run.run_id, "SUCCESS")
         return 0
     except Exception as exc:
         logger.exception("build failed")
-        _finish_run(store, run_id, "FAILED", str(exc))
+        finish_run(store, run.run_id, "FAILED", str(exc))
         return 1
     finally:
         store.close()
@@ -186,12 +121,7 @@ def cmd_build(args: argparse.Namespace) -> int:
 def cmd_run(args: argparse.Namespace) -> int:
     cfg = get_settings()
     store = Store(cfg.db_path)
-    run_id = _start_run(
-        store=store,
-        modules=["run", "fetch", "build", "selector", "strategy", "broker"],
-        config_hash=_config_hash(cfg.model_dump(mode="json")),
-        data_snapshot=f"run:{datetime.utcnow().isoformat()}",
-    )
+    run = None
     try:
         trade_date = _parse_date(args.trade_date) or date.today()
 
@@ -202,6 +132,16 @@ def cmd_run(args: argparse.Namespace) -> int:
         signal_date = store.prev_trade_date(trade_date)
         if signal_date is None:
             raise RuntimeError("Cannot resolve signal_date from trade calendar.")
+        artifact_root = str((cfg.resolved_temp_path / "daily").resolve())
+        run = start_run(
+            store=store,
+            scope="daily",
+            modules=["run", "fetch", "build", "selector", "strategy", "broker"],
+            config=cfg,
+            runtime_env="cli",
+            artifact_root=artifact_root,
+            signal_date=signal_date,
+        )
 
         # 2) 增量拉取 L1，确保当日与前一交易日数据可用。
         fetch_incremental(store, fetcher, "stock_info", "l1_stock_info", signal_date, trade_date)
@@ -214,7 +154,7 @@ def cmd_run(args: argparse.Namespace) -> int:
 
         # 4) 在 T 日收盘后（signal_date）选股并生成信号。
         candidates = select_candidates(store, signal_date, cfg)
-        signals = generate_signals(store, candidates, signal_date, cfg)
+        signals = generate_signals(store, candidates, signal_date, cfg, run_id=run.run_id)
 
         # 5) Broker 在 T+1（trade_date）执行撮合，并处理过期订单。
         broker = Broker(store, cfg)
@@ -226,11 +166,12 @@ def cmd_run(args: argparse.Namespace) -> int:
             f"run completed: trade_date={trade_date}, candidates={len(candidates)}, "
             f"signals={len(signals)}, trades={len(trades)}, expired={expired}"
         )
-        _finish_run(store, run_id, "SUCCESS")
+        finish_run(store, run.run_id, "SUCCESS")
         return 0
     except Exception as exc:
         logger.exception("run failed")
-        _finish_run(store, run_id, "FAILED", str(exc))
+        if run is not None:
+            finish_run(store, run.run_id, "FAILED", str(exc))
         return 1
     finally:
         store.close()
@@ -239,15 +180,20 @@ def cmd_run(args: argparse.Namespace) -> int:
 def cmd_backtest(args: argparse.Namespace) -> int:
     cfg = get_settings()
     store = Store(cfg.db_path)
-    run_id = _start_run(
+    start = _parse_date(args.start) or cfg.history_start
+    end = _parse_date(args.end) or date.today()
+    artifact_root = str((cfg.resolved_temp_path / "backtest").resolve())
+    run = start_run(
         store=store,
+        scope="backtest",
         modules=["backtest", "selector", "strategy", "broker", "report"],
-        config_hash=_config_hash(cfg.model_dump(mode="json")),
-        data_snapshot=f"backtest:{datetime.utcnow().isoformat()}",
+        config=cfg,
+        runtime_env="cli",
+        artifact_root=artifact_root,
+        start=start,
+        end=end,
     )
     try:
-        start = _parse_date(args.start) or cfg.history_start
-        end = _parse_date(args.end) or date.today()
         patterns = [part.strip().lower() for part in (args.patterns or "").split(",") if part.strip()]
         result = run_backtest(
             db_path=cfg.db_path,
@@ -256,17 +202,18 @@ def cmd_backtest(args: argparse.Namespace) -> int:
             end=end,
             patterns=patterns or None,
             initial_cash=args.cash,
+            run_id=run.run_id,
         )
         logger.info(
             "backtest done: "
             f"days={result.trade_days}, trade_count={result.trade_count}, "
             f"EV={result.expected_value:.6f}, PF={result.profit_factor}, MDD={result.max_drawdown:.6f}"
         )
-        _finish_run(store, run_id, "SUCCESS")
+        finish_run(store, run.run_id, "SUCCESS")
         return 0
     except Exception as exc:
         logger.exception("backtest failed")
-        _finish_run(store, run_id, "FAILED", str(exc))
+        finish_run(store, run.run_id, "FAILED", str(exc))
         return 1
     finally:
         store.close()

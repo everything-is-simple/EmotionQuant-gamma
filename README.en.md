@@ -4,10 +4,12 @@ EmotionQuant is a sentiment-driven quantitative trading system for China A-share
 
 ## Design Document
 
-Single authoritative entry: [`docs/design-v2/system-baseline.md`](docs/design-v2/system-baseline.md)
+`v0.01` historical baseline entry: [`docs/design-v2/01-system/system-baseline.md`](docs/design-v2/01-system/system-baseline.md)
 
 System doc baseline: `v0.01 Formal Release` (frozen on `2026-03-03`; only errata/link fixes are allowed, no execution-semantics changes).
-Freeze record: [`docs/spec/v0.01/release-v0.01-formal.md`](docs/spec/v0.01/release-v0.01-formal.md)
+Freeze record: [`docs/spec/v0.01/records/release-v0.01-formal.md`](docs/spec/v0.01/records/release-v0.01-formal.md)
+Current mainline: [`docs/spec/v0.01-plus/README.md`](docs/spec/v0.01-plus/README.md)
+Current repository state: `v0.01` is now frozen as a historical attempt; the next implementation restart moves to the `v0.01-plus` mainline. Gate and restart timing should follow the latest status in `docs/spec/common/records/development-status.md`.
 
 Covers: 6-module architecture, MSS/IRS/PAS factor system, L1-L4 data layers, pydantic contracts, 4-week delivery plan.
 
@@ -85,7 +87,7 @@ EmotionQuant-gamma/
 │   └── setup/              # Environment setup tools
 ├── docs/                   # Documentation entry (see docs/README.md)
 │   ├── design-v2/          # System design (Single Source of Truth)
-│   │   ├── 01-system/      # System-level design (system-baseline.md as SoT)
+│   │   ├── 01-system/      # System-level design (`v0.01 Frozen` historical baseline)
 │   │   ├── 02-modules/     # Module-level design
 │   │   └── 03-algorithms/  # Algorithm-level design (MSS/IRS/PAS)
 │   ├── Strategy/           # Strategy theoretical foundations (MSS/IRS/PAS)
@@ -111,20 +113,20 @@ EmotionQuant-gamma/
 - **Three Supports**: `steering/` (governance rules), `spec/` (stage archives), `workflow/` (processes)
 - **Two Auxiliaries**: `reference/` (reference materials), `README.md` (navigation)
 
-See: [`docs/README.md`](docs/README.md) and [`docs/REORGANIZATION-COMPLETE-REPORT.md`](docs/REORGANIZATION-COMPLETE-REPORT.md)
+See: [`docs/README.md`](docs/README.md). The historical reorganization report remains in [`docs/REORGANIZATION-COMPLETE-REPORT.md`](docs/REORGANIZATION-COMPLETE-REPORT.md) for traceability only.
 
 ## Related Documentation
 
 - 📖 **Setup Guide**: [`docs/operations/setup-guide.md`](docs/operations/setup-guide.md) - Detailed environment setup
-- 📖 **System Design**: [`docs/design-v2/system-baseline.md`](docs/design-v2/system-baseline.md) - System baseline (SoT)
+- 📖 **v0.01 Historical Baseline**: [`docs/design-v2/01-system/system-baseline.md`](docs/design-v2/01-system/system-baseline.md) - Frozen system baseline
+- 📖 **Current Mainline**: [`docs/spec/v0.01-plus/README.md`](docs/spec/v0.01-plus/README.md) - `v0.01-plus` replacement line entry
 - 📖 **Documentation**: [`docs/README.md`](docs/README.md) - Complete documentation index
+- 📖 **Current Status**: [`docs/spec/common/records/development-status.md`](docs/spec/common/records/development-status.md) - Current governance state and restart gate
 - 📖 **Development Rules**: [`AGENTS.md`](AGENTS.md) - Agent development rules
-- 📖 **Reorganization Report**: [`docs/REORGANIZATION-COMPLETE-REPORT.md`](docs/REORGANIZATION-COMPLETE-REPORT.md) - Documentation reorganization report
 
 ## License
 
 MIT (see [`LICENSE`](LICENSE))
-
 
 
 

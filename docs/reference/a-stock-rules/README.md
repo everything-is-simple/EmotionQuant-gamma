@@ -1,43 +1,38 @@
 # A股市场规则参考
 
-本目录存放 A 股市场相关的交易规则、制度说明和行业分类标准。
+## 定位
 
-## 📋 文档清单
+`docs/reference/a-stock-rules/` 存放 A 股市场交易制度、涨跌停规则与申万行业分类参考。
 
-### 1. 交易规则
+这里回答的是“外部市场规则是什么”，不是“当前系统怎么执行”。当前系统执行口径以 `docs/design-v2/01-system/system-baseline.md` 为准；当前治理状态与是否恢复实现，以 `docs/spec/common/records/development-status.md` 为准。
 
-- **A股市场交易规则-tushare版.md**
-  - 交易时间、涨跌幅限制、停牌规则
-  - 竞价机制、成交原则
-  - T+1 交易制度
+## 当前入口
 
-- **A股涨跌停板制度-tushare版.md**
-  - 涨跌停板比例（主板/科创板/创业板）
-  - ST 股票特殊规则
-  - 新股上市首日规则
+| 类型 | 路径 | 用途 |
+|---|---|---|
+| 交易规则 | `A股市场交易规则-tushare版.md` | 查询交易时间、撮合、停牌与 T+1 制度 |
+| 涨跌停制度 | `A股涨跌停板制度-tushare版.md` | 查询主板/创业板/科创板/ST 的涨跌停差异 |
+| 申万行业分类 | `A股申万行业指数-tushare版.md` | 查询 SW 行业层级与指数映射 |
+| 当前状态 | `docs/spec/common/records/development-status.md` | 判断规则变化是否需要同步设计或治理 |
 
-### 2. 行业分类
+## 使用规则
 
-- **A股申万行业指数-tushare版.md**
-  - 申万一级行业分类（31个）
-  - 申万二级行业分类
-  - 申万三级行业分类
-  - 行业指数代码映射
+1. 本目录是外部参考，不直接定义仓库内执行语义或版本验收口径。
+2. 若参考摘录与交易所、监管或数据源官方最新规则冲突，应以官方规则为准，并回写 `design-v2 / steering / spec` 修正仓库口径。
+3. 仓库内固定执行语义、A 股约束实现边界，优先查看 `docs/steering/a-stock-rules.md` 与 `docs/design-v2/01-system/system-baseline.md`。
+4. 版本证据、回归结果与阶段记录，统一进入 `docs/spec/<version>/`，不堆回本目录。
 
-## 🎯 使用场景
+## 相邻目录边界
 
-1. **开发参考**：编写交易逻辑时查阅规则
-2. **测试验证**：确保代码符合 A 股规则
-3. **行业分析**：IRS 模块行业轮动分析
+- `docs/steering/`：定义仓库内必须执行的 A 股硬约束。
+- `docs/design-v2/`：定义模块如何落地这些规则。
+- `docs/spec/`：保存版本证据、问题修复与阶段记录。
+- `docs/reference/`：保存其他外部参考资料，不定义执行口径。
 
-## ⚠️ 注意事项
+## 相关文档
 
-1. **时效性**：规则可能随监管政策调整，需定期更新
-2. **数据源**：基于 TuShare 接口，与实际交易所规则保持一致
-3. **优先级**：如有冲突，以交易所官方规则为准
-
-## 📚 相关文档
-
-- 系统铁律：`docs/steering/a-stock-rules.md`
-- 数据层设计：`docs/design-v2/02-modules/data-layer-design.md`
-- IRS 设计：`docs/design-v2/02-modules/selector-design.md`
+- `docs/design-v2/01-system/system-baseline.md`
+- `docs/spec/common/records/development-status.md`
+- `docs/spec/README.md`
+- `docs/steering/a-stock-rules.md`
+- `docs/design-v2/02-modules/selector-design.md`

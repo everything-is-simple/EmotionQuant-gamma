@@ -105,6 +105,8 @@ pip-wheel-metadata/
 # ========================================
 .coverage
 .pytest_cache/
+pytest-tmp/
+pytest-cache-files-*/
 htmlcov/
 .tox/
 .nox/

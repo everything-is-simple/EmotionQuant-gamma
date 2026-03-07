@@ -141,6 +141,7 @@ def run_backtest(
     end: date,
     patterns: list[str] | None = None,
     initial_cash: float | None = None,
+    run_id: str | None = None,
 ) -> BacktestResult:
     """
     最小回测闭环（v0.01 实验前版本）：
@@ -172,7 +173,7 @@ def run_backtest(
 
             # Step 3: 再生成 BOF 买入信号；订单 execute_date 由 Broker 推到 next_trade_date。
             candidates = select_candidates(store, trade_day, cfg)
-            signals = generate_signals(store, candidates, trade_day, cfg)
+            signals = generate_signals(store, candidates, trade_day, cfg, run_id=run_id)
             broker.process_signals(signals)
 
         force_closed = _force_close_all(store, broker, trade_days[-1])

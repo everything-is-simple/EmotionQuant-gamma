@@ -112,10 +112,12 @@ def test_backtest_t_plus_1_and_idempotency(tmp_path) -> None:
     store.close()
 
     cfg = Settings(
+        PIPELINE_MODE="legacy",
         ENABLE_MSS_GATE=False,
         ENABLE_IRS_FILTER=False,
         ENABLE_GENE_FILTER=False,
         PAS_PATTERNS="bof",
+        PAS_MIN_HISTORY_DAYS=21,
         MIN_AMOUNT=1,
         MIN_LIST_DAYS=1,
         BACKTEST_INITIAL_CASH=1_000_000,

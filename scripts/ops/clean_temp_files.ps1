@@ -1,67 +1,75 @@
-# 清理临时文件和缓存目录
-# 用途：清理开发过程中产生的临时文件，保持仓库整洁
-
+# 清理仓库内缓存与 TEMP_PATH 运行时产物。
+[CmdletBinding()]
 param(
-    [switch]$DryRun = $false
+    [switch]$DryRun,
+    [string]$TempRoot
 )
 
 $ErrorActionPreference = "Stop"
-$RepoRoot = "G:/EmotionQuant-gamma"
+$RepoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 
-Write-Host "EmotionQuant 临时文件清理工具" -ForegroundColor Cyan
-Write-Host "================================" -ForegroundColor Cyan
-Write-Host ""
+function Get-ConfiguredTempPath {
+    if ($TempRoot) {
+        return $TempRoot
+    }
+    if ($env:TEMP_PATH) {
+        return $env:TEMP_PATH
+    }
 
-if ($DryRun) {
-    Write-Host "[DRY RUN 模式] 仅显示将要删除的内容，不实际删除" -ForegroundColor Yellow
-    Write-Host ""
+    $envFile = Join-Path $RepoRoot ".env"
+    if (-not (Test-Path -LiteralPath $envFile)) {
+        return $null
+    }
+
+    $line = Get-Content $envFile | Where-Object { $_ -match '^TEMP_PATH=' } | Select-Object -First 1
+    if (-not $line) {
+        return $null
+    }
+    return ($line -replace '^TEMP_PATH=', '').Trim()
 }
 
-# 定义要清理的目录和文件模式
-$PythonCache = @("__pycache__", "*.pyc", "*.pyo", "*.pyd", "*.so", "*.egg-info")
-$TestCache = @(".pytest_cache", ".coverage", "htmlcov", ".tox", ".nox", ".hypothesis")
-$IDEConfig = @(".vscode", ".idea", "*.swp", "*.swo")
-$TempFiles = @(".tmp", "*.tmp", "*.temp", "*.bak", "*.backup")
-$AgentTrace = @(".specstory", ".claude")
-$RuntimeArtifacts = @("artifacts", ".reports")
-$LogFiles = @("*.log", "logs")
+function Remove-MatchedItems {
+    param(
+        [string]$Root,
+        [string[]]$Patterns,
+        [ref]$DeletedCount,
+        [ref]$DeletedSize
+    )
 
-$AllPatterns = $PythonCache + $TestCache + $IDEConfig + $TempFiles + $AgentTrace + $RuntimeArtifacts + $LogFiles
+    if (-not $Root -or -not (Test-Path -LiteralPath $Root)) {
+        return
+    }
 
-$TotalDeleted = 0
-$TotalSize = 0
+    foreach ($Pattern in $Patterns) {
+        $Items = Get-ChildItem -Path $Root -Recurse -Force -ErrorAction SilentlyContinue |
+            Where-Object {
+                $_.Name -like $Pattern -and
+                $_.FullName -notlike "*\.git\*" -and
+                $_.FullName -notlike "*\docs\reference\*"
+            }
 
-Write-Host "[开始扫描...]" -ForegroundColor Green
-Write-Host ""
+        foreach ($Item in $Items) {
+            $Size = 0
+            if ($Item.PSIsContainer) {
+                $Size = (Get-ChildItem -Path $Item.FullName -Recurse -Force -ErrorAction SilentlyContinue |
+                    Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue).Sum
+            } else {
+                $Size = $Item.Length
+            }
+            if ($null -eq $Size) {
+                $Size = 0
+            }
 
-foreach ($Pattern in $AllPatterns) {
-    $Items = Get-ChildItem -Path $RepoRoot -Recurse -Force -ErrorAction SilentlyContinue | 
-             Where-Object { 
-                 $_.Name -like $Pattern -and 
-                 $_.FullName -notlike "*\.git\*" -and
-                 $_.FullName -notlike "*\docs\reference\*"
-             }
-    
-    foreach ($Item in $Items) {
-        # 计算大小
-        $Size = 0
-        if ($Item.PSIsContainer) {
-            $Size = (Get-ChildItem -Path $Item.FullName -Recurse -Force -ErrorAction SilentlyContinue | 
-                     Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue).Sum
-        } else {
-            $Size = $Item.Length
-        }
-        
-        if ($null -eq $Size) { $Size = 0 }
-        
-        $SizeMB = [math]::Round($Size / 1MB, 2)
-        $RelPath = $Item.FullName.Replace($RepoRoot + "\", "")
-        
-        if ($DryRun) {
-            Write-Host "  [将删除] $RelPath ($SizeMB MB)" -ForegroundColor Yellow
-            $TotalDeleted++
-            $TotalSize += $Size
-        } else {
+            $SizeMB = [math]::Round($Size / 1MB, 2)
+            $RelPath = $Item.FullName.Replace($Root + "\", "")
+
+            if ($DryRun) {
+                Write-Host "  [将删除] $RelPath ($SizeMB MB)" -ForegroundColor Yellow
+                $DeletedCount.Value++
+                $DeletedSize.Value += $Size
+                continue
+            }
+
             try {
                 if ($Item.PSIsContainer) {
                     Remove-Item -Path $Item.FullName -Recurse -Force -ErrorAction Stop
@@ -69,8 +77,8 @@ foreach ($Pattern in $AllPatterns) {
                     Remove-Item -Path $Item.FullName -Force -ErrorAction Stop
                 }
                 Write-Host "  [已删除] $RelPath ($SizeMB MB)" -ForegroundColor Gray
-                $TotalDeleted++
-                $TotalSize += $Size
+                $DeletedCount.Value++
+                $DeletedSize.Value += $Size
             } catch {
                 Write-Host "  [失败] $RelPath - $($_.Exception.Message)" -ForegroundColor Red
             }
@@ -78,7 +86,41 @@ foreach ($Pattern in $AllPatterns) {
     }
 }
 
-# 总结
+$ConfiguredTempRoot = Get-ConfiguredTempPath
+
+Write-Host "EmotionQuant 临时文件清理工具" -ForegroundColor Cyan
+Write-Host "================================" -ForegroundColor Cyan
+Write-Host "仓库根目录: $RepoRoot" -ForegroundColor Cyan
+if ($ConfiguredTempRoot) {
+    Write-Host "临时目录: $ConfiguredTempRoot" -ForegroundColor Cyan
+}
+Write-Host ""
+
+if ($DryRun) {
+    Write-Host "[DRY RUN 模式] 仅显示将要删除的内容，不实际删除" -ForegroundColor Yellow
+    Write-Host ""
+}
+
+$RepoPatterns = @(
+    "__pycache__", "*.pyc", "*.pyo", "*.pyd", "*.so", "*.egg-info",
+    ".pytest_cache", ".coverage", "htmlcov", ".tox", ".nox", ".hypothesis",
+    ".vscode", ".idea", "*.swp", "*.swo",
+    ".tmp", "*.tmp", "*.temp", "*.bak", "*.backup",
+    ".specstory", ".claude",
+    ".ruff_cache", ".mypy_cache", "pytest-tmp", "pytest-cache-files-*",
+    "*.log", "logs"
+)
+$TempPatterns = @("backtest", "audit", "pytest", "preflight", "artifacts")
+
+$TotalDeleted = 0
+$TotalSize = 0
+
+Write-Host "[开始扫描...]" -ForegroundColor Green
+Write-Host ""
+
+Remove-MatchedItems -Root $RepoRoot -Patterns $RepoPatterns -DeletedCount ([ref]$TotalDeleted) -DeletedSize ([ref]$TotalSize)
+Remove-MatchedItems -Root $ConfiguredTempRoot -Patterns $TempPatterns -DeletedCount ([ref]$TotalDeleted) -DeletedSize ([ref]$TotalSize)
+
 Write-Host ""
 Write-Host "================================" -ForegroundColor Cyan
 $TotalSizeMB = [math]::Round($TotalSize / 1MB, 2)
@@ -90,5 +132,5 @@ if ($DryRun) {
 } else {
     Write-Host "已删除: $TotalDeleted 项，释放空间: $TotalSizeMB MB" -ForegroundColor Green
     Write-Host ""
-    Write-Host "提示: 这些文件会在开发过程中自动重新生成" -ForegroundColor Cyan
+    Write-Host "提示: 运行时缓存会在后续开发中按 TEMP_PATH 重新生成" -ForegroundColor Cyan
 }

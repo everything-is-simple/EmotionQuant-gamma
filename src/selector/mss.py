@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -20,7 +21,11 @@ MSS_FACTOR_NAMES = [
 ]
 
 
-def _signal_from_score(score: float, bullish_threshold: float = 65.0, bearish_threshold: float = 35.0) -> str:
+def _signal_from_score(
+    score: float,
+    bullish_threshold: float = 65.0,
+    bearish_threshold: float = 35.0,
+) -> Literal["BULLISH", "NEUTRAL", "BEARISH"]:
     if score >= bullish_threshold:
         return "BULLISH"
     if score <= bearish_threshold:
@@ -135,7 +140,17 @@ def _compute_mss_components(
     baseline: dict[str, float] | None = None,
     bullish_threshold: float = 65.0,
     bearish_threshold: float = 35.0,
-) -> tuple[date, float, str, float, float, float, float, float, float]:
+) -> tuple[
+    date,
+    float,
+    Literal["BULLISH", "NEUTRAL", "BEARISH"],
+    float,
+    float,
+    float,
+    float,
+    float,
+    float,
+]:
     raw = _compute_mss_raw_components(row)
     components = _normalize_mss_components(raw, baseline=baseline)
     score = _aggregate_mss_score(components)
@@ -281,3 +296,8 @@ def compute_mss(
             }
         )
     return store.bulk_upsert("l3_mss_daily", pd.DataFrame(records))
+
+
+
+
+

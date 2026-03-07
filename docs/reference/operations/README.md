@@ -1,32 +1,30 @@
-# 运维操作指南
+# 运维参考（非主入口）
 
-本目录存放系统运维、开发环境管理相关的操作指南。
+## 定位
 
-## 📋 文档清单
+`docs/reference/operations/` 存放通用运维参考材料，当前以临时文件与缓存管理说明为主。
 
-### 1. 临时文件管理
+这里回答的是“哪些临时目录和缓存应该怎么理解、怎么清理”，不是“本仓库当前推进状态”或“本地敏感配置怎么填写”。仓库本地运维主入口在 `docs/operations/README.md`；系统设计 SoT 以 `docs/design-v2/01-system/system-baseline.md` 为准；当前治理状态与是否恢复实现，以 `docs/spec/common/records/development-status.md` 为准。
 
-- **temp-files-guide.md**
-  - Python 缓存（`__pycache__/`）
-  - IDE 配置（`.vscode/`）
-  - 测试缓存（`.pytest_cache/`）
-  - Agent 追踪（`.specstory/`）
-  - 临时文件（`.tmp/`）
-  - 运行时产物（`artifacts/`）
-  - 清理策略与最佳实践
+## 当前入口
 
-## 🎯 使用场景
+| 类型 | 路径 | 用途 |
+|---|---|---|
+| 临时文件参考 | `temp-files-guide.md` | 了解缓存、产物、IDE 配置与清理边界 |
+| 仓库运维入口 | `docs/operations/README.md` | 回到本仓库的正式运维入口 |
+| 当前状态 | `docs/spec/common/records/development-status.md` | 查看当前治理阶段与重启条件 |
 
-1. **环境清理**：定期清理临时文件，释放磁盘空间
-2. **问题排查**：了解各类缓存文件的作用，避免误删
-3. **提交前检查**：确保不提交临时文件到版本控制
+## 使用规则
 
-## 🔧 相关脚本
+1. 这里是参考目录，不记录本机 Token、真实路径或一次性运维审计。
+2. 本仓库环境配置与敏感模板，统一进入 `docs/operations/`。
+3. 当前治理状态与是否恢复实现，统一查看 `docs/spec/common/records/development-status.md`。
+4. 若清理策略与仓库脚本、`.gitignore` 或正式运维文档冲突，以正式运维入口和脚本为准。
 
-- 清理脚本：`scripts/ops/clean_temp_files.ps1`
-- 环境检查：`scripts/setup/check_skills.ps1`
+## 相关文档
 
-## 📚 相关文档
-
-- 开发工作流：`docs/workflow/6A-WORKFLOW.md`
-- Git 规则：`docs/steering/conventions.md`
+- `docs/operations/README.md`
+- `docs/design-v2/01-system/system-baseline.md`
+- `docs/spec/common/records/development-status.md`
+- `docs/spec/README.md`
+- `scripts/ops/check_doc_links.ps1`

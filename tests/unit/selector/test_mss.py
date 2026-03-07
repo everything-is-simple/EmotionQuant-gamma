@@ -4,7 +4,12 @@ from datetime import date
 
 import pandas as pd
 
-from src.selector.mss import build_mss_raw_frame, calibrate_mss_baseline, compute_mss_single, score_mss_raw_frame
+from src.selector.mss import (
+    build_mss_raw_frame,
+    calibrate_mss_baseline,
+    compute_mss_single,
+    score_mss_raw_frame,
+)
 from src.selector.mss_experiments import MssVariantSpec, score_mss_variant
 
 

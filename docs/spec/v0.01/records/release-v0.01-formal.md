@@ -7,7 +7,7 @@
 
 ## 1. 封版原则
 
-1. `docs/design-v2/system-baseline.md` 为唯一执行口径（SoT）。
+1. `docs/design-v2/01-system/system-baseline.md` 为唯一执行口径（SoT）。
 2. v0.01 封版后仅允许勘误、链接修复、非语义性排版调整。
 3. 涉及执行语义、数据契约、风控规则、触发器定义的改动必须进入 v0.02+ 文档分支。
 
@@ -17,15 +17,15 @@
 2. `AGENTS.md` / `AGENTS.en.md`
 3. `CLAUDE.md` / `CLAUDE.en.md`
 4. `WARP.md` / `WARP.en.md`
-5. `docs/design-v2/system-baseline.md`
-6. `docs/design-v2/architecture-master.md`
-7. `docs/design-v2/data-layer-design.md`
-8. `docs/design-v2/selector-design.md`
-9. `docs/design-v2/strategy-design.md`
-10. `docs/design-v2/broker-design.md`
-11. `docs/design-v2/backtest-report-design.md`
-12. `docs/design-v2/sandbox-review-standard.md`
-13. `docs/design-v2/volman-ytc-mapping.md`
+5. `docs/design-v2/01-system/system-baseline.md`
+6. `docs/design-v2/01-system/architecture-master.md`
+7. `docs/design-v2/02-modules/data-layer-design.md`
+8. `docs/design-v2/02-modules/selector-design.md`
+9. `docs/design-v2/02-modules/strategy-design.md`
+10. `docs/design-v2/02-modules/broker-design.md`
+11. `docs/design-v2/02-modules/backtest-report-design.md`
+12. `docs/observatory/sandbox-review-standard.md`
+13. `docs/Strategy/PAS/volman-ytc-mapping.md`
 
 ## 3. 后续版本约束
 

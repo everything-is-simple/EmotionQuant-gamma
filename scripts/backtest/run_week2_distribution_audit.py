@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from datetime import date
 from pathlib import Path
-import sys
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -12,7 +12,10 @@ if str(REPO_ROOT) not in sys.path:
 from src.backtest.ablation import prepare_working_db
 from src.config import get_settings
 from src.data.store import Store
-from src.selector.audit import summarize_selector_distributions, write_selector_distribution_evidence
+from src.selector.audit import (
+    summarize_selector_distributions,
+    write_selector_distribution_evidence,
+)
 
 
 def _parse_date(text: str) -> date:
@@ -46,7 +49,7 @@ def main() -> int:
     working_db_path = (
         Path(args.working_db_path).expanduser().resolve()
         if args.working_db_path
-        else REPO_ROOT / ".tmp" / "audit" / f"selector-distribution-{date.today():%Y%m%d}.duckdb"
+        else cfg.resolved_temp_path / "audit" / f"selector-distribution-{date.today():%Y%m%d}.duckdb"
     )
     db_path = prepare_working_db(source_db_path, working_db_path)
     output_path = (

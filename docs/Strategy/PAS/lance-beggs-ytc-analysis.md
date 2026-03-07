@@ -562,8 +562,8 @@ Lance Beggs强调：
 ## 9. 参考文献
 
 1. Lance Beggs. *YTC Price Action Trader* 卷1-4.
-2. EmotionQuant PAS算法设计：`docs/reference/core-algorithms/pas/pas-algorithm.md`
-3. Volman-YTC映射：`docs/design-v2/volman-ytc-mapping.md`
+2. EmotionQuant PAS算法设计：`docs/design-v2/03-algorithms/core-algorithms/pas-algorithm.md`
+3. Volman-YTC映射：`docs/Strategy/PAS/volman-ytc-mapping.md`
 
 ---
 

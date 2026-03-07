@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
+from typing import cast
 
 import pandas as pd
 
@@ -45,8 +46,12 @@ class Broker:
             portfolio_market_value=self._portfolio_market_value(),
             holdings=set(self.portfolio.keys()),
         )
-        # 同日信号按强度从高到低分配资金，保证“机会竞争”语义确定。
-        sorted_signals = sorted(signals, key=lambda s: float(s.strength), reverse=True)
+        # DTT 主线优先按 final_score 排序；legacy 对照链则退回 strength。
+        sorted_signals = sorted(
+            signals,
+            key=lambda s: float(s.final_score if s.final_score is not None else s.strength),
+            reverse=True,
+        )
         for signal in sorted_signals:
             decision = self.risk.assess_signal(signal, state)
             if decision.order is None:
@@ -110,7 +115,7 @@ class Broker:
         )
         if row.empty:
             return None
-        return row.iloc[0].to_dict()
+        return cast(dict[str, object], row.iloc[0].to_dict())
 
     def _resolve_adj_close(self, code: str, trade_date: date) -> float | None:
         row = self.store.read_df(
@@ -263,7 +268,7 @@ class Broker:
             if order.status != "PENDING":
                 continue
             # 使用交易日历推进差值，避免自然日周末误差。
-            cursor = order.execute_date
+            cursor: date | None = order.execute_date
             days = 0
             while cursor is not None and cursor < today:
                 cursor = self.store.next_trade_date(cursor)
@@ -277,3 +282,4 @@ class Broker:
             updated_pending.append(order)
         self.pending_orders = updated_pending
         return expired
+

@@ -1,14 +1,14 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from datetime import date
-from typing import Iterable
 
 from src.config import Settings
 from src.data.cleaner import clean_industry_daily, clean_market_snapshot, clean_stock_adj_daily
+from src.data.store import Store
 from src.logging_utils import logger
 from src.selector.irs import compute_irs
 from src.selector.mss_experiments import compute_mss_variant
-from src.data.store import Store
 
 
 def _today() -> date:

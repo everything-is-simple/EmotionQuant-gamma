@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
+from typing import Any
 
+_loguru_logger: Any | None = None
 try:
     from loguru import logger as _loguru_logger
 except Exception:  # pragma: no cover - fallback path
-    _loguru_logger = None
+    pass
 
 
+logger: Any
 if _loguru_logger is not None:
     logger = _loguru_logger
 else:  # pragma: no cover - fallback path
@@ -39,4 +42,3 @@ def configure_logger(log_file: Path, level: str = "INFO") -> None:
     file_handler = logging.FileHandler(log_file, encoding="utf-8")
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
-

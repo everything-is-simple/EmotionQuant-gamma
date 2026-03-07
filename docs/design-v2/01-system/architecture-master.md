@@ -1,11 +1,10 @@
 # EmotionQuant 重构设计文档
 
-**版本**: v0.01 正式版
-**创建日期**: 2026-03-01
-**状态**: Frozen（执行语义冻结；算法级 SoT 已受控补齐）
-**封版日期**: 2026-03-03
-**变更规则**: 执行语义变更需进入 v0.02+；算法权威入口、数据分类口径与链接修复允许在不改变执行语义前提下受控纠偏。
-
+**版本**: `v0.01 正式版`  
+**状态**: `Frozen`  
+**封版日期**: `2026-03-03`  
+**变更规则**: `执行语义变更需进入 v0.02+；算法权威入口、数据分类口径与链接修复允许在不改变执行语义前提下受控纠偏。`  
+**上游文档**: `docs/design-v2/01-system/system-baseline.md`
 ---
 
 ## 内容概览
@@ -33,7 +32,7 @@
 3. 扫描流程采用两阶段：全市场粗筛（5000 -> 约200）后再做形态精扫。
 4. MSS/IRS 在 v0.01 视为待验证假设，必须执行三步消融：`BOF baseline` → `BOF+MSS` → `BOF+MSS+IRS`。
 5. `ENABLE_GENE_FILTER` 在 v0.01 强制关闭，gene 仅做事后反推分析。
-6. 若本文历史段落与 `docs/design-v2/system-baseline.md` 冲突，以 `system-baseline.md` 为准。
+6. 若本文历史段落与 `docs/design-v2/01-system/system-baseline.md` 冲突，以 `system-baseline.md` 为准。
 
 ---
 
@@ -859,7 +858,7 @@ Volman第14章核心风险管理，由于A股T+1限制，需预设止损价：
 - **移动规则**：只能朝盈利方向移动，出现Higher Low且反转确认后移动
 - **黄金法则**：在20EMA上方做多时，临界点很少设在EMA下方
 
-实现方案详见`docs/design-v2/volman-ytc-mapping.md` §6.2 CriticalPointManager类。
+实现方案详见`docs/Strategy/PAS/volman-ytc-mapping.md` §6.2 CriticalPointManager类。
 
 **应用优先级**：
 - **v0.01**：pas_bof（Spring/Upthrust）单形态闭环
@@ -1265,6 +1264,9 @@ class Trade(BaseModel):             # Broker → Report
 - 实现纸上交易模式（broker 内核的 paper 模式）
 - 全链路联调：data → selector → strategy → broker → report
 - **验收**：每日能自动跑一遍完整流程
+
+
+
 
 
 

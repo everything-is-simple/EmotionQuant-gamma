@@ -1,17 +1,23 @@
 # Strategy 详细设计
 
-**版本**: v0.01 正式版
-**创建日期**: 2026-03-01
-**状态**: Frozen（与 `system-baseline.md` 对齐）
-**封版日期**: 2026-03-03
-**变更规则**: 仅允许勘误与说明性修订；执行语义变更需进入 v0.02+。
-**对应模块**: `src/strategy/`（pattern_base.py, pas_bof.py, registry.py, strategy.py；`pas_bpb.py` 为 v0.02 预留）
-**上游文档**: `architecture-master.md` §4.3
-**理论来源**: `docs/Strategy/PAS/volman-ytc-mapping.md`（Volman与YTC映射）
-**算法细案入口**: `pas-algorithm.md`
+**版本**: `v0.01 正式版`  
+**状态**: `Frozen`（与 `system-baseline.md` 对齐）  
+**封版日期**: `2026-03-03`  
+**变更规则**: `仅允许勘误与说明性修订；执行语义变更需进入 v0.02+。`  
+**上游文档**: `docs/design-v2/01-system/architecture-master.md` §4.3  
+**创建日期**: `2026-03-01`  
+**对应模块**: `src/strategy/`（pattern_base.py, pas_bof.py, registry.py, strategy.py；`pas_bpb.py` 为 v0.02 预留）  
+**理论来源**: `docs/Strategy/PAS/volman-ytc-mapping.md`（Volman与YTC映射）  
+**算法细案入口**: `docs/design-v2/03-algorithms/core-algorithms/pas-algorithm.md`
 
 > 自 `2026-03-06` 起，本文件负责 Strategy 的系统边界与装配规则；PAS 的算法细案与 detector 框架口径以 `pas-algorithm.md` 为准。
 
+## 冻结区与冲突处理
+
+1. 本文档属于冻结区；默认只允许勘误、链接修复与说明性澄清。若涉及执行语义、模块边界或口径调整，必须进入后续版本处理。
+2. 若本文档与 `docs/design-v2/01-system/system-baseline.md` 冲突，以 baseline 为准，并应同步回写本文档。
+3. 当前治理状态与是否恢复实现，以 `docs/spec/common/records/development-status.md` 为准。
+4. 版本证据、回归结果与阶段记录，统一归档到 `docs/spec/<version>/`。
 ---
 
 ## 1. 设计目标
@@ -574,4 +580,6 @@ class TstDetector(PatternDetector):
 - volume_ma20 = 0 → volume_ratio 无穷大，跳过
 - 所有条件满足但 market_score < -1 → 放弃交易
 - 候选池为空 → 直接返回空 Signal 列表
+
+
 

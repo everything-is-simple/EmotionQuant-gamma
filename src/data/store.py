@@ -8,7 +8,6 @@ from typing import Any
 import duckdb
 import pandas as pd
 
-
 CURRENT_SCHEMA_VERSION = 1
 
 
@@ -55,6 +54,9 @@ class Store:
             ("l4_daily_report", "skip_cash_count", "INTEGER"),
             ("l4_daily_report", "skip_maxpos_count", "INTEGER"),
             ("l4_daily_report", "participation_rate", "DOUBLE"),
+            ("_meta_runs", "mode", "VARCHAR"),
+            ("_meta_runs", "variant", "VARCHAR"),
+            ("_meta_runs", "artifact_root", "VARCHAR"),
         ]
         for table, col, typ in optional_columns:
             try:
@@ -230,8 +232,34 @@ class Store:
             )
             """,
             """
+            CREATE TABLE IF NOT EXISTS l3_signal_rank_exp (
+                run_id       VARCHAR NOT NULL,
+                signal_id    VARCHAR NOT NULL,
+                signal_date  DATE    NOT NULL,
+                code         VARCHAR NOT NULL,
+                industry     VARCHAR,
+                variant      VARCHAR NOT NULL,
+                bof_strength DOUBLE NOT NULL,
+                irs_score    DOUBLE NOT NULL,
+                mss_score    DOUBLE NOT NULL,
+                final_score  DOUBLE NOT NULL,
+                final_rank   INTEGER NOT NULL,
+                selected     BOOLEAN NOT NULL,
+                created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (run_id, signal_id)
+            )
+            """,
+            """
             CREATE INDEX IF NOT EXISTS idx_signals_date_code
             ON l3_signals(signal_date, code)
+            """,
+            """
+            CREATE INDEX IF NOT EXISTS idx_signal_rank_exp_run_rank
+            ON l3_signal_rank_exp(run_id, final_rank)
+            """,
+            """
+            CREATE INDEX IF NOT EXISTS idx_signal_rank_exp_signal
+            ON l3_signal_rank_exp(signal_id)
             """,
             """
             CREATE TABLE IF NOT EXISTS l3_stock_gene (
@@ -359,6 +387,9 @@ class Store:
                 data_snapshot   VARCHAR,
                 git_commit      VARCHAR,
                 runtime_env     VARCHAR,
+                mode            VARCHAR,
+                variant         VARCHAR,
+                artifact_root   VARCHAR,
                 created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """,

@@ -1,75 +1,47 @@
 # Steering（治理铁律）
 
-本目录存放 EmotionQuant 的核心治理文档，定义系统的不可变约束。
+**版本**: `v0.01-v0.06 目录入口`  
+**状态**: `Frozen`（治理入口）  
+**封版日期**: `2026-03-07`  
+**变更规则**: `仅允许入口、链接与边界说明维护；治理快照与约束口径以上游 baseline 为准。`  
+**上游文档**: `docs/design-v2/01-system/system-baseline.md`
 
-## 文档清单
+## 定位
 
-### 1. `product.md` - 产品铁律
-- 12 条系统铁律
-- 6 模块职责边界
-- 三套因子系统定位（MSS/IRS/PAS）
-- v0.01 验证铁律
+`docs/steering/` 存放系统治理铁律、A 股约束、架构快照与编码规范。
 
-**适用对象**：所有开发者、所有模块
+这里回答的是“哪些约束不能越界”，不是“完整系统设计细节写在哪里”。系统设计 SoT 仍以 `docs/design-v2/01-system/system-baseline.md` 为准；当前治理状态与重启条件以 `docs/spec/common/records/development-status.md` 为准。
 
-### 2. `a-stock-rules.md` - A股交易规则
-- T+1 执行语义
-- 涨跌停幅度（主板/创业板/科创板/北交所/ST）
-- 手续费标准
-- 基础过滤规则
+## 当前入口
 
-**适用对象**：data/selector/broker 模块开发者
+| 类型 | 路径 | 用途 |
+|---|---|---|
+| 产品铁律 | `product.md` | 判断方案是否违反核心约束 |
+| A 股规则 | `a-stock-rules.md` | 判断执行语义、交易限制与市场规则 |
+| 架构快照 | `architecture.md` | 快速查看模块、数据流与层次关系 |
+| 编码规范 | `conventions.md` | 统一代码风格、分层与工程约束 |
+| 文档状态 | `document-status.md` | 统一 `Frozen / Active / Draft` 语义 |
 
-### 3. `architecture.md` - 技术架构快速参考
-- 数据流概览
-- L1-L4 分层
-- 模块间契约
-- CLI 入口
+## 使用规则
 
-**定位**：快速参考卡片（1页纸），详细设计见 `docs/design-v2/`
+1. `steering/` 是治理快照与快速约束层，不替代 `design-v2/` 的完整系统设计。
+2. 若 `steering/` 与 `docs/design-v2/01-system/system-baseline.md` 冲突，以 baseline 为准，并应同步修订对应治理文档。
+3. 当前是否继续推进、当前处于何种治理阶段，不在 `steering/` 里维护，统一查看 `docs/spec/common/records/development-status.md`。
+4. 版本路线图、证据与历史记录统一进入 `docs/spec/<version>/`，不回写到 `steering/`。
 
-### 4. `conventions.md` - 编码规范
-- Python 版本要求
-- OOP vs 纯函数分工
-- 计算规范（禁止逐行循环）
-- pydantic 用法
-- 命名约定
+## 相邻目录边界
 
-**适用对象**：所有开发者
+- `docs/design-v2/`：给出完整设计、模块边界与算法口径。
+- `docs/spec/`：给出版本推进、验收证据与历史归档。
+- `docs/reference/`：给出外部参考资料，不定义仓库内强约束。
+- `docs/workflow/`：给出固定执行流程，不重复列治理条款。
 
----
+## 相关文档
 
-## 与其他文档的关系
+- `docs/design-v2/01-system/system-baseline.md`
+- `docs/steering/document-status.md`
+- `docs/spec/common/records/development-status.md`
+- `docs/workflow/6A-WORKFLOW.md`
+- `AGENTS.md`
 
-| 本目录 | 详细设计 | 说明 |
-|--------|---------|------|
-| `product.md` | `docs/design-v2/system-baseline.md` | steering 定义"是什么"，design 定义"怎么做" |
-| `architecture.md` | `docs/design-v2/architecture-master.md` | steering 是快速参考，design 是完整设计 |
-| `a-stock-rules.md` | `docs/design-v2/broker-design.md` | steering 定义规则，design 定义实现 |
-| `conventions.md` | `AGENTS.md` / `CLAUDE.md` | steering 定义规范，AGENTS 定义执行 |
 
----
-
-## 使用指南
-
-**新人入职**：
-1. 先读 `product.md`（理解系统定位和铁律）
-2. 再读 `a-stock-rules.md`（理解 A 股约束）
-3. 最后读 `conventions.md`（理解编码规范）
-
-**开发前**：
-- 检查是否违反 `product.md` 的 12 条铁律
-- 检查是否符合 `a-stock-rules.md` 的 A 股约束
-- 检查是否符合 `conventions.md` 的编码规范
-
-**设计评审**：
-- `product.md` 是不可变约束（违反则拒绝）
-- `architecture.md` 是参考框架（可优化但不可颠覆）
-- `conventions.md` 是编码标准（可讨论但需统一）
-
----
-
-**维护规则**：
-- 本目录文档属于"治理冻结区"，变更需要充分理由
-- 新增铁律必须有证据支持（消融实验、历史教训）
-- 修改铁律必须评估影响面（是否破坏现有设计）

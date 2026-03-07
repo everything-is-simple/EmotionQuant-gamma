@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 # MSS baseline calibrated from l2_market_snapshot over 2023-01-03..2026-02-24.
 # Threshold semantics remain frozen elsewhere; this file only stores normalization anchors.
 MSS_BASELINE = {

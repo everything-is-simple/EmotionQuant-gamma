@@ -5,10 +5,10 @@ from datetime import date, timedelta
 import pandas as pd
 
 from src.config import Settings
+from src.contracts import StockCandidate
 from src.data.store import Store
 from src.selector.selector import select_candidates_frame
 from src.strategy.strategy import generate_signals
-from src.contracts import StockCandidate
 
 
 def _seed_trade_calendar(store: Store, start: date, days: int) -> list[date]:
@@ -115,6 +115,9 @@ def test_select_candidates_to_generate_signals_pipeline(tmp_path) -> None:
     _seed_single_stock_history(store, trade_days, signal_idx=signal_idx)
 
     cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_bof_plus_irs_score",
+        DTT_TOP_N=10,
         ENABLE_MSS_GATE=False,
         ENABLE_IRS_FILTER=False,
         PAS_PATTERNS="bof",
@@ -127,18 +130,30 @@ def test_select_candidates_to_generate_signals_pipeline(tmp_path) -> None:
     calc_date = trade_days[signal_idx]
     candidates_df = select_candidates_frame(store, calc_date, cfg)
     candidates = [
-        StockCandidate(code=str(row["code"]), industry=str(row["industry"]), score=float(row["score"]))
+        StockCandidate(
+            code=str(row["code"]),
+            industry=str(row["industry"]),
+            score=float(row["score"]),
+            preselect_score=float(row["preselect_score"]),
+        )
         for _, row in candidates_df.iterrows()
     ]
-    signals = generate_signals(store, candidates, calc_date, cfg)
+    signals = generate_signals(store, candidates, calc_date, cfg, run_id="integration_dtt_run")
 
     assert len(candidates) == 1
     assert len(signals) == 1
     assert signals[0].pattern == "bof"
     assert signals[0].signal_date == calc_date
+    assert signals[0].final_score is not None
 
     stored = store.read_df("SELECT signal_id, code, pattern FROM l3_signals")
+    ranked = store.read_df(
+        "SELECT run_id, signal_id, final_rank, selected FROM l3_signal_rank_exp ORDER BY final_rank ASC"
+    )
     assert len(stored) == 1
     assert stored.iloc[0]["code"] == "000001"
     assert stored.iloc[0]["pattern"] == "bof"
+    assert len(ranked) == 1
+    assert ranked.iloc[0]["run_id"] == "integration_dtt_run"
+    assert bool(ranked.iloc[0]["selected"]) is True
     store.close()

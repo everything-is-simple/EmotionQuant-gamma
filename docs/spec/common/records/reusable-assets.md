@@ -30,7 +30,7 @@
 
 | ID | 资产 | 路径 | 等级 | 复用边界 |
 |---|---|---|---|---|
-| GOV-001 | 6A 工作流 | `.kiro/steering/6A-WORKFLOW.md` | S | 所有开发任务必须走 A1-A6 |
+| GOV-001 | 6A 工作流 | `docs/workflow/6A-WORKFLOW.md` | S | 所有开发任务必须走 A1-A6 |
 | GOV-002 | 技术债模板 | `docs/spec/common/records/debts.md` | S | 所有风险/欠账登记 |
 | GOV-003 | 开发状态模板 | `docs/spec/common/records/development-status.md` | S | 周级/任务级进展记录 |
 | GOV-004 | 复用资产模板 | `docs/spec/common/records/reusable-assets.md` | S | 资产沉淀与分级 |
@@ -40,13 +40,13 @@
 
 | ID | 资产 | 路径 | 等级 | 复用边界 |
 |---|---|---|---|---|
-| DES-001 | 设计总纲（SoT） | `docs/design-v2/system-baseline.md` | S | 所有模块设计冲突裁决 |
-| DES-002 | Data 设计 | `docs/design-v2/data-layer-design.md` | A | Week1 实现参考 |
-| DES-003 | Selector 设计 | `docs/design-v2/selector-design.md` | A | Week2 实现参考 |
-| DES-004 | Strategy 设计 | `docs/design-v2/strategy-design.md` | A | Week2 实现参考 |
-| DES-005 | Broker 设计 | `docs/design-v2/broker-design.md` | A | Week3 实现参考 |
-| DES-006 | Backtest/Report 设计 | `docs/design-v2/backtest-report-design.md` | A | Week4 实现参考 |
-| DES-007 | 沙盘评审标准 | `docs/design-v2/sandbox-review-standard.md` | S | 所有模块定稿前七维评审 + 定稿门禁 |
+| DES-001 | 设计总纲（SoT） | `docs/design-v2/01-system/system-baseline.md` | S | 所有模块设计冲突裁决 |
+| DES-002 | Data 设计 | `docs/design-v2/02-modules/data-layer-design.md` | A | Week1 实现参考 |
+| DES-003 | Selector 设计 | `docs/design-v2/02-modules/selector-design.md` | A | Week2 实现参考 |
+| DES-004 | Strategy 设计 | `docs/design-v2/02-modules/strategy-design.md` | A | Week2 实现参考 |
+| DES-005 | Broker 设计 | `docs/design-v2/02-modules/broker-design.md` | A | Week3 实现参考 |
+| DES-006 | Backtest/Report 设计 | `docs/design-v2/02-modules/backtest-report-design.md` | A | Week4 实现参考 |
+| DES-007 | 沙盘评审标准 | `docs/observatory/sandbox-review-standard.md` | S | 所有模块定稿前七维评审 + 定稿门禁 |
 
 ---
 

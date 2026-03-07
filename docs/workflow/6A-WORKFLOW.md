@@ -11,7 +11,7 @@
 
 - 适用于本仓库所有开发任务（代码、文档、配置、脚本）。
 - 执行目标：每次任务必须形成 `run/test/artifact/review/sync` 可复核闭环。
-- 与系统设计关系：若与 `docs/design-v2/system-baseline.md` 冲突，以设计 SoT 为准。
+- 与系统设计关系：若与 `docs/design-v2/01-system/system-baseline.md` 冲突，以设计 SoT 为准。
 
 ## 2. 核心铁律（执行层）
 

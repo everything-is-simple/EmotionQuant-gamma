@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 高性能历史数据批量下载脚本。
 
@@ -167,9 +166,9 @@ class DualTokenClient:
         pro = ts.pro_api(token)
         # 注入 Token 和网关地址（兼容第三方网关）
         if hasattr(pro, "_DataApi__token"):
-            setattr(pro, "_DataApi__token", token)
+            pro._DataApi__token = token
         if http_url and hasattr(pro, "_DataApi__http_url"):
-            setattr(pro, "_DataApi__http_url", http_url)
+            pro._DataApi__http_url = http_url
         return pro
 
     def _respect_rate_limit(self, channel_name: str) -> None:
@@ -713,7 +712,7 @@ def run_bulk_download(
         return progress
 
     writer = PersistentDuckDBWriter(db_path)
-    progress_path = Path("artifacts") / "bulk_download_progress.json"
+    progress_path = config.resolved_temp_path / "artifacts" / "bulk_download_progress.json"
 
     try:
         # 写入交易日历

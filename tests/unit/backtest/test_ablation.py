@@ -1,75 +1,40 @@
 from __future__ import annotations
 
 from src.backtest.ablation import build_selector_ablation_scenarios
+from src.config import Settings
 
 
-def test_build_selector_ablation_scenarios_order_and_flags() -> None:
-    scenarios = build_selector_ablation_scenarios(
-        mss_thresholds=[65.0],
-        gate_modes=["bearish_only", "soft_gate"],
-        irs_top_ns=[10, 15],
-        mss_variants=["zscore_weighted6", "percentile_weighted6"],
+def test_build_selector_ablation_scenarios_returns_fixed_dtt_matrix() -> None:
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_bof_plus_irs_score",
+        ENABLE_MSS_GATE=False,
+        ENABLE_IRS_FILTER=False,
+        MSS_VARIANT="zscore_weighted6",
+        MSS_GATE_MODE="bearish_only",
+        MSS_BULLISH_THRESHOLD=65.0,
+        MSS_BEARISH_THRESHOLD=35.0,
+        IRS_TOP_N=10,
     )
 
+    scenarios = build_selector_ablation_scenarios(cfg)
+
     assert [item.label for item in scenarios] == [
-        "bof_baseline",
-        "bof_plus_mss_zscore_weighted6_bearish_only_t65",
-        "bof_plus_mss_plus_irs_zscore_weighted6_bearish_only_t65_top10",
-        "bof_plus_mss_plus_irs_zscore_weighted6_bearish_only_t65_top15",
-        "bof_plus_mss_zscore_weighted6_soft_gate_t65",
-        "bof_plus_mss_plus_irs_zscore_weighted6_soft_gate_t65_top10",
-        "bof_plus_mss_plus_irs_zscore_weighted6_soft_gate_t65_top15",
-        "bof_plus_mss_percentile_weighted6_bearish_only_t65",
-        "bof_plus_mss_plus_irs_percentile_weighted6_bearish_only_t65_top10",
-        "bof_plus_mss_plus_irs_percentile_weighted6_bearish_only_t65_top15",
-        "bof_plus_mss_percentile_weighted6_soft_gate_t65",
-        "bof_plus_mss_plus_irs_percentile_weighted6_soft_gate_t65_top10",
-        "bof_plus_mss_plus_irs_percentile_weighted6_soft_gate_t65_top15",
+        "legacy_bof_baseline",
+        "v0_01_dtt_bof_only",
+        "v0_01_dtt_bof_plus_irs_score",
+        "v0_01_dtt_bof_plus_irs_mss_score",
+    ]
+    assert [item.pipeline_mode for item in scenarios] == ["legacy", "dtt", "dtt", "dtt"]
+    assert [item.dtt_variant for item in scenarios] == [
+        "legacy_bof_baseline",
+        "v0_01_dtt_bof_only",
+        "v0_01_dtt_bof_plus_irs_score",
+        "v0_01_dtt_bof_plus_irs_mss_score",
     ]
     assert [(item.enable_mss_gate, item.enable_irs_filter) for item in scenarios] == [
+        (True, True),
         (False, False),
-        (True, False),
-        (True, True),
-        (True, True),
-        (True, False),
-        (True, True),
-        (True, True),
-        (True, False),
-        (True, True),
-        (True, True),
-        (True, False),
-        (True, True),
-        (True, True),
+        (False, False),
+        (False, False),
     ]
-    assert [item.mss_bullish_threshold for item in scenarios] == [65.0] * 13
-    assert [item.mss_variant for item in scenarios] == [
-        "zscore_weighted6",
-        "zscore_weighted6",
-        "zscore_weighted6",
-        "zscore_weighted6",
-        "zscore_weighted6",
-        "zscore_weighted6",
-        "zscore_weighted6",
-        "percentile_weighted6",
-        "percentile_weighted6",
-        "percentile_weighted6",
-        "percentile_weighted6",
-        "percentile_weighted6",
-        "percentile_weighted6",
-    ]
-    assert [item.mss_gate_mode for item in scenarios] == [
-        "disabled",
-        "bearish_only",
-        "bearish_only",
-        "bearish_only",
-        "soft_gate",
-        "soft_gate",
-        "soft_gate",
-        "bearish_only",
-        "bearish_only",
-        "bearish_only",
-        "soft_gate",
-        "soft_gate",
-        "soft_gate",
-    ]
-    assert [item.irs_top_n for item in scenarios] == [10, 10, 10, 15, 10, 10, 15, 10, 10, 15, 10, 10, 15]

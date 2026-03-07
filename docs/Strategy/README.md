@@ -1,293 +1,65 @@
-# 理论基础资料梳理总览
+# Strategy（理论基础）
 
-**文档版本**：v1.0.0  
-**创建日期**：2026-03-07  
-**文档状态**：In Progress
+## 定位
 
----
+`docs/Strategy/` 存放 MSS / IRS / PAS 的理论来源、方法论梳理与研究映射。
 
-## 已创建的资料梳理文档
+这里回答的是“为什么这样设计”，不是“当前系统必须怎么执行”。当前执行口径仍以 `docs/design-v2/01-system/system-baseline.md` 为准。
 
-### MSS 相关（2份）✅
+## 当前入口
 
-1. **《大盘情绪交易系统》理论梳理**
-   - 路径：`docs/Strategy/MSS/market-sentiment-system-2024-analysis.md`
-   - 来源：`G:\《股市浮沉二十载》\2024.(china)大盘情绪交易系统`
-   - 状态：✅ 已创建（Draft）
-   - 核心内容：三维观测、七阶段周期、对称设计
+| 类型 | 路径 | 用途 |
+|---|---|---|
+| 理论总览 | `theoretical-foundations.md` | 理论来源与系统映射总说明 |
+| MSS 理论 | `MSS/` | 市场情绪系统来源 |
+| IRS 理论 | `IRS/` | 行业轮动分类与行业口径来源 |
+| PAS 理论 | `PAS/` | 价格行为方法论、形态来源与映射 |
+| 核心映射 | `PAS/volman-ytc-mapping.md` | Volman 与 YTC 的结构映射 |
 
-2. **《市场情绪表-手工》实践经验梳理**
-   - 路径：`docs/Strategy/MSS/manual-sentiment-tracking-experience.md`
-   - 来源：`G:\《Trade Journal》\《市场情绪表-手工》`
-   - 状态：✅ 已创建（Draft）
-   - 核心内容：5年手工记录、实践经验、从手工到自动化
-
-### IRS 相关（1份）✅
-
-3. **申万行业分类标准（SwClass）梳理**
-   - 路径：`docs/Strategy/IRS/shenwan-industry-classification.md`
-   - 来源：`G:\《Trade Journal》\SwClass`
-   - 状态：✅ 已创建（Draft）
-   - 核心内容：31个一级行业、生命周期分类、行业轮动规律
-
-### PAS 相关（3份已创建，3份待创建）
-
-4. **Lance Beggs《YTC Price Action Trader》系列梳理** ✅
-   - 路径：`docs/Strategy/PAS/lance-beggs-ytc-analysis.md`
-   - 来源：`G:\《股市浮沉二十载》\2020.(Au)LanceBeggs`
-   - 状态：✅ 已创建（Draft）
-   - 核心内容：五种形态（BPB/PB/TST/BOF/CPB）、完整交易系统
-
-5. **许佳冲《裸K线交易法》梳理** ✅
-   - 路径：`docs/Strategy/PAS/xu-jiachong-naked-kline-analysis.md`
-   - 来源：`G:\《股市浮沉二十载》\2021.(CHINA)许佳冲-裸K线交易法`
-   - 状态：✅ 已创建（Draft）
-   - 核心内容：BOF详解、Pin Bar识别、A股炸板形态
-
-6. **Bob Volman《外汇超短线交易》梳理** ⏳
-   - 路径：`docs/Strategy/PAS/bob-volman-scalping-analysis.md`
-   - 来源：`G:\《股市浮沉二十载》\2021.Bob_Volman外汇超短线交易`
-   - 状态：⏳ 待创建
-   - 核心内容：七种结构、临界点技术、进攻与防守
-
-7. **Al Brooks《Price Action》系列梳理** ⏳
-   - 路径：`docs/Strategy/PAS/al-brooks-price-action-analysis.md`
-   - 来源：`G:\《股市浮沉二十载》\2020.(Au)AL BROOKS`
-   - 状态：⏳ 待创建
-   - 核心内容：PAS宗师、如何处理失败、一根根讲K线
-
-8. **立花义正方法论分析与鉴别** ✅
-   - 路径：`docs/Strategy/PAS/tachibana-yoshimasa-analysis.md`
-   - 来源：`G:\《股市浮沉二十载》\2012.(Japan)【立花义正】`
-   - 状态：✅ 已创建（Draft）
-   - 核心内容：逆向思维、极端情绪交易、与PAS的关系
-
-### 已有参考文档
-
-9. **Volman-YTC映射分析** ✅
-   - 路径：`docs/Strategy/PAS/volman-ytc-mapping.md`
-   - 状态：✅ 已存在
-   - 核心内容：Volman七种结构与YTC五形态的映射
-
-### 触发器相关（已整合）
-
-触发器相关的内容已整合到各形态文档中：
-- 触发条件设计 → 各 `pas_*.py` 的 `detect()` 方法
-- 触发时机判断 → `docs/design-v2/strategy-design.md`
-- 触发器组合策略 → `docs/design-v2/core-algorithms/pas-algorithm.md`
-
----
-
-## 文档创建进度
-
-**总计**：9份资料
-**已完成**：7份（78%）
-**待完成**：2份（22%）
-
-> **说明**：待完成的2份文档（Bob Volman、Al Brooks）为深度理论研究，不影响 v0.01-v0.03 的实现。核心映射关系已在 `volman-ytc-mapping.md` 中完成。
-
-### 已完成的文档 ✅
-
-1. ✅ 《大盘情绪交易系统》理论梳理
-2. ✅ 《市场情绪表-手工》实践经验梳理
-3. ✅ 申万行业分类标准梳理
-4. ✅ Lance Beggs YTC系列梳理
-5. ✅ 许佳冲《裸K线交易法》梳理
-6. ✅ 立花义正方法论分析
-7. ✅ Volman-YTC映射分析（已存在）
-
-### 待完成的文档 ⏳
-
-8. ⏳ Bob Volman《外汇超短线交易》梳理
-9. ⏳ Al Brooks《Price Action》系列梳理
-
----
-
-## 文档结构说明
-
-### 目录组织
+## 结构
 
 ```
-docs/Strategy/
-├── README.md                              # 本文件：理论基础资料梳理总览
-├── theoretical-foundations.md             # 理论基础与方法论溯源
-│
-├── MSS/                                   # 市场情绪系统理论
+Strategy/
+├── README.md
+├── theoretical-foundations.md
+├── MSS/
 │   ├── market-sentiment-system-2024-analysis.md
 │   └── manual-sentiment-tracking-experience.md
-│
-├── IRS/                                   # 行业轮动系统理论
+├── IRS/
 │   └── shenwan-industry-classification.md
-│
-└── PAS/                                   # 价格行为信号理论
+└── PAS/
     ├── lance-beggs-ytc-analysis.md
     ├── xu-jiachong-naked-kline-analysis.md
-    ├── volman-ytc-mapping.md              # Volman与YTC映射（核心）
+    ├── volman-ytc-mapping.md
     └── tachibana-yoshimasa-analysis.md
 ```
 
-### 每份文档的标准结构
+## 使用规则
 
-1. **资料概述**
-   - 基本信息（作者、年份、主题）
-   - 核心价值（对EmotionQuant的贡献）
+1. `Strategy/` 只提供理论依据、研究材料和映射说明，不直接充当执行 SoT。
+2. 理论与实现冲突时，以 `design-v2/` 和 `steering/` 为准。
+3. 新增研究材料时，优先补充映射关系与“采用 / 适配 / 不采用”边界，不必在 README 重复展开全文摘要。
+4. 阶段性实现证据、回测结果、版本验收，不放在 `Strategy/`，统一归档到 `docs/spec/<version>/`。
 
-2. **核心理论框架**
-   - 主要理论和方法论
-   - 关键概念和定义
+## 当前完成度
 
-3. **详细内容梳理**
-   - 具体方法和技巧
-   - 实战案例和图表
+| 领域 | 当前状态 | 备注 |
+|---|---|---|
+| MSS | 已有 2 份核心材料 | 足够支撑 v0.01 当前实现理解 |
+| IRS | 已有申万行业分类材料 | 当前行业口径来源明确 |
+| PAS | 已有 4 份核心材料 + 1 份关键映射 | 足够支撑 BOF/YTC 主链路 |
+| 深度补充 | 仍缺 2 份候选研究材料 | 不阻塞当前文档治理与 v0.01 重启判断 |
 
-4. **与EmotionQuant的映射**
-   - 直接采用的部分
-   - A股适配的部分
-   - 未采用的部分
+## 相邻目录边界
 
-5. **关键引用**
-   - 原著的核心观点
-   - 重要的理论阐述
+- `docs/design-v2/`：定义当前系统怎么做。
+- `docs/observatory/`：定义如何审视和验证。
+- `docs/spec/`：存放版本路线图、证据和历史记录。
+- `docs/reference/`：存放外部规则和运维参考。
 
-6. **后续行动**
-   - 深入阅读计划
-   - 验证和优化计划
-   - 系统实现计划
+## 相关文档
 
----
-
-## 文档使用指南
-
-### 如何使用这些文档
-
-**对于开发者**：
-- 理解每个模块的理论基础
-- 了解算法设计的来源和依据
-- 参考实战案例进行验证
-
-**对于研究者**：
-- 深入理解价格行为交易的原理
-- 对比不同作者的方法论
-- 探索新的形态和策略
-
-**对于交易者**：
-- 学习完整的交易系统
-- 理解形态识别的逻辑
-- 掌握风险管理的方法
-
-### 文档之间的关系
-
-**MSS模块**：
-- 《大盘情绪交易系统》→ 理论框架
-- 《市场情绪表-手工》→ 实践验证
-
-**IRS模块**：
-- 申万行业分类 → 行业划分标准
-- （待补充：行业轮动的实践经验）
-
-**PAS模块**：
-- Lance Beggs → 五种形态的主要来源
-- 许佳冲 → BOF形态的详细讲解
-- Bob Volman → 临界点技术和防守策略
-- Al Brooks → 失败处理和细节分析
-- 立花义正 → 逆向思维和极端情绪
-
----
-
-## 下一步行动
-
-### 短期（1-2周）
-
-1. **完成剩余2份文档**：
-   - [ ] Bob Volman《外汇超短线交易》梳理
-   - [ ] Al Brooks《Price Action》系列梳理
-
-2. **补充已有文档的细节**：
-   - [ ] 提取原著中的实战案例
-   - [ ] 补充原著中的图表和示意图
-   - [ ] 完善量化标准和参数
-
-3. **验证和优化**：
-   - [ ] 使用A股历史数据验证
-   - [ ] 统计各形态的成功率
-   - [ ] 优化识别参数
-
-### 中期（1-3个月）
-
-1. **深入研究**：
-   - [ ] 重读所有原著，提取更多细节
-   - [ ] 对比不同作者的方法论
-   - [ ] 探索新的形态和策略
-
-2. **系统实现**：
-   - [ ] 实现各形态的自动识别
-   - [ ] 实现风险收益比的自动计算
-   - [ ] 实现交易信号的自动生成
-
-3. **回测验证**：
-   - [ ] 使用2015-2025年数据回测
-   - [ ] 对比不同形态的表现
-   - [ ] 优化参数和权重
-
-### 长期（3-6个月）
-
-1. **经验总结**：
-   - [ ] 总结A股市场的特色形态
-   - [ ] 总结成功和失败的经验
-   - [ ] 形成最佳实践指南
-
-2. **持续优化**：
-   - [ ] 根据实盘表现优化系统
-   - [ ] 引入机器学习优化参数
-   - [ ] 探索多市场应用
-
----
-
-## 参考文献索引
-
-### MSS相关
-1. 《2024.大盘情绪交易系统》
-2. 《市场情绪表-手工》（2020-2025）
-
-### IRS相关
-3. 申万行业分类标准（2021版）
-
-### PAS相关
-4. Lance Beggs. *YTC Price Action Trader* 卷1-4.
-5. 许佳冲. *裸K线交易法*. 2021.
-6. Bob Volman. *Forex Price Action Scalping*. 2017.
-7. Al Brooks. *Price Action* 系列.
-8. 立花义正. 日本股神系列. 2012.
-
-### EmotionQuant系统文档
-9. `docs/design-v2/system-baseline.md` - 系统设计基线
-10. `docs/Strategy/PAS/volman-ytc-mapping.md` - Volman-YTC映射
-11. `docs/reference/core-algorithms/` - 核心算法文档
-
----
-
-## 文档维护
-
-### 更新原则
-
-1. **保持一致性**：所有文档使用统一的结构和格式
-2. **及时更新**：原著重读后及时补充细节
-3. **交叉引用**：文档之间相互引用，形成知识网络
-4. **版本管理**：重大更新时更新版本号
-
-### 质量标准
-
-1. **准确性**：忠实于原著，不曲解原意
-2. **完整性**：覆盖原著的核心内容
-3. **实用性**：与EmotionQuant系统紧密结合
-4. **可读性**：结构清晰，易于理解
-
----
-
-**文档状态**：In Progress（78%完成）  
-**下一步行动**：
-1. 创建Bob Volman文档
-2. 创建Al Brooks文档
-3. 补充所有文档的实战案例
-4. 完善量化标准和参数
-
+- `docs/design-v2/01-system/system-baseline.md`
+- `docs/design-v2/03-algorithms/core-algorithms/`
+- `docs/observatory/god_view_8_perspectives_report_v0.01.md`
+- `docs/spec/common/records/development-status.md`

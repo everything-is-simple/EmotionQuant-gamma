@@ -3,7 +3,7 @@
 **版本**: v0.01 勘误补充  
 **状态**: Active（仅补充执行约束，不改 Frozen 主干语义）  
 **日期**: 2026-03-04  
-**适用范围**: `docs/design-v2/system-baseline.md` 的实现细化
+**适用范围**: `docs/design-v2/01-system/system-baseline.md` 的实现细化
 
 ## 1. 目的
 

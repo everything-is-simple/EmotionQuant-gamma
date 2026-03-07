@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from dataclasses import asdict
 from datetime import date
 from pathlib import Path
-import sys
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -14,6 +14,7 @@ if str(REPO_ROOT) not in sys.path:
 from src.backtest.engine import run_backtest
 from src.config import get_settings
 from src.data.store import Store
+from src.run_metadata import build_artifact_name, finish_run, start_run
 
 
 def _parse_date(text: str) -> date:
@@ -75,7 +76,7 @@ def _snapshot(store: Store, start: date, end: date) -> dict:
 
 
 def _clear_runtime_tables(store: Store) -> None:
-    for t in ["l4_pattern_stats", "l4_daily_report", "l4_trades", "l4_orders", "l3_signals"]:
+    for t in ["l4_pattern_stats", "l4_daily_report", "l4_trades", "l4_orders", "l3_signals", "l3_signal_rank_exp"]:
         store.conn.execute(f"DELETE FROM {t}")
 
 
@@ -86,7 +87,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--patterns", default="bof")
     p.add_argument("--cash", type=float, default=1_000_000)
     p.add_argument("--min-amount", type=float, default=None)
-    p.add_argument("--output", default="docs/spec/v0.01/v0.01-idempotency-check-latest.json")
+    p.add_argument("--output", default=None)
     return p
 
 
@@ -105,14 +106,41 @@ def main() -> int:
     _clear_runtime_tables(store)
     store.close()
 
-    first = run_backtest(
-        db_path=cfg.db_path,
+    meta1 = Store(cfg.db_path)
+    run1 = start_run(
+        store=meta1,
+        scope="idempotency",
+        modules=["backtest", "selector", "strategy", "broker", "report"],
         config=cfg,
+        runtime_env="script",
+        artifact_root=str((cfg.resolved_temp_path / "artifacts").resolve()),
         start=start,
         end=end,
-        patterns=patterns,
-        initial_cash=args.cash,
     )
+    meta1.close()
+
+    try:
+        first = run_backtest(
+            db_path=cfg.db_path,
+            config=cfg,
+            start=start,
+            end=end,
+            patterns=patterns,
+            initial_cash=args.cash,
+            run_id=run1.run_id,
+        )
+        fin1 = Store(cfg.db_path)
+        try:
+            finish_run(fin1, run1.run_id, "SUCCESS")
+        finally:
+            fin1.close()
+    except Exception as exc:
+        fin1 = Store(cfg.db_path)
+        try:
+            finish_run(fin1, run1.run_id, "FAILED", str(exc))
+        finally:
+            fin1.close()
+        raise
     s1 = Store(cfg.db_path)
     snap1 = _snapshot(s1, start, end)
     s1.close()
@@ -121,14 +149,41 @@ def main() -> int:
     _clear_runtime_tables(sclr)
     sclr.close()
 
-    second = run_backtest(
-        db_path=cfg.db_path,
+    meta2 = Store(cfg.db_path)
+    run2 = start_run(
+        store=meta2,
+        scope="idempotency",
+        modules=["backtest", "selector", "strategy", "broker", "report"],
         config=cfg,
+        runtime_env="script",
+        artifact_root=str((cfg.resolved_temp_path / "artifacts").resolve()),
         start=start,
         end=end,
-        patterns=patterns,
-        initial_cash=args.cash,
     )
+    meta2.close()
+
+    try:
+        second = run_backtest(
+            db_path=cfg.db_path,
+            config=cfg,
+            start=start,
+            end=end,
+            patterns=patterns,
+            initial_cash=args.cash,
+            run_id=run2.run_id,
+        )
+        fin2 = Store(cfg.db_path)
+        try:
+            finish_run(fin2, run2.run_id, "SUCCESS")
+        finally:
+            fin2.close()
+    except Exception as exc:
+        fin2 = Store(cfg.db_path)
+        try:
+            finish_run(fin2, run2.run_id, "FAILED", str(exc))
+        finally:
+            fin2.close()
+        raise
     s2 = Store(cfg.db_path)
     snap2 = _snapshot(s2, start, end)
     s2.close()
@@ -155,7 +210,16 @@ def main() -> int:
         "trade_count_2": len(snap2["trade_ids"]),
     }
 
-    out_path = Path(args.output)
+    out_path = (
+        Path(args.output).expanduser().resolve()
+        if args.output
+        else REPO_ROOT
+        / "docs"
+        / "spec"
+        / "v0.01-plus"
+        / "evidence"
+        / build_artifact_name(run2.run_id, "idempotency_check", "json")
+    )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(_to_jsonable(out), ensure_ascii=False, indent=2), encoding="utf-8")
 

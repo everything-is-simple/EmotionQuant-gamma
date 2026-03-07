@@ -1,0 +1,7 @@
+#!/bin/sh
+powershell -ExecutionPolicy Bypass -File scripts/ops/preflight.ps1 -Profile hook
+status=$?
+if [ $status -ne 0 ]; then
+  echo "preflight failed"
+fi
+exit $status

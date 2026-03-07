@@ -1,9 +1,12 @@
-# Down-to-Top 策略层集成设计（v0.01-plus）
+# Down-to-Top 主线替代设计（v0.01-plus）
 
-**版本**: v0.01-plus 草案  
-**创建日期**: 2026-03-07  
-**状态**: Draft（待验证）  
-**前置依赖**: `system-baseline.md`, `selector-design.md`, `strategy-design.md`, `pas-algorithm.md`  
+**版本**: `v0.01-plus 主线替代版`  
+**状态**: `Active`  
+**封版日期**: `不适用（Active SoT）`  
+**变更规则**: `作为 v0.01-plus 当前主开发线设计入口，允许在 Gate、证据与实现反馈下受控修订；涉及 v0.01 Frozen 历史口径时，以上游 baseline 为准。`  
+**上游文档**: `docs/design-v2/01-system/system-baseline.md`, `docs/design-v2/02-modules/selector-design.md`, `docs/design-v2/02-modules/strategy-design.md`, `docs/design-v2/03-algorithms/core-algorithms/pas-algorithm.md`  
+**治理入口**: `docs/spec/v0.01-plus/README.md`  
+**创建日期**: `2026-03-07`  
 **证据支持**: `docs/spec/v0.01/evidence/v0.01-evidence-review-20260306.md`
 
 ---
@@ -29,17 +32,15 @@
 - soft_gate + IRS 组合改善了 baseline（EV 转正、MDD 减半）
 - 真正有效的不是"前置硬过滤"，而是"后置评分排序"
 
-### 1.2 当前设计的问题
+### 1.2 当前版本边界
 
-`selector-design.md` §6.2 仍然写的是：
+`selector-design.md` 与 `system-baseline.md` 现已收回为 `v0.01 Frozen` 的历史正式口径：基础过滤后仍执行 `MSS gate + IRS filter`。它们保留为历史基线、对照组和回退参考。
 
-```python
-if config.ENABLE_MSS_GATE:
-    if mss.signal == "BEARISH":
-        return []  # 今日不出手
-```
+本文件承担的是另一项职责：
 
-这是 **top-down 硬门控**，与证据结论矛盾。
+1. 定义 `v0.01-plus` 当前主开发线的 `down-to-top` 主链。
+2. 让 `DTT` 作为替代 legacy top-down 的默认目标，而不是继续停留在“独立实验版”。
+3. 在保持 `v0.01 Frozen` 可回放的前提下，给后续代码实现提供当前 SoT。
 
 ---
 
@@ -184,35 +185,15 @@ return signals[:MAX_POSITIONS]  # Top-N
 
 ## 5. Contracts 变化
 
-### 5.1 Signal 新增字段
+### 5.1 当前迁移策略：兼容优先 + sidecar
 
-```python
-class Signal(BaseModel):
-    signal_id: str
-    code: str
-    signal_date: date
-    action: str
-    pattern: str
-    reason_code: str
-    
-    # ── 新增字段 ──
-    bof_strength: float        # BOF 原始强度（0-1）
-    irs_score: float           # 行业评分（0-100）
-    mss_score: float           # 市场温度（0-100）
-    final_score: float         # 综合评分（0-100）
-    
-    # ── 保留字段（兼容） ──
-    strength: float = 0.0      # 向后兼容，等于 bof_strength
-    
-    @model_validator(mode="after")
-    def _set_signal_id(self):
-        if not self.signal_id:
-            self.signal_id = f"{self.code}_{self.signal_date}_{self.pattern}"
-        # 向后兼容
-        if self.strength == 0.0:
-            self.strength = self.bof_strength
-        return self
-```
+`v0.01-plus` 已升格为当前主开发线，但第一阶段不要求下游 `Broker / Backtest / Report` 立刻跟着做全量 schema 改造。
+
+当前迁移策略：
+
+1. 正式 `Signal / Order / Trade` 契约先保持 `v0.01` 兼容形态，保证下游切换面可控。
+2. `DTT` 排序所需的 `bof_strength / irs_score / mss_score / final_score / final_rank` 统一写入 `l3_signal_rank_exp`。
+3. 若后续决定把这些字段正式并入 `Signal`，必须另立 migration note 和 compatibility 方案。
 
 ### 5.2 MarketScore / IndustryScore 不变
 
@@ -232,9 +213,9 @@ class IndustryScore(BaseModel):
 ```
 
 **关键变化**：
-- `MarketScore.signal` 不再触发"今日不出手"
-- `IndustryScore.rank` 不再触发"只看 Top-N 行业"
-- 两者都只是评分输入，不是硬门控
+- `MarketScore.signal` 不再触发“今日不出手”。
+- `IndustryScore.rank` 不再触发“只看 Top-N 行业”。
+- 两者都只是主线排序输入，不是硬门控。
 
 ---
 
@@ -388,17 +369,17 @@ def select_candidates(store: Store, calc_date: date) -> list[StockCandidate]:
 ```python
 # config.py
 
-# ── Down-to-Top 模式开关 ──
-ENABLE_DTT_MODE = False           # v0.01 默认关闭，v0.01-plus 开启
+# ── Down-to-Top 主线开关 ──
+ENABLE_DTT_MODE = True            # v0.01-plus 当前主线默认开启
 
 # ── Down-to-Top 权重 ──
 DTT_BOF_WEIGHT = 0.5
 DTT_IRS_WEIGHT = 0.3
 DTT_MSS_WEIGHT = 0.2
 
-# ── 旧配置（兼容） ──
-ENABLE_MSS_GATE = True            # DTT 模式下无效
-ENABLE_IRS_FILTER = True          # DTT 模式下无效
+# ── legacy 对照配置（仅 compare / rollback） ──
+ENABLE_MSS_GATE = True            # legacy 模式下有效
+ENABLE_IRS_FILTER = True          # legacy 模式下有效
 ```
 
 ### 8.2 模式切换
@@ -408,9 +389,9 @@ ENABLE_IRS_FILTER = True          # DTT 模式下无效
 
 def generate_signals(...):
     if config.ENABLE_DTT_MODE:
-        return _generate_signals_dtt(...)  # Down-to-Top
+        return _generate_signals_dtt(...)  # 当前主线
     else:
-        return _generate_signals_legacy(...)  # Top-Down
+        return _generate_signals_legacy(...)  # compare / rollback
 ```
 
 ---
@@ -464,17 +445,18 @@ def generate_signals(...):
 ## 11. 与 v0.02 的关系
 
 **v0.01-plus 不是 v0.02**：
-- v0.02 是"加入 BPB 形态"（形态扩展）
-- v0.01-plus 是"改变 MSS/IRS 使用方式"（链路重构）
+- `v0.02` 是后续形态扩展版本（如 BPB）。
+- `v0.01-plus` 是当前主开发线中的链路替代版本（legacy top-down -> DTT）。
 
-**两者可以并行**：
-- v0.01-plus 验证通过后，可以作为 v0.02 的基础
-- 或者 v0.02 仍然用 legacy 模式，v0.03 再切 DTT
+**当前关系**：
+- `v0.01-plus` 先把主链替代工作做完。
+- `v0.02` 不承接本次命名，也不提前吞并当前 DTT 改造。
+- 若后续需要在 `v0.02` 继承 DTT，必须以 `v0.01-plus` 的稳定结果为前提。
 
 **当前建议**：
-- 先验证 v0.01-plus（1-2 周）
-- 如果 DTT 证明有效，v0.02 直接基于 DTT
-- 如果 DTT 证明无效，v0.02 继续用 legacy
+- 先完成 `v0.01-plus` 主线切换。
+- legacy 保留为 compare / rollback。
+- 切换完成后，再决定 `v0.02` 是否直接继承 DTT 主链。
 
 ---
 
@@ -498,17 +480,17 @@ def generate_signals(...):
 
 ### 13.1 代码改造（3-5 天）
 
-1. 修改 `src/contracts.py`：Signal 新增字段
-2. 修改 `src/selector/selector.py`：删除 MSS/IRS 硬过滤
-3. 修改 `src/strategy/strategy.py`：叠加 IRS/MSS 评分
-4. 新增 `src/strategy/ranker.py`：综合评分逻辑
-5. 修改 `src/config.py`：新增 DTT 配置
+1. 修改 `src/selector/selector.py`：补齐 `legacy` / `dtt` 两类入口，并让 `dtt` 成为当前主线默认目标
+2. 修改 `src/strategy/strategy.py`：叠加 IRS/MSS 评分，并输出 sidecar 所需明细
+3. 新增 `src/strategy/ranker.py`：综合评分逻辑
+4. 修改 `src/config.py`：补齐主线切换与 compare / rollback 配置
+5. 增加 `l3_signal_rank_exp` schema 与写入逻辑
 
 ### 13.2 测试验证（2-3 天）
 
 1. 单元测试：`test_ranker.py`（评分计算）
 2. 集成测试：`test_strategy_dtt.py`（完整链路）
-3. 消融实验：6 个场景全跑一遍
+3. 切换矩阵：4 组主线 / 对照场景全跑一遍
 
 ### 13.3 证据产出（1 天）
 
@@ -522,6 +504,7 @@ def generate_signals(...):
 
 - `docs/spec/v0.01/evidence/v0.01-evidence-review-20260306.md`（证据支持）
 - `docs/spec/v0.01/evidence/v0.01-selector-ablation-mss-fullcycle-ab-20260306.json`（数据来源）
-- `docs/design-v2/system-baseline.md`（执行语义）
-- `docs/design-v2/selector-design.md`（Selector 原设计）
-- `docs/design-v2/strategy-design.md`（Strategy 原设计）
+- `docs/design-v2/01-system/system-baseline.md`（执行语义）
+- `docs/design-v2/02-modules/selector-design.md`（Selector 原设计）
+- `docs/design-v2/02-modules/strategy-design.md`（Strategy 原设计）
+

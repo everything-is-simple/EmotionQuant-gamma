@@ -73,8 +73,8 @@ DuckDB（`emotionquant.duckdb`）保留的 L1 相关表：
 
 ## 5. 记录落点（你问的“写在哪些文件”）
 
-1. **口径与架构规则**：`docs/design-v2/data-layer-design.md`
-2. **系统级执行约束**：`docs/design-v2/system-baseline.md`
+1. **口径与架构规则**：`docs/design-v2/02-modules/data-layer-design.md`
+2. **系统级执行约束**：`docs/design-v2/01-system/system-baseline.md`
 3. **每次真实清理/重建证据**：本文件（按日期滚动新增）
 
 

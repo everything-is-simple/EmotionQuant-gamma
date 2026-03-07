@@ -78,11 +78,12 @@
 
 ### 5. 临时文件（开发过程）
 
-#### `.tmp/`
-- **作用**：临时文件存储（如 MCP 配置、临时脚本）
+#### `TEMP_PATH/`
+- **作用**：临时文件统一落点（工作副本、pytest、ruff/mypy cache、临时脚本）
 - **内容**：
-  - `.tmp/codex-home/`：MCP 服务配置
-  - `.tmp/*.tmp`：临时数据文件
+  - `TEMP_PATH/codex-home/`：MCP 服务配置
+  - `TEMP_PATH/backtest/`：工作副本 DuckDB
+  - `TEMP_PATH/artifacts/`：脚本运行时中间结果
 - **是否提交**：❌ 否（已在 `.gitignore` 中）
 - **是否删除**：✅ 可以删除，但会丢失 MCP 配置
 
@@ -94,12 +95,12 @@
 
 ### 6. 运行时产物（脚本输出）
 
-#### `artifacts/`
+#### `TEMP_PATH/artifacts/`
 - **作用**：脚本运行产生的中间文件
 - **内容**：
   - `bulk_download_progress.json`：批量下载进度记录
   - 其他脚本输出文件
-- **是否提交**：❌ 否（已在 `.gitignore` 中）
+- **是否提交**：❌ 否
 - **是否删除**：✅ 可以删除，但会丢失进度记录
 
 **为什么不彻底删除**：
@@ -142,8 +143,8 @@ Get-ChildItem -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -
 # 删除测试缓存
 Remove-Item -Recurse -Force .pytest_cache
 
-# 删除临时文件
-Remove-Item -Recurse -Force .tmp, artifacts
+# 删除外部临时目录中的运行时产物
+Remove-Item -Recurse -Force $env:TEMP_PATH\\backtest, $env:TEMP_PATH\\artifacts
 ```
 
 **方法 3：Git 清理（最彻底）**
@@ -180,8 +181,8 @@ __pycache__/
 .claude/
 
 # 临时文件
-.tmp*/
-artifacts/
+pytest-tmp/
+pytest-cache-files-*/
 
 # 运行时产物
 *.log
@@ -214,7 +215,7 @@ cache/
 
 1. **定期清理**：每周清理一次临时文件，保持仓库整洁
 2. **提交前检查**：使用 `git status` 确认没有临时文件被误提交
-3. **保留配置**：不要删除 `.vscode/` 和 `.tmp/codex-home/`（除非需要重新配置）
+3. **保留配置**：不要删除 `.vscode/` 和 `TEMP_PATH/codex-home/`（除非需要重新配置）
 4. **使用脚本**：优先使用 `clean_temp_files.ps1`，避免手动删除出错
 5. **备份重要数据**：清理前确认 `artifacts/` 中没有重要的中间结果
 

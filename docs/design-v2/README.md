@@ -1,32 +1,38 @@
 # design-v2 目录说明
 
+**版本**: `v0.01-v0.06 目录入口`  
+**状态**: `Frozen`（设计入口）  
+**封版日期**: `2026-03-07`  
+**变更规则**: `仅允许入口、链接与边界说明维护；执行语义与系统口径以上游 baseline 为准。`  
+**上游文档**: `docs/design-v2/01-system/system-baseline.md`
+
 ## 定位
 
 `docs/design-v2/` 只存放系统级设计基线、模块级设计与算法级 SoT，不存放分阶段执行材料。
 
-# design-v2 目录说明
+## 当前入口
 
-## 定位
-
-`docs/design-v2/` 只存放系统级设计基线、模块级设计与算法级 SoT，不存放分阶段执行材料。
+| 类型 | 路径 | 用途 |
+|---|---|---|
+| 系统总纲 | `01-system/system-baseline.md` | 当前唯一设计 SoT |
+| 架构总览 | `01-system/architecture-master.md` | 查模块关系与整体结构 |
+| 模块设计 | `02-modules/` | 查职责、接口、边界 |
+| 算法设计 | `03-algorithms/core-algorithms/README.md` | 查 MSS/IRS/PAS 当前算法口径 |
 
 ## 结构
 
 ```
 design-v2/
 ├── README.md                   # 本文件
-│
 ├── 01-system/                  # 系统级设计
-│   ├── system-baseline.md      # 系统基线（单一事实源）⭐
+│   ├── system-baseline.md      # 系统基线（单一事实源）
 │   └── architecture-master.md  # 架构总览
-│
 ├── 02-modules/                 # 模块级设计
 │   ├── data-layer-design.md
 │   ├── selector-design.md
 │   ├── strategy-design.md
 │   ├── broker-design.md
 │   └── backtest-report-design.md
-│
 └── 03-algorithms/              # 算法级 SoT
     └── core-algorithms/
         ├── README.md
@@ -36,33 +42,23 @@ design-v2/
         └── down-to-top-integration.md
 ```
 
-## 口径规则
+## 使用规则
 
-1. **系统级**（01-system/）：
-   - `system-baseline.md`：系统级执行 SoT，最高优先级
-   - `architecture-master.md`：架构总览与模块关系
+1. `system-baseline.md` 优先级最高；若与其他设计文档冲突，以它为准。
+2. `02-modules/` 负责回答“模块怎么做”，不重复定义版本推进计划。
+3. `03-algorithms/` 负责回答“MSS/IRS/PAS 当前怎么算”，不承载阶段证据归档。
+4. 路线图、证据、runbook、发布记录统一放入 `docs/spec/<version>/`。
 
-2. **模块级**（02-modules/）：
-   - 各模块的详细设计文档
-   - 定义模块职责、接口、实现规范
+## 相邻目录边界
 
-3. **算法级**（03-algorithms/）：
-   - MSS/IRS/PAS 算法设计
-   - 集成模式与演进路径
-
-4. **分阶段材料归属**：
-   - 分阶段文件统一归档到 `docs/spec/<version>/`
+- `docs/spec/`：放版本推进、证据和历史记录，不放系统级 SoT。
+- `docs/observatory/`：放观察框架与评审标准，不放设计实现细节。
+- `docs/Strategy/`：放理论来源与方法论，不直接定义执行口径。
+- `docs/steering/`：放治理铁律与不可变约束。
 
 ## 相关文档
 
-- 评审标准：`docs/observatory/sandbox-review-standard.md`（系统观察与验证）
-- 理论基础：`docs/Strategy/`（理论来源与方法论溯源）
-- 治理铁律：`docs/steering/`（不可变约束）
-
-## 口径规则
-
-1. `system-baseline.md`：系统级执行 SoT
-2. `mss/irs/pas-algorithm.md`：算法级 SoT
-3. `docs/spec/<version>/records`：阶段记录与证据
-4. `docs/reference/`：历史研究与参考资料
-
+- `docs/observatory/sandbox-review-standard.md`
+- `docs/Strategy/theoretical-foundations.md`
+- `docs/steering/product.md`
+- `docs/spec/common/records/development-status.md`

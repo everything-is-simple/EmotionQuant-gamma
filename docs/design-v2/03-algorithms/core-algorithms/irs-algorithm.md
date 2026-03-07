@@ -1,12 +1,13 @@
 # IRS 算法设计
 
-**版本**: v0.01 正式版  
-**创建日期**: 2026-03-06  
-**最后更新**: 2026-03-07  
-**状态**: Active（算法级 SoT，执行语义仍受 `system-baseline.md` 冻结约束）  
-**变更规则**: 允许在不改变 v0.01 执行语义前提下，对行业分类口径、算法细案与证据回写做受控纠偏。  
+**版本**: `v0.01 正式版`  
+**状态**: `Active`（算法级 SoT，执行语义仍受 `system-baseline.md` 冻结约束）  
+**封版日期**: `不适用（Active SoT）`  
+**变更规则**: `允许在不改变 v0.01 执行语义前提下，对行业分类口径、算法细案与证据回写做受控纠偏。`  
+**上游文档**: `docs/design-v2/01-system/system-baseline.md`, `docs/design-v2/02-modules/selector-design.md`, `docs/design-v2/01-system/architecture-master.md`  
+**创建日期**: `2026-03-06`  
+**最后更新**: `2026-03-07`  
 **对应模块**: `src/selector/irs.py`, `src/selector/selector.py`, `src/data/cleaner.py`  
-**上游文档**: `system-baseline.md`, `selector-design.md`, `architecture-master.md`  
 **理论来源**: `docs/Strategy/IRS/`
 
 ---
@@ -374,6 +375,7 @@ IRS 在 v0.01 的正式方向不是恢复旧版 6 因子全集，而是：
 ## 11. 参考文献
 
 1. `docs/Strategy/IRS/shenwan-industry-classification.md` - 行业分类标准
-2. `docs/design-v2/system-baseline.md` - 执行语义
-3. `docs/design-v2/down-to-top-integration.md` - v0.02 软评分模式
+2. `docs/design-v2/01-system/system-baseline.md` - 执行语义
+3. `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` - v0.02 软评分模式
 4. `docs/spec/v0.01/evidence/v0.01-evidence-review-20260306.md` - 消融证据
+

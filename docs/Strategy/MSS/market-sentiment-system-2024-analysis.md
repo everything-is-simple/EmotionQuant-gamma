@@ -93,6 +93,6 @@
 
 **参考文献**：
 1. 《2024.大盘情绪交易系统》原文
-2. `docs/reference/core-algorithms/mss/mss-algorithm.md`
-3. `docs/design-v2/system-baseline.md`
+2. `docs/design-v2/03-algorithms/core-algorithms/mss-algorithm.md`
+3. `docs/design-v2/01-system/system-baseline.md`
 

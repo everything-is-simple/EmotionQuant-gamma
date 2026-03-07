@@ -34,6 +34,7 @@ class Settings(BaseSettings):
 
     # Paths
     data_path: str = Field(default="", alias="DATA_PATH")
+    temp_path: str = Field(default="", alias="TEMP_PATH")
     log_path: str = Field(default="", alias="LOG_PATH")
     raw_db_path: str = Field(default="", alias="RAW_DB_PATH")
 
@@ -55,6 +56,8 @@ class Settings(BaseSettings):
     enable_mss_gate: bool = Field(default=False, alias="ENABLE_MSS_GATE")
     enable_irs_filter: bool = Field(default=False, alias="ENABLE_IRS_FILTER")
     enable_gene_filter: bool = Field(default=False, alias="ENABLE_GENE_FILTER")
+    enable_dtt_mode: bool = Field(default=True, alias="ENABLE_DTT_MODE")
+    pipeline_mode: str = Field(default="", alias="PIPELINE_MODE")
 
     # Trading and backtest params
     backtest_initial_cash: float = Field(default=1_000_000, alias="BACKTEST_INITIAL_CASH")
@@ -85,6 +88,15 @@ class Settings(BaseSettings):
     min_list_days: int = Field(default=60, alias="MIN_LIST_DAYS")
     # TuShare amount 单位为千元；v0.01 基线默认流动性阈值为 5,000 万元 = 50,000（千元）。
     min_amount: float = Field(default=50_000, alias="MIN_AMOUNT")
+    dtt_variant: str = Field(
+        default="v0_01_dtt_bof_plus_irs_score",
+        alias="DTT_VARIANT",
+    )
+    dtt_score_fill: float = Field(default=50.0, alias="DTT_SCORE_FILL")
+    dtt_top_n: int = Field(default=50, alias="DTT_TOP_N")
+    dtt_bof_weight: float = Field(default=0.50, alias="DTT_BOF_WEIGHT")
+    dtt_irs_weight: float = Field(default=0.30, alias="DTT_IRS_WEIGHT")
+    dtt_mss_weight: float = Field(default=0.20, alias="DTT_MSS_WEIGHT")
 
     # PAS parameters (v0.01 only BOF active)
     pas_patterns: str = Field(default="bof", alias="PAS_PATTERNS")
@@ -107,6 +119,15 @@ class Settings(BaseSettings):
         return path
 
     @property
+    def resolved_temp_path(self) -> Path:
+        if self.temp_path.strip():
+            path = Path(self.temp_path.strip()).expanduser().resolve()
+        else:
+            path = Path.home() / ".emotionquant" / "temp"
+        path.mkdir(parents=True, exist_ok=True)
+        return path
+
+    @property
     def resolved_log_path(self) -> Path:
         if self.log_path.strip():
             path = Path(self.log_path.strip()).expanduser().resolve()
@@ -114,6 +135,17 @@ class Settings(BaseSettings):
             path = self.resolved_data_path / "logs"
         path.mkdir(parents=True, exist_ok=True)
         return path
+
+    @property
+    def pipeline_mode_normalized(self) -> str:
+        raw_mode = self.pipeline_mode.strip().lower()
+        if raw_mode in {"legacy", "dtt"}:
+            return raw_mode
+        return "dtt" if self.enable_dtt_mode else "legacy"
+
+    @property
+    def use_dtt_pipeline(self) -> bool:
+        return self.pipeline_mode_normalized == "dtt"
 
     @property
     def db_path(self) -> Path:
@@ -140,10 +172,11 @@ class Settings(BaseSettings):
         return [part.strip().lower() for part in self.pas_patterns.split(",") if part.strip()]
 
     @classmethod
-    def from_env(cls, env_file: str = ".env") -> "Settings":
-        return cls(_env_file=env_file, _env_file_encoding="utf-8")
+    def from_env(cls, env_file: str = ".env") -> Settings:
+        return cls(_env_file=env_file, _env_file_encoding="utf-8")  # type: ignore[call-arg]
 
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     return Settings()
+
