@@ -11,6 +11,21 @@
 
 > 自 `2026-03-06` 起，本文件负责 Selector 的系统边界与漏斗职责；MSS / IRS 的算法细案、baseline 口径与数据分类口径以对应 `*-algorithm.md` 为准。
 
+## 当前主开发线映射（非本文件执行口径）
+
+当前主开发线中的 `Selector` 不再消费 `MSS gate` 或 `IRS filter`，而是收口为：
+
+1. 基础过滤
+2. `preselect_score`
+3. `candidate_top_n`
+
+当前主开发线入口见：
+
+- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`
+- `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+
+本文件正文继续保留 `v0.01 Frozen` 的历史漏斗口径，用于对照与回退理解。
+
 ## 冻结区与冲突处理
 
 1. 本文档属于冻结区；默认只允许勘误、链接修复与说明性澄清。若涉及执行语义、模块边界或口径调整，必须进入后续版本处理。

@@ -30,6 +30,10 @@
 - `Selector 初选 -> BOF 触发 -> IRS 排序 -> MSS 控仓位 -> Broker 执行`
 - 当前主线入口：`docs/spec/v0.01-plus/README.md`
 - 当前设计 SoT：`docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+- 当前算法语义补充：
+  - `PAS` 当前主线只实现 `PAS-trigger`
+  - `IRS` 当前主线只实现 `IRS-lite`，并正在做 `IRS-upgrade`
+  - `MSS` 当前主线只实现 `MSS-lite`，并正在做 `MSS-upgrade`
 
 本文后续内容继续保留为 `v0.01 Frozen` 历史架构总览，供对照、回退和历史理解使用，不再代表当前主开发线口径。
 

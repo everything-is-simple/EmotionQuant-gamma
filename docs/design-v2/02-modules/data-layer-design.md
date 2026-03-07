@@ -9,6 +9,8 @@
 **对应模块**: `src/data/`（fetcher.py, cleaner.py, builder.py, store.py）  
 **运维记录**: `docs/spec/v0.01/records/data-rebuild-runbook-20260303.md`（L1 保留、L2/L3/L4 清理与重建链路）
 
+> 当前主开发线补充说明：`v0.01-plus` 已经在 `L2/L3` 侧引入更多 sidecar 与扩展字段需求，例如 `l3_signal_rank_exp`、`IRS-upgrade` 的行业结构聚合、`MSS-upgrade` 的周期字段等。本文正文继续保留 `v0.01 Frozen` 历史数据设计，当前扩展以 `docs/spec/v0.01-plus/` 与对应 `*-algorithm.md` 为准。
+
 ## 冻结区与冲突处理
 
 1. 本文档属于冻结区；默认只允许勘误、链接修复与说明性澄清。若涉及执行语义、模块边界或口径调整，必须进入后续版本处理。

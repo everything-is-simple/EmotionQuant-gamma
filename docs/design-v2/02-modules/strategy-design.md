@@ -12,6 +12,22 @@
 
 > 自 `2026-03-06` 起，本文件负责 Strategy 的系统边界与装配规则；PAS 的算法细案与 detector 框架口径以 `pas-algorithm.md` 为准。
 
+## 当前主开发线映射（非本文件执行口径）
+
+当前主开发线中的 `Strategy` 已经不再等于“只做 v0.01 BOF 单形态信号输出”，而是收口为：
+
+1. `PAS-trigger` 当前仅在线 `BOF`
+2. `BOF` 触发后附加 `IRS` 排序增强
+3. 输出排序信号清单供 `Broker / Risk` 消费
+
+当前主开发线入口见：
+
+- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`
+- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-03-pas-upgrade.md`
+- `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+
+本文件正文继续保留 `v0.01 Frozen` 的历史执行口径。
+
 ## 冻结区与冲突处理
 
 1. 本文档属于冻结区；默认只允许勘误、链接修复与说明性澄清。若涉及执行语义、模块边界或口径调整，必须进入后续版本处理。

@@ -34,9 +34,22 @@
 4. Broker：仓位、风控、撮合、退出。
 5. Backtest/Report：回测与复盘统计。
 
+### 3.0A 当前主开发线映射（非本文件执行口径）
+
+为避免把 `v0.01 Frozen` 历史基线误读成当前主开发线，补充说明如下：
+
+1. 当前主开发线为 `v0.01-plus`，入口见：
+   - `docs/spec/v0.01-plus/README.md`
+   - `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+2. 当前主开发线的模块边界是：
+   - `Selector`：基础过滤 + `preselect_score` + `candidate_top_n`
+   - `Strategy`：`PAS-trigger(BOF)` + `IRS` 排序增强
+   - `Broker / Risk`：消费 `MSS` 做市场级控仓位
+3. 本文件正文保留 `v0.01 Frozen` 历史执行语义，不直接定义当前主开发线。
+
 ### 3.0 算法权威入口
 
-系统级 SoT 仍以本文件为准；算法级 SoT 入口如下：
+`v0.01 Frozen` 的系统级 SoT 仍以本文件为准；算法级 SoT 入口如下：
 
 1. `mss-algorithm.md`
 2. `irs-algorithm.md`
@@ -48,6 +61,9 @@
 2. `*-algorithm.md` 负责 MSS / IRS / PAS 的当前算法定义、输入边界、校准问题与正式口径。
 3. `docs/spec/v0.01/records/` 仅保留阶段证据与决策记录，不再承担算法 SoT 职责。
 4. `docs/Strategy/` 与 `docs/reference/` 为理论/外部参考，不作为 v0.01 执行口径。
+5. 当前主开发线的设计 SoT 不在本文件内定义，而在：
+   - `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+   - `docs/spec/v0.01-plus/`
 
 ### 3.1 结果契约（v0.01 字段冻结）
 

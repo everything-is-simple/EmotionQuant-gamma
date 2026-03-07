@@ -14,8 +14,9 @@
 
 | 类型 | 路径 | 用途 |
 |---|---|---|
-| 系统总纲 | `01-system/system-baseline.md` | 当前唯一设计 SoT |
-| 架构总览 | `01-system/architecture-master.md` | 查模块关系与整体结构 |
+| v0.01 历史基线 | `01-system/system-baseline.md` | `v0.01 Frozen` 历史执行口径 |
+| 当前主开发线 | `03-algorithms/core-algorithms/down-to-top-integration.md` | `v0.01-plus` 当前设计 SoT |
+| 架构总览 | `01-system/architecture-master.md` | 查历史架构与当前主线映射 |
 | 模块设计 | `02-modules/` | 查职责、接口、边界 |
 | 算法设计 | `03-algorithms/core-algorithms/README.md` | 查 MSS/IRS/PAS 当前算法口径 |
 
@@ -44,10 +45,11 @@ design-v2/
 
 ## 使用规则
 
-1. `system-baseline.md` 优先级最高；若与其他设计文档冲突，以它为准。
-2. `02-modules/` 负责回答“模块怎么做”，不重复定义版本推进计划。
-3. `03-algorithms/` 负责回答“MSS/IRS/PAS 当前怎么算”，不承载阶段证据归档。
-4. 路线图、证据、runbook、发布记录统一放入 `docs/spec/<version>/`。
+1. 讨论 `v0.01 Frozen` 历史口径时，以 `system-baseline.md` 为准。
+2. 讨论 `v0.01-plus` 当前主开发线时，以 `down-to-top-integration.md` 与 `docs/spec/v0.01-plus/` 为准。
+3. `02-modules/` 负责回答模块边界；若正文仍为 `Frozen` 历史语义，应以前置说明中的“当前主开发线映射”为准。
+4. `03-algorithms/` 负责回答 `MSS/IRS/PAS` 当前怎么算，不承载阶段证据归档。
+5. 路线图、证据、runbook、发布记录统一放入 `docs/spec/<version>/`。
 
 ## 相邻目录边界
 

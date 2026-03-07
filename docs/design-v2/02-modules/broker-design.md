@@ -8,6 +8,8 @@
 **创建日期**: `2026-03-01`  
 **对应模块**: `src/broker/`（risk.py, matcher.py）
 
+> 当前主开发线补充说明：`Broker / Risk` 已经开始消费 `MSS-lite` 做市场级控仓位；相关当前口径见 `docs/design-v2/03-algorithms/core-algorithms/mss-algorithm.md` 与 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`。本文件正文继续保留 `v0.01 Frozen` 历史执行口径。
+
 ## 冻结区与冲突处理
 
 1. 本文档属于冻结区；默认只允许勘误、链接修复与说明性澄清。若涉及执行语义、模块边界或口径调整，必须进入后续版本处理。
