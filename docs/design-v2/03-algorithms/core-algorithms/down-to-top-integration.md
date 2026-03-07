@@ -13,30 +13,19 @@
 
 ## 1. 设计动机
 
-### 1.1 证据结论
+### 1.1 当前主线结论
 
-`v0.01-evidence-review-20260306.md` 的核心发现：
+`v0.01-plus` 当前主开发线已经明确收口为：
 
-> **当前最可信的方向，不是 MSS hard gate，而是 BOF 触发 + IRS 横截面筛选 + MSS soft overlay。**
+`Selector 初选 -> BOF 触发 -> IRS 排序 -> MSS 控仓位 -> Broker 执行`
 
-全周期 A/B 对比：
+这条链路与 `v0.01 Frozen` 的 legacy top-down 已经不是同一套系统心智模型。
 
-| 配置 | trade_count | EV | PF | MDD |
-|------|-------------|----|----|-----|
-| BOF baseline | 294 | -0.00716 | 2.13 | 0.228 |
-| BOF + MSS hard gate | 16 | +0.03935 | 2.63 | 0.014 |
-| BOF + MSS soft + IRS top10 | 133 | +0.01962 | 2.93 | 0.051 |
+### 1.2 版本边界
 
-**关键发现**：
-- MSS hard gate 把样本压到 16 笔（过度稀疏）
-- soft_gate + IRS 组合改善了 baseline（EV 转正、MDD 减半）
-- 真正有效的不是"前置硬过滤"，而是"后置评分排序"
+`selector-design.md` 与 `system-baseline.md` 继续保留为 `v0.01 Frozen` 的历史正式口径：基础过滤后仍执行 `MSS gate + IRS filter`。它们保留为历史基线、对照组和回退参考。
 
-### 1.2 当前版本边界
-
-`selector-design.md` 与 `system-baseline.md` 现已收回为 `v0.01 Frozen` 的历史正式口径：基础过滤后仍执行 `MSS gate + IRS filter`。它们保留为历史基线、对照组和回退参考。
-
-本文件承担的是另一项职责：
+本文件承担的是当前主线职责：
 
 1. 定义 `v0.01-plus` 当前主开发线的 `down-to-top` 主链。
 2. 让 `DTT` 作为替代 legacy top-down 的默认目标，而不是继续停留在“独立实验版”。
@@ -48,24 +37,25 @@
 
 ### 2.1 核心思想
 
-```
-基础过滤 → BOF 触发 → 叠加 IRS/MSS 评分 → 综合排序 → Top-N → Broker
+```text
+基础过滤 -> BOF 触发 -> IRS 排序 -> MSS 控仓位 -> Broker 执行
 ```
 
 **关键变化**：
-- MSS/IRS 不再是"前置过滤器"，而是"后置评分项"
-- BOF 先触发，再用 IRS/MSS 做优先级排序
-- 所有 BOF 信号都保留，只是排序靠后的不执行（因为仓位有限）
+- `Selector` 不再做 `MSS/IRS` 交易决策。
+- `BOF` 先触发，再用 `IRS` 做横截面排序。
+- `MSS` 不再进入个股横截面总分，而是进入 `Broker / Risk` 控制仓位与持仓上限。
+- `Strategy` 负责排序，`Broker` 负责执行截断。
 
 ### 2.2 与 top-down 的对比
 
 | 维度 | Top-Down（旧） | Down-to-Top（新） |
 |------|---------------|------------------|
-| MSS 职责 | 硬门控（BEARISH → 不出手） | 软评分（BEARISH → 降低优先级） |
-| IRS 职责 | 硬过滤（只看 Top-N 行业） | 软评分（行业排名 → 加权分） |
+| MSS 职责 | 前置 gate / soft gate | 市场级控仓位 |
+| IRS 职责 | 前置硬过滤 | 后置排序增强 |
 | BOF 触发时机 | 在 MSS/IRS 过滤后 | 在基础过滤后立即触发 |
-| 样本保留 | 大量误杀（短窗归零） | 保留所有 BOF，只排序 |
-| 仓位分配 | 先过滤再分配 | 先触发再按综合分排序分配 |
+| 样本保留 | 先删样本再触发 | 先触发再排序 |
+| 仓位分配 | 过滤后固定分配 | 排序后由 Broker 按约束执行 |
 
 ---
 
@@ -79,23 +69,25 @@ sequenceDiagram
     participant S as Selector
     participant P as Strategy(BOF)
     participant R as Ranker
-    participant B as Broker
+    participant B as Broker/Risk
 
     D->>S: 全市场股票池
     S->>S: 基础过滤（流动性/ST/停牌）
-    S->>P: 候选池（约200只）
-    
-    P->>P: BOF 触发检测（4条件）
+    S->>S: preselect_score + candidate_top_n
+    S->>P: 候选池
+
+    P->>P: BOF 触发检测
     P->>P: 生成 Signal(bof_strength)
-    
-    P->>R: BOF 信号列表（约10-50只）
-    R->>R: 读取 l3_irs_daily（行业评分）
-    R->>R: 读取 l3_mss_daily（市场温度）
-    R->>R: 综合评分 = w1*bof + w2*irs + w3*mss
-    R->>R: 按 final_score 降序排序
-    
-    R->>B: Top-N 信号（N=MAX_POSITIONS）
-    B->>B: 风控 + 撮合
+
+    P->>R: BOF 信号列表
+    R->>R: 读取 l3_irs_daily
+    R->>R: final_score = bof + irs
+    R->>R: 按 final_score 排序
+
+    R->>B: 排序信号
+    B->>B: 读取 l3_mss_daily
+    B->>B: 动态调整 max_positions/risk_per_trade/max_position
+    B->>B: 下单截断 + 撮合
 ```
 
 ### 3.2 关键变化点
@@ -103,43 +95,25 @@ sequenceDiagram
 **变化 1：Selector 不再做 MSS/IRS 过滤**
 
 ```python
-# 旧逻辑（selector.py）
-if ENABLE_MSS_GATE and mss.signal == "BEARISH":
-    return []  # ❌ 硬门控
-
 # 新逻辑（selector.py）
-# MSS/IRS 只写入 L3，不在 Selector 里过滤
-# Selector 只做基础过滤
+# Selector 只做基础过滤、规模控制和候选准备
+# MSS/IRS 不再参与候选阶段交易决策
 ```
 
-**变化 2：Strategy 叠加 IRS/MSS 评分**
+**变化 2：Strategy 只做 BOF + IRS 排序**
 
 ```python
-# 旧逻辑（strategy.py）
-for candidate in candidates:
-    signal = bof_detector.detect(candidate)
-    if signal:
-        signals.append(signal)  # ❌ 只有 bof_strength
+# 新逻辑（ranker.py）
+# final_score 只由 bof_strength + irs_score 形成
+# MSS 不再进入横截面总分
+```
 
-# 新逻辑（strategy.py）
-for candidate in candidates:
-    signal = bof_detector.detect(candidate)
-    if signal:
-        # 叠加 IRS 评分
-        irs_score = get_industry_score(signal.code, signal_date)
-        # 叠加 MSS 评分
-        mss_score = get_market_score(signal_date)
-        # 综合评分
-        signal.final_score = (
-            0.5 * signal.bof_strength +
-            0.3 * irs_score +
-            0.2 * mss_score
-        )
-        signals.append(signal)
+**变化 3：Broker / Risk 才消费 MSS**
 
-# 按 final_score 降序排序
-signals.sort(key=lambda s: s.final_score, reverse=True)
-return signals[:MAX_POSITIONS]  # Top-N
+```python
+# 新逻辑（risk.py）
+# 按 signal_date 读取 l3_mss_daily
+# 动态调节 max_positions / risk_per_trade_pct / max_position_pct
 ```
 
 ---
@@ -148,38 +122,50 @@ return signals[:MAX_POSITIONS]  # Top-N
 
 ### 4.1 Selector
 
-**旧职责**：
-- MSS gate（BEARISH → 返回空）
-- IRS filter（只保留 Top-N 行业）
-- 基础过滤
+**当前主线职责**：
+- 基础过滤（停牌/ST/上市天数/流动性/关键字段）
+- 规模控制（`candidate_top_n`）
+- 生成 `preselect_score`
 
-**新职责**：
-- 只做基础过滤（流动性/ST/停牌/市值）
-- 输出候选池（约200只）
-- MSS/IRS 只写入 L3，不在 Selector 里使用
+**不再负责**：
+- `MSS gate`
+- `IRS filter`
+- 市场状态停手
+- 行业硬过滤
 
 ### 4.2 Strategy
 
-**旧职责**：
-- BOF 触发检测
-- 输出 Signal（只有 bof_strength）
+**当前主线职责**：
+- `BOF` 触发检测
+- 生成 `bof_strength`
+- 读取 `IRS` 并形成 `final_score`
+- 生成排序信号与 sidecar 明细
 
-**新职责**：
-- BOF 触发检测
-- 叠加 IRS/MSS 评分
-- 计算 final_score
-- 按 final_score 排序，输出 Top-N
+**不再负责**：
+- 市场级控仓位
+- 最终下单数量
+- 账户现金与持仓约束
 
-### 4.3 MSS/IRS
+### 4.3 Broker / Risk
 
-**旧职责**：
-- MSS：硬门控（BEARISH → 全局停止）
-- IRS：硬过滤（只保留 Top-N 行业）
+**当前主线职责**：
+- 接收排序信号
+- 读取 `MSS` 市场状态
+- 动态调节：
+  - `max_positions`
+  - `risk_per_trade_pct`
+  - `max_position_pct`
+- 决定实际可执行订单集合
 
-**新职责**：
-- MSS：提供市场温度评分（0-100）
-- IRS：提供行业排名评分（1-31 → 归一化到 0-100）
-- 两者都只写入 L3，不直接控制交易
+### 4.4 MSS / IRS
+
+**IRS 当前职责**：
+- 行业横截面增强因子
+- 进入 `Strategy` 排序层
+
+**MSS 当前职责**：
+- 市场级风险调节因子
+- 进入 `Broker / Risk` 执行层
 
 ---
 
@@ -195,226 +181,126 @@ return signals[:MAX_POSITIONS]  # Top-N
 2. `DTT` 排序所需的 `bof_strength / irs_score / mss_score / final_score / final_rank` 统一写入 `l3_signal_rank_exp`。
 3. 若后续决定把这些字段正式并入 `Signal`，必须另立 migration note 和 compatibility 方案。
 
-### 5.2 MarketScore / IndustryScore 不变
+### 5.2 MarketScore / IndustryScore 角色调整
 
-MSS/IRS 的输出契约不变，仍然是：
+MSS/IRS 的输出契约对象不必立刻改名，但当前主线消费方向已经改变：
 
 ```python
 class MarketScore(BaseModel):
     date: date
-    score: float      # 0-100
-    signal: str       # BULLISH/NEUTRAL/BEARISH（仅作标签，不控制交易）
+    score: float
+    signal: str
 
 class IndustryScore(BaseModel):
     date: date
     industry: str
     score: float
-    rank: int         # 1-31
+    rank: int
 ```
 
 **关键变化**：
-- `MarketScore.signal` 不再触发“今日不出手”。
-- `IndustryScore.rank` 不再触发“只看 Top-N 行业”。
-- 两者都只是主线排序输入，不是硬门控。
+- `MarketScore` 当前主线消费者是 `Broker / Risk`，不再是 `Selector`。
+- `IndustryScore` 当前主线消费者是 `Strategy / Ranker`，不再是 `Selector`。
+- 两者都不再承担前置硬门控职责。
 
 ---
 
-## 6. 综合评分公式
+## 6. 评分与风控
 
-### 6.1 默认权重（v0.01-plus）
+### 6.1 横截面排序
 
-```python
-# config.py
-DTT_BOF_WEIGHT = 0.5      # BOF 触发强度
-DTT_IRS_WEIGHT = 0.3      # 行业相对强度
-DTT_MSS_WEIGHT = 0.2      # 市场环境加成
+当前主线约束：
+
+```text
+final_score = f(bof_strength, irs_score)
 ```
 
-**权重设计原则**：
-- BOF 最高（50%）：形态触发是核心
-- IRS 次之（30%）：行业轮动是横截面筛选
-- MSS 最低（20%）：市场环境是软约束
+设计原则：
+- `BOF` 是主信号，必须占主导。
+- `IRS` 是横截面增强因子，用于区分同日多信号优先级。
+- `MSS` 不进入横截面总分。
 
-### 6.2 评分归一化
+### 6.2 执行层风险覆盖
 
-```python
-def calculate_final_score(signal: Signal, irs_score: float, mss_score: float) -> float:
-    """
-    综合评分计算（0-100）
-    
-    输入：
-    - signal.bof_strength: 0-1（BOF 原始强度）
-    - irs_score: 0-100（行业评分，rank=1 → 100, rank=31 → 0）
-    - mss_score: 0-100（市场温度）
-    
-    输出：
-    - final_score: 0-100
-    """
-    # BOF 强度归一化到 0-100
-    bof_normalized = signal.bof_strength * 100
-    
-    # 加权求和
-    final_score = (
-        config.DTT_BOF_WEIGHT * bof_normalized +
-        config.DTT_IRS_WEIGHT * irs_score +
-        config.DTT_MSS_WEIGHT * mss_score
-    )
-    
-    return final_score
+当前主线约束：
+
+```text
+MSS -> Broker/Risk -> max_positions / risk_per_trade_pct / max_position_pct
 ```
 
-### 6.3 IRS rank 归一化
-
-```python
-def irs_rank_to_score(rank: int, total_industries: int = 31) -> float:
-    """
-    行业排名转评分（线性映射）
-    rank=1 → 100, rank=31 → 0
-    """
-    return 100 * (1 - (rank - 1) / (total_industries - 1))
-```
+设计原则：
+- `MSS` 是市场环境，不是个股区分度因子。
+- `MSS` 的价值体现在风险折扣、持仓上限和单笔暴露限制。
+- `MSS` 不再通过缩小 `candidate_top_n` 或停手逻辑影响 BOF 触发覆盖。
 
 ---
 
 ## 7. 实现要点
 
-### 7.1 Strategy 改造
+### 7.1 Strategy
 
 ```python
-# src/strategy/strategy.py
-
-def generate_signals(
-    store: Store,
-    candidates: list[StockCandidate],
-    calc_date: date,
-) -> list[Signal]:
-    """
-    生成信号（down-to-top 模式）
-    """
-    signals = []
-    
-    # 1. BOF 触发检测
-    for candidate in candidates:
-        df = _prepare_history(store, candidate.code, calc_date)
-        signal = bof_detector.detect(df, calc_date)
-        if signal:
-            signals.append(signal)
-    
-    if not signals:
-        return []
-    
-    # 2. 读取 IRS/MSS 评分
-    irs_df = store.read_df(
-        "SELECT industry, rank FROM l3_irs_daily WHERE date = ?",
-        (calc_date,)
-    )
-    mss_row = store.read_df(
-        "SELECT score FROM l3_mss_daily WHERE date = ?",
-        (calc_date,)
-    )
-    
-    # 3. 叠加评分
-    for signal in signals:
-        # 获取该股票的行业
-        industry = _get_industry(store, signal.code, calc_date)
-        
-        # IRS 评分
-        irs_rank = irs_df[irs_df["industry"] == industry]["rank"].iloc[0]
-        signal.irs_score = irs_rank_to_score(irs_rank)
-        
-        # MSS 评分
-        signal.mss_score = mss_row["score"].iloc[0] if not mss_row.empty else 50.0
-        
-        # 综合评分
-        signal.final_score = calculate_final_score(signal, signal.irs_score, signal.mss_score)
-    
-    # 4. 排序 + Top-N
-    signals.sort(key=lambda s: s.final_score, reverse=True)
-    return signals[:config.MAX_POSITIONS]
+# 主线职责
+candidates -> BOF detect -> bof_strength
+signals -> attach irs_score -> final_score
+signals -> rank -> output sidecar + selected signals
 ```
 
-### 7.2 Selector 简化
+### 7.2 Broker / Risk
 
 ```python
-# src/selector/selector.py
+# 主线职责
+ranked_signals -> read l3_mss_daily
+-> adjust max_positions / risk_per_trade / max_position
+-> execute feasible orders
+```
 
-def select_candidates(store: Store, calc_date: date) -> list[StockCandidate]:
-    """
-    候选池生成（down-to-top 模式）
-    
-    变化：删除 MSS gate 和 IRS filter
-    """
-    # 全市场股票池
-    all_stocks = store.read_df(
-        "SELECT DISTINCT code FROM l2_stock_adj_daily WHERE date = ?",
-        (calc_date,),
-    )
-    
-    # 基础过滤（流动性/ST/停牌/市值）
-    candidates = _apply_basic_filters(store, all_stocks["code"].tolist(), calc_date)
-    
-    # ❌ 删除：MSS gate
-    # ❌ 删除：IRS filter
-    
-    # 直接返回候选池
-    return [StockCandidate(code=c, industry="", score=0.0) for c in candidates]
+### 7.3 Selector
+
+```python
+# 主线职责
+all_stocks -> hard filters -> preselect_score -> candidate_top_n
 ```
 
 ---
 
 ## 8. 配置开关
 
-### 8.1 新增配置
+### 8.1 当前配置口径
 
 ```python
-# config.py
-
-# ── Down-to-Top 主线开关 ──
-ENABLE_DTT_MODE = True            # v0.01-plus 当前主线默认开启
-
-# ── Down-to-Top 权重 ──
-DTT_BOF_WEIGHT = 0.5
-DTT_IRS_WEIGHT = 0.3
-DTT_MSS_WEIGHT = 0.2
-
-# ── legacy 对照配置（仅 compare / rollback） ──
-ENABLE_MSS_GATE = True            # legacy 模式下有效
-ENABLE_IRS_FILTER = True          # legacy 模式下有效
+PIPELINE_MODE = "dtt"
+DTT_VARIANT = "v0_01_dtt_bof_plus_irs_score"
+MSS_RISK_OVERLAY_VARIANT = "v0_01_dtt_bof_plus_irs_mss_score"
 ```
 
-### 8.2 模式切换
+### 8.2 模式含义
 
-```python
-# src/strategy/strategy.py
-
-def generate_signals(...):
-    if config.ENABLE_DTT_MODE:
-        return _generate_signals_dtt(...)  # 当前主线
-    else:
-        return _generate_signals_legacy(...)  # compare / rollback
-```
+- `legacy_bof_baseline`：旧漏斗，仅作 compare / rollback。
+- `v0_01_dtt_bof_only`：只验证 BOF。
+- `v0_01_dtt_bof_plus_irs_score`：`BOF + IRS` 排序主线。
+- `v0_01_dtt_bof_plus_irs_mss_score`：`BOF + IRS` 排序 + `MSS` 控仓位。
 
 ---
 
 ## 9. 消融实验矩阵
 
-### 9.1 对比实验
+### 9.1 当前建议矩阵
 
-| 场景 | 模式 | MSS | IRS | 说明 |
-|------|------|-----|-----|------|
-| baseline | legacy | ❌ | ❌ | 纯 BOF |
-| legacy_mss | legacy | ✅ hard | ❌ | Top-Down + MSS gate |
-| legacy_mss_irs | legacy | ✅ hard | ✅ filter | Top-Down + MSS + IRS |
-| dtt_bof_only | DTT | ❌ | ❌ | Down-to-Top 纯 BOF |
-| dtt_bof_irs | DTT | ❌ | ✅ score | Down-to-Top + IRS 评分 |
-| dtt_full | DTT | ✅ score | ✅ score | Down-to-Top 完整 |
+| 场景 | Selector | 排序层 | 风控层 | 说明 |
+|------|----------|--------|--------|------|
+| `legacy_bof_baseline` | legacy | BOF only | 固定 | 历史对照 |
+| `v0_01_dtt_bof_only` | DTT | BOF only | 固定 | 触发保真 |
+| `v0_01_dtt_bof_plus_irs_score` | DTT | BOF + IRS | 固定 | 排序增益 |
+| `v0_01_dtt_bof_plus_irs_mss_score` | DTT | BOF + IRS | MSS 覆盖 | 风控贡献 |
 
 ### 9.2 关键指标
 
 每个场景必须输出：
-- `bof_hit_count`（BOF 触发数）
-- `final_selected_count`（最终选中数）
+- `bof_hit_count`
+- `final_selected_count`
 - `trade_count / EV / PF / MDD`
+- `reject_rate / participation_rate`
 - `environment_breakdown`
 
 ---
@@ -423,22 +309,16 @@ def generate_signals(...):
 
 ### 10.1 功能验收
 
-- [ ] DTT 模式下，BOF 触发数 ≈ baseline（不被 MSS/IRS 误杀）
-- [ ] DTT 模式下，final_score 排序正确（高分优先）
-- [ ] DTT 模式下，IRS/MSS 缺失时有兜底（默认 50 分）
-- [ ] legacy 模式仍然可用（向后兼容）
+- [ ] DTT 模式下，BOF 触发覆盖不再受到 `MSS/IRS` 候选阶段拦截。
+- [ ] `IRS` 排序结果可复现，且能通过 sidecar 回放。
+- [ ] `MSS` 缺失时有中性兜底，不导致链路中断。
+- [ ] legacy 模式仍然可用。
 
-### 10.2 性能验收
+### 10.2 证据验收
 
-- [ ] `dtt_full` 相对 `baseline` 的 EV 改善 ≥ 10%
-- [ ] `dtt_full` 相对 `baseline` 的 MDD 改善 ≥ 20%
-- [ ] `dtt_full` 的 trade_count ≥ 60（样本充足）
-
-### 10.3 证据验收
-
-- [ ] 生成 `v0.01-dtt-ablation-YYYYMMDD.json`
-- [ ] 包含 6 个场景的完整对比
-- [ ] 包含 environment_breakdown
+- [ ] 能区分“排序增益”和“风控贡献”。
+- [ ] 能按执行日解释 `IRS` 改票、`MSS` 改仓位带来的差异。
+- [ ] 能通过 `run_id + signal_id` 追溯排序与执行。
 
 ---
 
@@ -448,13 +328,8 @@ def generate_signals(...):
 - `v0.02` 是后续形态扩展版本（如 BPB）。
 - `v0.01-plus` 是当前主开发线中的链路替代版本（legacy top-down -> DTT）。
 
-**当前关系**：
-- `v0.01-plus` 先把主链替代工作做完。
-- `v0.02` 不承接本次命名，也不提前吞并当前 DTT 改造。
-- 若后续需要在 `v0.02` 继承 DTT，必须以 `v0.01-plus` 的稳定结果为前提。
-
 **当前建议**：
-- 先完成 `v0.01-plus` 主线切换。
+- 先完成 `v0.01-plus` 主线切换与证据收口。
 - legacy 保留为 compare / rollback。
 - 切换完成后，再决定 `v0.02` 是否直接继承 DTT 主链。
 
@@ -464,47 +339,31 @@ def generate_signals(...):
 
 ### 12.1 已知风险
 
-1. **权重敏感性**：0.5/0.3/0.2 是拍脑袋的，需要网格搜索
-2. **IRS 归一化**：线性映射可能不是最优（可能需要非线性）
-3. **MSS 稀疏性**：当前 MSS 分布过窄，评分区分度不足
+1. `IRS` 已能改变执行，但收益改善尚未稳定。
+2. `MSS` 已进风险层，但其独立贡献仍需更长窗口证据支撑。
+3. `preselect_score / candidate_top_n` 目前更像工程近似，还未完成交易价值消融。
 
-### 12.2 缓解措施
+### 12.2 当前缓解方向
 
-1. 权重敏感性 → 做权重网格实验（0.4/0.4/0.2, 0.6/0.3/0.1 等）
-2. IRS 归一化 → 尝试指数映射（rank=1 → 100, rank=10 → 50, rank=31 → 0）
-3. MSS 稀疏性 → 考虑用 percentile 替代 zscore（见 `mss-algorithm.md`）
+1. 继续做 `candidate_top_n / preselect_score` 消融。
+2. 继续做更长窗口的 `IRS 排序 / MSS 风控` 分层验证。
+3. 保持 sidecar 真相源，避免在口径未稳时过早改 formal schema。
 
 ---
 
 ## 13. 下一步行动
 
-### 13.1 代码改造（3-5 天）
-
-1. 修改 `src/selector/selector.py`：补齐 `legacy` / `dtt` 两类入口，并让 `dtt` 成为当前主线默认目标
-2. 修改 `src/strategy/strategy.py`：叠加 IRS/MSS 评分，并输出 sidecar 所需明细
-3. 新增 `src/strategy/ranker.py`：综合评分逻辑
-4. 修改 `src/config.py`：补齐主线切换与 compare / rollback 配置
-5. 增加 `l3_signal_rank_exp` schema 与写入逻辑
-
-### 13.2 测试验证（2-3 天）
-
-1. 单元测试：`test_ranker.py`（评分计算）
-2. 集成测试：`test_strategy_dtt.py`（完整链路）
-3. 切换矩阵：4 组主线 / 对照场景全跑一遍
-
-### 13.3 证据产出（1 天）
-
-1. 生成 `v0.01-dtt-ablation-YYYYMMDD.json`
-2. 更新 `v0.01-evidence-review.md`
-3. 决策：DTT 是否作为 v0.02 基础
+1. 把 `v0_01_dtt_bof_plus_irs_mss_score` 从“带 MSS 总分”彻底改成“IRS 排序 + MSS 风控”。
+2. 补 `candidate_top_n / preselect_score` 消融，判断初选是否具备交易价值。
+3. 补 `Top-N / max_positions` 长窗口稳定性证据。
+4. 把仓库内旧漏斗文档降级为历史参考或 superseded 状态。
 
 ---
 
 ## 14. 参考文献
 
-- `docs/spec/v0.01/evidence/v0.01-evidence-review-20260306.md`（证据支持）
-- `docs/spec/v0.01/evidence/v0.01-selector-ablation-mss-fullcycle-ab-20260306.json`（数据来源）
-- `docs/design-v2/01-system/system-baseline.md`（执行语义）
-- `docs/design-v2/02-modules/selector-design.md`（Selector 原设计）
-- `docs/design-v2/02-modules/strategy-design.md`（Strategy 原设计）
-
+- `docs/spec/v0.01/evidence/v0.01-evidence-review-20260306.md`
+- `docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md`
+- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`
+- `docs/design-v2/01-system/system-baseline.md`
+- `docs/design-v2/02-modules/selector-design.md`

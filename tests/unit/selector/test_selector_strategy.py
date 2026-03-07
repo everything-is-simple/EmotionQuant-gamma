@@ -1027,6 +1027,122 @@ def test_selector_frame_keeps_candidate_explainability_fields(tmp_path) -> None:
     store.close()
 
 
+def test_selector_dtt_preselect_score_mode_changes_sorting_basis(tmp_path) -> None:
+    db = tmp_path / "selector_preselect_modes.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 10)
+
+    store.bulk_upsert(
+        "l2_stock_adj_daily",
+        pd.DataFrame(
+            [
+                {
+                    "code": "000001",
+                    "date": calc_date,
+                    "adj_open": 10.0,
+                    "adj_high": 10.2,
+                    "adj_low": 9.8,
+                    "adj_close": 10.0,
+                    "volume": 10000,
+                    "amount": 2e8,
+                    "pct_chg": 0.01,
+                    "ma5": 10.0,
+                    "ma10": 10.0,
+                    "ma20": 10.0,
+                    "ma60": 10.0,
+                    "volume_ma5": 9000,
+                    "volume_ma20": 9000,
+                    "volume_ratio": 1.1,
+                },
+                {
+                    "code": "000002",
+                    "date": calc_date,
+                    "adj_open": 10.0,
+                    "adj_high": 10.2,
+                    "adj_low": 9.8,
+                    "adj_close": 10.0,
+                    "volume": 10000,
+                    "amount": 1e8,
+                    "pct_chg": 0.01,
+                    "ma5": 10.0,
+                    "ma10": 10.0,
+                    "ma20": 10.0,
+                    "ma60": 10.0,
+                    "volume_ma5": 9000,
+                    "volume_ma20": 9000,
+                    "volume_ratio": 5.0,
+                },
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_daily",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": f"{code}.SZ",
+                    "date": calc_date,
+                    "open": 10.0,
+                    "high": 10.2,
+                    "low": 9.8,
+                    "close": 10.0,
+                    "pre_close": 10.0,
+                    "volume": 10000,
+                    "amount": amount,
+                    "pct_chg": 0.01,
+                    "adj_factor": 1.0,
+                    "is_halt": False,
+                    "up_limit": 11.0,
+                    "down_limit": 9.0,
+                    "total_mv": 1e6,
+                    "circ_mv": 8e5,
+                }
+                for code, amount in [("000001", 2e8), ("000002", 1e8)]
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_info",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": f"{code}.SZ",
+                    "name": f"样本股{code}",
+                    "industry": "银行",
+                    "market": "主板",
+                    "list_status": "L",
+                    "is_st": False,
+                    "list_date": date(2010, 1, 1),
+                    "effective_from": date(2020, 1, 1),
+                }
+                for code in ["000001", "000002"]
+            ]
+        ),
+    )
+
+    cfg_amount = Settings(
+        PIPELINE_MODE="dtt",
+        PRESELECT_SCORE_MODE="amount_only",
+        CANDIDATE_TOP_N=1,
+        MIN_AMOUNT=1,
+        MIN_LIST_DAYS=1,
+    )
+    cfg_activity = Settings(
+        PIPELINE_MODE="dtt",
+        PRESELECT_SCORE_MODE="volume_ratio_only",
+        CANDIDATE_TOP_N=1,
+        MIN_AMOUNT=1,
+        MIN_LIST_DAYS=1,
+    )
+
+    frame_amount = select_candidates_frame(store, calc_date, cfg_amount)
+    frame_activity = select_candidates_frame(store, calc_date, cfg_activity)
+
+    assert frame_amount.iloc[0]["code"] == "000001"
+    assert frame_activity.iloc[0]["code"] == "000002"
+    store.close()
+
+
 def test_selector_prefers_sw_industry_over_legacy_stock_basic_industry(tmp_path) -> None:
     db = tmp_path / "selector_sw_priority.duckdb"
     store = Store(db)

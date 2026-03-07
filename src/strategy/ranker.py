@@ -14,24 +14,24 @@ from src.data.store import Store
 class DttVariantSpec:
     label: str
     uses_irs: bool
-    uses_mss: bool
+    carries_mss_overlay: bool
 
 
 DTT_VARIANTS: dict[str, DttVariantSpec] = {
     "v0_01_dtt_bof_only": DttVariantSpec(
         label="v0_01_dtt_bof_only",
         uses_irs=False,
-        uses_mss=False,
+        carries_mss_overlay=False,
     ),
     "v0_01_dtt_bof_plus_irs_score": DttVariantSpec(
         label="v0_01_dtt_bof_plus_irs_score",
         uses_irs=True,
-        uses_mss=False,
+        carries_mss_overlay=False,
     ),
     "v0_01_dtt_bof_plus_irs_mss_score": DttVariantSpec(
         label="v0_01_dtt_bof_plus_irs_mss_score",
         uses_irs=True,
-        uses_mss=True,
+        carries_mss_overlay=True,
     ),
 }
 
@@ -80,7 +80,6 @@ def _compute_final_score(
     variant: DttVariantSpec,
     bof_strength: float,
     irs_score: float,
-    mss_score: float,
 ) -> float:
     bof_score = bof_strength * 100.0 if bof_strength <= 1.0 else bof_strength
     total_weight = cfg.dtt_bof_weight
@@ -88,9 +87,6 @@ def _compute_final_score(
     if variant.uses_irs:
         score += cfg.dtt_irs_weight * irs_score
         total_weight += cfg.dtt_irs_weight
-    if variant.uses_mss:
-        score += cfg.dtt_mss_weight * mss_score
-        total_weight += cfg.dtt_mss_weight
     if total_weight <= 0:
         return bof_score
     return score / total_weight
@@ -123,7 +119,8 @@ def build_dtt_score_frame(
     variant = resolve_dtt_variant(config.dtt_variant)
     candidate_map = {candidate.code: candidate for candidate in candidates}
     irs_score_map = _load_irs_score_map(store, asof_date) if variant.uses_irs else {}
-    market_score = _load_mss_score(store, asof_date) if variant.uses_mss else None
+    # MSS 当前只服务于执行层风险覆盖；ranker 继续把它写入 sidecar，供解释和 Broker 对照使用。
+    market_score = _load_mss_score(store, asof_date) if variant.carries_mss_overlay else None
     fill_score = float(config.dtt_score_fill)
 
     rows: list[dict[str, object]] = []
@@ -133,9 +130,9 @@ def build_dtt_score_frame(
         bof_strength = float(signal.bof_strength if signal.bof_strength is not None else signal.strength)
         irs_score = float(irs_score_map.get(industry, fill_score)) if variant.uses_irs else fill_score
         mss_score = float(market_score if market_score is not None else fill_score)
-        if not variant.uses_mss:
+        if not variant.carries_mss_overlay:
             mss_score = fill_score
-        final_score = _compute_final_score(config, variant, bof_strength, irs_score, mss_score)
+        final_score = _compute_final_score(config, variant, bof_strength, irs_score)
         rows.append(
             {
                 "run_id": run_id,

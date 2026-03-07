@@ -11,6 +11,11 @@ from src.data.store import Store
 from src.logging_utils import logger
 
 MSS_GATE_MODES = {"bearish_only", "bullish_required", "soft_gate"}
+PRESELECT_SCORE_MODES = {
+    "amount_plus_volume_ratio",
+    "amount_only",
+    "volume_ratio_only",
+}
 
 
 def _industry_priority_map(store: Store, calc_date: date) -> dict[str, float]:
@@ -187,7 +192,19 @@ def _select_dtt_candidates_frame(
 
     data = filtered.copy()
     # DTT 主线里的 preselect_score 只服务于算力调度，不承载 MSS/IRS 交易语义。
-    data["preselect_score"] = np.log1p(data["amount"].fillna(0)) + data["volume_ratio"].fillna(0)
+    amount_component = np.log1p(data["amount"].fillna(0))
+    activity_component = data["volume_ratio"].fillna(0)
+    if cfg.preselect_score_mode == "amount_plus_volume_ratio":
+        data["preselect_score"] = amount_component + activity_component
+    elif cfg.preselect_score_mode == "amount_only":
+        data["preselect_score"] = amount_component
+    elif cfg.preselect_score_mode == "volume_ratio_only":
+        data["preselect_score"] = activity_component
+    else:
+        raise ValueError(
+            f"Unsupported preselect score mode: {cfg.preselect_score_mode}. "
+            f"Expected one of {sorted(PRESELECT_SCORE_MODES)}."
+        )
     data["score"] = data["preselect_score"]
     ranked = (
         data.sort_values(["preselect_score", "code"], ascending=[False, True])

@@ -187,3 +187,64 @@ def test_generate_signals_dtt_only_writes_top_n_formal_signal(tmp_path, monkeypa
     assert ranked["selected"].tolist() == [True, False]
     assert loader_calls == [["000001"], ["000002"]]
     store.close()
+
+
+def test_dtt_irs_mss_variant_keeps_mss_in_sidecar_but_not_in_final_score(tmp_path) -> None:
+    db = tmp_path / "ranker_mss_overlay.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 8)
+
+    store.bulk_upsert(
+        "l3_irs_daily",
+        pd.DataFrame(
+            [
+                {"date": calc_date, "industry": "银行", "score": 1.0, "rank": 1, "rs_score": 1.0, "cf_score": 1.0},
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame([{"date": calc_date, "score": 20.0, "signal": "BEARISH"}]),
+    )
+
+    cfg_irs_only = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_bof_plus_irs_score",
+        DTT_TOP_N=10,
+        DTT_BOF_WEIGHT=0.5,
+        DTT_IRS_WEIGHT=0.3,
+        DTT_MSS_WEIGHT=0.2,
+        DTT_SCORE_FILL=50.0,
+    )
+    cfg_irs_mss = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_bof_plus_irs_mss_score",
+        DTT_TOP_N=10,
+        DTT_BOF_WEIGHT=0.5,
+        DTT_IRS_WEIGHT=0.3,
+        DTT_MSS_WEIGHT=0.2,
+        DTT_SCORE_FILL=50.0,
+    )
+    candidates = [
+        StockCandidate(code="000001", industry="银行", score=10.0, preselect_score=10.0),
+    ]
+    signals = [
+        Signal(
+            signal_id="000001_2026-01-08_bof",
+            code="000001",
+            signal_date=calc_date,
+            action="BUY",
+            strength=0.60,
+            pattern="bof",
+            reason_code="PAS_BOF",
+            bof_strength=0.60,
+        ),
+    ]
+
+    rank_irs_only = build_dtt_rank_frame(store, signals, candidates, calc_date, "run_irs", cfg_irs_only)
+    rank_irs_mss = build_dtt_rank_frame(store, signals, candidates, calc_date, "run_irs_mss", cfg_irs_mss)
+
+    assert rank_irs_only.iloc[0]["final_score"] == rank_irs_mss.iloc[0]["final_score"]
+    assert rank_irs_only.iloc[0]["mss_score"] == 50.0
+    assert rank_irs_mss.iloc[0]["mss_score"] == 20.0
+    store.close()

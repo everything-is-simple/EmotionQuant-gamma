@@ -78,6 +78,11 @@ class Settings(BaseSettings):
 
     # Selector/Strategy defaults (v0.01)
     candidate_top_n: int = Field(default=100, alias="CANDIDATE_TOP_N")
+    # DTT 主线的初选分只用于算力调度；通过 mode 做消融，而不是把交易语义写回 Selector。
+    preselect_score_mode: str = Field(
+        default="amount_plus_volume_ratio",
+        alias="PRESELECT_SCORE_MODE",
+    )
     irs_top_n: int = Field(default=10, alias="IRS_TOP_N")
     irs_min_industries_per_day: int = Field(default=25, alias="IRS_MIN_INDUSTRIES_PER_DAY")
     mss_variant: str = Field(default="zscore_weighted6", alias="MSS_VARIANT")
@@ -85,6 +90,47 @@ class Settings(BaseSettings):
     mss_bullish_threshold: float = Field(default=65.0, alias="MSS_BULLISH_THRESHOLD")
     mss_bearish_threshold: float = Field(default=35.0, alias="MSS_BEARISH_THRESHOLD")
     mss_soft_gate_candidate_top_n: int = Field(default=30, alias="MSS_SOFT_GATE_CANDIDATE_TOP_N")
+    # v0.01-plus 当前先只在 MSS 控仓位变体下启用市场级风控覆盖，其它链路维持原口径。
+    mss_risk_overlay_variant: str = Field(
+        default="v0_01_dtt_bof_plus_irs_mss_score",
+        alias="MSS_RISK_OVERLAY_VARIANT",
+    )
+    mss_bullish_max_positions_mult: float = Field(
+        default=1.0,
+        alias="MSS_BULLISH_MAX_POSITIONS_MULT",
+    )
+    mss_neutral_max_positions_mult: float = Field(
+        default=0.7,
+        alias="MSS_NEUTRAL_MAX_POSITIONS_MULT",
+    )
+    mss_bearish_max_positions_mult: float = Field(
+        default=0.4,
+        alias="MSS_BEARISH_MAX_POSITIONS_MULT",
+    )
+    mss_bullish_risk_per_trade_mult: float = Field(
+        default=1.0,
+        alias="MSS_BULLISH_RISK_PER_TRADE_MULT",
+    )
+    mss_neutral_risk_per_trade_mult: float = Field(
+        default=0.7,
+        alias="MSS_NEUTRAL_RISK_PER_TRADE_MULT",
+    )
+    mss_bearish_risk_per_trade_mult: float = Field(
+        default=0.4,
+        alias="MSS_BEARISH_RISK_PER_TRADE_MULT",
+    )
+    mss_bullish_max_position_mult: float = Field(
+        default=1.0,
+        alias="MSS_BULLISH_MAX_POSITION_MULT",
+    )
+    mss_neutral_max_position_mult: float = Field(
+        default=0.7,
+        alias="MSS_NEUTRAL_MAX_POSITION_MULT",
+    )
+    mss_bearish_max_position_mult: float = Field(
+        default=0.4,
+        alias="MSS_BEARISH_MAX_POSITION_MULT",
+    )
     min_list_days: int = Field(default=60, alias="MIN_LIST_DAYS")
     # TuShare amount 单位为千元；v0.01 基线默认流动性阈值为 5,000 万元 = 50,000（千元）。
     min_amount: float = Field(default=50_000, alias="MIN_AMOUNT")
@@ -148,6 +194,17 @@ class Settings(BaseSettings):
     @property
     def use_dtt_pipeline(self) -> bool:
         return self.pipeline_mode_normalized == "dtt"
+
+    @property
+    def dtt_variant_normalized(self) -> str:
+        return self.dtt_variant.strip().lower()
+
+    @property
+    def mss_risk_overlay_enabled(self) -> bool:
+        return (
+            self.use_dtt_pipeline
+            and self.dtt_variant_normalized == self.mss_risk_overlay_variant.strip().lower()
+        )
 
     @property
     def db_path(self) -> Path:

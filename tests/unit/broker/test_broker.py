@@ -5,9 +5,26 @@ from datetime import date
 import pandas as pd
 
 from src.broker.broker import Broker, Position
+from src.broker.risk import BrokerRiskState
 from src.config import Settings
 from src.contracts import Order, Signal, build_signal_id
 from src.data.store import Store
+
+
+def _seed_trade_calendar(store: Store, signal_date: date, exec_date: date) -> None:
+    store.bulk_upsert(
+        "l1_trade_calendar",
+        pd.DataFrame(
+            [
+                {"date": signal_date, "is_trade_day": True, "prev_trade_day": None, "next_trade_day": exec_date},
+                {"date": exec_date, "is_trade_day": True, "prev_trade_day": signal_date, "next_trade_day": None},
+            ]
+        ),
+    )
+
+
+def _seed_adj_daily(store: Store, rows: list[dict]) -> None:
+    store.bulk_upsert("l2_stock_adj_daily", pd.DataFrame(rows))
 
 
 def test_broker_reject_limit_up_and_fill_normal(tmp_path) -> None:
@@ -259,6 +276,165 @@ def test_broker_signal_competition_respects_strength_and_max_positions(tmp_path)
     reject = rows[rows["status"] == "REJECTED"].iloc[0]
     assert reject["code"] == "000001"
     assert reject["reject_reason"] == "MAX_POSITIONS_REACHED"
+    store.close()
+
+
+def test_broker_mss_overlay_reduces_position_size_under_bearish_regime(tmp_path) -> None:
+    db = tmp_path / "test_mss_overlay_size.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_bof_plus_irs_mss_score",
+        BACKTEST_INITIAL_CASH=1_000_000,
+        RISK_PER_TRADE_PCT=0.20,
+        MAX_POSITION_PCT=0.50,
+        STOP_LOSS_PCT=0.05,
+        MAX_POSITIONS=10,
+        MSS_BULLISH_RISK_PER_TRADE_MULT=1.0,
+        MSS_NEUTRAL_RISK_PER_TRADE_MULT=0.7,
+        MSS_BEARISH_RISK_PER_TRADE_MULT=0.4,
+        MSS_BULLISH_MAX_POSITION_MULT=1.0,
+        MSS_NEUTRAL_MAX_POSITION_MULT=0.7,
+        MSS_BEARISH_MAX_POSITION_MULT=0.4,
+    )
+    risk = Broker(store, cfg).risk
+
+    _seed_trade_calendar(store, signal_date, exec_date)
+    _seed_adj_daily(
+        store,
+        [
+            {
+                "code": "000001",
+                "date": signal_date,
+                "adj_open": 10.0,
+                "adj_high": 10.2,
+                "adj_low": 9.8,
+                "adj_close": 10.0,
+                "volume": 10000,
+                "amount": 1e8,
+                "pct_chg": 0.0,
+                "ma5": 10.0,
+                "ma10": 10.0,
+                "ma20": 10.0,
+                "ma60": 10.0,
+                "volume_ma5": 10000,
+                "volume_ma20": 10000,
+                "volume_ratio": 1.0,
+            }
+        ],
+    )
+    signal = Signal(
+        signal_id=build_signal_id("000001", signal_date, "bof"),
+        code="000001",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.8,
+        pattern="bof",
+        reason_code="PAS_BOF",
+        final_score=90.0,
+        variant="v0_01_dtt_bof_plus_irs_mss_score",
+    )
+    state = BrokerRiskState(cash=1_000_000, portfolio_market_value=0.0, holdings=set())
+
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame([{"date": signal_date, "score": 80.0, "signal": "BULLISH"}]),
+    )
+    bullish = risk.assess_signal(signal, state)
+    assert bullish.order is not None
+
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame([{"date": signal_date, "score": 20.0, "signal": "BEARISH"}]),
+    )
+    risk._mss_overlay_cache.clear()
+    bearish = risk.assess_signal(signal, state)
+    assert bearish.order is not None
+
+    assert bullish.order.quantity == 50000
+    assert bearish.order.quantity == 20000
+    assert bearish.order.quantity < bullish.order.quantity
+    store.close()
+
+
+def test_broker_mss_overlay_reduces_effective_max_positions_under_bearish_regime(tmp_path) -> None:
+    db = tmp_path / "test_mss_overlay_maxpos.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_bof_plus_irs_mss_score",
+        BACKTEST_INITIAL_CASH=1_000_000,
+        RISK_PER_TRADE_PCT=0.01,
+        MAX_POSITION_PCT=0.10,
+        STOP_LOSS_PCT=0.05,
+        MAX_POSITIONS=3,
+        MSS_BULLISH_MAX_POSITIONS_MULT=1.0,
+        MSS_NEUTRAL_MAX_POSITIONS_MULT=0.7,
+        MSS_BEARISH_MAX_POSITIONS_MULT=0.4,
+    )
+    risk = Broker(store, cfg).risk
+
+    _seed_trade_calendar(store, signal_date, exec_date)
+    _seed_adj_daily(
+        store,
+        [
+            {
+                "code": "000003",
+                "date": signal_date,
+                "adj_open": 10.0,
+                "adj_high": 10.2,
+                "adj_low": 9.8,
+                "adj_close": 10.0,
+                "volume": 10000,
+                "amount": 1e8,
+                "pct_chg": 0.0,
+                "ma5": 10.0,
+                "ma10": 10.0,
+                "ma20": 10.0,
+                "ma60": 10.0,
+                "volume_ma5": 10000,
+                "volume_ma20": 10000,
+                "volume_ratio": 1.0,
+            }
+        ],
+    )
+    signal = Signal(
+        signal_id=build_signal_id("000003", signal_date, "bof"),
+        code="000003",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.8,
+        pattern="bof",
+        reason_code="PAS_BOF",
+        final_score=90.0,
+        variant="v0_01_dtt_bof_plus_irs_mss_score",
+    )
+    state = BrokerRiskState(
+        cash=1_000_000,
+        portfolio_market_value=100_000.0,
+        holdings={"000001", "000002"},
+    )
+
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame([{"date": signal_date, "score": 80.0, "signal": "BULLISH"}]),
+    )
+    bullish = risk.assess_signal(signal, state)
+    assert bullish.order is not None
+
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame([{"date": signal_date, "score": 20.0, "signal": "BEARISH"}]),
+    )
+    risk._mss_overlay_cache.clear()
+    bearish = risk.assess_signal(signal, state)
+
+    assert bearish.order is None
+    assert bearish.reject_reason == "MAX_POSITIONS_REACHED"
     store.close()
 
 

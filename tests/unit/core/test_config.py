@@ -37,3 +37,4 @@ def test_default_pipeline_mode_uses_dtt_mainline() -> None:
     assert cfg.pipeline_mode_normalized == "dtt"
     assert cfg.dtt_variant == "v0_01_dtt_bof_plus_irs_score"
     assert cfg.dtt_top_n == 50
+    assert cfg.preselect_score_mode == "amount_plus_volume_ratio"

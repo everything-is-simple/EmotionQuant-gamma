@@ -102,6 +102,7 @@
 | 2026-03-07 | `v0.01-plus` 首轮短窗矩阵 + 默认 DTT 幂等 | completed | `docs/spec/v0.01-plus/evidence/matrix_summary_dtt_v0_01_dtt_bof_plus_irs_score_w20260105_20260224_t151041__dtt_matrix.json`, `docs/spec/v0.01-plus/evidence/idempotency_dtt_v0_01_dtt_bof_plus_irs_score_w20260105_20260224_t151843__idempotency_check.json`, `docs/spec/v0.01-plus/records/v0.01-plus-short-window-matrix-20260307.md`, `scripts/backtest/check_idempotency.py` |
 | 2026-03-07 | `v0.01-plus` 数据覆盖审计 + 排序拆解 | completed | `docs/spec/v0.01-plus/evidence/coverage_audit_dtt_v0_01_dtt_bof_plus_irs_score_w20260210_20260213_t154048__coverage_audit.json`, `docs/spec/v0.01-plus/evidence/rank_decomposition_dtt_v0_01_dtt_bof_plus_irs_score_w20260105_20260224_t154940__rank_decomposition.json`, `docs/spec/v0.01-plus/records/v0.01-plus-coverage-and-rank-audit-20260307.md`, `scripts/data/audit_trade_date_coverage.py`, `scripts/backtest/run_v001_plus_rank_decomposition.py` |
 | 2026-03-08 | `v0.01-plus` 四个执行日逐笔归因 + 长窗口分场景敏感性 | in_progress | `docs/spec/v0.01-plus/evidence/trade_attribution_dtt_v0_01_dtt_bof_only_vs_v0_01_dtt_bof_plus_irs_score_w20260105_20260224_t165536__trade_attribution.json`, `docs/spec/v0.01-plus/evidence/windowed_sensitivity_dtt_v0_01_dtt_bof_only_vs_v0_01_dtt_bof_plus_irs_score_w20251222_20260224_t_after_opt__windowed_sensitivity.json`, `docs/spec/v0.01-plus/records/v0.01-plus-trade-attribution-and-windowed-sensitivity-20260308.md`, `scripts/backtest/run_v001_plus_trade_attribution.py`, `scripts/backtest/run_v001_plus_windowed_sensitivity.py`, `src/data/store.py`, `src/config.py`, `src/strategy/strategy.py`, `src/strategy/ranker.py`, `tests/unit/strategy/test_ranker.py`, `tests/unit/data/test_store.py` |
+| 2026-03-08 | `v0.01-plus` 初选消融：`candidate_top_n / preselect_score_mode` | in_progress | `docs/spec/v0.01-plus/evidence/preselect_ablation_dtt_selector_preselect_matrix_w20260105_20260224_t200058__preselect_ablation.json`, `docs/spec/v0.01-plus/records/v0.01-plus-preselect-ablation-20260308.md`, `scripts/backtest/run_v001_plus_preselect_ablation.py`, `src/selector/selector.py`, `src/config.py`, `tests/unit/selector/test_selector_strategy.py`, `tests/unit/core/test_config.py` |
 
 ### 4.4 旧实现期（2026-03-02 ~ 2026-03-06）阶段摘要
 
@@ -174,6 +175,7 @@
 | 2026-03-07 | 治理决策 | `v0.01-plus` 从独立实验版升格为当前主开发线，用于替代 legacy top-down | 仍保留 legacy 对照与回退路径；`v0.02` 不承接本次链路替代工作 | open |
 | 2026-03-07 | 实现风险 | raw/execution 覆盖异常已修复；`IRS` 已证明会进入 `Top-N / MAX_POSITIONS / BUY 数量` 约束，但这种执行差异是否能稳定转化为收益改善仍未说明 | 继续补更长窗口收益归因、失败模式说明与 `GO / NO-GO` 判定 | open |
 | 2026-03-08 | 实现风险 | `BOF` 第一轮内存优化已让更长窗口五场景全部在 `4GB` 下跑通，但 `top1_pos2 / top2_pos2` 的 `EV/MDD` 改善与 `PF` 变差并存，收益结构仍不稳 | 当前结论先定为 `NO-GO`：保留 legacy 为默认运行路径，继续在 `v0.01-plus` 线内收七维评审与收益稳定性解释 | open |
+| 2026-03-08 | 实现风险 | 初选消融已证明 `candidate_top_n / preselect_score_mode` 会直接改变交易结果；短窗下 `volume_ratio_only` 显著优于当前默认，但证据仍局限于短窗 | 暂不直接翻默认；先将 `volume_ratio_only` 作为候选默认值，待更长窗口复核后再决定是否切换 | open |
 
 ---
 
