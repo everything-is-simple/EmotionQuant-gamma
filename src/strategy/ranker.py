@@ -96,7 +96,7 @@ def _compute_final_score(
     return score / total_weight
 
 
-def build_dtt_rank_frame(
+def build_dtt_score_frame(
     store: Store,
     signals: list[Signal],
     candidates: list[StockCandidate],
@@ -117,8 +117,6 @@ def build_dtt_rank_frame(
                 "irs_score",
                 "mss_score",
                 "final_score",
-                "final_rank",
-                "selected",
             ]
         )
 
@@ -153,12 +151,46 @@ def build_dtt_rank_frame(
             }
         )
 
-    ranked = pd.DataFrame(rows).sort_values(
+    return pd.DataFrame(rows)
+
+
+def finalize_dtt_rank_frame(score_frame: pd.DataFrame, top_n: int) -> pd.DataFrame:
+    if score_frame.empty:
+        return pd.DataFrame(
+            columns=[
+                "run_id",
+                "signal_id",
+                "signal_date",
+                "code",
+                "industry",
+                "variant",
+                "bof_strength",
+                "irs_score",
+                "mss_score",
+                "final_score",
+                "final_rank",
+                "selected",
+            ]
+        )
+
+    ranked = score_frame.sort_values(
         ["final_score", "signal_id"], ascending=[False, True]
     ).reset_index(drop=True)
     ranked["final_rank"] = range(1, len(ranked) + 1)
-    ranked["selected"] = ranked["final_rank"] <= max(1, int(config.dtt_top_n))
+    ranked["selected"] = ranked["final_rank"] <= max(1, int(top_n))
     return ranked
+
+
+def build_dtt_rank_frame(
+    store: Store,
+    signals: list[Signal],
+    candidates: list[StockCandidate],
+    asof_date: date,
+    run_id: str,
+    config: Settings,
+) -> pd.DataFrame:
+    score_frame = build_dtt_score_frame(store, signals, candidates, asof_date, run_id, config)
+    return finalize_dtt_rank_frame(score_frame, config.dtt_top_n)
 
 
 def materialize_ranked_signals(signals: list[Signal], rank_frame: pd.DataFrame) -> list[Signal]:

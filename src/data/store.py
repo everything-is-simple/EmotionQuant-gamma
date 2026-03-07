@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
@@ -25,6 +26,10 @@ class Store:
         path.parent.mkdir(parents=True, exist_ok=True)
         self.db_path = path
         self.conn = duckdb.connect(str(path))
+        memory_limit = os.getenv("DUCKDB_MEMORY_LIMIT", "").strip()
+        if memory_limit:
+            # 长窗口证据重跑允许通过环境变量放宽 DuckDB 会话内存，不改变默认仓库口径。
+            self.conn.execute(f"SET memory_limit='{memory_limit}'")
         try:
             self.conn.execute("PRAGMA enable_wal")
         except duckdb.Error:

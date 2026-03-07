@@ -124,20 +124,36 @@ def test_generate_signals_dtt_only_writes_top_n_formal_signal(tmp_path, monkeypa
         DTT_MSS_WEIGHT=0.0,
         DTT_SCORE_FILL=50.0,
         PAS_MIN_HISTORY_DAYS=21,
+        PAS_EVAL_BATCH_SIZE=1,
     )
     candidates = [
         StockCandidate(code="000001", industry="银行", score=10.0, preselect_score=10.0),
         StockCandidate(code="000002", industry="电子", score=9.0, preselect_score=9.0),
     ]
 
-    # 直接 stub 掉历史与 detector，专门验证 DTT 主线的排序落库边界。
-    monkeypatch.setattr(
-        strategy_module,
-        "_load_code_history",
-        lambda *args, **kwargs: pd.DataFrame(
-            [{"date": calc_date - timedelta(days=offset)} for offset in range(cfg.pas_min_history_days)]
-        ),
-    )
+    # 直接 stub 掉批量历史与 detector，专门验证 DTT 主线的排序落库边界。
+    loader_calls: list[list[str]] = []
+
+    def _stub_history_loader(_store, codes, _asof_date, _lookback_days):
+        loader_calls.append(list(codes))
+        return pd.DataFrame(
+            [
+                {
+                    "code": code,
+                    "date": calc_date - timedelta(days=offset),
+                    "adj_low": 1.0,
+                    "adj_close": 1.0,
+                    "adj_open": 1.0,
+                    "adj_high": 1.1,
+                    "volume": 1.0,
+                    "volume_ma20": 1.0,
+                }
+                for code in codes
+                for offset in range(cfg.pas_min_history_days)
+            ]
+        )
+
+    monkeypatch.setattr(strategy_module, "_load_candidate_histories_batch", _stub_history_loader)
     monkeypatch.setattr(
         strategy_module,
         "get_active_detectors",
@@ -169,4 +185,5 @@ def test_generate_signals_dtt_only_writes_top_n_formal_signal(tmp_path, monkeypa
     assert formal["code"].tolist() == ["000001"]
     assert ranked["code"].tolist() == ["000001", "000002"]
     assert ranked["selected"].tolist() == [True, False]
+    assert loader_calls == [["000001"], ["000002"]]
     store.close()

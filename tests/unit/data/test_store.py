@@ -65,3 +65,16 @@ def test_store_crud_and_progress(tmp_path) -> None:
     assert store.next_trade_date(date(2026, 3, 3)) == date(2026, 3, 4)
     store.close()
 
+
+def test_store_applies_memory_limit_from_env(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("DUCKDB_MEMORY_LIMIT", "512MB")
+    db = tmp_path / "test_memory.duckdb"
+    store = Store(db)
+    try:
+        current = store.read_scalar("SELECT current_setting('memory_limit')")
+        text = str(current).upper()
+        value = float(text.split()[0])
+        assert 400.0 <= value <= 600.0
+        assert text.endswith("MIB") or text.endswith("MB")
+    finally:
+        store.close()

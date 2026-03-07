@@ -103,6 +103,8 @@ class Settings(BaseSettings):
     pas_combination: str = Field(default="ANY", alias="PAS_COMBINATION")
     pas_lookback_days: int = Field(default=60, alias="PAS_LOOKBACK_DAYS")
     pas_min_history_days: int = Field(default=30, alias="PAS_MIN_HISTORY_DAYS")
+    # BOF 长窗口回测按批拉历史，避免 5000+ 标的逐只查库把个人 PC 内存打满。
+    pas_eval_batch_size: int = Field(default=32, alias="PAS_EVAL_BATCH_SIZE")
     pas_bof_break_pct: float = Field(default=0.01, alias="PAS_BOF_BREAK_PCT")
     pas_bof_volume_mult: float = Field(default=1.2, alias="PAS_BOF_VOLUME_MULT")
 
