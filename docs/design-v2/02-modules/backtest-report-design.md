@@ -23,6 +23,21 @@
 4. 版本证据、回归结果与阶段记录，统一归档到 `docs/spec/<version>/`。
 ---
 
+## 历史正文说明
+
+下文各节默认描述的是 `v0.01 Frozen` 历史回测与报告口径。当前主开发线还要求额外解释：
+
+- `IRS` 排序增益
+- `MSS` 风险覆盖
+- `preselect_score / candidate_top_n` 的交易后果
+
+若正文未覆盖这些当前主线增量，以：
+
+- `docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md`
+- `docs/spec/v0.01-plus/records/`
+
+为准。
+
 ## 1. 设计目标
 
 **Backtest**：用历史数据验证策略有效性。单引擎（backtrader，仅负责时间推进与数据喂入），调用自研 Broker 内核保证回测/实盘语义一致。

@@ -19,6 +19,21 @@
 4. 版本证据、回归结果与阶段记录，统一归档到 `docs/spec/<version>/`。
 ---
 
+## 历史正文说明
+
+下文各节默认描述的是 `v0.01 Frozen` 历史数据层口径。当前主开发线已经开始引入但尚未在正文全面展开的内容包括：
+
+- `l3_signal_rank_exp`
+- `IRS-upgrade` 的行业结构聚合
+- `MSS-upgrade` 的周期字段
+
+若涉及这些扩展，以：
+
+- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-02-irs-upgrade.md`
+- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-04-mss-upgrade.md`
+
+为准。
+
 ## 1. 设计目标
 
 Data 模块是整个系统的地基：拉数据、清洗、派生指标、持久化。**零业务逻辑**——不做任何策略判断，只保证下游拿到干净、完整、类型正确的数据。

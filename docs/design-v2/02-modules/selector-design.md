@@ -34,6 +34,22 @@
 4. 版本证据、回归结果与阶段记录，统一归档到 `docs/spec/<version>/`。
 ---
 
+## 历史正文说明
+
+除前文“当前主开发线映射”外，下文各节默认描述的是 `v0.01 Frozen` 历史漏斗口径：
+
+- 粗筛
+- `MSS gate`
+- `IRS filter`
+- 候选池输出
+
+当前主开发线不再直接采用这套正文语义；若与当前实现冲突，以：
+
+- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`
+- `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+
+为准。
+
 ## 1. 设计目标
 
 Selector 回答一个问题：**从全市场 ~5000 只股票中，今天应该关注哪 200 只候选池？**

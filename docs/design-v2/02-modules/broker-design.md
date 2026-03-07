@@ -18,6 +18,21 @@
 4. 版本证据、回归结果与阶段记录，统一归档到 `docs/spec/<version>/`。
 ---
 
+## 历史正文说明
+
+下文各节默认描述的是 `v0.01 Frozen` 历史 `Broker` 口径。当前主开发线已经新增：
+
+- `MSS-lite -> Broker / Risk` 的市场级控仓位
+- sidecar 排序链路下的执行容量解释
+
+若下文与当前主开发线冲突，以：
+
+- `docs/design-v2/03-algorithms/core-algorithms/mss-algorithm.md`
+- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-04-mss-upgrade.md`
+- `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+
+为准。
+
 ## 1. 设计目标
 
 Broker 是系统中唯一有"钱"的模块：**接收信号 → 风控检查 → 下单 → 撮合成交**。回测和纸上交易共用此内核（铁律 #9）。

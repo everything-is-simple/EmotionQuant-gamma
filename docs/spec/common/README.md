@@ -4,9 +4,7 @@
 
 `docs/spec/common/` 存放跨版本共用的治理记录、冻结清单与历史审计材料。
 
-这里回答的是“哪些材料需要跨版本持续维护”，不是“当前系统设计怎么定义”。系统设计 SoT 以 `docs/design-v2/01-system/system-baseline.md` 为准；当前治理状态与重启条件以 `docs/spec/common/records/development-status.md` 为准；版本归档入口统一在 `docs/spec/`。
-
-## 当前入口| 类型 | 路径 | 用途 |
+这里回答的是“哪些材料需要跨版本持续维护”，不是“当前系统设计怎么定义”。系统设计 SoT 以 `docs/design-v2/01-system/system-baseline.md` 为准；当前治理状态与重启条件以 `docs/spec/common/records/development-status.md` 为准；版本归档入口统一在 `docs/spec/`。## 当前入口| 类型 | 路径 | 用途 |
 |---|---|---|
 | 治理记录 | `records/README.md` | 查看跨版本 records 的结构与边界 |
 | 当前状态 | `records/development-status.md` | 查看当前治理阶段与历史摘要 |

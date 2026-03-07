@@ -36,6 +36,28 @@
 4. 版本证据、回归结果与阶段记录，统一归档到 `docs/spec/<version>/`。
 ---
 
+## 历史正文说明
+
+除前文“当前主开发线映射”外，下文各节默认描述的是 `v0.01 Frozen` 历史 `Strategy` 口径：
+
+- `BOF` 单形态闭环
+- 不附加 `IRS` 排序增强
+- 不区分 `PAS-full` 与 `PAS-trigger`
+
+当前主开发线中的 `Strategy` 已经进入：
+
+- `PAS-trigger(BOF)`
+- `IRS` 后置排序增强
+- sidecar 排序明细
+
+若与下文正文冲突，以：
+
+- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`
+- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-03-pas-upgrade.md`
+- `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+
+为准。
+
 ## 1. 设计目标
 
 Strategy 回答一个问题：**候选池中的这只股票，今天该买吗？**
