@@ -1,4 +1,4 @@
-# IRS 数据模型设计
+# IRS-lite 数据模型设计（当前执行版）
 
 **版本**: `v0.01-plus IRS-lite + IRS-upgrade 设计骨架`  
 **状态**: `Active`  
@@ -13,6 +13,12 @@
 1. `IRS-lite` 当前到底落哪些表、哪些字段
 2. 当前主线读取哪些字段、忽略哪些字段
 3. 后续 `IRS-upgrade` 需要预留哪些扩展字段
+
+需要明确：
+
+- 当前在线的是 `IRS-lite`
+- 原始 `IRS-full` 中的轮动层、配置建议层、龙头因子层尚未完整恢复
+- 本文档的职责，是把这些字段正式补成“可实现预留”，而不是继续口头保留
 
 ## 2. 当前主线涉及的表
 
@@ -99,6 +105,8 @@
 | `rotation_status` | `L3` | `IN / HOLD / OUT` |
 | `rotation_slope` | `L3` | 轮动斜率 |
 | `rotation_detail` | `L3` | 启动/扩散/衰退等细分类 |
+| `allocation_advice` | `L3` | `OVERWEIGHT / STANDARD / UNDERWEIGHT / AVOID` |
+| `allocation_mode` | `L3` | `dynamic / fixed` |
 | `continuity_score` | `L3` | 行业持续性得分 |
 | `diffusion_score` | `L3` | 行业扩散度得分 |
 
@@ -136,3 +144,4 @@
 1. 当前主线仍以 `score / rank` 作为最小消费面
 2. 升级版字段必须先有证据和设计，不得直接把“想要的字段”一次性塞进正式契约
 3. 若将来要正式扩 `IndustryScore`，必须先给 migration note
+4. `rotation_status / allocation_advice` 属于优先恢复字段，不再只是“以后可能会有”

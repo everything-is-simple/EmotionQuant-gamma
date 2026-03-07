@@ -1,4 +1,4 @@
-# IRS 信息流设计
+# IRS-lite 信息流设计（当前执行版）
 
 **版本**: `v0.01-plus IRS-lite + IRS-upgrade 设计骨架`  
 **状态**: `Active`  
@@ -15,6 +15,8 @@ L1/L2 行业日线
 -> Strategy / Ranker
 -> final_score
 ```
+
+这是当前在线最小信息流，不是完整 `IRS-full` 的终态。
 
 ## 2. 上游依赖
 
@@ -71,7 +73,10 @@ L1/L2 行业日线
 ```text
 L1/L2 行业日线 + 行业内结构 + PAS/BOF 行业聚合
 -> 行业轮动层
+-> 相对量能层
+-> 扩散度层
 -> 牛股基因层
+-> 轮动状态 / 配置建议
 -> l3_irs_daily（扩展字段）
 -> Strategy / Ranker
 ```
@@ -93,3 +98,12 @@ L1/L2 行业日线 + 行业内结构 + PAS/BOF 行业聚合
 2. `Broker / Risk` 继续只消费 `MSS`
 
 这能保证系统职责不重新打架
+
+### 5.3 解释层增强
+
+升级后，`l3_irs_daily` 至少应能解释：
+
+1. 这个行业当前处于 `IN / HOLD / OUT` 哪个轮动状态
+2. 轮动是在加速、扩散还是衰退
+3. 当前建议是 `OVERWEIGHT / STANDARD / UNDERWEIGHT / AVOID`
+4. 这些建议由哪些因子共同推导而来

@@ -1,4 +1,4 @@
-# MSS 信息流
+# MSS-lite 信息流（当前执行版）
 
 **版本**: `v0.01-plus 主线替代版`
 **状态**: `Active`
@@ -27,7 +27,30 @@ L2 market snapshot
 
 ---
 
-## 2. 分阶段信息流
+## 2. Spec-04 目标信息流
+
+在恢复 `MSS-full` 的周期层后，当前主线目标信息流应扩成：
+
+```text
+L2 market snapshot
+-> MSS score engine
+-> temperature / signal
+-> phase / phase_trend / phase_days
+-> position_advice
+-> risk_regime
+-> Broker Risk overlay
+-> actual executable capacity
+```
+
+其中：
+
+1. `temperature / signal` 是兼容输出。
+2. `phase / phase_trend / phase_days / position_advice` 是解释层与证据层核心。
+3. `risk_regime` 是执行层消费核心。
+
+---
+
+## 3. 分阶段信息流
 
 ### 2.1 Step 1：读取市场快照
 
@@ -64,7 +87,25 @@ L2 market snapshot
    - `score`
    - `signal`
 
-### 2.4 Step 4：写入 L3
+### 2.4 Step 4：周期层与仓位建议层
+
+`Spec-04` 恢复后，应在 `score / signal` 基础上继续派生：
+
+1. `phase`
+2. `phase_trend`
+3. `phase_days`
+4. `position_advice`
+5. `risk_regime`
+
+推荐语义：
+
+- `phase`：七阶段周期标签
+- `phase_trend`：上升 / 下降 / 横盘
+- `phase_days`：当前周期已持续天数
+- `position_advice`：原始仓位建议区间
+- `risk_regime`：供执行层消费的状态压缩结果
+
+### 2.5 Step 5：写入 L3
 
 输出表：
 
@@ -76,8 +117,13 @@ L2 market snapshot
 - `score`
 - `signal`
 - 六个标准化后组件字段
+- `phase`（Spec-04）
+- `phase_trend`（Spec-04）
+- `phase_days`（Spec-04）
+- `position_advice`（Spec-04）
+- `risk_regime`（Spec-04）
 
-### 2.5 Step 5：RiskManager 消费
+### 2.6 Step 6：RiskManager 消费
 
 `src/broker/risk.py` 在评估信号时：
 
@@ -89,9 +135,13 @@ L2 market snapshot
    - `max_position_pct`
 4. 输出最终 `RiskDecision`
 
+恢复周期层后，执行层链路应解释为：
+
+`temperature -> phase -> position_advice -> risk_regime -> 风险倍率`
+
 ---
 
-## 3. 与其他算法的边界
+## 4. 与其他算法的边界
 
 ### 3.1 与 Selector
 
@@ -119,7 +169,7 @@ L2 market snapshot
 
 ---
 
-## 4. 运行时时序
+## 5. 运行时时序
 
 ```text
 交易日 T 收盘后:
@@ -138,29 +188,31 @@ L2 market snapshot
 
 ---
 
-## 5. 当前信息流的设计意义
+## 6. 当前信息流的设计意义
 
 当前这套信息流的核心意义是：
 
 1. 把 `MSS` 从“删样本工具”改成“控执行风险工具”
 2. 把 `MSS` 与 `IRS` 的职责彻底拆开
 3. 让 `排序增益` 和 `风险覆盖` 可以被单独解释与单独审计
+4. 把原始 `MSS-full` 中的周期 / 趋势 / 仓位建议重新接回执行层解释，而不是只剩一个温度分
 
 ---
 
-## 6. 权威结论
+## 7. 权威结论
 
 当前主线里，`MSS` 的正确信息流只有一条：
 
-`l2_market_snapshot -> MSS -> l3_mss_daily -> RiskManager -> 订单容量`
+`l2_market_snapshot -> MSS -> 温度 -> 周期 -> 仓位建议 -> 风险倍率 -> 订单容量`
 
 如果信息流不是这条，就说明文档或代码又回到了旧漏斗思维。
 
 ---
 
-## 7. 相关文档
+## 8. 相关文档
 
 - `mss-algorithm.md`
 - `mss-data-models.md`
 - `mss-api.md`
 - `down-to-top-integration.md`
+- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-04-mss-upgrade.md`

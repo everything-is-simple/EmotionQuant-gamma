@@ -1,4 +1,4 @@
-# MSS 数据模型
+# MSS-lite 数据模型（当前执行版）
 
 **版本**: `v0.01-plus 主线替代版`
 **状态**: `Active`
@@ -21,12 +21,22 @@
 
 它不讨论：
 - `v0.01 Frozen` 旧 gate 语义。
-- 未来更复杂的市场状态机。
+- `MSS-full` 的完整周期系统最终定稿。
 - GUI 或 HTTP 展示协议。
 
 当前主线下，`MSS` 的角色已经收口为：
 
 `市场级风险调节因子。`
+
+但需要明确：
+
+- 当前在线的是 `MSS-lite`
+- 原始理论中的 `phase / trend / phase_days / position_advice` 仍然有效
+- 这些字段已在 `Spec-04` 中恢复为正式扩展目标
+
+参见：
+
+- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-04-mss-upgrade.md`
 
 ---
 
@@ -122,7 +132,7 @@ class MssSnapshot:
 
 ## 4. 输出模型
 
-### 4.1 结果契约对象
+### 4.1 当前结果契约对象
 
 当前正式结果契约仍是 `src/contracts.py` 中的 `MarketScore`：
 
@@ -153,7 +163,25 @@ class MarketScore(BaseModel):
 | `extreme` | 标准化后极端因子 |
 | `volatility` | 标准化后波动因子 |
 
-### 4.3 执行层派生对象
+### 4.3 Spec-04 扩展字段（正式预留）
+
+为恢复原始 `MSS-full` 中的周期系统，`l3_mss_daily` 需要正式预留以下字段：
+
+| 字段 | 含义 |
+|---|---|
+| `phase` | 七阶段周期：`EMERGENCE / FERMENTATION / ACCELERATION / DIVERGENCE / CLIMAX / DIFFUSION / RECESSION` |
+| `phase_trend` | 周期方向：`UP / DOWN / SIDEWAYS` |
+| `phase_days` | 当前阶段持续天数 |
+| `position_advice` | 原始仓位建议区间，如 `60%-80%` |
+| `risk_regime` | 执行层风险状态，如 `OPEN / MODERATE / DEFENSIVE / MINIMAL` |
+
+说明：
+
+1. `score / signal` 继续保留，作为兼容字段。
+2. `phase / phase_trend / phase_days / position_advice` 主要服务解释层与证据层。
+3. `risk_regime` 主要服务 `Broker / Risk`。
+
+### 4.4 执行层派生对象
 
 `Broker / Risk` 当前会基于 `l3_mss_daily + config` 派生运行时对象：
 
@@ -162,12 +190,22 @@ class MarketScore(BaseModel):
 class MssRiskOverlay:
     signal: str
     score: float
+    phase: str | None
+    phase_trend: str | None
+    phase_days: int | None
+    position_advice: str | None
+    risk_regime: str | None
     max_positions: int
     risk_per_trade_pct: float
     max_position_pct: float
 ```
 
 这个对象不落正式表，但它是当前主线真正的执行层消费模型。
+
+说明：
+
+- 当前代码层已稳定消费 `signal / score`
+- `phase / phase_trend / phase_days / position_advice / risk_regime` 属于本轮正式预留的下一批扩展消费面
 
 ---
 
@@ -220,11 +258,12 @@ class MssRiskOverlay:
 
 若后续继续增强 `MSS` 风控层，可在不破坏当前主线的前提下扩展：
 
-- `risk_state`
 - `gross_exposure_cap`
 - `entry_cooldown`
 - `rebalance_bias`
 - `position_band`
+- `cycle_confidence`
+- `trend_quality`
 
 但这些字段目前都不属于当前主线正式契约。
 
@@ -236,6 +275,7 @@ class MssRiskOverlay:
 
 1. 正式结果契约仍然是 `MarketScore(date, score, signal)`。
 2. 当前主线真正使用的是它在执行层派生出的 `MssRiskOverlay`，而不是旧时代的 Selector gate 语义。
+3. `phase / phase_trend / phase_days / position_advice / risk_regime` 已正式进入当前数据模型的扩展目标，不再只是口头上的“以后可补”。
 
 ---
 
