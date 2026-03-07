@@ -15,16 +15,16 @@
 
 ## 1. 设计目标
 
-Selector 回答一个问题：**从全市场 ~5000 只股票中，今天应该关注哪 50-100 只？**
+Selector 回答一个问题：**从全市场 ~5000 只股票中，今天应该关注哪 200 只候选池？**
 
-三级漏斗（v0.01 执行口径）：
-1. **MSS（时机维度）**：今天该不该做？→ 开关（先做消融验证）
-2. **IRS（空间维度）**：做哪些行业？→ 缩小范围（先做消融验证）
-3. **基础过滤**：哪些个股具备交易可行性？→ 输出候选池
+**v0.01-plus 执行口径**（基于证据修正）：
+1. **基础过滤**：流动性/ST/停牌/市值 → 输出候选池（约200只）
+2. **MSS/IRS 职责变更**：不再作为前置硬门控，改为后置评分（在 Strategy 层使用）
 
-> 说明：`gene` 在 v0.01 不进入实时漏斗，仅保留接口用于事后分析。
-
-每级漏斗可通过 config 独立开关，支持对照实验。
+> 说明：
+> - MSS/IRS 仍然计算并写入 L3，但不在 Selector 里做硬过滤
+> - 前置硬门控（MSS gate / IRS filter）已被证据否定（详见 `down-to-top-integration.md`）
+> - `gene` 在 v0.01 不进入实时漏斗，仅保留接口用于事后分析
 
 ### 1.2 v0.01 强制验证顺序（防假设漂移）
 
@@ -440,66 +440,39 @@ GENE_LOOKBACK_DAYS = 250          # 基因计算窗口
 
 ---
 
-## 6. selector.py — 漏斗编排
+## 6. selector.py — 候选池生成（v0.01-plus 简化版）
 
 ### 6.1 函数签名
 
 ```python
 def select_candidates(store: Store, calc_date: date) -> list[StockCandidate]:
     """
-    主入口：执行全漏斗，返回候选池。
+    主入口：基础过滤，返回候选池。
     候选池为内存对象，不落库。
+    
+    v0.01-plus 变化：删除 MSS gate 和 IRS filter。
     """
 ```
 
-### 6.2 漏斗流程（伪代码）
+### 6.2 简化流程（v0.01-plus）
+
 ```python
 def select_candidates(store, calc_date):
-    # ── Step 0: 全市场股票池 ──
+    # ── Step 1: 全市场股票池 ──
     all_stocks = store.read_df(
         "SELECT DISTINCT code FROM l2_stock_adj_daily WHERE date = ?",
         (calc_date,),
     )
     logger.info(f"全市场 {len(all_stocks)} 只")
 
-    # ── Step 1: 粗筛（基础条件过滤）──
+    # ── Step 2: 基础过滤（流动性/ST/停牌/市值）──
     candidates = _apply_basic_filters(store, all_stocks["code"].tolist(), calc_date)
-    logger.info(f"粗筛后 {len(candidates)} 只")
+    logger.info(f"基础过滤后 {len(candidates)} 只")
 
-    # ── Step 2: MSS 开关 ──
-    if config.ENABLE_MSS_GATE:
-        mss = store.read_df(
-            "SELECT signal FROM l3_mss_daily WHERE date = ?",
-            (calc_date,),
-        )
-        if mss.empty:
-            logger.warning("MSS 无数据，跳过 MSS 开关")
-        elif mss.iloc[0]["signal"] == "BEARISH":
-            logger.info("MSS=BEARISH，今日不出手")
-            return []
-        # BULLISH / NEUTRAL → 放行
-
-    # ── Step 3: IRS 漏斗（在粗筛池内执行）──
-    if config.ENABLE_IRS_FILTER:
-        irs = store.read_df(
-            "SELECT industry FROM l3_irs_daily WHERE date = ? AND rank <= ?",
-            (calc_date, config.IRS_TOP_N),
-        )
-        top_industries = set(irs["industry"].tolist())
-
-        info = store.read_df(
-            "SELECT ts_code, industry FROM l1_stock_info "
-            "WHERE effective_from = (SELECT MAX(effective_from) FROM l1_stock_info si "
-            "WHERE si.ts_code = l1_stock_info.ts_code AND si.effective_from <= ?)",
-            (calc_date,),
-        )
-        info["code"] = info["ts_code"].apply(ts_code_to_code)
-        ind_pass = set(info[info["industry"].isin(top_industries)]["code"].tolist())
-        candidates = [c for c in candidates if c in ind_pass]
-
-    logger.info(f"IRS 过滤后 {len(candidates)} 只")
-
-    # ── Step 4: 基因库过滤（第2迭代）──
+    # ── ❌ 删除：MSS gate（改为后置评分）──
+    # ── ❌ 删除：IRS filter（改为后置评分）──
+    
+    # ── Step 3: 基因库过滤（第2迭代，v0.01 禁用）──
     if config.ENABLE_GENE_FILTER:
         gene = store.read_df(
             "SELECT code, gene_score FROM l3_stock_gene WHERE calc_date = ?",
@@ -509,20 +482,23 @@ def select_candidates(store, calc_date):
         candidates = [c for c in candidates if c in gene_pass]
         logger.info(f"基因过滤后 {len(candidates)} 只")
 
-    # ── 构造输出（含候选池评分，见 §6.4.1）──
+    # ── 构造输出 ──
     result = []
     for code in candidates:
-        score = _compute_candidate_score(store, code, calc_date)
         result.append(StockCandidate(
             code=code,
             industry=_get_industry(store, code, calc_date),
-            score=score  # §6.4.1 评分：流动性 40% + 结构稳定 30% + 行业优先 30%
+            score=0.0  # v0.01-plus 不在 Selector 层评分
         ))
 
-    # 按 score 降序排列，取 Top-N 输出
-    result.sort(key=lambda c: c.score, reverse=True)
     return result
 ```
+
+**关键变化**：
+- 删除了 MSS gate（Step 2）
+- 删除了 IRS filter（Step 3）
+- MSS/IRS 仍然计算并写入 L3，但在 Strategy 层使用
+- 详见 `docs/design-v2/down-to-top-integration.md` §7.2
 
 ### 6.3 基础条件过滤
 

@@ -28,10 +28,16 @@
 ## 3. 模块边界
 
 1. Data：缓存、增量更新、清洗、落库。
-2. Selector：粗筛、分层、候选池排序，不输出买卖动作。
-3. Strategy：注册表形态扫描，输出 Signal。
+2. Selector：基础过滤（流动性/ST/停牌），输出候选池，不输出买卖动作。
+3. Strategy：形态触发检测 + MSS/IRS 后置评分（v0.01-plus），输出 Signal。
 4. Broker：仓位、风控、撮合、退出。
 5. Backtest/Report：回测与复盘统计。
+
+**模块职责说明**（v0.01-plus）：
+- Selector 不再做 MSS gate 和 IRS filter（改为后置评分）
+- Strategy 负责 BOF 触发后叠加 MSS/IRS 评分并排序
+- MSS/IRS 只写入 L3，不直接控制交易流程
+- 详见 `docs/design-v2/down-to-top-integration.md`
 
 ### 3.0 算法权威入口
 
@@ -100,16 +106,27 @@
 2. 输出分环境统计（牛/震荡/熊）。
 3. 报告必须包含中位数路径，不以最佳路径作为结论。
 
-### 6.1 漏斗有效性验证顺序（强制）
+### 6.1 MSS/IRS 使用模式验证（强制）
 
 MSS/IRS 在 v0.01 视为待验证假设，必须按以下顺序做消融对照：
 
+**Top-Down 模式（前置硬门控）**：
 1. `BOF baseline`：关闭 `ENABLE_MSS_GATE` 与 `ENABLE_IRS_FILTER`。
-2. `BOF + MSS`：仅开启 MSS 开关。
-3. `BOF + MSS + IRS`：再开启 IRS 过滤。
+2. `BOF + MSS gate`：仅开启 MSS 硬门控。
+3. `BOF + MSS gate + IRS filter`：再开启 IRS 硬过滤。
+
+**Down-to-Top 模式（后置评分）**：
+1. `BOF baseline`：同上。
+2. `BOF + IRS score`：BOF 触发后叠加 IRS 评分排序。
+3. `BOF + IRS score + MSS score`：再叠加 MSS 评分。
 
 每一步都必须输出同口径对照指标：胜率、盈亏比、期望值、最大回撤、分环境中位数路径。
-若开启新漏斗后指标未改善或显著恶化，必须回退到前一配置。
+若新配置相对前一配置指标未改善或显著恶化，必须回退。
+
+**当前证据结论（2026-03-06）**：
+- Top-Down 模式下，MSS hard gate 过度压缩样本（294 → 16 笔）
+- Down-to-Top 模式（soft_gate + IRS）改善了 baseline（EV 转正、MDD 减半）
+- 详见 `docs/design-v2/down-to-top-integration.md` 与 `docs/spec/v0.01/evidence/v0.01-evidence-review-20260306.md`
 
 ### 6.2 通过阈值与回退门（v0.01）
 
