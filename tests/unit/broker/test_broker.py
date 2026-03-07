@@ -262,6 +262,114 @@ def test_broker_signal_competition_respects_strength_and_max_positions(tmp_path)
     store.close()
 
 
+def test_broker_dtt_mainline_prioritizes_final_score_over_strength(tmp_path) -> None:
+    db = tmp_path / "test_final_score_priority.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+    cfg = Settings(
+        BACKTEST_INITIAL_CASH=1_000_000,
+        RISK_PER_TRADE_PCT=0.2,
+        MAX_POSITION_PCT=0.5,
+        STOP_LOSS_PCT=0.05,
+        MAX_POSITIONS=1,
+    )
+    broker = Broker(store, cfg)
+
+    store.bulk_upsert(
+        "l1_trade_calendar",
+        pd.DataFrame(
+            [
+                {"date": signal_date, "is_trade_day": True, "prev_trade_day": None, "next_trade_day": exec_date},
+                {"date": exec_date, "is_trade_day": True, "prev_trade_day": signal_date, "next_trade_day": None},
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l2_stock_adj_daily",
+        pd.DataFrame(
+            [
+                {
+                    "code": "000001",
+                    "date": signal_date,
+                    "adj_open": 10.0,
+                    "adj_high": 10.2,
+                    "adj_low": 9.8,
+                    "adj_close": 10.0,
+                    "volume": 10000,
+                    "amount": 1e8,
+                    "pct_chg": 0.0,
+                    "ma5": 10.0,
+                    "ma10": 10.0,
+                    "ma20": 10.0,
+                    "ma60": 10.0,
+                    "volume_ma5": 10000,
+                    "volume_ma20": 10000,
+                    "volume_ratio": 1.0,
+                },
+                {
+                    "code": "000002",
+                    "date": signal_date,
+                    "adj_open": 10.0,
+                    "adj_high": 10.2,
+                    "adj_low": 9.8,
+                    "adj_close": 10.0,
+                    "volume": 10000,
+                    "amount": 1e8,
+                    "pct_chg": 0.0,
+                    "ma5": 10.0,
+                    "ma10": 10.0,
+                    "ma20": 10.0,
+                    "ma60": 10.0,
+                    "volume_ma5": 10000,
+                    "volume_ma20": 10000,
+                    "volume_ratio": 1.0,
+                },
+            ]
+        ),
+    )
+
+    low_strength_high_final = Signal(
+        signal_id=build_signal_id("000001", signal_date, "bof_low_strength"),
+        code="000001",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.2,
+        pattern="bof",
+        reason_code="PAS_BOF",
+        final_score=95.0,
+    )
+    high_strength_low_final = Signal(
+        signal_id=build_signal_id("000002", signal_date, "bof_high_strength"),
+        code="000002",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.9,
+        pattern="bof",
+        reason_code="PAS_BOF",
+        final_score=10.0,
+    )
+
+    accepted = broker.process_signals([high_strength_low_final, low_strength_high_final])
+    assert len(accepted) == 1
+    assert accepted[0].code == "000001"
+
+    rows = store.read_df(
+        """
+        SELECT code, status, reject_reason
+        FROM l4_orders
+        ORDER BY code
+        """
+    )
+    assert len(rows) == 2
+    accepted_row = rows[rows["status"] == "PENDING"].iloc[0]
+    rejected_row = rows[rows["status"] == "REJECTED"].iloc[0]
+    assert accepted_row["code"] == "000001"
+    assert rejected_row["code"] == "000002"
+    assert rejected_row["reject_reason"] == "MAX_POSITIONS_REACHED"
+    store.close()
+
+
 def test_broker_rejects_when_cash_insufficient_and_marks_reason(tmp_path) -> None:
     db = tmp_path / "test_cash.duckdb"
     store = Store(db)

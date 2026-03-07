@@ -896,6 +896,40 @@ def test_selector_soft_gate_trims_neutral_candidate_count(tmp_path) -> None:
     store.close()
 
 
+def test_selector_dtt_ignores_legacy_mss_and_irs_gate_flags(tmp_path) -> None:
+    db = tmp_path / "selector_dtt_boundary.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 10)
+
+    _seed_selector_universe(store, calc_date, ["000001"])
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame([{"date": calc_date, "score": 20.0, "signal": "BEARISH"}]),
+    )
+    store.bulk_upsert(
+        "l3_irs_daily",
+        pd.DataFrame([{"date": calc_date, "industry": "电子", "score": 90.0, "rank": 1}]),
+    )
+
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        ENABLE_MSS_GATE=True,
+        ENABLE_IRS_FILTER=True,
+        MSS_GATE_MODE="bullish_required",
+        IRS_TOP_N=1,
+        CANDIDATE_TOP_N=5,
+        MIN_AMOUNT=1,
+        MIN_LIST_DAYS=1,
+    )
+    frame = select_candidates_frame(store, calc_date, cfg)
+
+    # DTT 主线只做基础过滤与算力调度，不能再被 legacy gate/filter 提前清空。
+    assert len(frame) == 1
+    assert frame.iloc[0]["code"] == "000001"
+    assert frame.iloc[0]["preselect_score"] == frame.iloc[0]["score"]
+    store.close()
+
+
 def test_selector_frame_keeps_candidate_explainability_fields(tmp_path) -> None:
     db = tmp_path / "selector_trace.duckdb"
     store = Store(db)

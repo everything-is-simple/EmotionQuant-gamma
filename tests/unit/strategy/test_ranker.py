@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 
 import pandas as pd
 
 from src.config import Settings
 from src.contracts import Signal, StockCandidate
 from src.data.store import Store
+from src.strategy import strategy as strategy_module
 from src.strategy.ranker import build_dtt_rank_frame, materialize_ranked_signals
 
 
@@ -76,4 +77,96 @@ def test_dtt_ranker_orders_by_final_score_and_marks_selected(tmp_path) -> None:
     assert len(ranked_signals) == 1
     assert ranked_signals[0].code == "000001"
     assert ranked_signals[0].final_rank == 1
+    store.close()
+
+
+class _StubDetector:
+    def __init__(self, strengths: dict[str, float]):
+        self._strengths = strengths
+
+    def detect(self, code: str, asof_date: date, history: pd.DataFrame) -> Signal | None:
+        strength = self._strengths.get(code)
+        if strength is None:
+            return None
+        return Signal(
+            signal_id=f"{code}_{asof_date.isoformat()}_bof",
+            code=code,
+            signal_date=asof_date,
+            action="BUY",
+            strength=strength,
+            pattern="bof",
+            reason_code="PAS_BOF",
+            bof_strength=strength,
+        )
+
+
+def test_generate_signals_dtt_only_writes_top_n_formal_signal(tmp_path, monkeypatch) -> None:
+    db = tmp_path / "strategy_dtt.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 8)
+
+    store.bulk_upsert(
+        "l3_irs_daily",
+        pd.DataFrame(
+            [
+                {"date": calc_date, "industry": "银行", "score": 1.0, "rank": 1, "rs_score": 1.0, "cf_score": 1.0},
+                {"date": calc_date, "industry": "电子", "score": 0.5, "rank": 2, "rs_score": 0.5, "cf_score": 0.5},
+            ]
+        ),
+    )
+
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_bof_plus_irs_score",
+        DTT_TOP_N=1,
+        DTT_BOF_WEIGHT=0.5,
+        DTT_IRS_WEIGHT=0.5,
+        DTT_MSS_WEIGHT=0.0,
+        DTT_SCORE_FILL=50.0,
+        PAS_MIN_HISTORY_DAYS=21,
+    )
+    candidates = [
+        StockCandidate(code="000001", industry="银行", score=10.0, preselect_score=10.0),
+        StockCandidate(code="000002", industry="电子", score=9.0, preselect_score=9.0),
+    ]
+
+    # 直接 stub 掉历史与 detector，专门验证 DTT 主线的排序落库边界。
+    monkeypatch.setattr(
+        strategy_module,
+        "_load_code_history",
+        lambda *args, **kwargs: pd.DataFrame(
+            [{"date": calc_date - timedelta(days=offset)} for offset in range(cfg.pas_min_history_days)]
+        ),
+    )
+    monkeypatch.setattr(
+        strategy_module,
+        "get_active_detectors",
+        lambda _cfg: [_StubDetector({"000001": 0.6, "000002": 0.9})],
+    )
+
+    signals = strategy_module.generate_signals(
+        store=store,
+        candidates=candidates,
+        asof_date=calc_date,
+        config=cfg,
+        run_id="unit_dtt_top_n",
+    )
+
+    assert len(signals) == 1
+    assert signals[0].code == "000001"
+    assert signals[0].final_rank == 1
+
+    formal = store.read_df("SELECT code, pattern FROM l3_signals ORDER BY code ASC")
+    ranked = store.read_df(
+        """
+        SELECT code, final_rank, selected
+        FROM l3_signal_rank_exp
+        WHERE run_id = ?
+        ORDER BY final_rank ASC
+        """,
+        ("unit_dtt_top_n",),
+    )
+    assert formal["code"].tolist() == ["000001"]
+    assert ranked["code"].tolist() == ["000001", "000002"]
+    assert ranked["selected"].tolist() == [True, False]
     store.close()

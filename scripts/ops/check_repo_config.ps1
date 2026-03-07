@@ -10,7 +10,8 @@ $RequiredFiles = @(
     '.env.example',
     '.githooks/pre-commit',
     'scripts/ops/preflight.ps1',
-    'scripts/ops/check_docs.ps1'
+    'scripts/ops/check_docs.ps1',
+    'scripts/ops/check_path_discipline.ps1'
 )
 $RequiredPyprojectSections = @(
     '[tool.pytest.ini_options]',

@@ -15,6 +15,7 @@ if ($Profile -notin $AllowedProfiles) {
 
 $DocsScript = Join-Path $PSScriptRoot "check_docs.ps1"
 $ConfigScript = Join-Path $PSScriptRoot "check_repo_config.ps1"
+$PathScript = Join-Path $PSScriptRoot "check_path_discipline.ps1"
 $RepoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 
 function Get-ConfiguredTempPath {
@@ -87,21 +88,21 @@ function Resolve-SelectedChecks {
 
     switch ($Profile) {
         "docs" { return @("docs") }
-        "full" { return @("docs", "config", "lint", "test") }
-        "hook" { return @("docs", "config") }
-        default { return @("docs", "config") }
+        "full" { return @("docs", "config", "paths", "lint", "test") }
+        "hook" { return @("docs", "config", "paths") }
+        default { return @("docs", "config", "paths") }
     }
 }
 
 $SelectedChecks = Resolve-SelectedChecks
-$KnownChecks = @("docs", "config", "lint", "test")
+$KnownChecks = @("docs", "config", "paths", "lint", "test")
 $UnknownChecks = $SelectedChecks | Where-Object { $_ -notin $KnownChecks }
 if ($UnknownChecks) {
     Write-Output ("Unknown checks: " + ($UnknownChecks -join ", "))
     exit 1
 }
 
-foreach ($requiredScript in @($DocsScript, $ConfigScript)) {
+foreach ($requiredScript in @($DocsScript, $ConfigScript, $PathScript)) {
     if (-not (Test-Path -LiteralPath $requiredScript)) {
         Write-Output ("Missing script: " + (Split-Path -Leaf $requiredScript))
         exit 1
@@ -126,6 +127,15 @@ try {
                         & $ConfigScript -Quiet
                     } else {
                         & $ConfigScript
+                    }
+                }
+            }
+            "paths" {
+                Invoke-Step -Name "path discipline" -Action {
+                    if ($Quiet) {
+                        & $PathScript -Quiet
+                    } else {
+                        & $PathScript
                     }
                 }
             }
