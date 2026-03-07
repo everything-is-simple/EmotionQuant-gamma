@@ -4,7 +4,7 @@
 
 `docs/reference/` 存放外部规则摘录、运维参考与辅助说明材料。
 
-这里回答的是“有哪些外部资料可供查阅”，不是“当前系统必须怎么执行”。系统执行口径仍以 `docs/design-v2/01-system/system-baseline.md` 为准，当前治理状态以 `docs/spec/common/records/development-status.md` 为准。
+这里回答的是“有哪些外部资料可供查阅”，不是“当前系统必须怎么执行”。`v0.01 Frozen` 历史执行口径见 `docs/design-v2/01-system/system-baseline.md`；`v0.01-plus` 当前主开发线设计入口见 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`；当前治理状态以 `docs/spec/common/records/development-status.md` 为准。
 
 ## 当前入口
 
@@ -12,7 +12,8 @@
 |---|---|---|
 | A 股规则参考 | `a-stock-rules/README.md` | 查询交易制度、涨跌停与行业分类参考 |
 | 运维参考 | `operations/README.md` | 查询临时文件、环境清理与提交前检查参考 |
-| 执行 SoT | `docs/design-v2/01-system/system-baseline.md` | 遇到执行口径问题时回到权威入口 |
+| 历史基线 | `docs/design-v2/01-system/system-baseline.md` | 回看 `v0.01 Frozen` 历史执行口径 |
+| 当前主开发线 | `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` | 回看 `v0.01-plus` 当前设计 SoT |
 
 ## 使用规则
 
@@ -33,6 +34,8 @@
 ## 相关文档
 
 - `docs/design-v2/01-system/system-baseline.md`
+- `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+- `docs/spec/v0.01-plus/README.md`
 - `docs/spec/common/records/development-status.md`
 - `docs/reference/a-stock-rules/README.md`
 - `docs/reference/operations/README.md`

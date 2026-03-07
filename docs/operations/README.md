@@ -4,7 +4,7 @@
 
 `docs/operations/` 存放本仓库的运维文档、环境落地说明与敏感配置模板入口。
 
-这里回答的是“这个仓库怎么落地、怎么维护、怎么排查”，不是“当前系统设计怎么执行”或“某个版本现在推进到哪里”。执行口径以 `docs/design-v2/01-system/system-baseline.md` 为准，当前状态以 `docs/spec/common/records/development-status.md` 为准。
+这里回答的是“这个仓库怎么落地、怎么维护、怎么排查”，不是“当前系统设计怎么执行”或“某个版本现在推进到哪里”。`v0.01 Frozen` 历史基线见 `docs/design-v2/01-system/system-baseline.md`；`v0.01-plus` 当前主开发线设计入口见 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`；当前状态以 `docs/spec/common/records/development-status.md` 为准。
 
 ## 当前入口
 
@@ -35,6 +35,8 @@
 
 - `docs/spec/common/records/development-status.md`
 - `docs/design-v2/01-system/system-baseline.md`
+- `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+- `docs/spec/v0.01-plus/README.md`
 - `docs/reference/operations/README.md`
 - `scripts/ops/preflight.ps1`：统一开发预检入口（默认 `docs + config`，`-Profile full` 增加 `lint + test`；受限沙箱会话中，完整 `pytest` 可能需要提权执行）
 - `scripts/ops/check_repo_config.ps1`：hooks / pyproject / 预检入口配置检查
