@@ -15,15 +15,51 @@ EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
 
 ## 快速开始
 
+### 环境配置
+
+**推荐目录结构**（代码与数据分离）：
+```
+G:\
+├── EmotionQuant-gamma\      # 代码 + 文档（本仓库）
+├── EmotionQuant_data\       # 本地数据库（不进 Git）
+└── EmotionQuant-temp\       # 临时文件（不进 Git）
+```
+
+**配置步骤**：
+1. 复制 `.env.example` 为 `.env`
+2. 填写 `TUSHARE_TOKEN`（必填）
+3. 设置 `DATA_PATH=G:\EmotionQuant_data`（或其他路径）
+4. 设置 `LOG_PATH=G:\EmotionQuant-temp\logs`（可选）
+
+详细配置指南：[`SETUP-GUIDE.md`](SETUP-GUIDE.md)
+
+### 安装依赖
+
 ```bash
-# 安装依赖
+# 安装运行时依赖
 pip install -e .
 
-# 开发依赖
+# 安装开发依赖
 pip install -e ".[dev]"
 
 # 运行测试
 pytest -v
+```
+
+### 基本使用
+
+```bash
+# 1. 拉取数据
+python main.py fetch --start 2020-01-01 --end 2024-12-31
+
+# 2. 构建数据层
+python main.py build --layers all
+
+# 3. 运行回测
+python main.py backtest --start 2020-01-01 --end 2024-12-31 --patterns bof
+
+# 4. 日常运行（Week4 全流程）
+python main.py run
 ```
 
 ## 目录结构
@@ -77,12 +113,13 @@ EmotionQuant-gamma/
 
 详见：[`docs/README.md`](docs/README.md) 和 [`docs/REORGANIZATION-COMPLETE-REPORT.md`](docs/REORGANIZATION-COMPLETE-REPORT.md)
 
-## 环境配置
+## 相关文档
 
-复制 `.env.example` 为 `.env` 并填入实际值。关键变量：
-
-- `TUSHARE_TOKEN` — TuShare API token
-- `DATA_PATH` — 数据根目录（仓库外独立目录）
+- 📖 **配置指南**：[`SETUP-GUIDE.md`](SETUP-GUIDE.md) - 环境配置详细步骤
+- 📖 **系统设计**：[`docs/design-v2/system-baseline.md`](docs/design-v2/system-baseline.md) - 系统基线（SoT）
+- 📖 **文档导航**：[`docs/README.md`](docs/README.md) - 完整文档索引
+- 📖 **开发规则**：[`AGENTS.md`](AGENTS.md) - Agent 开发规则
+- 📖 **整理报告**：[`docs/REORGANIZATION-COMPLETE-REPORT.md`](docs/REORGANIZATION-COMPLETE-REPORT.md) - 文档整理报告
 
 ## 许可证
 

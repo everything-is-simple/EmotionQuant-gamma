@@ -15,15 +15,51 @@ Backtest scope note: `backtrader` is used only for trading-calendar stepping and
 
 ## Quick Start
 
+### Environment Setup
+
+**Recommended directory structure** (code and data separation):
+```
+G:\
+├── EmotionQuant-gamma\      # Code + Docs (this repo)
+├── EmotionQuant_data\       # Local database (not in Git)
+└── EmotionQuant-temp\       # Temporary files (not in Git)
+```
+
+**Setup steps**:
+1. Copy `.env.example` to `.env`
+2. Fill in `TUSHARE_TOKEN` (required)
+3. Set `DATA_PATH=G:\EmotionQuant_data` (or other path)
+4. Set `LOG_PATH=G:\EmotionQuant-temp\logs` (optional)
+
+Detailed setup guide: [`SETUP-GUIDE.md`](SETUP-GUIDE.md)
+
+### Install Dependencies
+
 ```bash
-# Install dependencies
+# Install runtime dependencies
 pip install -e .
 
-# Development dependencies
+# Install development dependencies
 pip install -e ".[dev]"
 
 # Run tests
 pytest -v
+```
+
+### Basic Usage
+
+```bash
+# 1. Fetch data
+python main.py fetch --start 2020-01-01 --end 2024-12-31
+
+# 2. Build data layers
+python main.py build --layers all
+
+# 3. Run backtest
+python main.py backtest --start 2020-01-01 --end 2024-12-31 --patterns bof
+
+# 4. Daily run (Week4 full pipeline)
+python main.py run
 ```
 
 ## Directory Structure
@@ -77,12 +113,13 @@ EmotionQuant-gamma/
 
 See: [`docs/README.md`](docs/README.md) and [`docs/REORGANIZATION-COMPLETE-REPORT.md`](docs/REORGANIZATION-COMPLETE-REPORT.md)
 
-## Configuration
+## Related Documentation
 
-Copy `.env.example` to `.env` and fill in actual values. Key variables:
-
-- `TUSHARE_TOKEN` — TuShare API token
-- `DATA_PATH` — Data root directory (outside repo)
+- 📖 **Setup Guide**: [`SETUP-GUIDE.md`](SETUP-GUIDE.md) - Detailed environment setup
+- 📖 **System Design**: [`docs/design-v2/system-baseline.md`](docs/design-v2/system-baseline.md) - System baseline (SoT)
+- 📖 **Documentation**: [`docs/README.md`](docs/README.md) - Complete documentation index
+- 📖 **Development Rules**: [`AGENTS.md`](AGENTS.md) - Agent development rules
+- 📖 **Reorganization Report**: [`docs/REORGANIZATION-COMPLETE-REPORT.md`](docs/REORGANIZATION-COMPLETE-REPORT.md) - Documentation reorganization report
 
 ## License
 
