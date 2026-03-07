@@ -2,10 +2,10 @@
 
 本文件为自动化代理提供最小、可执行的仓库工作规则。与 `AGENTS.md`、`AGENTS.en.md`、`CLAUDE.md`、`CLAUDE.en.md`、`WARP.md`、`WARP.en.md` 内容等价，面向通用代理运行时。
 
-**文档版本**：`v0.01 正式版`  
-**文档状态**：`Frozen`（封版）  
-**封版日期**：`2026-03-03`  
-**变更规则**：仅允许勘误、链接修复与非语义性排版调整；禁止修改系统执行口径。
+**文档版本**：`v0.01-plus 主线替代版`  
+**文档状态**：`Active`  
+**封版日期**：`不适用（Active SoT）`  
+**变更规则**：`允许在不改变 v0.01 Frozen 历史基线的前提下，按当前主开发线实现与 Gate 结果受控修订。`
 
 ---
 
@@ -13,7 +13,8 @@
 
 - 作用：给自动化代理提供最小、可执行的仓库工作规则。
 - **v0.01 历史基线入口**：`docs/design-v2/01-system/system-baseline.md`（冻结版系统基线）
-- **当前主开发线入口**：`docs/spec/v0.01-plus/README.md`（主线替代版；设计入口见 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`）
+- **当前主开发线入口**：`docs/spec/v0.01-plus/README.md`
+- **当前设计 SoT**：`docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
 - 分阶段文档统一归档至 `docs/spec/`；参考资料统一位于 `docs/reference/`
 - **当前治理状态**：`docs/spec/common/records/development-status.md`（当前状态、历史摘要与重启条件）
 
@@ -25,30 +26,30 @@ EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
 
 - 个人项目，单开发者
 - 执行模型：**四周增量交付**（每周产出可独立验证的交付物）
-- 文档服务实现，不追求"文档完美"
+- 文档服务实现，不追求“文档完美”
 
 ---
 
-## 3. 铁律（v0.01）
+## 3. 当前主线铁律（v0.01-plus）
 
-1. **v0.01 实盘口径 = BOF 单形态闭环**；MSS/IRS 仅作为可开关漏斗，必须先通过消融验证。
-2. **MSS 只看市场级**，不碰行业和个股。
-3. **IRS 只看行业级**，不碰市场温度和个股形态。
-4. **PAS 是框架层概念，v0.01 实现仅 BOF**，且不把 MSS/IRS 分数当形态输入。
-5. **同一原始观测只归属一个因子**，禁止跨因子重复计分。
-6. **模块间只传“结果契约”**（pydantic 对象），不传内部中间特征。
-7. **每个模块可独立单测**，不依赖其他模块启动。
-8. **Backtest 和纸上交易共用同一个 broker 内核**。
-9. **路径/密钥禁止硬编码**，统一经 config.py 注入。
-10. **执行语义固定为 T+1 Open**：signal_date=T，execute_date=T+1，成交价=T+1 开盘价。
+1. **当前主线执行链路 = Selector 初选 -> BOF 触发 -> IRS 排序 -> MSS 控仓位 -> Broker 执行。**
+2. **v0.01 Frozen 继续保留为历史对照与回退参考，不再充当当前主线。**
+3. **Selector 只做基础过滤与规模控制，不做 MSS gate / IRS filter 交易决策。**
+4. **IRS 只做行业级横截面增强，不做前置硬过滤。**
+5. **MSS 只做市场级风险调节，不进入个股横截面总分。**
+6. **PAS 是框架层概念，当前主线实现仍仅 BOF。**
+7. **模块间只传结果契约，不传内部中间特征。**
+8. **Backtest 和纸上交易共用同一个 broker 内核。**
+9. **路径/密钥禁止硬编码**，统一经 `config.py` 注入。
+10. **执行语义固定为 T+1 Open**：`signal_date=T`，`execute_date=T+1`，成交价=`T+1` 开盘价。
 
-详见：`docs/design-v2/01-system/system-baseline.md`（以当前版本为准）
+详见：`docs/spec/v0.01-plus/README.md` 与 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
 
 ---
 
 ## 4. 开发流程
 
-- 执行模型：四周增量交付（见 system-baseline.md 当前版本）
+- 执行模型：四周增量交付
 - 每周产出可独立验证的交付物（可跑的代码 + 通过的测试）
 - 分支命名：`rebuild/{module}`，合并目标 `main`
 
@@ -56,21 +57,21 @@ EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
 
 ## 5. 数据契约
 
-模块间传递 pydantic 对象（contracts.py）：
-- `MarketScore`（MSS → Selector）
-- `IndustryScore`（IRS → Selector）
-- `StockCandidate`（Selector → Strategy）
-- `Signal`（Strategy → Broker）
-- `Order` / `Trade`（Broker 内部 → Report）
+模块间传递 pydantic 对象（`contracts.py`）：
+- `MarketScore`（MSS 计算输出；当前主线消费者为 `Broker / Risk`）
+- `IndustryScore`（IRS 计算输出；当前主线消费者为 `Strategy / Ranker`）
+- `StockCandidate`（Selector -> Strategy）
+- `Signal`（Strategy -> Broker）
+- `Order` / `Trade`（Broker 内部 -> Report）
 
 代码中使用英文，注释/文档/UI 使用中文。统一 `snake_case`。
 L1 层用 `ts_code`（TuShare 格式），L2+ 层用 `code`（6 位纯代码）。
 
-详见：`docs/design-v2/01-system/system-baseline.md`（结果契约章节）
+详见：`docs/spec/v0.01-plus/governance/v0.01-plus-data-contract-table.md`
 
 ---
 
-## 6. 数据架构
+## 6. 数据与目录纪律
 
 DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PATH` 环境变量注入（仓库外独立目录）。
 
@@ -83,7 +84,10 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 
 **依赖规则**：L2 只读 L1；L3 只读 L1/L2；L4 只读 L1/L2/L3。禁止反向依赖。
 
-详见：`docs/design-v2/01-system/system-baseline.md`（数据与边界章节）
+**目录纪律（强制）**：
+- `G:\EmotionQuant-gamma` 只放代码、文档、配置与必要脚本，不放运行时缓存、临时 DuckDB、测试临时目录。
+- `G:\EmotionQuant_data` 存放本地数据库、日志与长期数据产物。
+- `G:\EmotionQuant-temp` 存放临时文件、运行副本、实验缓存与中间产物。
 
 ---
 
@@ -92,9 +96,9 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 | 模块 | 职责 |
 |----|------|
 | Data | 拉数据、清洗、落库、缓存算法输出 |
-| Selector | MSS 市场情绪 + IRS 行业轮动 → 候选池（Gene 仅事后分析） |
-| Strategy | PAS 形态检测（v0.01 仅 BOF）→ 交易信号 |
-| Broker | 风控 + 撮合（回测和纸上交易共用内核） |
+| Selector | 基础过滤 + 规模控制 + `preselect_score` |
+| Strategy | `BOF` 触发 + `IRS` 排序 |
+| Broker | `MSS` 风控覆盖 + 撮合（回测和纸上交易共用内核） |
 | Backtest | 历史回测（backtrader 单引擎；仅时钟推进/数据喂入，交易内核为自研 Broker） |
 | Report | 回测报告 + 每日选股报告 + 预警 |
 
@@ -137,12 +141,10 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 
 ## 10. 核心算法约束
 
-- v0.01 实盘口径：BOF 单形态闭环；MSS/IRS 仅作为可开关漏斗，先消融后启用
-- MSS 只看市场级，IRS 只看行业级；PAS 为框架概念，v0.01 仅 BOF
+- 当前主线：`Selector 初选 -> BOF -> IRS 排序 -> MSS 控仓位`
+- `MSS` 只看市场级；`IRS` 只看行业级；`PAS` 当前仅 `BOF`
 - 同一原始观测只归属一个因子，禁止跨因子重复计分
 - 模块间只传“结果契约”（pydantic 对象），不传内部中间特征
-
-详见：`docs/design-v2/01-system/system-baseline.md`（铁律、模块边界、触发器章节）。
 
 ---
 
@@ -153,8 +155,6 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 - 数据源：TuShare（主）+ AKShare（备）
 - 回测：backtrader 单引擎（仅时钟推进/数据喂入，交易内核为自研 Broker）
 - GUI：MVP 阶段命令行，GUI 延后
-
-详见：`docs/design-v2/01-system/system-baseline.md`（当前版本）
 
 ---
 
@@ -213,12 +213,6 @@ Bootstrap：
 - 可选 MCP 目标目录：`-CodexHome <path>`（默认：项目内 `.tmp/codex-home`）
 - 仅 Hooks：`powershell -ExecutionPolicy Bypass -File scripts/setup/configure_git_hooks.ps1`
 - 仅 Skills 检查：`powershell -ExecutionPolicy Bypass -File scripts/setup/check_skills.ps1`
-
-
-
-
-
-
 
 ## 17. 测试与工具目录规范（强制）
 

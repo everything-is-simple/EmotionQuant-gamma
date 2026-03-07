@@ -1,11 +1,11 @@
 # AGENTS.en.md
 
-This file provides minimal, executable repository rules for automated agents. Content is equivalent to `AGENTS.md`, `CLAUDE.md`, `CLAUDE.en.md`, `WARP.md`, and `WARP.en.md`, targeting generic agent runtimes.
+This file provides minimal, executable repository rules for automated agents. Content is equivalent to `AGENTS.md`, `AGENTS.en.md`, `CLAUDE.md`, `CLAUDE.en.md`, `WARP.md`, and `WARP.en.md`, targeting generic agent runtimes.
 
-**Document Version**: `v0.01 Formal Release`  
-**Document Status**: `Frozen`  
-**Freeze Date**: `2026-03-03`  
-**Change Policy**: Only errata, link fixes, and non-semantic formatting updates are allowed; execution semantics must not change.
+**Document Version**: `v0.01-plus Mainline Replacement`  
+**Document Status**: `Active`  
+**Freeze Date**: `Not Applicable (Active SoT)`  
+**Change Policy**: `Controlled updates are allowed as long as the v0.01 Frozen historical baseline is preserved.`
 
 ---
 
@@ -13,9 +13,10 @@ This file provides minimal, executable repository rules for automated agents. Co
 
 - Purpose: minimal, executable repository rules for automated agents.
 - **v0.01 historical baseline entry**: `docs/design-v2/01-system/system-baseline.md` (frozen system baseline)
-- **Current mainline entry**: `docs/spec/v0.01-plus/README.md` (replacement line; design entry is `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`)
+- **Current mainline entry**: `docs/spec/v0.01-plus/README.md`
+- **Current design SoT**: `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
 - Stage documents are archived under `docs/spec/`; reference materials are under `docs/reference/`
-- **Current governance status**: `docs/spec/common/records/development-status.md` (current state, historical summary, and restart gates)
+- **Current governance status**: `docs/spec/common/records/development-status.md`
 
 ---
 
@@ -24,66 +25,69 @@ This file provides minimal, executable repository rules for automated agents. Co
 EmotionQuant is a sentiment-driven quantitative system for China A-shares.
 
 - Solo developer project
-- Execution model: **4-week incremental delivery** (each week produces independently verifiable deliverables)
-- Docs serve implementation — no "docs perfection" pursuit
+- Execution model: **4-week incremental delivery**
+- Documentation serves implementation
 
 ---
 
-## 3. Iron Laws (v0.01)
+## 3. Current Mainline Iron Laws (v0.01-plus)
 
-1. **v0.01 live scope = BOF single-pattern closed loop**; MSS/IRS are optional funnel gates and must pass ablation before being enabled.
-2. **MSS only looks at market level** — never touches industry or individual stocks.
-3. **IRS only looks at industry level** — never touches market temperature or stock patterns.
-4. **PAS is a framework-level concept; v0.01 implementation is BOF only**, and does not take MSS/IRS scores as pattern inputs.
-5. **Each raw observation belongs to exactly one factor** — no cross-factor double counting.
-6. **Modules only pass "result contracts"** (pydantic objects) — no internal intermediate features.
-7. **Each module can be unit-tested independently** — no dependency on other modules to start.
-8. **Backtest and paper trading share the same broker kernel**.
-9. **No hardcoded paths/secrets** — all injected via config.py.
-10. **Execution semantics fixed to T+1 Open**: signal_date=T, execute_date=T+1, fill price=T+1 Open.
+1. **Current mainline pipeline = Selector preselection -> BOF trigger -> IRS ranking -> MSS position control -> Broker execution.**
+2. **v0.01 Frozen remains only as historical comparison and rollback reference.**
+3. **Selector only performs basic filtering and scale control; it must not perform MSS gate / IRS filter trade decisions.**
+4. **IRS is industry-level cross-sectional enhancement only; no hard pre-filtering.**
+5. **MSS is market-level risk control only; it must not enter the stock-level cross-sectional total score.**
+6. **PAS is a framework concept; the current mainline still implements BOF only.**
+7. **Modules pass result contracts only, never internal intermediate features.**
+8. **Backtest and paper trading share the same broker kernel.**
+9. **No hardcoded paths or secrets**; everything is injected via `config.py`.
+10. **Execution semantics are fixed to T+1 Open**: `signal_date=T`, `execute_date=T+1`, fill price = `T+1` open.
 
-Details: `docs/design-v2/01-system/system-baseline.md` (current version is authoritative).
+Details: `docs/spec/v0.01-plus/README.md` and `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
 
 ---
 
 ## 4. Development Flow
 
-- Execution model: 4-week incremental delivery (see current system-baseline.md).
-- Each week produces independently verifiable deliverables (runnable code + passing tests)
+- Execution model: 4-week incremental delivery
+- Each week must produce independently verifiable deliverables (runnable code + passing tests)
 - Branch naming: `rebuild/{module}`, merge target `main`
 
 ---
 
 ## 5. Data Contracts
 
-Inter-module data passed as pydantic objects (contracts.py):
-- `MarketScore` (MSS → Selector)
-- `IndustryScore` (IRS → Selector)
-- `StockCandidate` (Selector → Strategy)
-- `Signal` (Strategy → Broker)
-- `Order` / `Trade` (Broker internal → Report)
+Inter-module data is passed as pydantic objects (`contracts.py`):
+- `MarketScore` (MSS output; consumed by `Broker / Risk` on the current mainline)
+- `IndustryScore` (IRS output; consumed by `Strategy / Ranker` on the current mainline)
+- `StockCandidate` (Selector -> Strategy)
+- `Signal` (Strategy -> Broker)
+- `Order` / `Trade` (Broker internal -> Report)
 
-Code in English, comments/docs/UI in Chinese. Uniform `snake_case`.
-L1 layer uses `ts_code` (TuShare format), L2+ layers use `code` (6-digit pure code).
+Code uses English; comments/docs/UI use Chinese. Uniform `snake_case`.
+L1 uses `ts_code` (TuShare format); L2+ uses `code` (6-digit pure code).
 
-Details: `docs/design-v2/01-system/system-baseline.md` (result-contract section).
+Details: `docs/spec/v0.01-plus/governance/v0.01-plus-data-contract-table.md`
 
 ---
 
-## 6. Data Architecture
+## 6. Data And Directory Discipline
 
-DuckDB single-database storage, decoupled via L1-L4 layers. Data root injected via `DATA_PATH` environment variable (directory outside repo).
+DuckDB uses a single database with L1-L4 decoupling. The data root is injected by the `DATA_PATH` environment variable outside the repository.
 
 | Layer | Content |
-|-------|---------|
-| L1 | Raw data (API fetch, written by fetcher.py) |
-| L2 | Processed data (adjusted prices / moving averages / volume ratio / market snapshot / industry daily) |
-| L3 | Algorithm output (MSS / IRS / PAS(BOF) / Gene analysis) |
-| L4 | Historical analysis cache (orders / trades / reports) |
+|------|------|
+| L1 | Raw data |
+| L2 | Processed data |
+| L3 | Algorithm output |
+| L4 | Historical analysis cache |
 
-**Dependency rule**: L2 reads only L1; L3 reads only L1/L2; L4 reads only L1/L2/L3. Reverse dependencies forbidden.
+**Dependency rule**: L2 reads only L1; L3 reads only L1/L2; L4 reads only L1/L2/L3. Reverse dependencies are forbidden.
 
-Details: `docs/design-v2/01-system/system-baseline.md` (data and boundary sections).
+**Directory discipline (mandatory)**:
+- `G:\EmotionQuant-gamma` stores code, docs, configs, and required scripts only.
+- `G:\EmotionQuant_data` stores local databases, logs, and long-lived data artifacts.
+- `G:\EmotionQuant-temp` stores temp files, runtime copies, experiment caches, and intermediate artifacts.
 
 ---
 
@@ -92,11 +96,11 @@ Details: `docs/design-v2/01-system/system-baseline.md` (data and boundary sectio
 | Module | Responsibility |
 |--------|---------------|
 | Data | Fetch, clean, store, cache algorithm output |
-| Selector | MSS market sentiment + IRS industry rotation → candidate pool (Gene is post-analysis only) |
-| Strategy | PAS pattern detection (v0.01 BOF only) → trade signals |
-| Broker | Risk control + matching (backtest and paper trading share kernel) |
-| Backtest | Historical backtesting (backtrader single engine; clock/data-feed only, trading kernel is in-house Broker) |
-| Report | Backtest reports + daily stock selection reports + alerts |
+| Selector | Basic filtering + scale control + `preselect_score` |
+| Strategy | `BOF` trigger + `IRS` ranking |
+| Broker | `MSS` risk overlay + matching |
+| Backtest | Historical backtesting |
+| Report | Reports + alerts + attribution |
 
 ---
 
@@ -106,10 +110,10 @@ Details: `docs/design-v2/01-system/system-baseline.md` (data and boundary sectio
 
 | Directory | Role |
 |-----------|------|
-| `docs/design-v2/` | System-level design documents (`system-baseline.md` is the `v0.01 Frozen` historical baseline; `v0.01-plus` design entry is `down-to-top-integration.md`) |
-| `docs/spec/` | Single-track stage documentation entry (v0.01+; versioned into roadmap/governance/evidence/records) |
-| `docs/spec/common/records/` | Cross-version governance records (development-status / debts / reusable-assets) |
-| `docs/reference/` | Reference and external methodology materials (non-execution source) |
+| `docs/design-v2/` | System-level design docs (`system-baseline.md` is the `v0.01 Frozen` historical baseline; `v0.01-plus` design entry is `down-to-top-integration.md`) |
+| `docs/spec/` | Versioned stage docs |
+| `docs/spec/common/records/` | Cross-version governance records |
+| `docs/reference/` | External reference materials |
 
 ### 8.2 Single Source of Truth (SoT)
 
@@ -117,123 +121,99 @@ Details: `docs/design-v2/01-system/system-baseline.md` (data and boundary sectio
 
 ### 8.3 Archive Rules
 
-- Stage documents use versioned directories under: `docs/spec/<version>/`
-- Active execution and archive share the same versioned directories: `docs/spec/<version>/`
-- Cross-version governance records are stored under: `docs/spec/common/records/`
-- System-level design documents are stored only in: `docs/design-v2/`
+- Stage docs use versioned directories: `docs/spec/<version>/`
+- Active execution and archival share the same directory scheme: `docs/spec/<version>/`
+- Cross-version governance records live in: `docs/spec/common/records/`
+- System design docs live only in: `docs/design-v2/`
 
 ---
 
 ## 9. Quality Gates
 
-- Commands must run, tests must reproduce, artifacts must be verifiable
-- Hardcoded path checks, A-share rule checks
-- Effective tests over coverage numbers
-- No "bare code only" submissions: key business logic, time-semantics rules, and state-machine branches must include necessary comments (intent, boundary, constraints) for maintainability
-- Code delivery must include both: minimal readable comments + corresponding test/verification evidence (at least one traceable to a test case or regression record)
-- TODO/HACK/FIXME: allowed during development, must be cleaned before merge
+- Commands must run, tests must reproduce, artifacts must be inspectable
+- Hardcoded path checks and A-share rule checks
+- Effective tests matter more than coverage numbers
+- No bare-code-only submissions: key business logic, time rules, and state-machine branches must include necessary comments
+- Code delivery must include minimal readable comments plus test or verification evidence
+- TODO/HACK/FIXME are allowed during development but must be cleaned before merge
 
 ---
 
 ## 10. Core Algorithm Constraints
 
-- v0.01 live scope: BOF single-pattern closed loop; MSS/IRS are optional gates enabled only after ablation
-- MSS only at market level, IRS only at industry level; PAS is a framework concept and v0.01 uses BOF only
-- Each raw observation belongs to exactly one factor — no cross-factor double counting
-- Modules only pass "result contracts" (pydantic objects) — no internal intermediate features
-
-Details: `docs/design-v2/01-system/system-baseline.md` (iron laws, module boundaries, trigger sections).
+- Current mainline: `Selector preselection -> BOF -> IRS ranking -> MSS position control`
+- `MSS` is market-level only; `IRS` is industry-level only; `PAS` is BOF-only on the current mainline
+- Each raw observation belongs to exactly one factor
+- Modules pass result contracts only
 
 ---
 
 ## 11. Tech Stack
 
 - Python `>=3.10`
-- Storage: DuckDB single database
-- Data sources: TuShare (primary) + AKShare (fallback)
-- Backtesting: backtrader single engine (clock/data-feed only, trading kernel is in-house Broker)
-- GUI: CLI only for MVP, GUI deferred
-
-Details: `docs/design-v2/01-system/system-baseline.md` (current version).
+- DuckDB single-database storage
+- TuShare (primary) + AKShare (fallback)
+- backtrader for calendar stepping/data feed only; in-house Broker for trade semantics
+- CLI first, GUI later
 
 ---
 
 ## 12. Repository Remotes
 
-- `origin`: `${REPO_REMOTE_URL}` (defined in `.env.example`; current value: `https://github.com/everything-is-simple/EmotionQuant-gamma`)
-- `backup`: `${REPO_BACKUP_REMOTE_URL}` (defined in `.env.example`; current value: `https://gitee.com/wangweiyun2233/EmotionQuant-gamma`; suggested local remote name `backup`)
-- Push policy: every commit intended for remote sync must be pushed to both `origin` and `backup`; single-remote push is not acceptable.
+- `origin`: `${REPO_REMOTE_URL}`
+- `backup`: `${REPO_BACKUP_REMOTE_URL}`
+- Every remote-sync commit must be pushed to both `origin` and `backup`
 
 ---
 
 ## 13. Historical Notes
 
-v0.01 historical baseline entry: `docs/design-v2/01-system/system-baseline.md`
-Current mainline entry: `docs/spec/v0.01-plus/README.md`
-Single-track stage docs entry: `docs/spec/`
-Cross-version governance records: `docs/spec/common/records/`
-Active execution entry: `docs/spec/`
-Reference materials: `docs/reference/`
+- v0.01 historical baseline: `docs/design-v2/01-system/system-baseline.md`
+- Current mainline: `docs/spec/v0.01-plus/README.md`
+- Versioned docs entry: `docs/spec/`
+- Cross-version records: `docs/spec/common/records/`
+- References: `docs/reference/`
 
 ---
 
 ## 14. Execution Plan
 
-Current execution plan: see `docs/spec/v0.01-plus/README.md` and `docs/spec/common/records/development-status.md`; the `v0.01` historical execution plan remains in `docs/design-v2/01-system/system-baseline.md`.
+Current execution plan: `docs/spec/v0.01-plus/README.md` and `docs/spec/common/records/development-status.md`; the `v0.01` historical execution plan remains in `docs/design-v2/01-system/system-baseline.md`.
 
 ## 15. Git Auth Baseline
 
-- TLS backend baseline: prefer `openssl` (`git config --global http.sslbackend openssl`, repo-level override allowed).
-- In restricted sandbox sessions, authenticated `git push` should run in non-sandbox or elevated mode to ensure credential interaction and storage paths are accessible.
+- Prefer `openssl` as TLS backend
+- Remote-authenticated `git push` should run where credentials are accessible
 
 ## 16. MCP Baseline
 
 Recommended MCP services:
-- `context` (Context7 document/context retrieval)
-- `fetch` (HTTP content fetching)
-- `filesystem` (cross-directory file operations)
-- `sequential-thinking` (multi-step reasoning)
-- `mcp-playwright` (browser automation)
+- `context`
+- `fetch`
+- `filesystem`
+- `sequential-thinking`
+- `mcp-playwright`
 
-Skill vs MCP boundary:
-- Skill = process instructions / templates.
-- MCP = runtime tools.
-- Skills do not replace MCP.
-
-Default trigger policy:
-- Version-sensitive API/framework issues → prefer `context`.
-- Non-browser-rendered web content → prefer `fetch`.
-- Non-trivial file I/O → prefer `filesystem`.
-- Multi-branch decisions and complex troubleshooting → prefer `sequential-thinking`.
-- UI flows and screenshot replay → prefer `mcp-playwright`.
-
-Bootstrap:
-- One-click: `powershell -ExecutionPolicy Bypass -File scripts/setup/bootstrap_dev_tooling.ps1`
-- MCP only: `powershell -ExecutionPolicy Bypass -File scripts/setup/configure_mcp.ps1 -ContextApiKey <your_key>`
-- Optional MCP target dir: `-CodexHome <path>` (default: in-project `.tmp/codex-home`)
-- Hooks only: `powershell -ExecutionPolicy Bypass -File scripts/setup/configure_git_hooks.ps1`
-- Skills check only: `powershell -ExecutionPolicy Bypass -File scripts/setup/check_skills.ps1`
-
-
-
-
-
-
+Default policy:
+- Version-sensitive API/framework issues -> `context`
+- Non-rendered web content -> `fetch`
+- Non-trivial file I/O -> `filesystem`
+- Complex multi-step reasoning -> `sequential-thinking`
+- UI flows and replay -> `mcp-playwright`
 
 ## 17. Test And Tool Layout Rules (Mandatory)
 
-### 17.1 tests must follow "type + module"
+### 17.1 tests must follow type + module
 
-1. `tests/unit/<module>/`: unit tests (pure function / single module)
-2. `tests/integration/<module>/`: integration tests (cross-module flow)
-3. `tests/patches/<module>/`: patch/regression tests (prevent known bug rollback)
-4. `<module>` must mirror `src/`: `data/selector/strategy/broker/backtest/report/core`
-5. When changing `src/<module>/`, add/update tests in the matching module folder; do not drop tests at tests root
+1. `tests/unit/<module>/`
+2. `tests/integration/<module>/`
+3. `tests/patches/<module>/`
+4. `<module>` must mirror `src/`
+5. When changing `src/<module>/`, update tests in the matching module folder
 
 ### 17.2 scripts is the only tool entry
 
-1. Any non-runtime but required engineering/ops utility must live under `scripts/`
+1. Non-runtime engineering/ops utilities must live under `scripts/`
 2. Classify by domain: `scripts/data/`, `scripts/backtest/`, `scripts/report/`, `scripts/ops/`, etc.
-3. Tools under `scripts/` must not become runtime dependencies for `src/`
-4. New tools must be placed in the matching category folder, never at repository root
-
+3. `scripts/` tools must not become runtime dependencies for `src/`
+4. New tools must go into the matching category folder, never the repository root
