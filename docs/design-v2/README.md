@@ -9,9 +9,11 @@
 1. 系统基线（SoT）
    - `system-baseline.md`
 2. 算法级 SoT
-   - `mss-algorithm.md`
-   - `irs-algorithm.md`
-   - `pas-algorithm.md`
+   - `core-algorithms/mss-algorithm.md`
+   - `core-algorithms/irs-algorithm.md`
+   - `core-algorithms/pas-algorithm.md`
+   - `core-algorithms/down-to-top-integration.md`
+   - `core-algorithms/README.md`
 3. 模块级设计
    - `architecture-master.md`
    - `data-layer-design.md`
@@ -20,7 +22,7 @@
    - `broker-design.md`
    - `backtest-report-design.md`
 4. 评审标准
-   - `sandbox-review-standard.md`
+   - `sandbox-review-standard.md`（从 `docs/observatory/` 迁移而来）
 5. 阶段材料归属
    - 分阶段文件统一归档到 `docs/spec/<version>/`
 
