@@ -28,13 +28,54 @@ pytest -v
 
 ## 目录结构
 
-- `src/` — 实现代码（Data / Selector / Strategy / Broker / Backtest / Report）
-- `tests/` — 自动化测试
-- `docs/` — 文档总入口（见 `docs/README.md`）
-- `docs/design-v2/` — 系统级总纲与模块设计（不放分阶段文件）
-- `docs/spec/` — 各阶段文档单轨入口（v0.01+，按版本目录组织 roadmap/governance/evidence/records）
-- `docs/spec/common/records/` — 跨版本治理记录（development-status / debts / reusable-assets）
-- `docs/reference/` — 外部参考资料与方法论材料
+```
+EmotionQuant-gamma/
+├── src/                    # 实现代码（6 模块）
+│   ├── data/               # Data 模块（fetcher/cleaner/builder/store）
+│   ├── selector/           # Selector 模块（MSS/IRS/Gene/Selector）
+│   ├── strategy/           # Strategy 模块（PAS/Registry/Strategy）
+│   ├── broker/             # Broker 模块（Risk/Matcher）
+│   ├── backtest/           # Backtest 模块（Engine）
+│   └── report/             # Report 模块（Reporter）
+├── tests/                  # 自动化测试
+│   ├── unit/               # 单元测试（按模块组织）
+│   ├── integration/        # 集成测试（跨模块调用链）
+│   └── patches/            # 补丁/回归测试（历史缺陷防回退）
+├── scripts/                # 工具脚本
+│   ├── data/               # 数据相关工具
+│   ├── backtest/           # 回测相关工具
+│   ├── report/             # 报告相关工具
+│   ├── ops/                # 运维工具
+│   └── setup/              # 环境配置工具
+├── docs/                   # 文档总入口（见 docs/README.md）
+│   ├── design-v2/          # 系统设计（单一事实源）
+│   │   ├── 01-system/      # 系统级设计（system-baseline.md 为 SoT）
+│   │   ├── 02-modules/     # 模块级设计
+│   │   └── 03-algorithms/  # 算法级设计（MSS/IRS/PAS）
+│   ├── Strategy/           # 策略理论基础（MSS/IRS/PAS）
+│   ├── observatory/        # 宏观观察与验证
+│   ├── spec/               # 分阶段归档（v0.01-v0.06）
+│   │   ├── v0.01/          # v0.01 阶段材料
+│   │   ├── v0.02/          # v0.02 阶段材料
+│   │   ├── ...             # v0.03-v0.06
+│   │   └── common/         # 跨版本文档
+│   ├── steering/           # 治理铁律（12 条产品铁律）
+│   ├── reference/          # 参考资料
+│   │   ├── a-stock-rules/  # A股市场规则
+│   │   └── operations/     # 运维操作指南
+│   └── workflow/           # 工作流程
+├── .env.example            # 环境变量模板
+├── pyproject.toml          # 项目配置与依赖
+├── main.py                 # CLI 入口
+└── README.md               # 本文件
+```
+
+**文档架构说明**：
+- **三大支柱**：`design-v2/`（系统设计）、`Strategy/`（策略理论）、`observatory/`（观察验证）
+- **三大支撑**：`steering/`（治理铁律）、`spec/`（分阶段归档）、`workflow/`（工作流程）
+- **两大辅助**：`reference/`（参考资料）、`README.md`（总导航）
+
+详见：[`docs/README.md`](docs/README.md) 和 [`docs/REORGANIZATION-COMPLETE-REPORT.md`](docs/REORGANIZATION-COMPLETE-REPORT.md)
 
 ## 环境配置
 
