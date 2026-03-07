@@ -65,16 +65,16 @@
 ### 已有参考文档
 
 9. **Volman-YTC映射分析** ✅
-   - 路径：`docs/design-v2/volman-ytc-mapping.md`
+   - 路径：`docs/Strategy/PAS/volman-ytc-mapping.md`
    - 状态：✅ 已存在
    - 核心内容：Volman七种结构与YTC五形态的映射
 
-### 触发器相关（待补充）
+### 触发器相关（已整合）
 
-触发器相关的资料将放在 `docs/Strategy/Trigger/` 目录下，包括：
-- 触发条件设计
-- 触发时机判断
-- 触发器组合策略
+触发器相关的内容已整合到各形态文档中：
+- 触发条件设计 → 各 `pas_*.py` 的 `detect()` 方法
+- 触发时机判断 → `docs/design-v2/strategy-design.md`
+- 触发器组合策略 → `docs/design-v2/core-algorithms/pas-algorithm.md`
 
 ---
 
@@ -83,6 +83,8 @@
 **总计**：9份资料
 **已完成**：7份（78%）
 **待完成**：2份（22%）
+
+> **说明**：待完成的2份文档（Bob Volman、Al Brooks）为深度理论研究，不影响 v0.01-v0.03 的实现。核心映射关系已在 `volman-ytc-mapping.md` 中完成。
 
 ### 已完成的文档 ✅
 
@@ -102,6 +104,27 @@
 ---
 
 ## 文档结构说明
+
+### 目录组织
+
+```
+docs/Strategy/
+├── README.md                              # 本文件：理论基础资料梳理总览
+├── theoretical-foundations.md             # 理论基础与方法论溯源
+│
+├── MSS/                                   # 市场情绪系统理论
+│   ├── market-sentiment-system-2024-analysis.md
+│   └── manual-sentiment-tracking-experience.md
+│
+├── IRS/                                   # 行业轮动系统理论
+│   └── shenwan-industry-classification.md
+│
+└── PAS/                                   # 价格行为信号理论
+    ├── lance-beggs-ytc-analysis.md
+    ├── xu-jiachong-naked-kline-analysis.md
+    ├── volman-ytc-mapping.md              # Volman与YTC映射（核心）
+    └── tachibana-yoshimasa-analysis.md
+```
 
 ### 每份文档的标准结构
 
@@ -238,7 +261,7 @@
 
 ### EmotionQuant系统文档
 9. `docs/design-v2/system-baseline.md` - 系统设计基线
-10. `docs/design-v2/volman-ytc-mapping.md` - Volman-YTC映射
+10. `docs/Strategy/PAS/volman-ytc-mapping.md` - Volman-YTC映射
 11. `docs/reference/core-algorithms/` - 核心算法文档
 
 ---
