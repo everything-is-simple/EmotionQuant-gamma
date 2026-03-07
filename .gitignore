@@ -61,6 +61,9 @@ __pypackages__/
 secrets.yaml
 secrets.json
 
+# 数据源与迁移记录（包含敏感 Token 信息）
+DATA-SOURCE-AND-MIGRATION.md
+
 # ========================================
 # Data & Database (不提交数据文件)
 # ========================================

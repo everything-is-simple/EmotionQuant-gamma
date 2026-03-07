@@ -1,0 +1,328 @@
+# EmotionQuant 数据源与数据库迁移记录（模板）
+
+**文档版本**：v1.0  
+**文档状态**：Template（模板文件）  
+**重要性**：⭐⭐⭐⭐⭐（核心运维文档）
+
+---
+
+## 📌 使用说明
+
+本文件是 `DATA-SOURCE-AND-MIGRATION.md` 的模板文件。
+
+**实际使用步骤**：
+1. 复制本文件为 `DATA-SOURCE-AND-MIGRATION.md`
+2. 填写实际的 Token 信息和数据库路径
+3. `DATA-SOURCE-AND-MIGRATION.md` 已被 `.gitignore` 排除，不会提交到 Git
+
+**禁止操作**：
+- ❌ 不要在本模板文件中填写真实 Token
+- ❌ 不要删除 `.gitignore` 中的 `DATA-SOURCE-AND-MIGRATION.md` 规则
+- ❌ 不要将包含 Token 的文件提交到 Git
+
+---
+
+## 🔑 数据源配置
+
+### TuShare 数据源（双 Key 配置）
+
+EmotionQuant 使用 TuShare 作为主要数据源，配置了两个 Token 以提高稳定性和速率限制。
+
+#### 1. 官方账号（5000 积分）
+
+**用途**：官方 API，稳定性高，作为主要数据源
+
+**Token 信息**：
+- Token: `<填写你的官方 Token>`
+- 积分等级：5000 积分
+- 有效期：`<填写有效期>`
+- 来源文件：`<填写 Token 文件路径>`
+
+**配置方式**：
+```bash
+# .env 文件配置
+TUSHARE_TOKEN=<填写你的官方 Token>
+```
+
+#### 2. 共享网关（10000 积分）
+
+**用途**：共享网关，高积分，作为备用数据源或高频调用场景
+
+**Token 信息**：
+- Token: `<填写你的共享网关 Token>`
+- 积分等级：10000 积分
+- 有效期：`<填写有效期>`
+- 来源目录：`<填写 Token 目录路径>`
+- 教程说明：`<填写教程链接>`
+
+**配置方式**：
+```bash
+# .env 文件配置（双 Token 模式）
+TUSHARE_PRIMARY_TOKEN=<填写你的共享网关 Token>
+TUSHARE_PRIMARY_HTTP_URL=<根据网关教程配置>
+
+TUSHARE_FALLBACK_TOKEN=<填写你的官方 Token>
+```
+
+**注意事项**：
+- ⚠️ 共享网关有效期较短，需定期续费
+- ⚠️ 共享网关可能有并发限制，建议作为备用
+- ⚠️ 官方账号有效期较长，建议作为主用
+
+---
+
+## 💾 数据库配置
+
+### 目录结构
+
+```
+<数据根目录>\
+├── EmotionQuant-gamma\              # 代码仓库
+│   ├── scripts/data/
+│   │   └── bulk_download.py         # 老版下载工具（已废弃）
+│   └── main.py                      # 新版 CLI 入口
+│
+├── EmotionQuant_data\               # 数据根目录（新）
+│   ├── emotionquant.duckdb          # 新数据库（推荐使用）
+│   ├── logs/                        # 日志目录
+│   └── duckdb/                      # 旧数据库目录（可选）
+│       └── emotionquant.duckdb      # 旧数据库（历史数据）
+│
+└── <Token 存放目录>\
+    └── tushare账号\
+        ├── <官方 Token 文件>
+        └── <共享网关 Token 文件>
+```
+
+### 数据库说明
+
+#### 旧数据库（历史数据）
+
+**路径**：`<填写旧数据库路径>`
+
+**特点**：
+- 时间跨度：`<填写时间跨度>`
+- 数据完整性：可能不完整（使用老版下载工具下载）
+- 用途：历史数据参考，迁移源
+
+**下载工具**：
+- 脚本：`scripts/data/bulk_download.py`（老版，已废弃）
+- 使用双 Key 下载
+- 数据落袋到旧数据库
+
+#### 新数据库（当前使用）
+
+**路径**：`<填写新数据库路径>`
+
+**特点**：
+- 使用新版 CLI 工具（`main.py fetch`）
+- 数据结构符合 v0.01 规范
+- 支持 L1-L4 数据分层
+- 支持增量更新
+
+**下载工具**：
+- 命令：`python main.py fetch`
+- 支持增量拉取
+- 支持从旧库导入（`--from-raw-db`）
+
+---
+
+## 🔄 数据迁移指南
+
+### 场景 1：从旧库迁移到新库
+
+如果需要将旧库的数据迁移到新库，使用以下命令：
+
+```powershell
+# 方式 1：使用 --from-raw-db 参数（推荐）
+python main.py fetch --from-raw-db "<旧数据库路径>" --start 2000-01-01 --end 2026-12-31
+
+# 方式 2：配置环境变量
+# 在 .env 文件中设置：
+# RAW_DB_PATH=<旧数据库路径>
+python main.py fetch --from-raw-db %RAW_DB_PATH% --start 2000-01-01 --end 2026-12-31
+```
+
+**迁移流程**：
+1. 备份旧库（防止数据丢失）
+2. 运行迁移命令
+3. 验证数据完整性
+4. 构建 L2/L3 层（`python main.py build --layers all`）
+
+### 场景 2：仅刷新 stock_info（快速更新）
+
+如果只需要更新股票基本信息（不迁移历史行情数据）：
+
+```powershell
+python main.py fetch --from-raw-db "<旧数据库路径>" --refresh-stock-info-only
+```
+
+### 场景 3：增量更新（日常使用）
+
+日常使用时，直接使用增量更新：
+
+```powershell
+# 更新最近一个月的数据
+python main.py fetch --start 2026-02-01 --end 2026-03-07
+
+# 或使用默认参数（从 config.history_start 到今天）
+python main.py fetch
+```
+
+---
+
+## ⚠️ 迁移注意事项
+
+### 1. 数据完整性检查
+
+迁移前后需要检查数据完整性：
+
+```sql
+-- 连接新库
+duckdb <新数据库路径>
+
+-- 检查数据量
+SELECT 'l1_stock_daily' AS table_name, COUNT(*) AS row_count FROM l1_stock_daily
+UNION ALL
+SELECT 'l1_index_daily', COUNT(*) FROM l1_index_daily
+UNION ALL
+SELECT 'l1_stock_info', COUNT(*) FROM l1_stock_info
+UNION ALL
+SELECT 'l1_trade_calendar', COUNT(*) FROM l1_trade_calendar;
+
+-- 检查日期范围
+SELECT 
+    MIN(trade_date) AS min_date,
+    MAX(trade_date) AS max_date,
+    COUNT(DISTINCT trade_date) AS trade_days
+FROM l1_stock_daily;
+
+-- 检查股票数量
+SELECT 
+    COUNT(DISTINCT ts_code) AS stock_count
+FROM l1_stock_daily;
+```
+
+### 2. 系统需求对齐
+
+迁移时需要确保数据符合系统需求：
+
+**必需表**（L1 层）：
+- `l1_trade_calendar` - 交易日历
+- `l1_stock_info` - 股票基本信息
+- `l1_stock_daily` - 股票日线数据
+- `l1_index_daily` - 指数日线数据
+- `l1_sw_industry_member` - 申万行业成分
+
+**字段要求**：
+- 股票代码：`ts_code`（TuShare 格式，如 `000001.SZ`）
+- 交易日期：`trade_date`（字符串格式，如 `20260307`）
+- 复权因子：`adj_factor`（必需，用于计算复权价）
+
+**数据质量**：
+- 停牌日必须有记录（`is_halt=true`）
+- 涨跌停价格必须完整（`up_limit`/`down_limit`）
+- 成交量不能为负数
+
+### 3. 时间跨度建议
+
+根据系统需求，建议的数据时间跨度：
+
+| 用途 | 时间跨度 | 说明 |
+|------|----------|------|
+| **回测（最小）** | 2020-01-01 ~ 今天 | 约 5 年数据，满足基本回测需求 |
+| **回测（推荐）** | 2015-01-01 ~ 今天 | 约 10 年数据，覆盖牛熊周期 |
+| **研究（完整）** | 2000-01-01 ~ 今天 | 约 25 年数据，完整历史分析 |
+
+**存储空间估算**：
+- 5 年数据：约 2-3 GB
+- 10 年数据：约 5-8 GB
+- 25 年数据：约 10-15 GB
+
+### 4. 迁移后验证
+
+迁移完成后，必须进行以下验证：
+
+```powershell
+# 1. 验证数据层构建
+python main.py build --layers l2 --start 2020-01-01 --end 2020-12-31
+
+# 2. 验证选股流程
+python -c "from src.selector.selector import select_candidates; from src.config import get_settings; from src.data.store import Store; cfg = get_settings(); store = Store(cfg.db_path); candidates = select_candidates(store, '2020-12-31', cfg); print(f'Candidates: {len(candidates)}')"
+
+# 3. 运行小范围回测
+python main.py backtest --start 2020-01-01 --end 2020-12-31 --patterns bof
+```
+
+---
+
+## 📋 维护清单
+
+### 定期检查（每月）
+
+- [ ] 检查 TuShare Token 有效期
+- [ ] 检查数据完整性（是否有缺失日期）
+- [ ] 检查数据库文件大小（是否需要清理旧数据）
+- [ ] 备份数据库文件
+
+### Token 续费提醒
+
+**共享网关**：
+- 有效期：`<填写有效期>`
+- 续费方式：`<填写续费方式>`
+
+**官方账号**：
+- 有效期：`<填写有效期>`
+- 续费方式：`<填写续费方式>`
+
+### 数据更新策略
+
+**日常更新**（推荐）：
+```powershell
+# 每天运行一次，增量更新
+python main.py fetch
+python main.py build --layers all
+```
+
+**周末补全**（可选）：
+```powershell
+# 每周末运行一次，补全可能缺失的数据
+python main.py fetch --start 2026-02-01 --end 2026-03-07
+python main.py build --layers all --force
+```
+
+**月度验证**（必需）：
+```powershell
+# 每月运行一次，验证数据完整性
+python main.py backtest --start 2026-02-01 --end 2026-02-28 --patterns bof
+```
+
+---
+
+## 🔗 相关文档
+
+- 环境配置指南：`SETUP-GUIDE.md`
+- 数据层设计：`docs/design-v2/02-modules/data-layer-design.md`
+- 系统基线：`docs/design-v2/01-system/system-baseline.md`
+- 老版下载工具：`scripts/data/bulk_download.py`（已废弃）
+
+---
+
+## 📝 变更记录
+
+| 日期 | 变更内容 | 操作人 |
+|------|----------|--------|
+| `<填写日期>` | `<填写变更内容>` | `<填写操作人>` |
+
+---
+
+**重要提醒**：
+- 🔐 实际文档（`DATA-SOURCE-AND-MIGRATION.md`）包含敏感信息，不要提交到 Git
+- 📌 实际文档是核心运维文档，勿删
+- 🔄 Token 到期前及时续费，避免数据更新中断
+- 💾 定期备份数据库文件，防止数据丢失
+
+---
+
+**模板位置**：`G:\EmotionQuant-gamma\DATA-SOURCE-AND-MIGRATION.md.template`  
+**实际文档**：`G:\EmotionQuant-gamma\DATA-SOURCE-AND-MIGRATION.md`（不提交到 Git）
