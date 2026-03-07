@@ -31,7 +31,7 @@ G:\
 3. Set `DATA_PATH=G:\EmotionQuant_data` (or other path)
 4. Set `LOG_PATH=G:\EmotionQuant-temp\logs` (optional)
 
-Detailed setup guide: [`SETUP-GUIDE.md`](SETUP-GUIDE.md)
+Detailed setup guide: [`docs/operations/setup-guide.md`](docs/operations/setup-guide.md)
 
 ### Install Dependencies
 
@@ -115,7 +115,7 @@ See: [`docs/README.md`](docs/README.md) and [`docs/REORGANIZATION-COMPLETE-REPOR
 
 ## Related Documentation
 
-- 📖 **Setup Guide**: [`SETUP-GUIDE.md`](SETUP-GUIDE.md) - Detailed environment setup
+- 📖 **Setup Guide**: [`docs/operations/setup-guide.md`](docs/operations/setup-guide.md) - Detailed environment setup
 - 📖 **System Design**: [`docs/design-v2/system-baseline.md`](docs/design-v2/system-baseline.md) - System baseline (SoT)
 - 📖 **Documentation**: [`docs/README.md`](docs/README.md) - Complete documentation index
 - 📖 **Development Rules**: [`AGENTS.md`](AGENTS.md) - Agent development rules

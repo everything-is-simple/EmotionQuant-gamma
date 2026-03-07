@@ -62,7 +62,7 @@ secrets.yaml
 secrets.json
 
 # 数据源与迁移记录（包含敏感 Token 信息）
-DATA-SOURCE-AND-MIGRATION.md
+docs/operations/data-source-and-migration.md
 
 # ========================================
 # Data & Database (不提交数据文件)

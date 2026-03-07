@@ -31,7 +31,7 @@ G:\
 3. 设置 `DATA_PATH=G:\EmotionQuant_data`（或其他路径）
 4. 设置 `LOG_PATH=G:\EmotionQuant-temp\logs`（可选）
 
-详细配置指南：[`SETUP-GUIDE.md`](SETUP-GUIDE.md)
+详细配置指南：[`docs/operations/setup-guide.md`](docs/operations/setup-guide.md)
 
 ### 安装依赖
 
@@ -115,7 +115,7 @@ EmotionQuant-gamma/
 
 ## 相关文档
 
-- 📖 **配置指南**：[`SETUP-GUIDE.md`](SETUP-GUIDE.md) - 环境配置详细步骤
+- 📖 **配置指南**：[`docs/operations/setup-guide.md`](docs/operations/setup-guide.md) - 环境配置详细步骤
 - 📖 **系统设计**：[`docs/design-v2/system-baseline.md`](docs/design-v2/system-baseline.md) - 系统基线（SoT）
 - 📖 **文档导航**：[`docs/README.md`](docs/README.md) - 完整文档索引
 - 📖 **开发规则**：[`AGENTS.md`](AGENTS.md) - Agent 开发规则
