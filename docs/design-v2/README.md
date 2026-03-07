@@ -21,10 +21,13 @@
    - `strategy-design.md`
    - `broker-design.md`
    - `backtest-report-design.md`
-4. 评审标准
-   - `sandbox-review-standard.md`（从 `docs/observatory/` 迁移而来）
-5. 阶段材料归属
+4. 阶段材料归属
    - 分阶段文件统一归档到 `docs/spec/<version>/`
+
+## 相关文档
+
+- 评审标准：`docs/observatory/sandbox-review-standard.md`（系统观察与验证）
+- 理论基础：`docs/Strategy/`（理论来源与方法论溯源）
 
 ## 口径规则
 
