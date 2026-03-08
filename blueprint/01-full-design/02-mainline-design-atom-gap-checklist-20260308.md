@@ -101,9 +101,9 @@
 - [ ] `IRS` 前置行业硬过滤
 - [ ] 旧 `Integration` 式最终排序职责
 
-**下一份 blueprint 产物**
+**已落地产物**
 
-- `Selector contract supplement`
+- `blueprint/01-full-design/03-selector-contract-supplement-20260308.md`
 
 ### 5.2 PAS-trigger / BOF
 
@@ -138,9 +138,9 @@
 - [ ] `BPB / TST / PB / CPB` 多形态在线并行
 - [ ] 旧 PAS 与行业池、集成总分的强耦合
 
-**下一份 blueprint 产物**
+**已落地产物**
 
-- `PAS-trigger / BOF contract supplement`
+- `blueprint/01-full-design/04-pas-trigger-bof-contract-supplement-20260308.md`
 
 ### 5.3 IRS-lite
 
@@ -175,9 +175,9 @@
 - [ ] 把 `allocation_advice / rotation_mode` 作为当前主线强制输出
 - [ ] 完整六因子 `IRS-full` 直接覆盖当前 `IRS-lite`
 
-**下一份 blueprint 产物**
+**已落地产物**
 
-- `IRS-lite contract supplement`
+- `blueprint/01-full-design/05-irs-lite-contract-supplement-20260308.md`
 
 ### 5.4 MSS-lite
 
@@ -212,9 +212,9 @@
 - [ ] 进入 `final_score`
 - [ ] 把完整 `cycle / trend / position_advice` 重新做成当前主线硬依赖
 
-**下一份 blueprint 产物**
+**已落地产物**
 
-- `MSS-lite contract supplement`
+- `blueprint/01-full-design/06-mss-lite-contract-supplement-20260308.md`
 
 ### 5.5 Broker / Risk
 
@@ -249,9 +249,9 @@
 - [ ] `MSS` 重新上移为信号构建前置 gate
 - [ ] 把 Report / GUI 依赖写回执行主链
 
-**下一份 blueprint 产物**
+**已落地产物**
 
-- `Broker / Risk contract supplement`
+- `blueprint/01-full-design/07-broker-risk-contract-supplement-20260308.md`
 
 ---
 
@@ -263,20 +263,18 @@
 
 1. 大方向已经比 `alpha / beta` 更清楚
 2. 但契约、降级、追溯、时序四类原子还不够厚
-3. 下一步不该再改主线，而该补 `contract supplement`
+3. 这一层 `contract supplement` 已经补完，下一步该转入 `Implementation Spec`
 
 ---
 
 ## 7. 后续顺序
 
-建议按下面顺序补 5 份补充文：
+`Full Design` 第一批 5 份 `contract supplement` 已全部落地。
 
-1. `Selector contract supplement`
-2. `PAS-trigger / BOF contract supplement`
-3. `IRS-lite contract supplement`
-4. `MSS-lite contract supplement`
-5. `Broker / Risk contract supplement`
+下一步不该再补同类正文，而该进入：
+
+1. `02-implementation-spec/`
 
 原因很直接：
 
-`先把信号生成链补全，再补执行链。`
+`现在该从稳定设计里裁唯一实现方案，而不是继续扩 Full Design。`

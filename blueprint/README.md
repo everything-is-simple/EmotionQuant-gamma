@@ -62,12 +62,26 @@
 - `00-doc-reorganization-todolist-20260308.md`
 - `01-full-design/01-cross-version-object-mapping-matrix-20260308.md`
 - `01-full-design/02-mainline-design-atom-gap-checklist-20260308.md`
+- `01-full-design/03-selector-contract-supplement-20260308.md`
+- `01-full-design/04-pas-trigger-bof-contract-supplement-20260308.md`
+- `01-full-design/05-irs-lite-contract-supplement-20260308.md`
+- `01-full-design/06-mss-lite-contract-supplement-20260308.md`
+- `01-full-design/07-broker-risk-contract-supplement-20260308.md`
+- `02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
+- `03-execution/01-current-mainline-execution-breakdown-20260308.md`
 
 它们分别负责：
 
 1. 定整理顺序和收口标准
 2. 定跨版本对象来源
 3. 定当前主线 5 个关键对象还缺哪些设计原子
+4. 定 `Selector` 的正式候选契约、兼容映射与 trace 口径
+5. 定 `PAS-trigger / BOF` 的输入快照、formal signal、trace 与 sidecar 边界
+6. 定 `IRS-lite` 的行业层契约、signal 附着规则与 fallback 口径
+7. 定 `MSS-lite` 的市场层契约、overlay 矩阵与执行归因口径
+8. 定 `Broker / Risk` 的正式执行契约、幂等键、时序与生命周期追溯口径
+9. 从 `01-full-design/` 裁出当前主线唯一实现方案首稿
+10. 把唯一实现方案拆成可直接执行的 phase / task / checklist
 
 ---
 
@@ -82,10 +96,23 @@
 
 ## 6. 当前目标
 
-先把以下 5 个关键对象重新沉淀成新版稳定设计：
+当前 `01-full-design/` 第一批 5 个关键对象已经补齐：
 
 1. Selector
 2. PAS-trigger / BOF
 3. IRS-lite
 4. MSS-lite
 5. Broker / Risk
+
+当前 `02-implementation-spec/` 也已经落下第一份正文：
+
+1. `01-current-mainline-implementation-spec-20260308.md`
+
+当前 `03-execution/` 也已经落下第一份正文：
+
+1. `01-current-mainline-execution-breakdown-20260308.md`
+
+下一步进入：
+
+1. `Phase 0 / Task P0-A ~ P0-E`
+2. 先做契约与 trace 收口

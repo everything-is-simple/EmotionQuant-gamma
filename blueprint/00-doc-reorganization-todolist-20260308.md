@@ -187,13 +187,14 @@ Todo：
 
 ### 6.1 先冻结 Full Design SoT
 
-- [ ] 把当前主线 5 个关键对象的正文冻结成第一版稳定设计。
+- [x] 把当前主线 5 个关键对象的正文冻结成第一版稳定设计。
 - [ ] 之后实现期不允许随手改设计。
 
 ### 6.2 再裁唯一 Implementation Spec
 
-- [ ] 从稳定设计里裁一版当前实现方案。
-- [ ] 该实现方案必须明确：
+- [x] 从稳定设计里裁一版当前实现方案。
+  - 产物：`blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
+- [x] 该实现方案必须明确：
   - 本轮目标
   - 非目标
   - 契约
@@ -215,7 +216,7 @@ Todo：
 
 - [ ] 三版文档资产来源被梳理清楚。
 - [ ] `gamma` 中 3 层结构被明确隔离。
-- [ ] 当前主线 5 个关键对象都有独立稳定正文。
+- [x] 当前主线 5 个关键对象都有独立稳定正文。
 - [ ] `Frozen` 文档不再承担当前主线正文。
 - [ ] `development-status.md` 不再承担设计解释。
 - [ ] roadmap / phase / spec 只从实现方案往下拆。
@@ -244,4 +245,7 @@ Todo：
   - 产物：`blueprint/01-full-design/01-cross-version-object-mapping-matrix-20260308.md`
 - [x] 再检查当前 5 个关键对象的正文是否还缺设计原子
   - 产物：`blueprint/01-full-design/02-mainline-design-atom-gap-checklist-20260308.md`
-- [ ] 再把 `v0.01-plus` 当前实现方案改成只承担实现职责
+- [x] 再把当前主线唯一实现方案起成第一版正文
+  - 产物：`blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
+- [x] 再起第一份执行拆解文
+  - 产物：`blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`
