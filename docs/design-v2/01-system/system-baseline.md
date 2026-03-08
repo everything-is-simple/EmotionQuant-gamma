@@ -47,18 +47,21 @@
    - `blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`
 3. 本文件正文保留 `v0.01 Frozen` 历史执行语义，不直接定义仓库现行设计。
 
-### 3.0 历史算法入口
+### 3.0 历史总览入口
 
-`v0.01 Frozen` 的系统级 SoT 仍以本文件为准；历史算法桥接入口如下：
+`v0.01 Frozen` 的系统级 SoT 仍以本文件为准；如需回看历史结构补充，请查以下总览文档：
 
-1. `mss-algorithm.md`
-2. `irs-algorithm.md`
-3. `pas-algorithm.md`
+1. `docs/design-v2/01-system/architecture-master.md`
+2. `docs/design-v2/02-modules/selector-design.md`
+3. `docs/design-v2/02-modules/strategy-design.md`
+4. `docs/design-v2/02-modules/broker-design.md`
+5. `docs/design-v2/02-modules/data-layer-design.md`
+6. `docs/design-v2/02-modules/backtest-report-design.md`
 
 口径规则：
 
 1. 本文件负责执行语义、模块边界、结果契约与版本范围。
-2. `*-algorithm.md` 负责 `design-v2` 阶段保留下来的历史桥接口径、输入边界和兼容说明。
+2. 其余 `design-v2` 文档只承担历史结构补充与模块说明，不再承担独立算法 SoT 职责。
 3. `docs/spec/v0.01/records/` 仅保留阶段证据与决策记录，不再承担算法 SoT 职责。
 4. `docs/Strategy/` 与 `docs/reference/` 为理论/外部参考，不作为 v0.01 执行口径。
 5. 仓库现行设计权威不在本文件内定义，而在：

@@ -14,7 +14,7 @@ This file provides minimal, executable repository rules for automated agents. Co
 - Purpose: minimal, executable repository rules for automated agents.
 - **v0.01 historical baseline entry**: `docs/design-v2/01-system/system-baseline.md` (frozen system baseline)
 - **Current mainline entry**: `docs/spec/v0.01-plus/README.md`
-- **Current design SoT**: `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+- **Current design authority**: `blueprint/README.md`
 - Stage documents are archived under `docs/spec/`; reference materials are under `docs/reference/`
 - **Current governance status**: `docs/spec/common/records/development-status.md`
 
@@ -43,7 +43,7 @@ EmotionQuant is a sentiment-driven quantitative system for China A-shares.
 9. **No hardcoded paths or secrets**; everything is injected via `config.py`.
 10. **Execution semantics are fixed to T+1 Open**: `signal_date=T`, `execute_date=T+1`, fill price = `T+1` open.
 
-Details: `docs/spec/v0.01-plus/README.md` and `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+Details: `docs/spec/v0.01-plus/README.md` and `blueprint/README.md`
 
 ---
 
@@ -110,14 +110,14 @@ DuckDB uses a single database with L1-L4 decoupling. The data root is injected b
 
 | Directory | Role |
 |-----------|------|
-| `docs/design-v2/` | System-level design docs (`system-baseline.md` is the `v0.01 Frozen` historical baseline; `v0.01-plus` design entry is `down-to-top-integration.md`) |
+| `docs/design-v2/` | Historical baseline and historical overviews (`system-baseline.md` is the `v0.01 Frozen` baseline; current design no longer lives here) |
 | `docs/spec/` | Versioned stage docs |
 | `docs/spec/common/records/` | Cross-version governance records |
 | `docs/reference/` | External reference materials |
 
 ### 8.2 Single Source of Truth (SoT)
 
-`docs/design-v2/01-system/system-baseline.md` is the historical authoritative file for `v0.01 Frozen`; the current mainline follows `docs/spec/v0.01-plus/README.md` and `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`.
+`docs/design-v2/01-system/system-baseline.md` is the historical authoritative file for `v0.01 Frozen`; the current mainline follows `docs/spec/v0.01-plus/README.md` and `blueprint/README.md`.
 
 ### 8.3 Archive Rules
 

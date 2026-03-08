@@ -13,7 +13,7 @@
 
 本文档定义：6 个模块的边界与职责、MSS/IRS/PAS 三套因子的精简方案、模块间数据契约、开源依赖栈、4 周落地计划。
 
-本文继续负责 `v0.01 Frozen` 历史系统边界与总装结构；若历史算法细案与本文历史段落冲突，以 `system-baseline.md` + `docs/design-v2/03-algorithms/core-algorithms/` 下对应历史桥接稿为准。
+本文继续负责 `v0.01 Frozen` 历史系统边界与总装结构；若历史段落与冻结执行口径冲突，以 `system-baseline.md` 为准。
 
 ---
 
@@ -28,7 +28,7 @@
 - 当前执行拆解：`blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`
 - 当前治理状态：`docs/spec/common/records/development-status.md`
 
-`docs/design-v2/` 现仅保留 `v0.01 Frozen` 历史基线与兼容桥接稿。本文后续内容继续作为历史架构总览，供对照、回退和历史理解使用，不再代表仓库现行设计权威。
+`docs/design-v2/` 现仅保留 `v0.01 Frozen` 历史基线与少数历史总览。本文后续内容继续作为历史架构总览，供对照、回退和历史理解使用，不再代表仓库现行设计权威。
 
 ## v0.01 历史定版说明（优先级高于更旧历史段落）
 

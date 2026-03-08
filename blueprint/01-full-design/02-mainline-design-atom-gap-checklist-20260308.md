@@ -71,7 +71,7 @@
 
 **当前锚点**
 
-- `docs/design-v2/02-modules/selector-mainline-design.md`
+- `docs/design-v2/02-modules/selector-design.md`
 
 **可回收来源**
 
@@ -109,7 +109,7 @@
 
 **当前锚点**
 
-- `docs/design-v2/03-algorithms/core-algorithms/pas-algorithm.md`
+- `docs/design-v2/02-modules/strategy-design.md`
 
 **可回收来源**
 
@@ -146,7 +146,7 @@
 
 **当前锚点**
 
-- `docs/design-v2/03-algorithms/core-algorithms/irs-algorithm.md`
+- `docs/design-v2/02-modules/selector-design.md`
 
 **可回收来源**
 
@@ -183,7 +183,7 @@
 
 **当前锚点**
 
-- `docs/design-v2/03-algorithms/core-algorithms/mss-algorithm.md`
+- `docs/design-v2/02-modules/broker-design.md`
 
 **可回收来源**
 
@@ -220,7 +220,7 @@
 
 **当前锚点**
 
-- `docs/design-v2/02-modules/broker-risk-mainline-design.md`
+- `docs/design-v2/02-modules/broker-design.md`
 
 **可回收来源**
 

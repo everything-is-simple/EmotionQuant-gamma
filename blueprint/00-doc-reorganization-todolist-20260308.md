@@ -90,7 +90,7 @@ Todo：
   - 决策规则 / 算法
   - 失败模式与验证证据
 - [ ] `Frozen` 文档只保留历史口径和跳转链接。
-- [ ] `down-to-top-integration.md` 只做集成骨架，不替代细案。
+- [x] 迁移期 bridge 层已清除，`design-v2` 不再保留 `down-to-top / mainline` 过渡稿。
 
 ### 3.2 Implementation Spec 层
 

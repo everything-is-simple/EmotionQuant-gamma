@@ -424,8 +424,8 @@ def generate_signal(mss_temp, pas_signal):
 ### 8.2 相关文档
 
 - `docs/reference/theoretical-foundations.md` - 理论基础总览
-- `docs/design-v2/03-algorithms/core-algorithms/mss-algorithm.md` - MSS算法设计
-- `docs/design-v2/03-algorithms/core-algorithms/pas-algorithm.md` - PAS算法设计
+- `blueprint/01-full-design/06-mss-lite-contract-supplement-20260308.md` - MSS算法设计
+- `blueprint/01-full-design/04-pas-trigger-bof-contract-supplement-20260308.md` - PAS算法设计
 - `docs/design-v2/01-system/system-baseline.md` - 系统设计基线
 
 ---

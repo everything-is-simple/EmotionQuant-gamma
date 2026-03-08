@@ -5,7 +5,7 @@
 **对象**: `IRS-lite`  
 **上游锚点**:
 
-1. `docs/design-v2/03-algorithms/core-algorithms/irs-algorithm.md`
+1. `docs/design-v2/02-modules/selector-design.md`
 2. `blueprint/01-full-design/02-mainline-design-atom-gap-checklist-20260308.md`
 3. `src/contracts.py`
 4. `src/selector/irs.py`
@@ -328,7 +328,7 @@ irs_score = 100
 3. `score`
 4. `rank`
 
-而 `irs-algorithm.md` 里提到的：
+而旧 `IRS bridge` 稿里提到的：
 
 1. `quality_flag`
 2. `industry_code`

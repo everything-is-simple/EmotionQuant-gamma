@@ -7,8 +7,8 @@
 **当前系统口径**：
 - `v0.01 Frozen` 历史基线见 `docs/design-v2/01-system/system-baseline.md`
 - `v0.01-plus` 当前主开发线见 `docs/spec/v0.01-plus/README.md`
-- 当前 IRS 执行/升级设计见 `docs/design-v2/03-algorithms/core-algorithms/irs-algorithm.md` 与 `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-02-irs-upgrade.md`
-**冲突处理**：若本文与当前系统设计冲突，以 `design-v2 / spec` 当前版本为准；若与监管或数据源官方规则冲突，以官方规则为准
+- 当前 IRS 执行/升级设计见 `blueprint/01-full-design/05-irs-lite-contract-supplement-20260308.md` 与 `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-02-irs-upgrade.md`
+**冲突处理**：若本文与当前系统设计冲突，以 `blueprint / spec` 当前版本为准；若与监管或数据源官方规则冲突，以官方规则为准
 **整理更新**：`2026-03-08`
 
 ---
@@ -288,7 +288,7 @@ for tier, info in trends_2025['trends'].items():
 
 ### 数据契约对齐（权威口径）
 
-为 IRS 侧的 `IndustryDailyData` 提供数据时，必须输出以下字段并保持命名/含义与权威一致（对齐 `../../design/core-algorithms/irs/irs-algorithm.md` 与 `../../design/data-layer/data-layer-data-models.md`）：
+为 IRS 侧的 `IndustryDailyData` 提供数据时，必须输出以下字段并保持命名/含义与权威一致（对齐 `blueprint/01-full-design/05-irs-lite-contract-supplement-20260308.md` 与 `docs/design-v2/02-modules/data-layer-design.md`）：
 
 - `trade_date`: 交易日
 

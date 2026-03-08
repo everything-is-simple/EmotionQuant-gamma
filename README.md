@@ -6,7 +6,7 @@ EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
 
 - `v0.01` 历史基线：[`docs/design-v2/01-system/system-baseline.md`](docs/design-v2/01-system/system-baseline.md)
 - `v0.01-plus` 当前主开发线：[`docs/spec/v0.01-plus/README.md`](docs/spec/v0.01-plus/README.md)
-- 当前主开发线设计 SoT：[`docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`](docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md)
+- 当前主开发线设计权威层：[`blueprint/README.md`](blueprint/README.md)
 - 当前治理状态：[`docs/spec/common/records/development-status.md`](docs/spec/common/records/development-status.md)
 
 当前主线执行链路：
@@ -59,11 +59,12 @@ python main.py run
 
 ```text
 EmotionQuant-gamma/
+├── blueprint/              # 新版设计权威层（full design / implementation spec / execution）
 ├── src/                    # 实现代码（6 模块）
 ├── tests/                  # 自动化测试（unit/integration/patches）
 ├── scripts/                # 工具脚本（data/backtest/report/ops/setup）
 ├── docs/                   # 文档总入口（见 docs/README.md）
-│   ├── design-v2/          # 系统设计；含 v0.01 Frozen 基线与当前算法设计
+│   ├── design-v2/          # 历史基线与历史总览（不再承载现行设计正文）
 │   ├── Strategy/           # 理论母本与方法论溯源
 │   ├── observatory/        # 观察、评审与复盘
 │   ├── spec/               # 分版本归档与当前主开发线材料

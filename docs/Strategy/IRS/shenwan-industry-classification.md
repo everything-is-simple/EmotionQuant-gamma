@@ -499,7 +499,7 @@ df = pro.index_daily(
 ## 11. 参考文献
 
 1. 申万行业分类标准：`G:\《Trade Journal》\SwClass`
-2. EmotionQuant IRS算法设计：`docs/design-v2/03-algorithms/core-algorithms/irs-algorithm.md`
+2. EmotionQuant IRS算法设计：`blueprint/01-full-design/05-irs-lite-contract-supplement-20260308.md`
 3. TuShare行业分类文档：https://tushare.pro/document/2?doc_id=181
 
 ---

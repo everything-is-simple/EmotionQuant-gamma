@@ -4,7 +4,7 @@
 > **从属基线**: `docs/design-v2/01-system/system-baseline.md`（Frozen）
 > **冲突规则**: 本文与冻结基线冲突时，以基线为准（与 `system-baseline.md` §8.2 一致）
 > **纳入执行口径的前提**: 各视角仅在对应版本评审通过后纳入执行口径
-> **当前主开发线说明**: `v0.01-plus` 当前主线不再直接按本文旧漏斗语义执行；当前入口以 `docs/spec/v0.01-plus/` 与 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` 为准
+> **当前主开发线说明**: `v0.01-plus` 当前主线不再直接按本文旧漏斗语义执行；当前入口以 `docs/spec/v0.01-plus/` 与 `blueprint/README.md` 为准
 
 ---
 

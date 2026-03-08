@@ -14,7 +14,7 @@
 - 作用：给自动化代理提供最小、可执行的仓库工作规则。
 - **v0.01 历史基线入口**：`docs/design-v2/01-system/system-baseline.md`（冻结版系统基线）
 - **当前主开发线入口**：`docs/spec/v0.01-plus/README.md`
-- **当前设计 SoT**：`docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+- **当前设计权威入口**：`blueprint/README.md`
 - 分阶段文档统一归档至 `docs/spec/`；参考资料统一位于 `docs/reference/`
 - **当前治理状态**：`docs/spec/common/records/development-status.md`（当前状态、历史摘要与重启条件）
 
@@ -43,7 +43,7 @@ EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
 9. **路径/密钥禁止硬编码**，统一经 `config.py` 注入。
 10. **执行语义固定为 T+1 Open**：`signal_date=T`，`execute_date=T+1`，成交价=`T+1` 开盘价。
 
-详见：`docs/spec/v0.01-plus/README.md` 与 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+详见：`docs/spec/v0.01-plus/README.md` 与 `blueprint/README.md`
 
 ---
 
@@ -110,14 +110,14 @@ DuckDB 单库存储，通过 L1-L4 分层解耦。数据根目录通过 `DATA_PA
 
 | 目录 | 定位 |
 |------|------|
-| `docs/design-v2/` | 系统级设计文档（`system-baseline.md` 为 `v0.01 Frozen` 历史基线；`v0.01-plus` 设计入口见 `down-to-top-integration.md`） |
+| `docs/design-v2/` | 历史基线与历史总览（`system-baseline.md` 为 `v0.01 Frozen` 历史基线；现行设计不再写入此处） |
 | `docs/spec/` | 分阶段文档单轨入口（v0.01+；按版本目录组织 roadmap/governance/evidence/records） |
 | `docs/spec/common/records/` | 跨版本治理记录（development-status / debts / reusable-assets） |
 | `docs/reference/` | 参考资料与外部方法论（非执行口径） |
 
 ### 8.2 单一事实源（SoT）
 
-`docs/design-v2/01-system/system-baseline.md` 是 `v0.01 Frozen` 的历史权威文件；当前主开发线以 `docs/spec/v0.01-plus/README.md` 与 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` 为准。
+`docs/design-v2/01-system/system-baseline.md` 是 `v0.01 Frozen` 的历史权威文件；当前主开发线以 `docs/spec/v0.01-plus/README.md` 与 `blueprint/README.md` 为准。
 
 ### 8.3 归档规则
 

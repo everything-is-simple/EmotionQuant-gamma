@@ -5,7 +5,7 @@
 **对象**: `MSS-lite`  
 **上游锚点**:
 
-1. `docs/design-v2/03-algorithms/core-algorithms/mss-algorithm.md`
+1. `docs/design-v2/02-modules/broker-design.md`
 2. `blueprint/01-full-design/02-mainline-design-atom-gap-checklist-20260308.md`
 3. `src/contracts.py`
 4. `src/selector/mss.py`

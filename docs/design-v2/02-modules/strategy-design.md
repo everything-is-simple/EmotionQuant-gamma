@@ -8,7 +8,7 @@
 **创建日期**: `2026-03-01`  
 **对应模块**: `src/strategy/`（pattern_base.py, pas_bof.py, registry.py, strategy.py；`pas_bpb.py` 为 v0.02 预留）  
 **理论来源**: `docs/Strategy/PAS/volman-ytc-mapping.md`（Volman与YTC映射）  
-**算法细案入口**: `docs/design-v2/03-algorithms/core-algorithms/pas-algorithm.md`
+**历史相关文档**: `docs/design-v2/01-system/system-baseline.md`, `docs/design-v2/01-system/architecture-master.md`
 
 > 本文件只保留 `v0.01 Frozen` 历史 Strategy 口径。仓库现行 `Strategy` 权威设计请直接查看 `blueprint/01-full-design/04-pas-trigger-bof-contract-supplement-20260308.md`、`blueprint/01-full-design/05-irs-lite-contract-supplement-20260308.md`。
 

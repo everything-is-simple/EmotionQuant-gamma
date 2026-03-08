@@ -5,7 +5,7 @@
 **对象**: `Broker / Risk`  
 **上游锚点**:
 
-1. `docs/design-v2/02-modules/broker-risk-mainline-design.md`
+1. `docs/design-v2/02-modules/broker-design.md`
 2. `blueprint/01-full-design/02-mainline-design-atom-gap-checklist-20260308.md`
 3. `src/contracts.py`
 4. `src/broker/broker.py`

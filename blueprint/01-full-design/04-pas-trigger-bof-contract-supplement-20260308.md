@@ -5,7 +5,7 @@
 **对象**: `PAS-trigger / BOF`  
 **上游锚点**:
 
-1. `docs/design-v2/03-algorithms/core-algorithms/pas-algorithm.md`
+1. `docs/design-v2/02-modules/strategy-design.md`
 2. `blueprint/01-full-design/02-mainline-design-atom-gap-checklist-20260308.md`
 3. `src/contracts.py`
 4. `src/strategy/pas_bof.py`

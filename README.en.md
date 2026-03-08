@@ -6,7 +6,7 @@ EmotionQuant is a sentiment-driven quantitative system for China A-shares.
 
 - `v0.01` historical baseline: [`docs/design-v2/01-system/system-baseline.md`](docs/design-v2/01-system/system-baseline.md)
 - `v0.01-plus` current mainline: [`docs/spec/v0.01-plus/README.md`](docs/spec/v0.01-plus/README.md)
-- Current mainline design SoT: [`docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`](docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md)
+- Current mainline design authority: [`blueprint/README.md`](blueprint/README.md)
 - Current governance status: [`docs/spec/common/records/development-status.md`](docs/spec/common/records/development-status.md)
 
 Current mainline execution pipeline:
@@ -59,11 +59,12 @@ python main.py run
 
 ```text
 EmotionQuant-gamma/
+├── blueprint/              # new design authority layer (full design / implementation spec / execution)
 ├── src/                    # implementation code (6 modules)
 ├── tests/                  # automated tests (unit/integration/patches)
 ├── scripts/                # utilities (data/backtest/report/ops/setup)
 ├── docs/                   # documentation entry (see docs/README.md)
-│   ├── design-v2/          # system design; includes v0.01 Frozen baseline and current algorithm design
+│   ├── design-v2/          # historical baseline and historical overviews only
 │   ├── Strategy/           # theory sources and methodology tracing
 │   ├── observatory/        # observation, review, and retrospectives
 │   ├── spec/               # versioned archives and current mainline material
