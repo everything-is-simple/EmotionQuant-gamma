@@ -4,7 +4,7 @@
 
 `docs/Strategy/` 存放 MSS / IRS / PAS 的理论来源、方法论梳理与研究映射。
 
-这里回答的是“为什么这样设计”，不是“当前系统必须怎么执行”。`v0.01 Frozen` 历史执行口径见 `docs/design-v2/01-system/system-baseline.md`；`v0.01-plus` 当前主开发线设计入口见 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`。
+这里回答的是“为什么这样设计”，不是“当前系统必须怎么执行”。`v0.01 Frozen` 历史执行口径见 `docs/design-v2/01-system/system-baseline.md`；新版设计权威层见 `blueprint/README.md`。
 
 ## 当前入口
 
@@ -37,7 +37,7 @@ Strategy/
 ## 使用规则
 
 1. `Strategy/` 只提供理论依据、研究材料和映射说明，不直接充当执行 SoT。
-2. 理论与实现冲突时，以 `design-v2/`、`steering/` 和当前版本 `spec/` 为准。
+2. 理论与实现冲突时，以 `blueprint/`、`steering/` 和当前版本 `spec/` 为准。
 3. 新增研究材料时，优先补充映射关系与“采用 / 适配 / 不采用”边界，不必在 README 重复展开全文摘要。
 4. 阶段性实现证据、回测结果、版本验收，不放在 `Strategy/`，统一归档到 `docs/spec/<version>/`。
 
@@ -52,7 +52,8 @@ Strategy/
 
 ## 相邻目录边界
 
-- `docs/design-v2/`：定义当前系统怎么做。
+- `blueprint/`：定义当前新版系统怎么做。
+- `docs/design-v2/`：保留历史基线与兼容桥接。
 - `docs/observatory/`：定义如何审视和验证。
 - `docs/spec/`：存放版本路线图、证据和历史记录。
 - `docs/reference/`：存放外部规则和运维参考。
@@ -60,6 +61,7 @@ Strategy/
 ## 相关文档
 
 - `docs/design-v2/01-system/system-baseline.md`
-- `docs/design-v2/03-algorithms/core-algorithms/`
+- `docs/design-migration-boundary.md`
+- `blueprint/README.md`
 - `docs/observatory/god_view_8_perspectives_report_v0.01.md`
 - `docs/spec/common/records/development-status.md`

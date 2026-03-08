@@ -11,6 +11,8 @@
 
 ---
 
+> 桥接说明：自 `2026-03-08` 起，本文已降级为 `docs/design-v2` 兼容附录。文中出现的“当前执行版/当前主线”表述，仅用于解释 design-v2 收口阶段的数据模型整理结果，不再构成仓库现行设计权威。现行 `MSS-lite` 正文以 `blueprint/01-full-design/06-mss-lite-contract-supplement-20260308.md` 为准；当前实现与执行拆解见 `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`、`blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`。
+
 ## 1. 定位
 
 本文只回答三件事：

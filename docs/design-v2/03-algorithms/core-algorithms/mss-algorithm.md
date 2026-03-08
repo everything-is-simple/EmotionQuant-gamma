@@ -1,14 +1,16 @@
-# MSS-lite 当前主线设计
+# MSS-lite 桥接稿（design-v2 -> blueprint）
 
-**版本**: `v0.01-plus 主线替代版`  
+**版本**: `v0.01-plus 桥接稿`  
 **状态**: `Active`  
 **封版日期**: `不适用（Active SoT）`  
-**变更规则**: `允许在不改变当前 DTT 主线边界的前提下，对 MSS-lite 的角色、风险覆盖算法与验证证据做受控修订。`  
-**上游文档**: `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`, `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-04-mss-upgrade.md`  
+**变更规则**: `本文仅保留 design-v2 阶段的兼容桥接说明；现行设计修订必须进入 blueprint/，本文只允许导航、勘误与桥接说明更新。`  
+**上游文档**: `docs/design-migration-boundary.md`, `blueprint/01-full-design/06-mss-lite-contract-supplement-20260308.md`  
 **对应模块**: `src/selector/mss.py`, `src/broker/risk.py`  
 **理论来源**: `docs/Strategy/MSS/`
 
 ---
+
+> 桥接说明：自 `2026-03-08` 起，本文已降级为 `docs/design-v2` 兼容桥接稿。文中出现的“当前主线”表述，仅用于解释 design-v2 收口阶段的整理结果，不再构成仓库现行设计权威。现行 `MSS-lite` 正文以 `blueprint/01-full-design/06-mss-lite-contract-supplement-20260308.md` 为准；当前实现与执行拆解见 `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`、`blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`。
 
 ## 1. 职责
 

@@ -8,12 +8,10 @@
 **创建日期**: `2026-03-01`  
 **对应模块**: `src/backtest/engine.py`，`src/report/reporter.py`
 
-> 当前主开发线补充说明：`v0.01-plus` 的回测与报告需要额外解释三类增量信息：
+> 现行设计桥接说明：仓库现行设计权威已迁入 `blueprint/`。与回测和报告直接相关的现行实现约束优先查看 `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`、`blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`；当前治理状态见 `docs/spec/common/records/development-status.md`。本文正文继续保留 `v0.01 Frozen` 历史报告口径。
 > 1. `IRS` 排序增益
 > 2. `MSS` 风险覆盖
 > 3. `preselect_score / candidate_top_n` 的交易后果
->
-> 当前证据与记录统一位于 `docs/spec/v0.01-plus/`；本文正文继续保留 `v0.01 Frozen` 历史报告口径。
 
 ## 冻结区与冲突处理
 
@@ -25,7 +23,7 @@
 
 ## 历史正文说明
 
-下文各节默认描述的是 `v0.01 Frozen` 历史回测与报告口径。当前主开发线还要求额外解释：
+下文各节默认描述的是 `v0.01 Frozen` 历史回测与报告口径。仓库现行实现还要求额外解释：
 
 - `IRS` 排序增益
 - `MSS` 风险覆盖

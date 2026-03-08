@@ -1,27 +1,29 @@
-# Down-to-Top 主线替代设计（v0.01-plus）
+# Down-to-Top 集成桥接稿（design-v2 -> blueprint）
 
-**版本**: `v0.01-plus 主线替代版`  
+**版本**: `v0.01-plus 桥接稿`  
 **状态**: `Active`  
 **封版日期**: `不适用（Active SoT）`  
-**变更规则**: `作为 v0.01-plus 当前主开发线设计入口，允许在 Gate、证据与实现反馈下受控修订；涉及 v0.01 Frozen 历史口径时，以上游 baseline 为准。`  
-**上游文档**: `docs/design-v2/01-system/system-baseline.md`, `docs/design-v2/02-modules/selector-design.md`, `docs/design-v2/02-modules/strategy-design.md`, `docs/design-v2/03-algorithms/core-algorithms/pas-algorithm.md`  
-**治理入口**: `docs/spec/v0.01-plus/README.md`  
+**变更规则**: `本文仅保留 design-v2 阶段的兼容集成骨架；现行设计修订必须进入 blueprint/，本文只允许导航、勘误与桥接说明更新。`  
+**上游文档**: `docs/design-migration-boundary.md`, `blueprint/README.md`  
+**治理入口**: `docs/spec/common/records/development-status.md`  
 **创建日期**: `2026-03-07`  
 **最后更新**: `2026-03-08`
 
 ---
 
+> 桥接说明：自 `2026-03-08` 起，本文已降级为 `docs/design-v2` 兼容桥接稿，不再是仓库现行设计入口。现行完整设计见 `blueprint/01-full-design/`；当前实现方案与执行拆解见 `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`、`blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`。文中“当前主线”表述仅用于解释 design-v2 收口阶段整理出的集成骨架。
+
 ## 1. 定位
 
-本文是 `v0.01-plus` 当前主开发线的集成设计骨架。
+本文保留的是 `v0.01-plus` 在 `design-v2` 阶段整理出的集成骨架。
 
 它只负责定义当前主线的总装关系，不替代 5 份稳定设计文档：
 
-1. `docs/design-v2/02-modules/selector-mainline-design.md`
-2. `docs/design-v2/03-algorithms/core-algorithms/pas-algorithm.md`
-3. `docs/design-v2/03-algorithms/core-algorithms/irs-algorithm.md`
-4. `docs/design-v2/03-algorithms/core-algorithms/mss-algorithm.md`
-5. `docs/design-v2/02-modules/broker-risk-mainline-design.md`
+1. `blueprint/01-full-design/03-selector-contract-supplement-20260308.md`
+2. `blueprint/01-full-design/04-pas-trigger-bof-contract-supplement-20260308.md`
+3. `blueprint/01-full-design/05-irs-lite-contract-supplement-20260308.md`
+4. `blueprint/01-full-design/06-mss-lite-contract-supplement-20260308.md`
+5. `blueprint/01-full-design/07-broker-risk-contract-supplement-20260308.md`
 
 它不再复述旧版 top-down 漏斗，也不再把 `MSS / IRS / PAS` 混成一个总分系统。
 

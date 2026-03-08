@@ -10,7 +10,7 @@
 **理论来源**: `docs/Strategy/PAS/volman-ytc-mapping.md`（Volman与YTC映射）  
 **算法细案入口**: `docs/design-v2/03-algorithms/core-algorithms/pas-algorithm.md`
 
-> 本文件只保留 `v0.01 Frozen` 历史 Strategy 口径。当前主线 `Strategy` 相关设计请分别查看 `docs/design-v2/03-algorithms/core-algorithms/pas-algorithm.md`、`docs/design-v2/03-algorithms/core-algorithms/irs-algorithm.md` 与 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`。
+> 本文件只保留 `v0.01 Frozen` 历史 Strategy 口径。仓库现行 `Strategy` 权威设计请直接查看 `blueprint/01-full-design/04-pas-trigger-bof-contract-supplement-20260308.md`、`blueprint/01-full-design/05-irs-lite-contract-supplement-20260308.md`。
 
 ## 冻结区与冲突处理
 
@@ -20,12 +20,13 @@
 4. 版本证据、回归结果与阶段记录，统一归档到 `docs/spec/<version>/`。
 ---
 
-## 当前主线导航
+## 现行设计桥接导航
 
-- 当前主线 `PAS-trigger / BOF`：`docs/design-v2/03-algorithms/core-algorithms/pas-algorithm.md`
-- 当前主线 `IRS-lite`：`docs/design-v2/03-algorithms/core-algorithms/irs-algorithm.md`
-- 当前主线集成骨架：`docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
-- 当前阶段路线图：`docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`
+- 设计迁移边界：`docs/design-migration-boundary.md`
+- 现行 `PAS-trigger / BOF` 正文：`blueprint/01-full-design/04-pas-trigger-bof-contract-supplement-20260308.md`
+- 现行 `IRS-lite` 正文：`blueprint/01-full-design/05-irs-lite-contract-supplement-20260308.md`
+- 当前实现方案：`blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
+- 当前执行拆解：`blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`
 
 下文各节默认描述 `v0.01 Frozen` 历史 Strategy 口径，仅供对照与回退使用。
 

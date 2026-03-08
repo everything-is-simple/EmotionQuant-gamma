@@ -9,7 +9,7 @@
 **对应模块**: `src/data/`（fetcher.py, cleaner.py, builder.py, store.py）  
 **运维记录**: `docs/spec/v0.01/records/data-rebuild-runbook-20260303.md`（L1 保留、L2/L3/L4 清理与重建链路）
 
-> 当前主开发线补充说明：`v0.01-plus` 已经在 `L2/L3` 侧引入更多 sidecar 与扩展字段需求，例如 `l3_signal_rank_exp`、`IRS-upgrade` 的行业结构聚合、`MSS-upgrade` 的周期字段等。本文正文继续保留 `v0.01 Frozen` 历史数据设计，当前扩展以 `docs/spec/v0.01-plus/` 与对应 `*-algorithm.md` 为准。
+> 现行设计桥接说明：仓库现行设计权威已迁入 `blueprint/`。与数据层直接相关的现行正文优先查看 `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`、`blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`；当前治理状态见 `docs/spec/common/records/development-status.md`。本文正文继续保留 `v0.01 Frozen` 历史数据设计，仅供对照与回退。
 
 ## 冻结区与冲突处理
 
@@ -21,7 +21,7 @@
 
 ## 历史正文说明
 
-下文各节默认描述的是 `v0.01 Frozen` 历史数据层口径。当前主开发线已经开始引入但尚未在正文全面展开的内容包括：
+下文各节默认描述的是 `v0.01 Frozen` 历史数据层口径。仓库现行实现已经引入但本文不再承担权威定义的内容包括：
 
 - `l3_signal_rank_exp`
 - `IRS-upgrade` 的行业结构聚合

@@ -6,6 +6,8 @@
 **变更规则**: `允许在保持当前主线输入输出边界不变的前提下，补充升级版接口草案。`  
 **上游文档**: `irs-algorithm.md`, `irs-data-models.md`
 
+> 桥接说明：自 `2026-03-08` 起，本文已降级为 `docs/design-v2` 兼容附录。文中出现的“当前主线”表述，仅用于解释 design-v2 收口阶段的接口整理结果，不再构成仓库现行设计权威。现行 `IRS-lite` 正文以 `blueprint/01-full-design/05-irs-lite-contract-supplement-20260308.md` 为准；当前实现与执行拆解见 `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`、`blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`。
+
 ## 1. 当前主线接口
 
 ### 1.1 计算入口

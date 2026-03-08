@@ -4,7 +4,7 @@
 **最后更新**: 2026-03-08
 **当前阶段**: Mainline MVP Strengthening（`v0.01` 已冻结为历史尝试；`v0.01-plus` 已升格为当前主开发线；当前目标不再只是跑通 lite 链路，而是把 `PAS / IRS / MSS` 补到最小可交易强度）
 
-> 本文件只维护状态、看板、风险与版本记录，不承担当前主线设计正文。当前主线稳定设计统一查看 `docs/design-v2/` 下的恢复文档，设计恢复动作记录见 `docs/spec/common/records/design-recovery-plan-20260308.md`。
+> 本文件只维护状态、看板、风险与版本记录，不承担当前主线设计正文。新版设计权威层统一查看 `blueprint/`，边界声明见 `docs/design-migration-boundary.md`。
 
 ---
 
@@ -12,10 +12,14 @@
 
 | 类型 | 路径 | 说明 |
 |---|---|---|
+| 新版设计总入口 | `blueprint/README.md` | 新版设计权威层 |
+| 当前完整设计 SoT | `blueprint/01-full-design/` | 新版设计正文 |
+| 当前实现方案 | `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md` | 当前唯一实现方案 |
+| 当前执行拆解 | `blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md` | 当前 phase / task / checklist |
+| 设计迁移边界声明 | `docs/design-migration-boundary.md` | 说明为何 `docs/` 已降级为治理 / 历史 / 入口层 |
 | v0.01 历史基线 | `docs/design-v2/01-system/system-baseline.md` | 已冻结的历史设计基线 |
-| v0.01-plus 设计入口 | `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` | 当前主开发线的 DTT 设计入口 |
 | v0.01 历史路线图 | `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md` | v0.01 冻结执行计划（历史参考） |
-| 当前主线 | `docs/spec/v0.01-plus/README.md` | v0.01-plus 当前主开发线入口 |
+| 当前主线治理归档 | `docs/spec/v0.01-plus/README.md` | v0.01-plus 的 roadmap / governance / evidence / records 入口 |
 | 当前主线实现卡 | `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md` | Selector / Strategy 主线替代实现卡 |
 | 工作流 | `docs/workflow/6A-WORKFLOW.md` | 固定执行流程 |
 | 当前状态 | `docs/spec/common/records/development-status.md` | 当前治理状态、历史摘要与重启条件 |

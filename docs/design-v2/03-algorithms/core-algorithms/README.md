@@ -1,44 +1,37 @@
-# 核心算法设计（算法级 SoT）
+# 核心算法设计桥接目录
 
-**版本**: `v0.01-v0.06 设计入口`  
+**版本**: `v0.01-v0.06 桥接目录`  
 **状态**: `Active`  
 **封版日期**: `不适用（Active SoT）`  
-**变更规则**: `算法语义变更必须同时具备设计修订与证据支撑；若触及系统执行语义，以上游 baseline 为准。`  
-**上游文档**: `docs/design-v2/01-system/system-baseline.md`
+**变更规则**: `本目录仅保留 design-v2 阶段的兼容桥接与历史附录；现行算法修订必须进入 blueprint/，本目录只允许导航、勘误与桥接说明更新。`  
+**上游文档**: `docs/design-migration-boundary.md`, `blueprint/README.md`
 
 ## 定位
 
-`docs/design-v2/03-algorithms/core-algorithms/` 存放 MSS / IRS / PAS 的当前算法级设计，以及跨版本集成模式说明。
+`docs/design-v2/03-algorithms/core-algorithms/` 现只保留 `design-v2` 阶段整理出的算法桥接稿、兼容附录与历史说明。
 
-这里回答的是“当前算法怎么算”，不是“理论来源在哪里”或“证据放在哪里”。跨模块执行语义以 `docs/design-v2/01-system/system-baseline.md` 为准；当前治理状态与是否恢复实现，以 `docs/spec/common/records/development-status.md` 为准；阶段证据与版本验收统一归档到 `docs/spec/`。
+这里不再回答“仓库现行算法怎么算”，而只负责三件事：
 
-说明：
+1. 给旧 `design-v2` 路径提供跳转与兼容入口
+2. 保留 `v0.01 Frozen` 与 `design-v2` 收口阶段的历史附录
+3. 为回看旧设计时提供最小上下文
 
-1. 当前主线稳定设计只保留 5 个关键对象：`Selector / PAS-trigger / IRS-lite / MSS-lite / Broker / Risk`
-2. 本目录只负责其中 3 个算法对象：`PAS-trigger / IRS-lite / MSS-lite`
-3. `Selector` 与 `Broker / Risk` 的当前主线边界在 `docs/design-v2/02-modules/`
-4. 恢复骨架不等于恢复旧语义；所有当前文档必须服从主线：`Selector 初选 -> BOF 触发 -> IRS 排序 -> MSS 控仓位 -> Broker 执行`
+仓库现行设计权威见 `blueprint/README.md`；跨模块执行基线仍以 `docs/design-v2/01-system/system-baseline.md` 的 `v0.01 Frozen` 历史口径为准；当前治理状态与推进阶段见 `docs/spec/common/records/development-status.md`；阶段证据与版本验收统一归档到 `docs/spec/`。
 
-## 当前入口
+## 现行权威入口
 
 | 类型 | 路径 | 用途 |
 |---|---|---|
 | 系统基线 | `docs/design-v2/01-system/system-baseline.md` | 确认跨模块执行语义与总边界 |
-| Selector 当前主线 | `docs/design-v2/02-modules/selector-mainline-design.md` | 查看当前主线初选边界 |
-| PAS-trigger / BOF | `pas-algorithm.md` | 查看当前主线形态触发职责 |
-| IRS-lite | `irs-algorithm.md` | 查看当前主线行业排序增强职责 |
-| MSS-lite | `mss-algorithm.md` | 查看当前主线市场级风险覆盖职责 |
-| Broker / Risk 当前主线 | `docs/design-v2/02-modules/broker-risk-mainline-design.md` | 查看当前主线执行边界 |
-| MSS 数据模型 | `mss-data-models.md` | 查看 MSS 输入、输出与执行层派生模型 |
-| MSS 接口契约 | `mss-api.md` | 查看 MSS 计算入口与 Broker 消费接口 |
-| MSS 信息流 | `mss-information-flow.md` | 查看 MSS 在 DTT 主线中的落库与风险消费链路 |
-| IRS 数据模型 | `irs-data-models.md` | 查看 IRS 表结构、字段与扩展口径 |
-| IRS 接口契约 | `irs-api.md` | 查看 IRS 输入输出、异常与消费方式 |
-| IRS 信息流 | `irs-information-flow.md` | 查看 IRS 在 DTT 主线中的数据流与边界 |
-| PAS 数据模型 | `pas-data-models.md` | 查看 formal signal、sidecar 与 detector 输入输出 |
-| PAS 接口契约 | `pas-api.md` | 查看 detector / registry / strategy 主入口 |
-| PAS 信息流 | `pas-information-flow.md` | 查看 PAS 从候选池到 formal signal 的链路 |
-| 集成模式 | `down-to-top-integration.md` | 查看 v0.01-plus 当前主线的集成骨架 |
+| 设计迁移边界 | `docs/design-migration-boundary.md` | 确认 `blueprint/` 与 `docs/` 的分工 |
+| 新版设计总入口 | `blueprint/README.md` | 查看现行三层文档结构 |
+| Selector | `blueprint/01-full-design/03-selector-contract-supplement-20260308.md` | 查看现行 Selector 正文 |
+| PAS-trigger / BOF | `blueprint/01-full-design/04-pas-trigger-bof-contract-supplement-20260308.md` | 查看现行 PAS 正文 |
+| IRS-lite | `blueprint/01-full-design/05-irs-lite-contract-supplement-20260308.md` | 查看现行 IRS 正文 |
+| MSS-lite | `blueprint/01-full-design/06-mss-lite-contract-supplement-20260308.md` | 查看现行 MSS 正文 |
+| Broker / Risk | `blueprint/01-full-design/07-broker-risk-contract-supplement-20260308.md` | 查看现行执行边界 |
+| 当前实现方案 | `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md` | 查看本轮唯一实现方案 |
+| 当前执行拆解 | `blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md` | 查看 phase / task / checklist |
 | 当前状态 | `docs/spec/common/records/development-status.md` | 查看当前治理阶段与重启条件 |
 
 ## 结构
@@ -63,13 +56,12 @@ core-algorithms/
 
 ## 使用规则
 
-1. 本目录是算法级 SoT；若与模块设计、理论研究或评审附录冲突，先回到 `docs/design-v2/01-system/system-baseline.md` 判断总边界。
+1. 本目录不是仓库现行算法 SoT；若需要现行设计正文，先回到 `docs/design-migration-boundary.md` 与 `blueprint/README.md`。
 2. 理论来源与采用理由放在 `docs/Strategy/`，不在本目录重复展开研究材料。
 3. 版本证据、回测结果、消融实验与验收结论，统一进入 `docs/spec/<version>/evidence/` 或对应 records。
-4. 当前是否继续推进 `v0.01` 实现，不在本目录维护，统一查看 `docs/spec/common/records/development-status.md`。
-5. 算法语义变更必须同时具备设计修订与证据支撑，不接受只改 README 或只改代码。
-6. 当前主线算法正文统一采用 6 段结构：职责、输入、输出契约、不负责什么、决策规则/算法、失败模式与验证证据。
-7. 恢复 `beta` 的文档骨架时，只恢复结构和必要设计深度，不恢复已经被当前主线淘汰的 top-down 语义。
+4. 当前是否继续推进实现，不在本目录维护，统一查看 `docs/spec/common/records/development-status.md`。
+5. 本目录中的 `algorithm / api / data-models / information-flow / integration` 文件，均视为历史桥接稿或兼容附录，不得重新升格为现行权威正文。
+6. 若桥接稿与 `blueprint/` 现行正文冲突，以 `blueprint/` 为准；若涉及 `v0.01 Frozen` 历史执行语义，则仍以 `docs/design-v2/01-system/system-baseline.md` 为准。
 
 ## 当前版本范围
 

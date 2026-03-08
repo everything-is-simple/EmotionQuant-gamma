@@ -9,7 +9,7 @@
 **对应模块**: `src/selector/`（mss.py, irs.py, gene.py, selector.py）  
 **算法细案入口**: `docs/design-v2/03-algorithms/core-algorithms/mss-algorithm.md`, `docs/design-v2/03-algorithms/core-algorithms/irs-algorithm.md`
 
-> 本文件只保留 `v0.01 Frozen` 历史 Selector 口径。当前主线 `Selector` 设计请直接查看 `docs/design-v2/02-modules/selector-mainline-design.md`。
+> 本文件只保留 `v0.01 Frozen` 历史 Selector 口径。仓库现行 `Selector` 权威设计请直接查看 `blueprint/01-full-design/03-selector-contract-supplement-20260308.md`。
 
 ## 冻结区与冲突处理
 
@@ -19,11 +19,12 @@
 4. 版本证据、回归结果与阶段记录，统一归档到 `docs/spec/<version>/`。
 ---
 
-## 当前主线导航
+## 现行设计桥接导航
 
-- 当前主线 `Selector`：`docs/design-v2/02-modules/selector-mainline-design.md`
-- 当前主线集成骨架：`docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
-- 当前阶段路线图：`docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`
+- 设计迁移边界：`docs/design-migration-boundary.md`
+- 现行 `Selector` 正文：`blueprint/01-full-design/03-selector-contract-supplement-20260308.md`
+- 当前实现方案：`blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
+- 当前执行拆解：`blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`
 
 下文各节默认描述 `v0.01 Frozen` 历史漏斗口径，仅供对照与回退使用。
 

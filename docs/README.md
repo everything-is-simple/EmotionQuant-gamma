@@ -1,119 +1,116 @@
 # EmotionQuant 文档导航
 
-**版本**: v2.1  
-**最后更新**: 2026-03-07  
-**文档状态**: Active
+**版本**: `v2.2`  
+**最后更新**: `2026-03-08`  
+**文档状态**: `Active`
 
 ---
 
-## 📖 定位
+## 定位
 
-`docs/README.md` 只承担**总导航**职责：
+`docs/README.md` 只承担总导航职责。
 
-1. 说明各目录的角色边界。
-2. 给出当前有效入口。
-3. 告诉读者“遇到什么问题该去哪里看”。
+它回答的是：
 
-各子目录的详细清单、局部规则、局部背景，统一下沉到各自的 `README.md`，避免在总导航重复抄写一遍。
+1. 现在新版设计去哪里看
+2. 历史基线去哪里看
+3. 治理 / roadmap / evidence / status 去哪里看
+
+它不再承担新版设计正文。
 
 ---
 
-## 🔑 当前有效入口
+## 当前有效入口
 
 | 类型 | 路径 | 用途 |
 |---|---|---|
+| 新版设计总入口 | `blueprint/README.md` | 新版设计空间总入口 |
+| 设计迁移边界声明 | `docs/design-migration-boundary.md` | 说明 `blueprint/` 与 `docs/` 的职责边界 |
 | v0.01 历史基线 | `docs/design-v2/01-system/system-baseline.md` | 冻结历史基线，用于对照、回退与回归验证 |
-| 当前主开发线设计 | `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` | `v0.01-plus` 当前主开发线设计入口 |
-| 当前状态 | `docs/spec/common/records/development-status.md` | 当前治理状态、历史分段、重启条件 |
+| 当前治理状态 | `docs/spec/common/records/development-status.md` | 当前阶段、风险、看板与重启条件 |
+| 当前治理归档入口 | `docs/spec/README.md` | 版本治理、roadmap、evidence、records 总入口 |
 | 工作流 | `docs/workflow/6A-WORKFLOW.md` | 固定执行流程 |
-| 文档总导航 | `docs/README.md` | 全局入口 |
 
 ---
 
-## 🗺️ 目录地图
+## 目录地图
 
 | 目录 | 角色 | 主入口 | 何时查看 |
 |---|---|---|---|
-| `design-v2/` | 系统设计与算法 SoT | `docs/design-v2/README.md` | 做设计、查模块边界、确认执行口径 |
-| `observatory/` | 观察框架与评审标准 | `docs/observatory/README.md` | 做版本复盘、沙盘评审、证据核对 |
-| `Strategy/` | 理论来源与方法论溯源 | `docs/Strategy/README.md` | 追溯 MSS/IRS/PAS 的理论依据 |
+| `blueprint/` | 新版设计权威层 | `blueprint/README.md` | 看完整设计、实现方案、执行拆解 |
+| `design-v2/` | 历史基线与兼容桥接 | `docs/design-v2/README.md` | 回看 `v0.01 Frozen` 或查旧桥接 |
+| `spec/` | 治理 / roadmap / evidence / records | `docs/spec/README.md` | 看当前推进、证据、状态、版本材料 |
+| `observatory/` | 观察框架与评审标准 | `docs/observatory/README.md` | 做评审、复盘、门禁核对 |
+| `Strategy/` | 理论来源与方法论溯源 | `docs/Strategy/README.md` | 查理论依据，不看执行口径 |
 | `steering/` | 治理铁律与不可变约束 | `docs/steering/README.md` | 判断方案是否越界 |
-| `spec/` | 分版本归档与治理记录 | `docs/spec/README.md` | 查路线图、证据、历史记录、当前状态 |
-| `workflow/` | 任务执行流程 | `docs/workflow/6A-WORKFLOW.md` | 按 6A 执行任务 |
-| `reference/` | 外部参考资料 | `docs/reference/README.md` | 查外部规则、运维参考，不作执行口径 |
+| `workflow/` | 任务执行流程 | `docs/workflow/README.md` | 按固定流程推进任务 |
+| `reference/` | 外部参考资料 | `docs/reference/README.md` | 查规则、运维参考，不作执行口径 |
+| `operations/` | 仓库运维文档 | `docs/operations/README.md` | 查环境落地、排障与本地运维 |
 
 ---
 
-## 🎯 按任务导航
+## 按任务导航
 
-### 1. 想确认“现在系统到底按什么口径执行”
+### 1. 想确认“新版设计到底按什么定义”
+
+1. `blueprint/README.md`
+2. `blueprint/01-full-design/`
+3. `docs/design-migration-boundary.md`
+
+### 2. 想确认“当前做到哪里、现在该执行什么”
 
 1. `docs/spec/common/records/development-status.md`
-2. `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
-3. `docs/steering/product.md`
-4. 若要回看旧系统，再查看 `docs/design-v2/01-system/system-baseline.md`
+2. `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
+3. `blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`
+4. `docs/spec/README.md`
 
-### 2. 想开始一个实现/修订任务
+### 3. 想回看旧系统或历史基线
 
-1. `docs/workflow/6A-WORKFLOW.md`
+1. `docs/design-v2/01-system/system-baseline.md`
 2. `docs/design-v2/README.md`
-3. `docs/steering/README.md`
-4. 对应版本目录：`docs/spec/<version>/`
 
-### 3. 想做评审、复盘或证据核对
+### 4. 想做评审、复盘或证据核对
 
-1. `docs/observatory/sandbox-review-standard.md`
-2. `docs/observatory/god_view_8_perspectives_report_v0.01.md`
-3. `docs/spec/<version>/evidence/`
-
-### 4. 想追溯历史决策或当前治理状态
-
-1. `docs/spec/common/records/development-status.md`
-2. `docs/spec/common/records/debts.md`
-3. `docs/spec/common/records/reusable-assets.md`
-4. `docs/spec/common/records/doc-thinning-audit-20260307.md`
-
-### 5. 想查理论来源而不是执行规则
-
-1. `docs/Strategy/README.md`
-2. `docs/Strategy/theoretical-foundations.md`
-3. 对应子目录：`docs/Strategy/MSS/`、`docs/Strategy/IRS/`、`docs/Strategy/PAS/`
+1. `docs/observatory/README.md`
+2. `docs/spec/<version>/evidence/`
+3. `docs/spec/common/records/development-status.md`
 
 ---
 
-## ⚖️ 冲突优先级
+## 冲突优先级
 
 若文档之间出现冲突，按以下优先级处理：
 
-1. `docs/spec/common/records/development-status.md` 中对“当前主线/历史基线”的判定
-2. 当前主开发线：`docs/spec/v0.01-plus/` + `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
-3. `docs/steering/`
-4. `docs/design-v2/` 其他文档
-5. `docs/observatory/` 的评审标准
-6. `docs/spec/` 其他历史归档
-7. `docs/Strategy/` 与 `docs/reference/`
+1. `docs/design-migration-boundary.md`
+2. `blueprint/`
+3. `docs/spec/common/records/development-status.md`
+4. `docs/spec/`
+5. `docs/design-v2/01-system/system-baseline.md`（仅历史基线问题）
+6. `docs/steering/`
+7. `docs/observatory/`、`docs/Strategy/`、`docs/reference/`
 
 ---
 
-## 🧭 维护边界
+## 维护边界
 
-1. `docs/README.md` 只保留全局导航，不重复列出各子目录的详细文件说明。
-2. 子目录内部的详细清单、术语说明、局部维护规则，写在各自 `README.md`。
-3. 一次性整理报告、检查报告、桥接审计统一标注为“历史记录/追溯记录”，不进入主入口首屏导航。
-4. 文档路径与链接变更后，使用 `scripts/ops/preflight.ps1 -Profile docs` 或 `scripts/ops/check_docs.ps1` 做回归检查。
+1. 所有新设计，只能进入 `blueprint/`。
+2. `docs/` 不再新增新版设计正文。
+3. `docs/` 只维护：
+   - 导航
+   - 治理
+   - records
+   - evidence
+   - 历史说明
+   - 兼容跳转
+4. 文档路径或入口变更后，统一运行 `scripts/ops/check_docs.ps1` 做回归检查。
 
 ---
 
-## 🔗 相关入口
+## 相关入口
 
 - 仓库总览：`README.md`
 - Agent 规则：`AGENTS.md`
+- 新版设计空间：`blueprint/README.md`
+- 设计迁移边界声明：`docs/design-migration-boundary.md`
 - 代码实现：`src/`
-- 文档预检入口：`scripts/ops/preflight.ps1`
 - 文档 gate：`scripts/ops/check_docs.ps1`
-- 文档状态检查：`scripts/ops/check_doc_status.ps1`
-
----
-
-**维护责任**：项目负责人  
-**更新原则**：仅在目录角色、主入口或优先级发生变化时更新

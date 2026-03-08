@@ -18,12 +18,13 @@
 
 1. 当前主开发线任务默认挂到 `docs/spec/v0.01-plus/`。
 2. 历史回看、回归修复或对照验证，可挂回对应 `docs/spec/<version>/`。
-3. 工作流不替代设计 SoT；涉及执行语义冲突时，先看 `development-status.md` 判定主线，再看对应设计入口。
+3. 工作流不替代设计 SoT；涉及执行语义冲突时，先看 `development-status.md` 判定主线，再看 `blueprint/`。
 4. A6 同步必须落到当前版本目录和 `docs/spec/common/records/`，不能只更新代码不留记录。
 
 ## 相关文档
 
 - `docs/spec/common/records/development-status.md`
 - `docs/spec/README.md`
-- `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+- `docs/design-migration-boundary.md`
+- `blueprint/README.md`
 - `docs/design-v2/01-system/system-baseline.md`

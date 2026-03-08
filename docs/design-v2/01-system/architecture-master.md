@@ -13,37 +13,22 @@
 
 本文档定义：6 个模块的边界与职责、MSS/IRS/PAS 三套因子的精简方案、模块间数据契约、开源依赖栈、4 周落地计划。
 
-自 `2026-03-06` 起，算法级 SoT 已从阶段记录收回到 `design-v2`：
-
-- `mss-algorithm.md`
-- `irs-algorithm.md`
-- `pas-algorithm.md`
-
-本文继续负责系统边界与总装结构；若算法细案与本文历史段落冲突，以 `system-baseline.md` + 对应 `*-algorithm.md` 为准。
+本文继续负责 `v0.01 Frozen` 历史系统边界与总装结构；若历史算法细案与本文历史段落冲突，以 `system-baseline.md` + `docs/design-v2/03-algorithms/core-algorithms/` 下对应历史桥接稿为准。
 
 ---
 
-## 当前主线导航（仅导航，不定义当前正文）
+## 现行设计桥接导航（仅导航，不定义现行正文）
 
-自 `2026-03-08` 起，当前主开发线已切换到 `v0.01-plus`：
+自 `2026-03-08` 起，仓库现行设计权威层已切换到 `blueprint/`：
 
-- `Selector 初选 -> BOF 触发 -> IRS 排序 -> MSS 控仓位 -> Broker 执行`
-- 当前主线入口：`docs/spec/v0.01-plus/README.md`
-- 当前设计 SoT：`docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
-- 当前算法语义补充：
-  - `PAS` 当前主线只实现 `PAS-trigger`
-  - `IRS` 当前主线只实现 `IRS-lite`，并正在做 `IRS-upgrade`
-  - `MSS` 当前主线只实现 `MSS-lite`，并正在做 `MSS-upgrade`
+- 设计迁移边界：`docs/design-migration-boundary.md`
+- 新版设计总入口：`blueprint/README.md`
+- 完整设计正文：`blueprint/01-full-design/`
+- 当前实现方案：`blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
+- 当前执行拆解：`blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`
+- 当前治理状态：`docs/spec/common/records/development-status.md`
 
-当前主线的稳定设计正文应直接查看：
-
-- `docs/design-v2/02-modules/selector-mainline-design.md`
-- `docs/design-v2/03-algorithms/core-algorithms/pas-algorithm.md`
-- `docs/design-v2/03-algorithms/core-algorithms/irs-algorithm.md`
-- `docs/design-v2/03-algorithms/core-algorithms/mss-algorithm.md`
-- `docs/design-v2/02-modules/broker-risk-mainline-design.md`
-
-本文后续内容继续保留为 `v0.01 Frozen` 历史架构总览，供对照、回退和历史理解使用，不再代表当前主开发线口径。
+`docs/design-v2/` 现仅保留 `v0.01 Frozen` 历史基线与兼容桥接稿。本文后续内容继续作为历史架构总览，供对照、回退和历史理解使用，不再代表仓库现行设计权威。
 
 ## v0.01 历史定版说明（优先级高于更旧历史段落）
 
