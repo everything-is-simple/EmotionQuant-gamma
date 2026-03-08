@@ -13,7 +13,7 @@
 | 历史研究附录 | `god_view_8_perspectives_report_v0.01.md` | 做历史复盘、路线思考、观察补充 |
 | 当前评审标准 | `sandbox-review-standard.md` | 做沙盘评审、偏差闭环、定稿门禁 |
 | 新版设计权威层 | `blueprint/README.md` | 查看新版设计、实现方案与执行拆解 |
-| 当前治理归档 | `docs/spec/v0.01-plus/roadmap/` | 查看当前主线 Gate、记录与路线图 |
+| 当前治理归档 | `docs/spec/v0.01-plus/README.md` | 查看当前主线 Gate、记录与证据入口 |
 
 ## 使用规则
 

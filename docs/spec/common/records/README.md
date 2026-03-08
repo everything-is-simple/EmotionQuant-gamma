@@ -13,20 +13,20 @@
 | 当前状态 | `development-status.md` | 查看当前治理阶段、历史摘要与重启条件 |
 | 技术债 | `debts.md` | 查看风险与欠账 |
 | 资产复用 | `reusable-assets.md` | 查看可复用沉淀 |
-| 入口审计 | `authority-entry-audit-20260307.md` | 查看入口一致性审计结果 |
-| 文档瘦身审计 | `doc-thinning-audit-20260307.md` | 查看历史瘦身与归档审查记录 |
+| 历史桥接审计 | `../bridge-review-20260304.md` | 查看文档治理转折期的桥接审计 |
 
 ## 使用规则
 
 1. 本目录只记录跨版本治理信息，不记录单个版本专属证据。
 2. 单版本 runbook、勘误、发布记录仍放在 `docs/spec/<version>/records/`。
 3. 当前治理状态与是否恢复实现，以 `development-status.md` 为准。
-4. 若涉及 `v0.01 Frozen` 历史口径，以 `docs/design-v2/01-system/system-baseline.md` 为准；若涉及 `v0.01-plus` 当前主开发线，以 `docs/spec/v0.01-plus/` 与 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` 为准。
+4. 若涉及 `v0.01 Frozen` 历史口径，以 `docs/design-v2/01-system/system-baseline.md` 为准；若涉及当前主线设计与实现，以 `blueprint/` 为准；若涉及当前治理推进，以 `docs/spec/v0.01-plus/` 为准。
 
 ## 相关文档
 
 - `docs/design-v2/01-system/system-baseline.md`
-- `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+- `docs/design-migration-boundary.md`
+- `blueprint/README.md`
 - `docs/spec/common/records/development-status.md`
 - `docs/spec/README.md`
 - `docs/spec/common/README.md`

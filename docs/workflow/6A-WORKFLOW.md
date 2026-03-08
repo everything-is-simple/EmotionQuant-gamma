@@ -12,7 +12,7 @@
 
 - 适用于本仓库所有开发任务（代码、文档、配置、脚本）。
 - 执行目标：每次任务必须形成 `run/test/artifact/review/sync` 可复核闭环。
-- 与系统设计关系：若涉及 `v0.01 Frozen` 历史口径，以 `docs/design-v2/01-system/system-baseline.md` 为准；若涉及 `v0.01-plus` 当前主开发线，以 `docs/spec/v0.01-plus/` 与 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md` 为准。
+- 与系统设计关系：若涉及 `v0.01 Frozen` 历史口径，以 `docs/design-v2/01-system/system-baseline.md` 为准；若涉及当前主线设计与实现，以 `blueprint/` 为准；若涉及治理推进与证据归档，以 `docs/spec/v0.01-plus/` 为准。
 
 ## 2. 核心铁律（执行层）
 
@@ -30,7 +30,7 @@
 ### A1 Align（对齐）
 
 - 明确目标、范围、输入输出、风险。
-- 挂接路线图位置（当前主开发线默认挂到 `docs/spec/v0.01-plus/roadmap/`；若处理历史问题，则挂到对应 `docs/spec/<version>/roadmap/`）。
+- 挂接执行位置（当前主开发线默认挂到 `blueprint/03-execution/`；若处理历史冻结版本问题，则挂到对应 `docs/spec/<version>/roadmap/`）。
 - 开工前硬门控（强制）：
   1. 确认上一任务已完成 A6（`development-status.md` §5 有记录）；未完成则先补齐再开工。
   2. 在 `development-status.md` §4.2 “进行中任务”新增本任务一行（任务/开始日期/状态/阻塞）。
@@ -66,8 +66,8 @@
   1. `docs/spec/common/records/development-status.md`
   2. `docs/spec/common/records/debts.md`
   3. `docs/spec/common/records/reusable-assets.md`
-  4. 当前版本 `docs/spec/<version>/roadmap/*.md`（阶段状态）
-  5. 对应 `docs/spec/<version>/roadmap/*spec*.md`（任务勾选/进度）
+  4. 当前主线用 `blueprint/03-execution/*.md`，历史冻结版本用 `docs/spec/<version>/roadmap/*.md`（阶段状态）
+  5. 当前主线用 `blueprint/02-implementation-spec/*.md`，历史冻结版本用 `docs/spec/<version>/roadmap/*spec*.md`（任务勾选/进度）
 - 如果其中某项“无变化”，也必须在 `development-status.md` 的任务收口记录中写明 `N/A + 原因`。
 - 同步完成后，才允许将任务状态标记为 `done` 或切换到下一个任务。
 

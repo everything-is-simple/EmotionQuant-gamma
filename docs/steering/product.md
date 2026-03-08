@@ -4,7 +4,7 @@
 **状态**: `Active`  
 **封版日期**: `不适用（Active SoT）`  
 **变更规则**: `允许在不改变 v0.01 Frozen 历史基线的前提下，按当前主开发线设计与 Gate 结果受控修订。`  
-**上游文档**: `docs/spec/v0.01-plus/README.md`, `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+**上游文档**: `docs/design-migration-boundary.md`, `blueprint/README.md`, `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
 
 ## 当前主线口径
 

@@ -34,6 +34,7 @@
 3. 新版设计正文不进入 `docs/spec/`，统一进入 `blueprint/`。
 4. 历史基线问题以 `docs/design-v2/01-system/system-baseline.md` 为准。
 5. 当前主线设计问题以 `blueprint/` 为准。
+6. 不再为未来版本预创建空壳目录；只有进入真实治理或实现阶段，才建立新的 `docs/spec/<version>/`。
 
 ---
 

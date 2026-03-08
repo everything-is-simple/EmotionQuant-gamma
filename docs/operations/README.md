@@ -12,16 +12,15 @@
 |---|---|---|
 | 环境落地 | `setup-guide.md` | 配置仓库、本地目录与基础检查 |
 | 数据源模板 | `data-source-and-migration.md.template` | 本地填写 Token、路径与迁移配置模板 |
-| 数据源实配 | `data-source-and-migration.md` | 本地敏感配置与迁移记录，不提交 Git |
-| 历史审计 | `root-files-check-report.md` | 追溯 2026-03-07 根入口检查，不作为当前主入口 |
+| 当前治理归档 | `docs/spec/v0.01-plus/README.md` | 查看当前治理、证据与 records 入口 |
 
 ## 使用规则
 
 1. `operations/` 只存放仓库本地运维说明，不承载系统 SoT、治理状态或版本证据。
 2. 涉及当前是否继续推进、是否满足重启条件，统一查看 `docs/spec/common/records/development-status.md`。
 3. 涉及版本路线图、Gate、evidence、records，统一进入 `docs/spec/<version>/`。
-4. `data-source-and-migration.md` 视为本地敏感文件；仓库内只保留 `.template`。
-5. 一次性检查报告保留为追溯记录，不进入主入口首屏导航。
+4. 数据源实配文件视为本地敏感文件；仓库内只保留 `.template`。
+5. 一次性检查报告不再留在 `docs/operations/` 根目录。
 6. 仓库根目录 `G:\\EmotionQuant-gamma` 只放代码与文档；数据库统一在 `G:\\EmotionQuant_data`，临时文件统一在 `G:\\EmotionQuant-temp`。
 
 ## 相邻目录边界
