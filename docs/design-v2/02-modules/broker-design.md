@@ -8,7 +8,7 @@
 **创建日期**: `2026-03-01`  
 **对应模块**: `src/broker/`（risk.py, matcher.py）
 
-> 当前主开发线补充说明：`Broker / Risk` 已经开始消费 `MSS-lite` 做市场级控仓位；相关当前口径见 `docs/design-v2/03-algorithms/core-algorithms/mss-algorithm.md` 与 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`。本文件正文继续保留 `v0.01 Frozen` 历史执行口径。
+> 本文件只保留 `v0.01 Frozen` 历史 Broker 口径。当前主线 `Broker / Risk` 设计请直接查看 `docs/design-v2/02-modules/broker-risk-mainline-design.md`。
 
 ## 冻结区与冲突处理
 
@@ -18,20 +18,13 @@
 4. 版本证据、回归结果与阶段记录，统一归档到 `docs/spec/<version>/`。
 ---
 
-## 历史正文说明
+## 当前主线导航
 
-下文各节默认描述的是 `v0.01 Frozen` 历史 `Broker` 口径。当前主开发线已经新增：
+- 当前主线 `Broker / Risk`：`docs/design-v2/02-modules/broker-risk-mainline-design.md`
+- 当前主线 `MSS-lite`：`docs/design-v2/03-algorithms/core-algorithms/mss-algorithm.md`
+- 当前主线集成骨架：`docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
 
-- `MSS-lite -> Broker / Risk` 的市场级控仓位
-- sidecar 排序链路下的执行容量解释
-
-若下文与当前主开发线冲突，以：
-
-- `docs/design-v2/03-algorithms/core-algorithms/mss-algorithm.md`
-- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-04-mss-upgrade.md`
-- `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
-
-为准。
+下文各节默认描述 `v0.01 Frozen` 历史 Broker 口径，仅供对照与回退使用。
 
 ## 1. 设计目标
 

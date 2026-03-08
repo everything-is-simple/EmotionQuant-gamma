@@ -10,23 +10,7 @@
 **理论来源**: `docs/Strategy/PAS/volman-ytc-mapping.md`（Volman与YTC映射）  
 **算法细案入口**: `docs/design-v2/03-algorithms/core-algorithms/pas-algorithm.md`
 
-> 自 `2026-03-06` 起，本文件负责 Strategy 的系统边界与装配规则；PAS 的算法细案与 detector 框架口径以 `pas-algorithm.md` 为准。
-
-## 当前主开发线映射（非本文件执行口径）
-
-当前主开发线中的 `Strategy` 已经不再等于“只做 v0.01 BOF 单形态信号输出”，而是收口为：
-
-1. `PAS-trigger` 当前仅在线 `BOF`
-2. `BOF` 触发后附加 `IRS` 排序增强
-3. 输出排序信号清单供 `Broker / Risk` 消费
-
-当前主开发线入口见：
-
-- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`
-- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-03-pas-upgrade.md`
-- `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
-
-本文件正文继续保留 `v0.01 Frozen` 的历史执行口径。
+> 本文件只保留 `v0.01 Frozen` 历史 Strategy 口径。当前主线 `Strategy` 相关设计请分别查看 `docs/design-v2/03-algorithms/core-algorithms/pas-algorithm.md`、`docs/design-v2/03-algorithms/core-algorithms/irs-algorithm.md` 与 `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`。
 
 ## 冻结区与冲突处理
 
@@ -36,27 +20,14 @@
 4. 版本证据、回归结果与阶段记录，统一归档到 `docs/spec/<version>/`。
 ---
 
-## 历史正文说明
+## 当前主线导航
 
-除前文“当前主开发线映射”外，下文各节默认描述的是 `v0.01 Frozen` 历史 `Strategy` 口径：
+- 当前主线 `PAS-trigger / BOF`：`docs/design-v2/03-algorithms/core-algorithms/pas-algorithm.md`
+- 当前主线 `IRS-lite`：`docs/design-v2/03-algorithms/core-algorithms/irs-algorithm.md`
+- 当前主线集成骨架：`docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+- 当前阶段路线图：`docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`
 
-- `BOF` 单形态闭环
-- 不附加 `IRS` 排序增强
-- 不区分 `PAS-full` 与 `PAS-trigger`
-
-当前主开发线中的 `Strategy` 已经进入：
-
-- `PAS-trigger(BOF)`
-- `IRS` 后置排序增强
-- sidecar 排序明细
-
-若与下文正文冲突，以：
-
-- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`
-- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-03-pas-upgrade.md`
-- `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
-
-为准。
+下文各节默认描述 `v0.01 Frozen` 历史 Strategy 口径，仅供对照与回退使用。
 
 ## 1. 设计目标
 

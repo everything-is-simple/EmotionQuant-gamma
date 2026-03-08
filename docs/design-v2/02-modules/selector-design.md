@@ -9,22 +9,7 @@
 **对应模块**: `src/selector/`（mss.py, irs.py, gene.py, selector.py）  
 **算法细案入口**: `docs/design-v2/03-algorithms/core-algorithms/mss-algorithm.md`, `docs/design-v2/03-algorithms/core-algorithms/irs-algorithm.md`
 
-> 自 `2026-03-06` 起，本文件负责 Selector 的系统边界与漏斗职责；MSS / IRS 的算法细案、baseline 口径与数据分类口径以对应 `*-algorithm.md` 为准。
-
-## 当前主开发线映射（非本文件执行口径）
-
-当前主开发线中的 `Selector` 不再消费 `MSS gate` 或 `IRS filter`，而是收口为：
-
-1. 基础过滤
-2. `preselect_score`
-3. `candidate_top_n`
-
-当前主开发线入口见：
-
-- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`
-- `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
-
-本文件正文继续保留 `v0.01 Frozen` 的历史漏斗口径，用于对照与回退理解。
+> 本文件只保留 `v0.01 Frozen` 历史 Selector 口径。当前主线 `Selector` 设计请直接查看 `docs/design-v2/02-modules/selector-mainline-design.md`。
 
 ## 冻结区与冲突处理
 
@@ -34,21 +19,13 @@
 4. 版本证据、回归结果与阶段记录，统一归档到 `docs/spec/<version>/`。
 ---
 
-## 历史正文说明
+## 当前主线导航
 
-除前文“当前主开发线映射”外，下文各节默认描述的是 `v0.01 Frozen` 历史漏斗口径：
+- 当前主线 `Selector`：`docs/design-v2/02-modules/selector-mainline-design.md`
+- 当前主线集成骨架：`docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
+- 当前阶段路线图：`docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`
 
-- 粗筛
-- `MSS gate`
-- `IRS filter`
-- 候选池输出
-
-当前主开发线不再直接采用这套正文语义；若与当前实现冲突，以：
-
-- `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`
-- `docs/design-v2/03-algorithms/core-algorithms/down-to-top-integration.md`
-
-为准。
+下文各节默认描述 `v0.01 Frozen` 历史漏斗口径，仅供对照与回退使用。
 
 ## 1. 设计目标
 

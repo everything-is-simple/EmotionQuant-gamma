@@ -15,6 +15,14 @@
 
 本文是 `v0.01-plus` 当前主开发线的集成设计骨架。
 
+它只负责定义当前主线的总装关系，不替代 5 份稳定设计文档：
+
+1. `docs/design-v2/02-modules/selector-mainline-design.md`
+2. `docs/design-v2/03-algorithms/core-algorithms/pas-algorithm.md`
+3. `docs/design-v2/03-algorithms/core-algorithms/irs-algorithm.md`
+4. `docs/design-v2/03-algorithms/core-algorithms/mss-algorithm.md`
+5. `docs/design-v2/02-modules/broker-risk-mainline-design.md`
+
 它不再复述旧版 top-down 漏斗，也不再把 `MSS / IRS / PAS` 混成一个总分系统。
 
 本文只回答：

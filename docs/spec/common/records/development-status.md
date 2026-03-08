@@ -4,6 +4,8 @@
 **最后更新**: 2026-03-08
 **当前阶段**: Mainline MVP Strengthening（`v0.01` 已冻结为历史尝试；`v0.01-plus` 已升格为当前主开发线；当前目标不再只是跑通 lite 链路，而是把 `PAS / IRS / MSS` 补到最小可交易强度）
 
+> 本文件只维护状态、看板、风险与版本记录，不承担当前主线设计正文。当前主线稳定设计统一查看 `docs/design-v2/` 下的恢复文档，设计恢复动作记录见 `docs/spec/common/records/design-recovery-plan-20260308.md`。
+
 ---
 
 ## 1. 权威入口（SoT）

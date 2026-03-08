@@ -23,7 +23,7 @@
 
 ---
 
-## 当前主线说明（优先级高于历史段落）
+## 当前主线导航（仅导航，不定义当前正文）
 
 自 `2026-03-08` 起，当前主开发线已切换到 `v0.01-plus`：
 
@@ -34,6 +34,14 @@
   - `PAS` 当前主线只实现 `PAS-trigger`
   - `IRS` 当前主线只实现 `IRS-lite`，并正在做 `IRS-upgrade`
   - `MSS` 当前主线只实现 `MSS-lite`，并正在做 `MSS-upgrade`
+
+当前主线的稳定设计正文应直接查看：
+
+- `docs/design-v2/02-modules/selector-mainline-design.md`
+- `docs/design-v2/03-algorithms/core-algorithms/pas-algorithm.md`
+- `docs/design-v2/03-algorithms/core-algorithms/irs-algorithm.md`
+- `docs/design-v2/03-algorithms/core-algorithms/mss-algorithm.md`
+- `docs/design-v2/02-modules/broker-risk-mainline-design.md`
 
 本文后续内容继续保留为 `v0.01 Frozen` 历史架构总览，供对照、回退和历史理解使用，不再代表当前主开发线口径。
 

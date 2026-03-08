@@ -1,8 +1,8 @@
 # 核心算法设计（算法级 SoT）
 
 **版本**: `v0.01-v0.06 设计入口`  
-**状态**: `Frozen`（算法级 SoT 入口）  
-**封版日期**: `2026-03-07`  
+**状态**: `Active`  
+**封版日期**: `不适用（Active SoT）`  
 **变更规则**: `算法语义变更必须同时具备设计修订与证据支撑；若触及系统执行语义，以上游 baseline 为准。`  
 **上游文档**: `docs/design-v2/01-system/system-baseline.md`
 
@@ -14,25 +14,27 @@
 
 说明：
 
-1. `beta` 时代的核心算法目录采用“四位一体”结构：`algorithm / data-models / api / information-flow`
-2. `gamma` 在文档瘦身时一度只保留了算法总述，导致算法设计深度不足
-3. 当前已按主线优先顺序开始恢复这套骨架：`IRS` 已补齐，`MSS / PAS` 的三件套也已恢复
-4. 恢复骨架不等于恢复旧语义；所有新文档必须服从当前主线：`Selector 初选 -> BOF 触发 -> IRS 排序 -> MSS 控仓位 -> Broker 执行`
+1. 当前主线稳定设计只保留 5 个关键对象：`Selector / PAS-trigger / IRS-lite / MSS-lite / Broker / Risk`
+2. 本目录只负责其中 3 个算法对象：`PAS-trigger / IRS-lite / MSS-lite`
+3. `Selector` 与 `Broker / Risk` 的当前主线边界在 `docs/design-v2/02-modules/`
+4. 恢复骨架不等于恢复旧语义；所有当前文档必须服从主线：`Selector 初选 -> BOF 触发 -> IRS 排序 -> MSS 控仓位 -> Broker 执行`
 
 ## 当前入口
 
 | 类型 | 路径 | 用途 |
 |---|---|---|
 | 系统基线 | `docs/design-v2/01-system/system-baseline.md` | 确认跨模块执行语义与总边界 |
-| MSS 算法 | `mss-algorithm.md` | 查看 MSS 当前主线算法与职责 |
+| Selector 当前主线 | `docs/design-v2/02-modules/selector-mainline-design.md` | 查看当前主线初选边界 |
+| PAS-trigger / BOF | `pas-algorithm.md` | 查看当前主线形态触发职责 |
+| IRS-lite | `irs-algorithm.md` | 查看当前主线行业排序增强职责 |
+| MSS-lite | `mss-algorithm.md` | 查看当前主线市场级风险覆盖职责 |
+| Broker / Risk 当前主线 | `docs/design-v2/02-modules/broker-risk-mainline-design.md` | 查看当前主线执行边界 |
 | MSS 数据模型 | `mss-data-models.md` | 查看 MSS 输入、输出与执行层派生模型 |
 | MSS 接口契约 | `mss-api.md` | 查看 MSS 计算入口与 Broker 消费接口 |
 | MSS 信息流 | `mss-information-flow.md` | 查看 MSS 在 DTT 主线中的落库与风险消费链路 |
-| IRS 算法 | `irs-algorithm.md` | 查看 IRS 当前主线算法与升级边界 |
 | IRS 数据模型 | `irs-data-models.md` | 查看 IRS 表结构、字段与扩展口径 |
 | IRS 接口契约 | `irs-api.md` | 查看 IRS 输入输出、异常与消费方式 |
 | IRS 信息流 | `irs-information-flow.md` | 查看 IRS 在 DTT 主线中的数据流与边界 |
-| PAS 算法 | `pas-algorithm.md` | 查看 PAS detector 框架与 BOF 口径 |
 | PAS 数据模型 | `pas-data-models.md` | 查看 formal signal、sidecar 与 detector 输入输出 |
 | PAS 接口契约 | `pas-api.md` | 查看 detector / registry / strategy 主入口 |
 | PAS 信息流 | `pas-information-flow.md` | 查看 PAS 从候选池到 formal signal 的链路 |
@@ -66,7 +68,7 @@ core-algorithms/
 3. 版本证据、回测结果、消融实验与验收结论，统一进入 `docs/spec/<version>/evidence/` 或对应 records。
 4. 当前是否继续推进 `v0.01` 实现，不在本目录维护，统一查看 `docs/spec/common/records/development-status.md`。
 5. 算法语义变更必须同时具备设计修订与证据支撑，不接受只改 README 或只改代码。
-6. 对于尚未恢复完整设计骨架的算法，必须先明确“当前执行版”与“后续升级版”的边界，避免一份文档同时承载最小可跑版和完整版愿景。
+6. 当前主线算法正文统一采用 6 段结构：职责、输入、输出契约、不负责什么、决策规则/算法、失败模式与验证证据。
 7. 恢复 `beta` 的文档骨架时，只恢复结构和必要设计深度，不恢复已经被当前主线淘汰的 top-down 语义。
 
 ## 当前版本范围
@@ -91,8 +93,8 @@ core-algorithms/
 ## 相关文档
 
 - `docs/design-v2/01-system/system-baseline.md`
-- `docs/design-v2/02-modules/selector-design.md`
-- `docs/design-v2/02-modules/strategy-design.md`
+- `docs/design-v2/02-modules/selector-mainline-design.md`
+- `docs/design-v2/02-modules/broker-risk-mainline-design.md`
 - `docs/spec/common/records/development-status.md`
 - `docs/spec/README.md`
 - `docs/Strategy/README.md`
