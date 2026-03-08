@@ -5,7 +5,7 @@ from datetime import date
 import pandas as pd
 
 from src.config import Settings, get_settings
-from src.contracts import Signal, StockCandidate
+from src.contracts import Signal, StockCandidate, build_signal_id
 from src.data.store import Store
 from src.strategy.ranker import (
     build_dtt_score_frame,
@@ -123,6 +123,53 @@ def _ensure_dtt_stage_table(store: Store) -> None:
     )
 
 
+def _build_pas_trace_row(
+    run_id: str,
+    asof_date: date,
+    code: str,
+    detector_name: str,
+    active_detector_count: int,
+    combination_mode: str,
+    min_history_days: int,
+    history_days: int,
+    trace_payload: dict[str, object] | None = None,
+) -> dict[str, object]:
+    payload = trace_payload or {}
+    signal_id = str(payload.get("signal_id") or build_signal_id(code, asof_date, detector_name))
+    strength = payload.get("strength")
+    bof_strength = payload.get("bof_strength")
+    return {
+        "run_id": run_id,
+        "signal_date": asof_date,
+        "code": code,
+        "detector": detector_name,
+        "signal_id": signal_id,
+        "pattern": str(payload.get("pattern") or detector_name),
+        "active_detector_count": int(active_detector_count),
+        "combination_mode": combination_mode.upper(),
+        "history_days": int(history_days),
+        "min_history_days": int(min_history_days),
+        "triggered": bool(payload.get("triggered", False)),
+        "skip_reason": payload.get("skip_reason"),
+        "reason_code": payload.get("reason_code"),
+        "strength": None if strength is None else float(strength),
+        "bof_strength": None if bof_strength is None else float(bof_strength),
+        "lower_bound": payload.get("lower_bound"),
+        "today_low": payload.get("today_low"),
+        "today_close": payload.get("today_close"),
+        "today_open": payload.get("today_open"),
+        "today_high": payload.get("today_high"),
+        "close_pos": payload.get("close_pos"),
+        "volume": payload.get("volume"),
+        "volume_ma20": payload.get("volume_ma20"),
+        "volume_ratio": payload.get("volume_ratio"),
+        "cond_break": payload.get("cond_break"),
+        "cond_recover": payload.get("cond_recover"),
+        "cond_close_pos": payload.get("cond_close_pos"),
+        "cond_volume": payload.get("cond_volume"),
+    }
+
+
 def generate_signals(
     store: Store,
     candidates: list[StockCandidate],
@@ -135,22 +182,19 @@ def generate_signals(
     if not detectors or not candidates:
         return []
 
+    run_id_text = (run_id or "").strip()
     if cfg.use_dtt_pipeline:
-        if run_id is None or not run_id.strip():
+        if not run_id_text:
             raise ValueError("DTT pipeline requires run_id for l3_signal_rank_exp traceability.")
-        run_id_text = run_id.strip()
         _ensure_dtt_stage_table(store)
         store.conn.execute("DELETE FROM _tmp_dtt_rank_stage WHERE run_id = ?", (run_id_text,))
-    else:
-        run_id_text = ""
     prepared_signals_by_id: dict[str, Signal] = {}
     legacy_prepared: list[Signal] = []
+    pas_trace_rows: list[dict[str, object]] = []
 
     for batch in _iter_candidate_batches(candidates, cfg.pas_eval_batch_size):
         batch_codes = [candidate.code for candidate in batch]
         histories = _load_candidate_histories_batch(store, batch_codes, asof_date, cfg.pas_lookback_days)
-        if histories.empty:
-            continue
 
         history_by_code = {
             str(code): frame.reset_index(drop=True)
@@ -159,10 +203,62 @@ def generate_signals(
         batch_signals: list[Signal] = []
         for candidate in batch:
             history = history_by_code.get(candidate.code)
-            if history is None or history.empty or len(history) < cfg.pas_min_history_days:
-                continue
             for detector in detectors:
-                signal = detector.detect(candidate.code, asof_date, history)
+                detector_name = getattr(detector, "name", detector.__class__.__name__.lower())
+                history_days = 0 if history is None or history.empty else len(history)
+                if history is None or history.empty or history_days < cfg.pas_min_history_days:
+                    if run_id_text:
+                        pas_trace_rows.append(
+                            _build_pas_trace_row(
+                                run_id=run_id_text,
+                                asof_date=asof_date,
+                                code=candidate.code,
+                                detector_name=detector_name,
+                                active_detector_count=len(detectors),
+                                combination_mode=cfg.pas_combination,
+                                min_history_days=cfg.pas_min_history_days,
+                                history_days=history_days,
+                                trace_payload={
+                                    "signal_id": build_signal_id(candidate.code, asof_date, detector_name),
+                                    "pattern": detector_name,
+                                    "triggered": False,
+                                    "skip_reason": "INSUFFICIENT_HISTORY",
+                                    "reason_code": f"PAS_{detector_name.upper()}",
+                                },
+                            )
+                        )
+                    continue
+
+                evaluate = getattr(detector, "evaluate", None)
+                if callable(evaluate):
+                    signal, trace_payload = evaluate(candidate.code, asof_date, history)
+                else:
+                    signal = detector.detect(candidate.code, asof_date, history)
+                    trace_payload = {
+                        "signal_id": build_signal_id(candidate.code, asof_date, detector_name),
+                        "pattern": detector_name,
+                        "triggered": signal is not None,
+                        "skip_reason": None if signal is not None else "NOT_TRIGGERED",
+                        "reason_code": None if signal is None else signal.reason_code,
+                        "strength": None if signal is None else float(signal.strength),
+                        "bof_strength": None
+                        if signal is None or signal.bof_strength is None
+                        else float(signal.bof_strength),
+                    }
+                if run_id_text:
+                    pas_trace_rows.append(
+                        _build_pas_trace_row(
+                            run_id=run_id_text,
+                            asof_date=asof_date,
+                            code=candidate.code,
+                            detector_name=detector_name,
+                            active_detector_count=len(detectors),
+                            combination_mode=cfg.pas_combination,
+                            min_history_days=cfg.pas_min_history_days,
+                            history_days=history_days,
+                            trace_payload=trace_payload,
+                        )
+                    )
                 if signal is not None:
                     batch_signals.append(signal)
 
@@ -193,6 +289,9 @@ def generate_signals(
             store.bulk_insert("_tmp_dtt_rank_stage", score_frame)
         for signal in prepared_batch:
             prepared_signals_by_id[signal.signal_id] = signal
+
+    if run_id_text and pas_trace_rows:
+        store.bulk_upsert("pas_trigger_trace_exp", pd.DataFrame(pas_trace_rows))
 
     if not cfg.use_dtt_pipeline:
         if not legacy_prepared:

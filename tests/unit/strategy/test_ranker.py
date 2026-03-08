@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date, timedelta
 
 import pandas as pd
+import pytest
 
 from src.config import Settings
 from src.contracts import Signal, StockCandidate
@@ -247,4 +248,198 @@ def test_dtt_irs_mss_variant_keeps_mss_in_sidecar_but_not_in_final_score(tmp_pat
     assert rank_irs_only.iloc[0]["final_score"] == rank_irs_mss.iloc[0]["final_score"]
     assert rank_irs_only.iloc[0]["mss_score"] == 50.0
     assert rank_irs_mss.iloc[0]["mss_score"] == 20.0
+    store.close()
+
+
+def test_generate_signals_dtt_requires_run_id(tmp_path, monkeypatch) -> None:
+    db = tmp_path / "strategy_requires_run_id.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 8)
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        PAS_MIN_HISTORY_DAYS=21,
+    )
+    candidates = [StockCandidate(code="000001", industry="银行", score=10.0, preselect_score=10.0)]
+
+    monkeypatch.setattr(
+        strategy_module,
+        "get_active_detectors",
+        lambda _cfg: [_StubDetector({"000001": 0.6})],
+    )
+    monkeypatch.setattr(
+        strategy_module,
+        "_load_candidate_histories_batch",
+        lambda *_args, **_kwargs: pd.DataFrame(
+            [
+                {
+                    "code": "000001",
+                    "date": calc_date - timedelta(days=offset),
+                    "adj_low": 1.0,
+                    "adj_close": 1.0,
+                    "adj_open": 1.0,
+                    "adj_high": 1.1,
+                    "volume": 1.0,
+                    "volume_ma20": 1.0,
+                }
+                for offset in range(cfg.pas_min_history_days)
+            ]
+        ),
+    )
+
+    with pytest.raises(ValueError, match="run_id"):
+        strategy_module.generate_signals(store, candidates, calc_date, cfg, run_id=None)
+    store.close()
+
+
+def test_pas_trigger_trace_persists_triggered_and_not_triggered_candidates(tmp_path, monkeypatch) -> None:
+    db = tmp_path / "pas_trace.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 8)
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_bof_only",
+        DTT_TOP_N=10,
+        PAS_MIN_HISTORY_DAYS=21,
+        PAS_EVAL_BATCH_SIZE=2,
+    )
+    candidates = [
+        StockCandidate(code="000001", industry="银行", score=10.0, preselect_score=10.0),
+        StockCandidate(code="000002", industry="电子", score=9.0, preselect_score=9.0),
+    ]
+
+    class _TraceableDetector:
+        name = "bof"
+
+        def evaluate(self, code: str, asof_date: date, history: pd.DataFrame):
+            signal_id = f"{code}_{asof_date.isoformat()}_bof"
+            if code == "000001":
+                signal = Signal(
+                    signal_id=signal_id,
+                    code=code,
+                    signal_date=asof_date,
+                    action="BUY",
+                    strength=0.7,
+                    pattern="bof",
+                    reason_code="PAS_BOF",
+                    bof_strength=0.7,
+                )
+                return signal, {
+                    "signal_id": signal_id,
+                    "pattern": "bof",
+                    "triggered": True,
+                    "skip_reason": None,
+                    "reason_code": "PAS_BOF",
+                    "strength": 0.7,
+                    "bof_strength": 0.7,
+                }
+            return None, {
+                "signal_id": signal_id,
+                "pattern": "bof",
+                "triggered": False,
+                "skip_reason": "NO_BREAK",
+                "reason_code": "PAS_BOF",
+            }
+
+    monkeypatch.setattr(strategy_module, "get_active_detectors", lambda _cfg: [_TraceableDetector()])
+    monkeypatch.setattr(
+        strategy_module,
+        "_load_candidate_histories_batch",
+        lambda *_args, **_kwargs: pd.DataFrame(
+            [
+                {
+                    "code": code,
+                    "date": calc_date - timedelta(days=offset),
+                    "adj_low": 1.0,
+                    "adj_close": 1.0,
+                    "adj_open": 1.0,
+                    "adj_high": 1.1,
+                    "volume": 1.0,
+                    "volume_ma20": 1.0,
+                }
+                for code in ["000001", "000002"]
+                for offset in range(cfg.pas_min_history_days)
+            ]
+        ),
+    )
+
+    strategy_module.generate_signals(store, candidates, calc_date, cfg, run_id="pas_trace")
+    trace = store.read_df(
+        """
+        SELECT code, triggered, skip_reason
+        FROM pas_trigger_trace_exp
+        WHERE run_id = ?
+        ORDER BY code ASC
+        """,
+        ("pas_trace",),
+    )
+
+    assert trace["code"].tolist() == ["000001", "000002"]
+    assert trace["triggered"].tolist() == [True, False]
+    assert pd.isna(trace.iloc[0]["skip_reason"])
+    assert trace.iloc[1]["skip_reason"] == "NO_BREAK"
+    store.close()
+
+
+def test_irs_trace_marks_missing_industry_scores_as_fill(tmp_path) -> None:
+    db = tmp_path / "irs_trace.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 8)
+
+    store.bulk_upsert(
+        "l3_irs_daily",
+        pd.DataFrame(
+            [
+                {"date": calc_date, "industry": "银行", "score": 1.0, "rank": 1, "rs_score": 1.0, "cf_score": 1.0},
+            ]
+        ),
+    )
+
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_bof_plus_irs_score",
+        DTT_TOP_N=10,
+        DTT_SCORE_FILL=50.0,
+    )
+    candidates = [
+        StockCandidate(code="000001", industry="银行", score=10.0, preselect_score=10.0),
+        StockCandidate(code="000002", industry="有色", score=9.0, preselect_score=9.0),
+    ]
+    signals = [
+        Signal(
+            signal_id="000001_2026-01-08_bof",
+            code="000001",
+            signal_date=calc_date,
+            action="BUY",
+            strength=0.60,
+            pattern="bof",
+            reason_code="PAS_BOF",
+            bof_strength=0.60,
+        ),
+        Signal(
+            signal_id="000002_2026-01-08_bof",
+            code="000002",
+            signal_date=calc_date,
+            action="BUY",
+            strength=0.55,
+            pattern="bof",
+            reason_code="PAS_BOF",
+            bof_strength=0.55,
+        ),
+    ]
+
+    build_dtt_rank_frame(store, signals, candidates, calc_date, "irs_trace", cfg)
+    trace = store.read_df(
+        """
+        SELECT code, status, signal_irs_score
+        FROM irs_industry_trace_exp
+        WHERE run_id = ?
+        ORDER BY code ASC
+        """,
+        ("irs_trace",),
+    )
+
+    assert trace["code"].tolist() == ["000001", "000002"]
+    assert trace["status"].tolist() == ["NORMAL", "FILL_NO_DAILY_SCORE"]
+    assert trace.iloc[0]["signal_irs_score"] == 100.0
+    assert trace.iloc[1]["signal_irs_score"] == 50.0
     store.close()

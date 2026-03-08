@@ -9,7 +9,14 @@ import pandas as pd
 from src.broker.matcher import Matcher
 from src.broker.risk import BrokerRiskState, RiskManager
 from src.config import Settings
-from src.contracts import Order, Signal, Trade, build_order_id
+from src.contracts import (
+    Order,
+    Signal,
+    Trade,
+    build_exit_order_id,
+    build_exit_signal_id,
+    build_order_id,
+)
 from src.data.store import Store
 
 
@@ -26,9 +33,16 @@ class Position:
 
 
 class Broker:
-    def __init__(self, store: Store, config: Settings, initial_cash: float | None = None):
+    def __init__(
+        self,
+        store: Store,
+        config: Settings,
+        initial_cash: float | None = None,
+        run_id: str | None = None,
+    ):
         self.store = store
         self.config = config
+        self.run_id = (run_id or "").strip()
         self.cash = float(initial_cash if initial_cash is not None else config.backtest_initial_cash)
         self.portfolio: dict[str, Position] = {}
         self.pending_orders: list[Order] = []
@@ -37,6 +51,88 @@ class Broker:
 
     def _portfolio_market_value(self) -> float:
         return sum(pos.current_price * pos.quantity for pos in self.portfolio.values() if not pos.is_paper)
+
+    def record_lifecycle_events(self, rows: list[dict[str, object]]) -> None:
+        if not rows:
+            return
+        self.store.bulk_upsert("broker_order_lifecycle_trace_exp", pd.DataFrame(rows))
+
+    def _record_lifecycle_event(
+        self,
+        order: Order,
+        event_stage: str,
+        event_date: date,
+        origin: str,
+        reason_code: str | None = None,
+        trade: Trade | None = None,
+        price: float | None = None,
+    ) -> None:
+        self.record_lifecycle_events(
+            [
+                {
+                    "run_id": self.run_id,
+                    "order_id": order.order_id,
+                    "event_stage": event_stage,
+                    "signal_id": order.signal_id,
+                    "trade_id": None if trade is None else trade.trade_id,
+                    "code": order.code,
+                    "action": order.action,
+                    "pattern": order.pattern,
+                    "event_date": event_date,
+                    "execute_date": order.execute_date,
+                    "order_status": order.status,
+                    "reason_code": reason_code,
+                    "origin": origin,
+                    "quantity": int(order.quantity),
+                    "price": price,
+                    "is_paper": order.is_paper,
+                }
+            ]
+        )
+
+    def _record_mss_overlay_trace(
+        self,
+        signal: Signal,
+        decision,
+        state: BrokerRiskState,
+    ) -> None:
+        overlay = decision.overlay
+        if overlay is None:
+            return
+        self.store.bulk_upsert(
+            "mss_risk_overlay_trace_exp",
+            pd.DataFrame(
+                [
+                    {
+                        "run_id": self.run_id,
+                        "signal_id": signal.signal_id,
+                        "signal_date": signal.signal_date,
+                        "code": signal.code,
+                        "pattern": signal.pattern,
+                        "variant": signal.variant,
+                        "signal_mss_score": signal.mss_score,
+                        "overlay_state": overlay.state,
+                        "market_signal": overlay.signal,
+                        "market_score": float(overlay.score),
+                        "base_max_positions": int(self.config.max_positions),
+                        "base_risk_per_trade_pct": float(self.config.risk_per_trade_pct),
+                        "base_max_position_pct": float(self.config.max_position_pct),
+                        "max_positions_mult": float(overlay.max_positions_mult),
+                        "risk_per_trade_mult": float(overlay.risk_per_trade_mult),
+                        "max_position_mult": float(overlay.max_position_mult),
+                        "effective_max_positions": int(overlay.max_positions),
+                        "effective_risk_per_trade_pct": float(overlay.risk_per_trade_pct),
+                        "effective_max_position_pct": float(overlay.max_position_pct),
+                        "holdings_before": int(len(state.holdings)),
+                        "available_cash": float(state.cash),
+                        "portfolio_market_value": float(state.portfolio_market_value),
+                        "decision_status": "ACCEPTED" if decision.order is not None else "REJECTED",
+                        "decision_reason": decision.reject_reason,
+                        "reserved_cash": float(decision.reserved_cash),
+                    }
+                ]
+            ),
+        )
 
     def process_signals(self, signals: list[Signal]) -> list[Order]:
         orders: list[Order] = []
@@ -53,27 +149,46 @@ class Broker:
             reverse=True,
         )
         for signal in sorted_signals:
+            state_before = BrokerRiskState(
+                cash=float(state.cash),
+                portfolio_market_value=float(state.portfolio_market_value),
+                holdings=set(state.holdings),
+            )
             decision = self.risk.assess_signal(signal, state)
+            self._record_mss_overlay_trace(signal, decision, state_before)
             if decision.order is None:
                 # 风控拒绝也写入订单表，便于后续统计机会参与率与拒绝分布。
                 if decision.reject_reason is not None:
-                    rejected.append(
-                        Order(
-                            order_id=build_order_id(signal.signal_id),
-                            signal_id=signal.signal_id,
-                            code=signal.code,
-                            action=signal.action,
-                            quantity=0,
-                            execute_date=decision.execute_date or signal.signal_date,
-                            pattern=signal.pattern,
-                            status="REJECTED",
-                            reject_reason=decision.reject_reason,
-                        )
+                    rejected_order = Order(
+                        order_id=build_order_id(signal.signal_id),
+                        signal_id=signal.signal_id,
+                        code=signal.code,
+                        action=signal.action,
+                        quantity=0,
+                        execute_date=decision.execute_date or signal.signal_date,
+                        pattern=signal.pattern,
+                        status="REJECTED",
+                        reject_reason=decision.reject_reason,
+                    )
+                    rejected.append(rejected_order)
+                    self._record_lifecycle_event(
+                        rejected_order,
+                        event_stage="RISK_REJECTED",
+                        event_date=signal.signal_date,
+                        origin="risk_manager",
+                        reason_code=decision.reject_reason,
                     )
                 continue
             order = decision.order
             orders.append(order)
             self.add_pending_order(order)
+            self._record_lifecycle_event(
+                order,
+                event_stage="RISK_ACCEPTED",
+                event_date=signal.signal_date,
+                origin="risk_manager",
+                reason_code="ACCEPTED",
+            )
             # 预占现金与持仓名额，避免同日后续信号“重复花钱”。
             state.cash = max(0.0, state.cash - float(decision.reserved_cash))
             state.holdings.add(order.code)
@@ -174,8 +289,8 @@ class Broker:
             if exit_reason is None:
                 continue
 
-            signal_id = f"{code}_{signal_date.isoformat()}_{exit_reason.lower()}"
-            order_id = f"EXIT_{signal_id}"
+            signal_id = build_exit_signal_id(code, signal_date, exit_reason)
+            order_id = build_exit_order_id(code, signal_date, exit_reason)
             order = Order(
                 order_id=order_id,
                 signal_id=signal_id,
@@ -188,6 +303,13 @@ class Broker:
             )
             orders.append(order)
             self.add_pending_order(order)
+            self._record_lifecycle_event(
+                order,
+                event_stage="EXIT_ORDER_CREATED",
+                event_date=signal_date,
+                origin="broker_exit",
+                reason_code=exit_reason,
+            )
 
         if orders:
             self.store.bulk_upsert("l4_orders", pd.DataFrame([o.model_dump() for o in orders]))
@@ -238,17 +360,40 @@ class Broker:
             bar = self._get_market_bar(order.code, trade_date)
             trade, reject_reason = self.matcher.execute(order, bar or {}, trade_date)
             if trade is None:
-                self._mark_order_status(order, "REJECTED", reject_reason)
+                rejected = self._mark_order_status(order, "REJECTED", reject_reason)
+                self._record_lifecycle_event(
+                    rejected,
+                    event_stage="MATCH_REJECTED",
+                    event_date=trade_date,
+                    origin="matcher",
+                    reason_code=reject_reason,
+                )
                 continue
 
             if trade.action == "BUY":
                 # 开盘跳空可能导致实成交成本高于前一日预估，需在成交前二次现金校验。
                 buy_cost = float(trade.price) * int(trade.quantity) + float(trade.fee)
                 if buy_cost > self.cash + 1e-6:
-                    self._mark_order_status(order, "REJECTED", "INSUFFICIENT_CASH_AT_EXECUTION")
+                    rejected = self._mark_order_status(order, "REJECTED", "INSUFFICIENT_CASH_AT_EXECUTION")
+                    self._record_lifecycle_event(
+                        rejected,
+                        event_stage="MATCH_REJECTED",
+                        event_date=trade_date,
+                        origin="broker_cash_check",
+                        reason_code="INSUFFICIENT_CASH_AT_EXECUTION",
+                    )
                     continue
 
-            self._mark_order_status(order, "FILLED")
+            filled = self._mark_order_status(order, "FILLED")
+            self._record_lifecycle_event(
+                filled,
+                event_stage="MATCH_FILLED",
+                event_date=trade_date,
+                origin="matcher",
+                reason_code="FILLED",
+                trade=trade,
+                price=float(trade.price),
+            )
             trades.append(trade)
             self._apply_position_trade(trade)
 
@@ -276,7 +421,14 @@ class Broker:
                 if days > self.config.max_pending_trade_days:
                     break
             if days > self.config.max_pending_trade_days:
-                self._mark_order_status(order, "EXPIRED", "ORDER_TIMEOUT")
+                expired_order = self._mark_order_status(order, "EXPIRED", "ORDER_TIMEOUT")
+                self._record_lifecycle_event(
+                    expired_order,
+                    event_stage="ORDER_EXPIRED",
+                    event_date=today,
+                    origin="broker_expiry",
+                    reason_code="ORDER_TIMEOUT",
+                )
                 expired += 1
                 continue
             updated_pending.append(order)

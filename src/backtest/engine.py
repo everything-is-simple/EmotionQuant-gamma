@@ -9,7 +9,7 @@ import pandas as pd
 
 from src.broker.broker import Broker
 from src.config import Settings
-from src.contracts import Order, Trade, build_trade_id
+from src.contracts import Order, Trade, build_force_close_order_id, build_trade_id
 from src.data.store import Store
 from src.logging_utils import logger
 from src.report.reporter import generate_backtest_report
@@ -82,6 +82,7 @@ def _force_close_all(store: Store, broker: Broker, trade_date: date) -> int:
 
     orders: list[Order] = []
     trades: list[Trade] = []
+    lifecycle_rows: list[dict[str, object]] = []
     # 遍历副本，避免在卖出后修改原 dict 导致迭代异常。
     for code, pos in list(broker.portfolio.items()):
         close_price = _resolve_close_price(store, code, trade_date)
@@ -94,7 +95,7 @@ def _force_close_all(store: Store, broker: Broker, trade_date: date) -> int:
         sell_price = close_price * (1 - slip)
         fee = broker.matcher._calculate_fee(sell_price * pos.quantity, "SELL")
 
-        order_id = f"FC_{code}_{trade_date.isoformat()}"
+        order_id = build_force_close_order_id(code, trade_date)
         order = Order(
             order_id=order_id,
             signal_id=order_id,
@@ -120,12 +121,33 @@ def _force_close_all(store: Store, broker: Broker, trade_date: date) -> int:
         )
         orders.append(order)
         trades.append(trade)
+        lifecycle_rows.append(
+            {
+                "run_id": broker.run_id,
+                "order_id": order.order_id,
+                "event_stage": "FORCE_CLOSE_FILLED",
+                "signal_id": order.signal_id,
+                "trade_id": trade.trade_id,
+                "code": order.code,
+                "action": order.action,
+                "pattern": order.pattern,
+                "event_date": trade_date,
+                "execute_date": order.execute_date,
+                "order_status": order.status,
+                "reason_code": "FORCE_CLOSE",
+                "origin": "force_close",
+                "quantity": int(order.quantity),
+                "price": float(trade.price),
+                "is_paper": order.is_paper,
+            }
+        )
 
     if not orders:
         return 0
 
     store.bulk_upsert("l4_orders", pd.DataFrame([o.model_dump() for o in orders]))
     store.bulk_upsert("l4_trades", pd.DataFrame([t.model_dump() for t in trades]))
+    broker.record_lifecycle_events(lifecycle_rows)
 
     # 与正常撮合路径保持一致，统一复用 Broker 的持仓/现金更新逻辑。
     for trade in trades:
@@ -156,7 +178,7 @@ def run_backtest(
     starting_cash = float(initial_cash if initial_cash is not None else cfg.backtest_initial_cash)
 
     store = Store(db_path)
-    broker = Broker(store, cfg, initial_cash=starting_cash)
+    broker = Broker(store, cfg, initial_cash=starting_cash, run_id=run_id)
 
     try:
         trade_days = _iter_trade_days(store, start, end)
@@ -172,7 +194,7 @@ def run_backtest(
             broker.generate_exit_orders(trade_day)
 
             # Step 3: 再生成 BOF 买入信号；订单 execute_date 由 Broker 推到 next_trade_date。
-            candidates = select_candidates(store, trade_day, cfg)
+            candidates = select_candidates(store, trade_day, cfg, run_id=run_id)
             signals = generate_signals(store, candidates, trade_day, cfg, run_id=run_id)
             broker.process_signals(signals)
 

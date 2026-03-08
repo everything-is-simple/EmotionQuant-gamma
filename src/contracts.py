@@ -23,6 +23,18 @@ def build_trade_id(order_id: str) -> str:
     return f"{order_id}_T"
 
 
+def build_exit_signal_id(code: str, signal_date: date, reason: str) -> str:
+    return f"{code}_{signal_date.isoformat()}_{reason.strip().lower()}"
+
+
+def build_exit_order_id(code: str, signal_date: date, reason: str) -> str:
+    return f"EXIT_{build_exit_signal_id(code, signal_date, reason)}"
+
+
+def build_force_close_order_id(code: str, trade_date: date) -> str:
+    return f"FC_{code}_{trade_date.isoformat()}"
+
+
 class ContractBase(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -45,7 +57,6 @@ class StockCandidate(ContractBase):
     industry: str
     score: float
     preselect_score: float | None = None
-    filter_reason: str | None = None
     liquidity_tag: str | None = None
 
 

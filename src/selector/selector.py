@@ -97,7 +97,7 @@ def _load_universe_snapshot(store: Store, calc_date: date) -> pd.DataFrame:
     )
 
 
-def _apply_basic_filters(df: pd.DataFrame, calc_date: date, config: Settings) -> pd.DataFrame:
+def _annotate_basic_filters(df: pd.DataFrame, calc_date: date, config: Settings) -> pd.DataFrame:
     if df.empty:
         return df
     work = df.copy()
@@ -125,7 +125,69 @@ def _apply_basic_filters(df: pd.DataFrame, calc_date: date, config: Settings) ->
         "HIGH",
         np.where(work["amount"].fillna(0) >= config.min_amount, "MEDIUM", "LOW"),
     )
+    return work
+
+
+def _apply_basic_filters(df: pd.DataFrame, calc_date: date, config: Settings) -> pd.DataFrame:
+    work = _annotate_basic_filters(df, calc_date, config)
+    if work.empty:
+        return work
     return work[work["reject_reason"] == ""].copy()
+
+
+def _persist_selector_candidate_trace(
+    store: Store,
+    calc_date: date,
+    cfg: Settings,
+    run_id: str,
+    annotated: pd.DataFrame,
+    ranked_all: pd.DataFrame,
+    ranked_top_n: pd.DataFrame,
+) -> None:
+    if not run_id:
+        return
+
+    trace = annotated.copy()
+    if trace.empty:
+        return
+
+    rank_map = {str(row.code): idx for idx, row in enumerate(ranked_all.itertuples(index=False), start=1)}
+    top_codes = set(ranked_top_n["code"].astype(str).tolist())
+
+    trace["run_id"] = run_id
+    trace["signal_date"] = calc_date
+    trace["pipeline_mode"] = cfg.pipeline_mode_normalized
+    trace["preselect_score_mode"] = cfg.preselect_score_mode
+    trace["candidate_rank"] = trace["code"].astype(str).map(rank_map)
+    trace["candidate_top_n"] = int(max(1, int(cfg.candidate_top_n)))
+    trace["selected"] = trace["code"].astype(str).isin(top_codes)
+    trace["final_score"] = pd.to_numeric(trace.get("score"), errors="coerce")
+    trace["reject_reason"] = trace["reject_reason"].replace("", None)
+
+    store.bulk_upsert(
+        "selector_candidate_trace_exp",
+        trace.loc[
+            :,
+            [
+                "run_id",
+                "signal_date",
+                "code",
+                "pipeline_mode",
+                "preselect_score_mode",
+                "industry",
+                "amount",
+                "volume_ratio",
+                "filters_passed",
+                "reject_reason",
+                "liquidity_tag",
+                "preselect_score",
+                "final_score",
+                "candidate_rank",
+                "candidate_top_n",
+                "selected",
+            ],
+        ].reset_index(drop=True),
+    )
 
 
 def _load_mss_signal(store: Store, calc_date: date, config: Settings) -> str | None:
@@ -184,9 +246,20 @@ def _select_dtt_candidates_frame(
     calc_date: date,
     cfg: Settings,
     universe: pd.DataFrame,
+    run_id: str = "",
 ) -> pd.DataFrame:
-    filtered = _apply_basic_filters(universe, calc_date, cfg)
+    annotated = _annotate_basic_filters(universe, calc_date, cfg)
+    filtered = annotated[annotated["reject_reason"] == ""].copy()
     if filtered.empty:
+        _persist_selector_candidate_trace(
+            store=store,
+            calc_date=calc_date,
+            cfg=cfg,
+            run_id=run_id,
+            annotated=annotated,
+            ranked_all=filtered,
+            ranked_top_n=filtered,
+        )
         logger.info(f"selector {calc_date}: mode=dtt, universe={len(universe)}, filtered=0, final=0")
         return filtered
 
@@ -206,14 +279,29 @@ def _select_dtt_candidates_frame(
             f"Expected one of {sorted(PRESELECT_SCORE_MODES)}."
         )
     data["score"] = data["preselect_score"]
+    ranked_all = data.sort_values(["preselect_score", "code"], ascending=[False, True]).reset_index(drop=True)
+    annotated = annotated.merge(
+        ranked_all.loc[:, ["code", "preselect_score", "score"]],
+        on="code",
+        how="left",
+    )
     ranked = (
-        data.sort_values(["preselect_score", "code"], ascending=[False, True])
+        ranked_all
         .head(max(1, int(cfg.candidate_top_n)))
         .loc[
             :,
             ["code", "industry", "preselect_score", "score", "filters_passed", "reject_reason", "liquidity_tag"],
         ]
         .reset_index(drop=True)
+    )
+    _persist_selector_candidate_trace(
+        store=store,
+        calc_date=calc_date,
+        cfg=cfg,
+        run_id=run_id,
+        annotated=annotated,
+        ranked_all=ranked_all,
+        ranked_top_n=ranked,
     )
     logger.info(
         f"selector {calc_date}: mode=dtt, universe={len(universe)}, filtered={len(filtered)}, final={len(ranked)}"
@@ -276,8 +364,9 @@ def select_candidates(
     store: Store,
     calc_date: date,
     config: Settings | None = None,
+    run_id: str | None = None,
 ) -> list[StockCandidate]:
-    top = select_candidates_frame(store, calc_date, config=config)
+    top = select_candidates_frame(store, calc_date, config=config, run_id=run_id)
     if top.empty:
         return []
     candidates: list[StockCandidate] = []
@@ -289,8 +378,7 @@ def select_candidates(
                 industry=str(row["industry"]),
                 score=float(row["score"]),
                 preselect_score=float(preselect_score),
-                filter_reason=str(row.get("reject_reason", "")),
-                liquidity_tag=str(row.get("liquidity_tag", "")),
+                liquidity_tag=str(row["liquidity_tag"]) if pd.notna(row.get("liquidity_tag")) else None,
             )
         )
     return candidates
@@ -300,9 +388,10 @@ def select_candidates_frame(
     store: Store,
     calc_date: date,
     config: Settings | None = None,
+    run_id: str | None = None,
 ) -> pd.DataFrame:
     cfg = config or get_settings()
     universe = _load_universe_snapshot(store, calc_date)
     if cfg.use_dtt_pipeline:
-        return _select_dtt_candidates_frame(store, calc_date, cfg, universe)
+        return _select_dtt_candidates_frame(store, calc_date, cfg, universe, run_id=(run_id or "").strip())
     return _select_legacy_candidates_frame(store, calc_date, cfg, universe)

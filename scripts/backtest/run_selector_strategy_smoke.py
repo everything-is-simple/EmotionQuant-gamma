@@ -72,7 +72,7 @@ def main() -> int:
     try:
         clear_runtime_tables(store)
         build_rows = build_layers(store, cfg, layers=["l3"], start=calc_date, end=calc_date, force=False)
-        candidates_df = select_candidates_frame(store, calc_date, cfg)
+        candidates_df = select_candidates_frame(store, calc_date, cfg, run_id=run.run_id)
         candidates = [
             StockCandidate(
                 code=str(row["code"]),

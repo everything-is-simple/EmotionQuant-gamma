@@ -135,9 +135,21 @@ def test_backtest_t_plus_1_and_idempotency(tmp_path) -> None:
     buy_trades = verify.read_df(
         "SELECT trade_id, execute_date, action FROM l4_trades WHERE action='BUY' ORDER BY trade_id"
     )
+    force_close_orders = verify.read_df(
+        "SELECT order_id FROM l4_orders WHERE order_id LIKE 'FC_%' ORDER BY order_id"
+    )
+    force_close_trace = verify.read_df(
+        """
+        SELECT event_stage, origin
+        FROM broker_order_lifecycle_trace_exp
+        WHERE event_stage = 'FORCE_CLOSE_FILLED'
+        """
+    )
 
     assert not buy_orders.empty
     assert not buy_trades.empty
+    assert not force_close_orders.empty
+    assert force_close_trace.iloc[0]["origin"] == "force_close"
 
     expected_exec_date = days_list[signal_idx + 1]
     assert buy_orders.iloc[0]["execute_date"].date() == expected_exec_date

@@ -21,12 +21,17 @@ class RiskDecision:
     reject_reason: str | None
     execute_date: date | None
     reserved_cash: float = 0.0
+    overlay: "MssRiskOverlay | None" = None
 
 
 @dataclass(frozen=True)
 class MssRiskOverlay:
+    state: str
     signal: str
     score: float
+    max_positions_mult: float
+    risk_per_trade_mult: float
+    max_position_mult: float
     max_positions: int
     risk_per_trade_pct: float
     max_position_pct: float
@@ -106,8 +111,12 @@ class RiskManager:
 
         if not self.config.mss_risk_overlay_enabled:
             overlay = MssRiskOverlay(
+                state="DISABLED",
                 signal="NEUTRAL",
                 score=float(self.config.dtt_score_fill),
+                max_positions_mult=1.0,
+                risk_per_trade_mult=1.0,
+                max_position_mult=1.0,
                 max_positions=int(self.config.max_positions),
                 risk_per_trade_pct=float(self.config.risk_per_trade_pct),
                 max_position_pct=float(self.config.max_position_pct),
@@ -125,9 +134,11 @@ class RiskManager:
             (signal_date,),
         )
         if row.empty:
+            overlay_state = "MISSING"
             signal_label = "NEUTRAL"
             score = float(self.config.dtt_score_fill)
         else:
+            overlay_state = "NORMAL"
             signal_label = self._resolve_mss_signal_label(row.iloc[0]["signal"])
             raw_score = row.iloc[0]["score"]
             score = float(raw_score if raw_score is not None else self.config.dtt_score_fill)
@@ -136,8 +147,12 @@ class RiskManager:
             signal_label
         )
         overlay = MssRiskOverlay(
+            state=overlay_state,
             signal=signal_label,
             score=score,
+            max_positions_mult=float(max_positions_mult),
+            risk_per_trade_mult=float(risk_per_trade_mult),
+            max_position_mult=float(max_position_mult),
             max_positions=self._clamp_effective_max_positions(max_positions_mult),
             # MSS 在 v0.01-plus 当前阶段只压缩执行风险，不反向改写排序层分数。
             risk_per_trade_pct=float(self.config.risk_per_trade_pct) * max(risk_per_trade_mult, 0.0),
@@ -164,26 +179,41 @@ class RiskManager:
         return max(quantity, 0)
 
     def assess_signal(self, signal: Signal, state: BrokerRiskState) -> RiskDecision:
+        overlay = self._load_mss_overlay(signal.signal_date)
         execute_date = self._next_trade_date(signal.signal_date)
         if execute_date is None:
-            return RiskDecision(order=None, reject_reason="NO_NEXT_TRADE_DAY", execute_date=None)
-
-        overlay = self._load_mss_overlay(signal.signal_date)
+            return RiskDecision(
+                order=None,
+                reject_reason="NO_NEXT_TRADE_DAY",
+                execute_date=None,
+                overlay=overlay,
+            )
 
         # 同一股票已有持仓（或已被更强信号占位）时，不重复开仓。
         if signal.code in state.holdings:
-            return RiskDecision(order=None, reject_reason="ALREADY_HOLDING", execute_date=execute_date)
+            return RiskDecision(
+                order=None,
+                reject_reason="ALREADY_HOLDING",
+                execute_date=execute_date,
+                overlay=overlay,
+            )
 
         if len(state.holdings) >= overlay.max_positions:
             return RiskDecision(
                 order=None,
                 reject_reason="MAX_POSITIONS_REACHED",
                 execute_date=execute_date,
+                overlay=overlay,
             )
 
         est_price = self._estimate_price(signal.code, signal.signal_date)
         if est_price is None or est_price <= 0:
-            return RiskDecision(order=None, reject_reason="NO_EST_PRICE", execute_date=execute_date)
+            return RiskDecision(
+                order=None,
+                reject_reason="NO_EST_PRICE",
+                execute_date=execute_date,
+                overlay=overlay,
+            )
 
         target_quantity = self._calculate_position_size(float(est_price), state, overlay)
         if target_quantity < 100:
@@ -193,16 +223,23 @@ class RiskManager:
                     order=None,
                     reject_reason="INSUFFICIENT_CASH",
                     execute_date=execute_date,
+                    overlay=overlay,
                 )
             return RiskDecision(
                 order=None,
                 reject_reason="SIZE_BELOW_MIN_LOT",
                 execute_date=execute_date,
+                overlay=overlay,
             )
 
         quantity = self._max_affordable_quantity(float(est_price), state.cash, target_quantity)
         if quantity < 100:
-            return RiskDecision(order=None, reject_reason="INSUFFICIENT_CASH", execute_date=execute_date)
+            return RiskDecision(
+                order=None,
+                reject_reason="INSUFFICIENT_CASH",
+                execute_date=execute_date,
+                overlay=overlay,
+            )
 
         reserved_cash = self._estimate_buy_cost(float(est_price), quantity)
         return RiskDecision(
@@ -219,6 +256,7 @@ class RiskManager:
             reject_reason=None,
             execute_date=execute_date,
             reserved_cash=reserved_cash,
+            overlay=overlay,
         )
 
     def check_signal(self, signal: Signal, state: BrokerRiskState) -> Order | None:

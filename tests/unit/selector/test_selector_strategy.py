@@ -1242,3 +1242,144 @@ def test_selector_prefers_sw_industry_over_legacy_stock_basic_industry(tmp_path)
     frame = select_candidates_frame(store, calc_date, cfg)
     assert frame.iloc[0]["industry"] == "银行"
     store.close()
+
+
+def test_selector_dtt_writes_candidate_trace_for_selected_truncated_and_rejected_rows(tmp_path) -> None:
+    db = tmp_path / "selector_trace.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 10)
+
+    store.bulk_upsert(
+        "l2_stock_adj_daily",
+        pd.DataFrame(
+            [
+                {
+                    "code": "000001",
+                    "date": calc_date,
+                    "adj_open": 10.0,
+                    "adj_high": 10.2,
+                    "adj_low": 9.8,
+                    "adj_close": 10.0,
+                    "volume": 10000,
+                    "amount": 3e8,
+                    "pct_chg": 0.01,
+                    "ma5": 10.0,
+                    "ma10": 10.0,
+                    "ma20": 10.0,
+                    "ma60": 10.0,
+                    "volume_ma5": 9000,
+                    "volume_ma20": 9000,
+                    "volume_ratio": 1.2,
+                },
+                {
+                    "code": "000002",
+                    "date": calc_date,
+                    "adj_open": 10.0,
+                    "adj_high": 10.2,
+                    "adj_low": 9.8,
+                    "adj_close": 10.0,
+                    "volume": 10000,
+                    "amount": 2e8,
+                    "pct_chg": 0.01,
+                    "ma5": 10.0,
+                    "ma10": 10.0,
+                    "ma20": 10.0,
+                    "ma60": 10.0,
+                    "volume_ma5": 9000,
+                    "volume_ma20": 9000,
+                    "volume_ratio": 1.1,
+                },
+                {
+                    "code": "000003",
+                    "date": calc_date,
+                    "adj_open": 10.0,
+                    "adj_high": 10.2,
+                    "adj_low": 9.8,
+                    "adj_close": 10.0,
+                    "volume": 10000,
+                    "amount": 10.0,
+                    "pct_chg": 0.01,
+                    "ma5": 10.0,
+                    "ma10": 10.0,
+                    "ma20": 10.0,
+                    "ma60": 10.0,
+                    "volume_ma5": 9000,
+                    "volume_ma20": 9000,
+                    "volume_ratio": 1.0,
+                },
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_daily",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": f"{code}.SZ",
+                    "date": calc_date,
+                    "open": 10.0,
+                    "high": 10.2,
+                    "low": 9.8,
+                    "close": 10.0,
+                    "pre_close": 10.0,
+                    "volume": 10000,
+                    "amount": amount,
+                    "pct_chg": 0.01,
+                    "adj_factor": 1.0,
+                    "is_halt": False,
+                    "up_limit": 11.0,
+                    "down_limit": 9.0,
+                    "total_mv": 1e6,
+                    "circ_mv": 8e5,
+                }
+                for code, amount in [("000001", 3e8), ("000002", 2e8), ("000003", 10.0)]
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_info",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": f"{code}.SZ",
+                    "name": f"样本股{code}",
+                    "industry": "银行",
+                    "market": "主板",
+                    "list_status": "L",
+                    "is_st": False,
+                    "list_date": date(2010, 1, 1),
+                    "effective_from": date(2020, 1, 1),
+                }
+                for code in ["000001", "000002", "000003"]
+            ]
+        ),
+    )
+
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        CANDIDATE_TOP_N=1,
+        PRESELECT_SCORE_MODE="amount_only",
+        MIN_AMOUNT=1_000,
+        MIN_LIST_DAYS=1,
+    )
+    candidates = select_candidates(store, calc_date, cfg, run_id="selector_trace")
+    trace = store.read_df(
+        """
+        SELECT code, selected, candidate_rank, reject_reason, preselect_score, final_score
+        FROM selector_candidate_trace_exp
+        WHERE run_id = ?
+        ORDER BY code ASC
+        """,
+        ("selector_trace",),
+    )
+
+    assert len(candidates) == 1
+    assert candidates[0].code == "000001"
+    assert "filter_reason" not in candidates[0].model_dump()
+    assert trace["code"].tolist() == ["000001", "000002", "000003"]
+    assert trace["selected"].tolist() == [True, False, False]
+    assert trace["candidate_rank"].tolist()[:2] == [1, 2]
+    assert pd.isna(trace.iloc[2]["candidate_rank"])
+    assert trace.iloc[0]["preselect_score"] == trace.iloc[0]["final_score"]
+    assert trace.iloc[2]["reject_reason"] == "LOW_LIQUIDITY"
+    store.close()

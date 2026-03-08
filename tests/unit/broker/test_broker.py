@@ -866,3 +866,268 @@ def test_broker_exit_not_duplicated_when_pending_exists(tmp_path) -> None:
     exits = broker.generate_exit_orders(signal_date)
     assert exits == []
     store.close()
+
+
+def test_broker_writes_mss_overlay_trace_for_disabled_missing_and_normal(tmp_path) -> None:
+    db = tmp_path / "test_mss_trace.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+
+    _seed_trade_calendar(store, signal_date, exec_date)
+    _seed_adj_daily(
+        store,
+        [
+            {
+                "code": "000001",
+                "date": signal_date,
+                "adj_open": 10.0,
+                "adj_high": 10.2,
+                "adj_low": 9.8,
+                "adj_close": 10.0,
+                "volume": 10000,
+                "amount": 1e8,
+                "pct_chg": 0.0,
+                "ma5": 10.0,
+                "ma10": 10.0,
+                "ma20": 10.0,
+                "ma60": 10.0,
+                "volume_ma5": 10000,
+                "volume_ma20": 10000,
+                "volume_ratio": 1.0,
+            }
+        ],
+    )
+
+    signal = Signal(
+        signal_id=build_signal_id("000001", signal_date, "bof"),
+        code="000001",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.8,
+        pattern="bof",
+        reason_code="PAS_BOF",
+        final_score=90.0,
+        mss_score=20.0,
+        variant="v0_01_dtt_bof_plus_irs_mss_score",
+    )
+
+    cfg_disabled = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_bof_plus_irs_score",
+        BACKTEST_INITIAL_CASH=1_000_000,
+        RISK_PER_TRADE_PCT=0.2,
+        MAX_POSITION_PCT=0.5,
+        STOP_LOSS_PCT=0.05,
+    )
+    cfg_enabled = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_bof_plus_irs_mss_score",
+        BACKTEST_INITIAL_CASH=1_000_000,
+        RISK_PER_TRADE_PCT=0.2,
+        MAX_POSITION_PCT=0.5,
+        STOP_LOSS_PCT=0.05,
+    )
+
+    Broker(store, cfg_disabled, run_id="mss_disabled").process_signals([signal])
+    Broker(store, cfg_enabled, run_id="mss_missing").process_signals([signal])
+
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame([{"date": signal_date, "score": 20.0, "signal": "BEARISH"}]),
+    )
+    Broker(store, cfg_enabled, run_id="mss_normal").process_signals([signal])
+
+    trace = store.read_df(
+        """
+        SELECT run_id, overlay_state, market_signal
+        FROM mss_risk_overlay_trace_exp
+        WHERE signal_id = ?
+        ORDER BY run_id ASC
+        """,
+        (signal.signal_id,),
+    )
+    assert trace["run_id"].tolist() == ["mss_disabled", "mss_missing", "mss_normal"]
+    assert trace["overlay_state"].tolist() == ["DISABLED", "MISSING", "NORMAL"]
+    assert trace.iloc[2]["market_signal"] == "BEARISH"
+    store.close()
+
+
+def test_broker_records_lifecycle_trace_for_reject_fill_and_expire(tmp_path) -> None:
+    db = tmp_path / "test_lifecycle_trace.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+    hold_date = date(2026, 3, 5)
+    expire_date = date(2026, 3, 6)
+    cfg = Settings(
+        BACKTEST_INITIAL_CASH=1_000_000,
+        RISK_PER_TRADE_PCT=0.01,
+        MAX_POSITION_PCT=0.1,
+        STOP_LOSS_PCT=0.05,
+        MAX_PENDING_TRADE_DAYS=1,
+    )
+    broker = Broker(store, cfg, run_id="broker_trace")
+
+    store.bulk_upsert(
+        "l1_trade_calendar",
+        pd.DataFrame(
+            [
+                {"date": signal_date, "is_trade_day": True, "prev_trade_day": None, "next_trade_day": exec_date},
+                {"date": exec_date, "is_trade_day": True, "prev_trade_day": signal_date, "next_trade_day": hold_date},
+                {"date": hold_date, "is_trade_day": True, "prev_trade_day": exec_date, "next_trade_day": expire_date},
+                {"date": expire_date, "is_trade_day": True, "prev_trade_day": hold_date, "next_trade_day": None},
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l2_stock_adj_daily",
+        pd.DataFrame(
+            [
+                {
+                    "code": "000001",
+                    "date": signal_date,
+                    "adj_open": 10.0,
+                    "adj_high": 10.2,
+                    "adj_low": 9.8,
+                    "adj_close": 10.0,
+                    "volume": 10000,
+                    "amount": 1e8,
+                    "pct_chg": 0.0,
+                    "ma5": 10.0,
+                    "ma10": 10.0,
+                    "ma20": 10.0,
+                    "ma60": 10.0,
+                    "volume_ma5": 10000,
+                    "volume_ma20": 10000,
+                    "volume_ratio": 1.0,
+                },
+                {
+                    "code": "000001",
+                    "date": exec_date,
+                    "adj_open": 10.1,
+                    "adj_high": 10.4,
+                    "adj_low": 10.0,
+                    "adj_close": 10.2,
+                    "volume": 12000,
+                    "amount": 1.2e8,
+                    "pct_chg": 0.02,
+                    "ma5": 10.0,
+                    "ma10": 10.0,
+                    "ma20": 10.0,
+                    "ma60": 10.0,
+                    "volume_ma5": 10000,
+                    "volume_ma20": 10000,
+                    "volume_ratio": 1.2,
+                },
+            ]
+        ),
+    )
+
+    store.bulk_upsert(
+        "l1_stock_daily",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SZ",
+                    "date": exec_date,
+                    "open": 11.0,
+                    "high": 11.0,
+                    "low": 11.0,
+                    "close": 11.0,
+                    "pre_close": 10.0,
+                    "volume": 10000,
+                    "amount": 1e8,
+                    "pct_chg": 0.1,
+                    "adj_factor": 1.0,
+                    "is_halt": False,
+                    "up_limit": 11.0,
+                    "down_limit": 9.0,
+                    "total_mv": 1e6,
+                    "circ_mv": 8e5,
+                }
+            ]
+        ),
+    )
+
+    signal = Signal(
+        signal_id=build_signal_id("000001", signal_date, "bof"),
+        code="000001",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.8,
+        pattern="bof",
+        reason_code="PAS_BOF",
+    )
+    broker.process_signals([signal])
+    broker.execute_pending_orders(exec_date)
+
+    store.bulk_upsert(
+        "l1_stock_daily",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SZ",
+                    "date": exec_date,
+                    "open": 10.1,
+                    "high": 10.4,
+                    "low": 10.0,
+                    "close": 10.2,
+                    "pre_close": 10.0,
+                    "volume": 10000,
+                    "amount": 1e8,
+                    "pct_chg": 0.02,
+                    "adj_factor": 1.0,
+                    "is_halt": False,
+                    "up_limit": 11.0,
+                    "down_limit": 9.0,
+                    "total_mv": 1e6,
+                    "circ_mv": 8e5,
+                }
+            ]
+        ),
+    )
+    retry_signal = Signal(
+        signal_id=build_signal_id("000001", signal_date, "bof_retry"),
+        code="000001",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.8,
+        pattern="bof",
+        reason_code="PAS_BOF",
+    )
+    broker.process_signals([retry_signal])
+    broker.execute_pending_orders(exec_date)
+
+    expiring_order = Order(
+        order_id="000002_2026-03-03_bof",
+        signal_id="000002_2026-03-03_bof",
+        code="000002",
+        action="BUY",
+        quantity=100,
+        execute_date=exec_date,
+        pattern="bof",
+        status="PENDING",
+    )
+    broker.add_pending_order(expiring_order)
+    store.bulk_upsert("l4_orders", pd.DataFrame([expiring_order.model_dump()]))
+    broker.expire_orders(expire_date)
+
+    lifecycle = store.read_df(
+        """
+        SELECT order_id, event_stage, reason_code, origin
+        FROM broker_order_lifecycle_trace_exp
+        WHERE run_id = ?
+        ORDER BY order_id ASC, event_stage ASC
+        """,
+        ("broker_trace",),
+    )
+
+    assert "RISK_ACCEPTED" in lifecycle["event_stage"].tolist()
+    assert "MATCH_REJECTED" in lifecycle["event_stage"].tolist()
+    assert "MATCH_FILLED" in lifecycle["event_stage"].tolist()
+    assert "ORDER_EXPIRED" in lifecycle["event_stage"].tolist()
+    expired = lifecycle[lifecycle["event_stage"] == "ORDER_EXPIRED"].iloc[0]
+    assert expired["reason_code"] == "ORDER_TIMEOUT"
+    assert expired["origin"] == "broker_expiry"
+    store.close()

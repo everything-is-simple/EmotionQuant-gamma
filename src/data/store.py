@@ -267,6 +267,111 @@ class Store:
             ON l3_signal_rank_exp(signal_id)
             """,
             """
+            CREATE TABLE IF NOT EXISTS selector_candidate_trace_exp (
+                run_id               VARCHAR NOT NULL,
+                signal_date          DATE    NOT NULL,
+                code                 VARCHAR NOT NULL,
+                pipeline_mode        VARCHAR NOT NULL,
+                preselect_score_mode VARCHAR,
+                industry             VARCHAR,
+                amount               DOUBLE,
+                volume_ratio         DOUBLE,
+                filters_passed       VARCHAR,
+                reject_reason        VARCHAR,
+                liquidity_tag        VARCHAR,
+                preselect_score      DOUBLE,
+                final_score          DOUBLE,
+                candidate_rank       INTEGER,
+                candidate_top_n      INTEGER,
+                selected             BOOLEAN NOT NULL,
+                created_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (run_id, signal_date, code)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS pas_trigger_trace_exp (
+                run_id                VARCHAR NOT NULL,
+                signal_date           DATE    NOT NULL,
+                code                  VARCHAR NOT NULL,
+                detector              VARCHAR NOT NULL,
+                signal_id             VARCHAR,
+                pattern               VARCHAR,
+                active_detector_count INTEGER,
+                combination_mode      VARCHAR,
+                history_days          INTEGER,
+                min_history_days      INTEGER,
+                triggered             BOOLEAN NOT NULL,
+                skip_reason           VARCHAR,
+                reason_code           VARCHAR,
+                strength              DOUBLE,
+                bof_strength          DOUBLE,
+                lower_bound           DOUBLE,
+                today_low             DOUBLE,
+                today_close           DOUBLE,
+                today_open            DOUBLE,
+                today_high            DOUBLE,
+                close_pos             DOUBLE,
+                volume                DOUBLE,
+                volume_ma20           DOUBLE,
+                volume_ratio          DOUBLE,
+                cond_break            BOOLEAN,
+                cond_recover          BOOLEAN,
+                cond_close_pos        BOOLEAN,
+                cond_volume           BOOLEAN,
+                created_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (run_id, signal_date, code, detector)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS irs_industry_trace_exp (
+                run_id            VARCHAR NOT NULL,
+                signal_id         VARCHAR NOT NULL,
+                signal_date       DATE    NOT NULL,
+                code              VARCHAR NOT NULL,
+                industry          VARCHAR,
+                variant           VARCHAR NOT NULL,
+                uses_irs          BOOLEAN NOT NULL,
+                daily_score       DOUBLE,
+                daily_rank        INTEGER,
+                signal_irs_score  DOUBLE NOT NULL,
+                fill_score        DOUBLE NOT NULL,
+                status            VARCHAR NOT NULL,
+                created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (run_id, signal_id)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS mss_risk_overlay_trace_exp (
+                run_id                         VARCHAR NOT NULL,
+                signal_id                      VARCHAR NOT NULL,
+                signal_date                    DATE    NOT NULL,
+                code                           VARCHAR NOT NULL,
+                pattern                        VARCHAR NOT NULL,
+                variant                        VARCHAR,
+                signal_mss_score               DOUBLE,
+                overlay_state                  VARCHAR NOT NULL,
+                market_signal                  VARCHAR NOT NULL,
+                market_score                   DOUBLE NOT NULL,
+                base_max_positions             INTEGER NOT NULL,
+                base_risk_per_trade_pct        DOUBLE NOT NULL,
+                base_max_position_pct          DOUBLE NOT NULL,
+                max_positions_mult             DOUBLE NOT NULL,
+                risk_per_trade_mult            DOUBLE NOT NULL,
+                max_position_mult              DOUBLE NOT NULL,
+                effective_max_positions        INTEGER NOT NULL,
+                effective_risk_per_trade_pct   DOUBLE NOT NULL,
+                effective_max_position_pct     DOUBLE NOT NULL,
+                holdings_before                INTEGER NOT NULL,
+                available_cash                 DOUBLE NOT NULL,
+                portfolio_market_value         DOUBLE NOT NULL,
+                decision_status                VARCHAR NOT NULL,
+                decision_reason                VARCHAR,
+                reserved_cash                  DOUBLE NOT NULL,
+                created_at                     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (run_id, signal_id)
+            )
+            """,
+            """
             CREATE TABLE IF NOT EXISTS l3_stock_gene (
                 code            VARCHAR NOT NULL,
                 calc_date       DATE    NOT NULL,
@@ -317,6 +422,28 @@ class Store:
                 slippage_bps  DOUBLE DEFAULT 0,
                 is_paper      BOOLEAN DEFAULT FALSE,
                 created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS broker_order_lifecycle_trace_exp (
+                run_id       VARCHAR NOT NULL,
+                order_id     VARCHAR NOT NULL,
+                event_stage  VARCHAR NOT NULL,
+                signal_id    VARCHAR,
+                trade_id     VARCHAR,
+                code         VARCHAR NOT NULL,
+                action       VARCHAR NOT NULL,
+                pattern      VARCHAR NOT NULL,
+                event_date   DATE    NOT NULL,
+                execute_date DATE,
+                order_status VARCHAR,
+                reason_code  VARCHAR,
+                origin       VARCHAR NOT NULL,
+                quantity     INTEGER,
+                price        DOUBLE,
+                is_paper     BOOLEAN DEFAULT FALSE,
+                created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (run_id, order_id, event_stage)
             )
             """,
             """

@@ -44,10 +44,10 @@ def resolve_dtt_variant(label: str) -> DttVariantSpec:
     return variant
 
 
-def _load_irs_score_map(store: Store, asof_date: date) -> dict[str, float]:
+def _load_irs_snapshot_map(store: Store, asof_date: date) -> dict[str, dict[str, float | int]]:
     rows = store.read_df(
         """
-        SELECT industry, rank
+        SELECT industry, score, rank
         FROM l3_irs_daily
         WHERE date = ?
         ORDER BY rank ASC
@@ -56,16 +56,20 @@ def _load_irs_score_map(store: Store, asof_date: date) -> dict[str, float]:
     )
     if rows.empty:
         return {}
-    total = max(int(len(rows)), 1)
-    score_map: dict[str, float] = {}
+    snapshot_map: dict[str, dict[str, float | int]] = {}
     for _, row in rows.iterrows():
-        rank = int(row["rank"])
-        if total == 1:
-            score_map[str(row["industry"])] = 100.0
-            continue
-        # DTT 当前用稳定线性映射，把行业名次转成 0-100 的后置增强分。
-        score_map[str(row["industry"])] = 100.0 * (1.0 - (rank - 1) / (total - 1))
-    return score_map
+        snapshot_map[str(row["industry"])] = {
+            "score": float(row["score"] if row["score"] is not None else 0.0),
+            "rank": int(row["rank"]),
+        }
+    return snapshot_map
+
+
+def _rank_to_signal_irs_score(rank: int, total: int) -> float:
+    if total <= 1:
+        return 100.0
+    # DTT 当前用稳定线性映射，把行业名次转成 0-100 的后置增强分。
+    return 100.0 * (1.0 - (rank - 1) / (total - 1))
 
 
 def _load_mss_score(store: Store, asof_date: date) -> float | None:
@@ -118,17 +122,31 @@ def build_dtt_score_frame(
 
     variant = resolve_dtt_variant(config.dtt_variant)
     candidate_map = {candidate.code: candidate for candidate in candidates}
-    irs_score_map = _load_irs_score_map(store, asof_date) if variant.uses_irs else {}
+    irs_snapshot_map = _load_irs_snapshot_map(store, asof_date)
     # MSS 当前只服务于执行层风险覆盖；ranker 继续把它写入 sidecar，供解释和 Broker 对照使用。
     market_score = _load_mss_score(store, asof_date) if variant.carries_mss_overlay else None
     fill_score = float(config.dtt_score_fill)
+    irs_total = max(int(len(irs_snapshot_map)), 1)
 
     rows: list[dict[str, object]] = []
+    irs_trace_rows: list[dict[str, object]] = []
     for signal in signals:
         candidate = candidate_map.get(signal.code)
         industry = candidate.industry if candidate is not None else "未知"
         bof_strength = float(signal.bof_strength if signal.bof_strength is not None else signal.strength)
-        irs_score = float(irs_score_map.get(industry, fill_score)) if variant.uses_irs else fill_score
+        snapshot = irs_snapshot_map.get(industry)
+        if not variant.uses_irs:
+            irs_score = fill_score
+            irs_status = "DISABLED"
+        elif industry == "未知":
+            irs_score = fill_score
+            irs_status = "FILL_UNKNOWN_INDUSTRY"
+        elif snapshot is None:
+            irs_score = fill_score
+            irs_status = "FILL_NO_DAILY_SCORE"
+        else:
+            irs_score = _rank_to_signal_irs_score(int(snapshot["rank"]), irs_total)
+            irs_status = "NORMAL"
         mss_score = float(market_score if market_score is not None else fill_score)
         if not variant.carries_mss_overlay:
             mss_score = fill_score
@@ -147,7 +165,25 @@ def build_dtt_score_frame(
                 "final_score": final_score,
             }
         )
+        irs_trace_rows.append(
+            {
+                "run_id": run_id,
+                "signal_id": signal.signal_id,
+                "signal_date": signal.signal_date,
+                "code": signal.code,
+                "industry": industry,
+                "variant": variant.label,
+                "uses_irs": variant.uses_irs,
+                "daily_score": None if snapshot is None else float(snapshot["score"]),
+                "daily_rank": None if snapshot is None else int(snapshot["rank"]),
+                "signal_irs_score": float(irs_score),
+                "fill_score": fill_score,
+                "status": irs_status,
+            }
+        )
 
+    if irs_trace_rows:
+        store.bulk_upsert("irs_industry_trace_exp", pd.DataFrame(irs_trace_rows))
     return pd.DataFrame(rows)
 
 

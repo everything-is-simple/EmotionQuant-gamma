@@ -121,9 +121,14 @@ def clear_runtime_tables(store: Store) -> None:
     for table in (
         "l4_pattern_stats",
         "l4_daily_report",
+        "broker_order_lifecycle_trace_exp",
         "l4_trades",
         "l4_orders",
         "l4_stock_trust",
+        "mss_risk_overlay_trace_exp",
+        "irs_industry_trace_exp",
+        "pas_trigger_trace_exp",
+        "selector_candidate_trace_exp",
         "l3_signals",
         "l3_signal_rank_exp",
     ):
