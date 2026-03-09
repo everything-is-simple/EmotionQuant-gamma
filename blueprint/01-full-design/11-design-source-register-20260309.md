@@ -66,6 +66,15 @@
 | `09-irs-minimal-tradable-design-20260309.md` | 当前主线 `IRS` 算法正文 | 不是第二份 implementation spec |
 | `10-mss-minimal-tradable-design-20260309.md` | 当前主线 `MSS` 算法正文 | 不是第二份 execution 文 |
 
+### 3.3 alpha 导入原稿的角色
+
+| 目录/文件 | 角色 | 不是 |
+|---|---|---|
+| `90-alpha-imports/` | 来源留档区 | 不是当前主线正文区 |
+| `90-alpha-imports/mss-algorithm-from-alpha-v3.2.0.md` | `MSS` 原稿来源留档 | 不是现行 `MSS` SoT |
+| `90-alpha-imports/irs-algorithm-from-alpha-v3.3.0.md` | `IRS` 原稿来源留档 | 不是现行 `IRS` SoT |
+| `90-alpha-imports/pas-algorithm-from-alpha-v3.2.0.md` | `PAS` 原稿来源留档 | 不是现行 `PAS` SoT |
+
 ---
 
 ## 4. 按来源文件登记

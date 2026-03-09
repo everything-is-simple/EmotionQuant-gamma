@@ -36,7 +36,7 @@ G:\
 3. Set `DATA_PATH=G:\EmotionQuant_data`
 4. Set `LOG_PATH=G:\EmotionQuant-temp\logs` when needed
 
-Detailed setup guide: [`docs/operations/setup-guide.md`](docs/operations/setup-guide.md)
+Detailed setup guide: [`docs/reference/operations/setup-guide.md`](docs/reference/operations/setup-guide.md)
 
 ### Install Dependencies
 
@@ -68,8 +68,7 @@ EmotionQuant-gamma/
 │   ├── Strategy/           # theory sources and methodology tracing
 │   ├── observatory/        # observation, review, and retrospectives
 │   ├── spec/               # versioned archives and current mainline material
-│   ├── steering/           # governance constraints
-│   ├── reference/          # external references
+│   ├── reference/          # external rules and operations references
 │   └── workflow/           # fixed execution flow
 ├── .env.example
 ├── pyproject.toml
@@ -79,7 +78,7 @@ EmotionQuant-gamma/
 
 ## Related Docs
 
-- Setup guide: [`docs/operations/setup-guide.md`](docs/operations/setup-guide.md)
+- Setup guide: [`docs/reference/operations/setup-guide.md`](docs/reference/operations/setup-guide.md)
 - Documentation index: [`docs/README.md`](docs/README.md)
 - Current status: [`docs/spec/common/records/development-status.md`](docs/spec/common/records/development-status.md)
 - Mainline roadmap: [`docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md`](docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md)

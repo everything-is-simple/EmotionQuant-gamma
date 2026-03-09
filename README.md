@@ -36,7 +36,7 @@ G:\
 3. 设置 `DATA_PATH=G:\EmotionQuant_data`
 4. 需要时设置 `LOG_PATH=G:\EmotionQuant-temp\logs`
 
-详细配置：[`docs/operations/setup-guide.md`](docs/operations/setup-guide.md)
+详细配置：[`docs/reference/operations/setup-guide.md`](docs/reference/operations/setup-guide.md)
 
 ### 安装依赖
 
@@ -68,8 +68,7 @@ EmotionQuant-gamma/
 │   ├── Strategy/           # 理论母本与方法论溯源
 │   ├── observatory/        # 观察、评审与复盘
 │   ├── spec/               # 分版本归档与当前主开发线材料
-│   ├── steering/           # 治理铁律与不可越界约束
-│   ├── reference/          # 外部参考资料
+│   ├── reference/          # 外部规则与运维参考
 │   └── workflow/           # 固定执行流程
 ├── .env.example
 ├── pyproject.toml
@@ -79,7 +78,7 @@ EmotionQuant-gamma/
 
 ## 相关文档
 
-- 配置指南：[`docs/operations/setup-guide.md`](docs/operations/setup-guide.md)
+- 配置指南：[`docs/reference/operations/setup-guide.md`](docs/reference/operations/setup-guide.md)
 - 文档导航：[`docs/README.md`](docs/README.md)
 - 当前状态：[`docs/spec/common/records/development-status.md`](docs/spec/common/records/development-status.md)
 - 主线路线图：[`docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md`](docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md)

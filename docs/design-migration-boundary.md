@@ -32,7 +32,7 @@
    - `v0.01 Frozen` 历史基线继续保留在这里
    - 不再承载新版主线设计正文
 
-4. `docs/reference/` / `docs/Strategy/` / `docs/observatory/` / `docs/operations/` / `docs/workflow/`
+4. `docs/reference/` / `docs/Strategy/` / `docs/observatory/` / `docs/workflow/`
    - 参考、理论、评审、运维、流程辅助层
    - 不作为新版设计权威源
 

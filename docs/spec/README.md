@@ -1,47 +1,35 @@
-# Spec 文档入口（治理归档）
+# Spec
 
 ## 定位
 
-`docs/spec/` 是分版本 roadmap、governance、evidence、records 的统一入口。
+`docs/spec/` 是版本治理归档入口。
 
-这里回答的是：
+这里统一存放：
 
-1. 当前状态怎么看
-2. 版本材料放在哪里
-3. 证据和 records 去哪里找
+1. roadmap
+2. governance
+3. evidence
+4. records
 
-它不再定义新版设计本体。
-
----
+这里不再定义新版设计正文。
 
 ## 当前入口
 
-| 类型 | 路径 | 用途 |
-|---|---|---|
-| 新版设计总入口 | `blueprint/README.md` | 新版设计权威层 |
-| 当前状态 | `docs/spec/common/records/development-status.md` | 查看当前治理阶段、风险与看板 |
-| 设计迁移边界声明 | `docs/design-migration-boundary.md` | 查看 `docs/` 与 `blueprint/` 的职责边界 |
-| 跨版本治理 | `docs/spec/common/README.md` | 查看 common 层 records 与共用清单 |
-| v0.01 | `docs/spec/v0.01/README.md` | 查看冻结版本材料与历史证据 |
-| v0.01-plus | `docs/spec/v0.01-plus/README.md` | 查看当前主线治理、Gate、证据与 records |
+| 入口 | 用途 |
+|---|---|
+| `common/records/development-status.md` | 当前治理状态与阶段判断 |
+| `common/README.md` | 跨版本 common 层入口 |
+| `v0.01/README.md` | `v0.01 Frozen` 历史版本材料 |
+| `v0.01-plus/README.md` | 当前主线治理与证据入口 |
 
----
+## 使用边界
 
-## 存放规则
+1. 设计问题看 `blueprint/`。
+2. 历史基线问题看 `docs/design-v2/`。
+3. 版本证据、回顾、release、runbook 统一放 `docs/spec/<version>/`。
 
-1. `docs/spec/<version>/` 存放单版本 roadmap、governance、evidence、records。
-2. `docs/spec/common/` 存放跨版本治理记录与共用清单。
-3. 新版设计正文不进入 `docs/spec/`，统一进入 `blueprint/`。
-4. 历史基线问题以 `docs/design-v2/01-system/system-baseline.md` 为准。
-5. 当前主线设计问题以 `blueprint/` 为准。
-6. 不再为未来版本预创建空壳目录；只有进入真实治理或实现阶段，才建立新的 `docs/spec/<version>/`。
+## 相邻入口
 
----
-
-## 相关文档
-
-- `blueprint/README.md`
-- `docs/design-migration-boundary.md`
-- `docs/design-v2/01-system/system-baseline.md`
-- `docs/spec/common/records/development-status.md`
-- `docs/README.md`
+1. `common/records/development-status.md`
+2. `../design-v2/01-system/system-baseline.md`
+3. `../../blueprint/README.md`

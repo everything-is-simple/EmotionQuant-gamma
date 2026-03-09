@@ -1,43 +1,31 @@
-# Reference（参考资料）
+# Reference
 
 ## 定位
 
-`docs/reference/` 存放外部规则摘录、运维参考与辅助说明材料。
+`docs/reference/` 只保留长期可复用的参考资料。
 
-这里回答的是“有哪些外部资料可供查阅”，不是“当前系统必须怎么执行”。`v0.01 Frozen` 历史执行口径见 `docs/design-v2/01-system/system-baseline.md`；新版设计权威层见 `blueprint/README.md`；当前治理状态以 `docs/spec/common/records/development-status.md` 为准。
+这里回答“有哪些规则和运维参考可以查”，不回答“当前主线必须怎么做”。
 
-## 当前入口
+## 当前保留结构
 
-| 类型 | 路径 | 用途 |
-|---|---|---|
-| A 股规则参考 | `a-stock-rules/README.md` | 查询交易制度、涨跌停与行业分类参考 |
-| 运维参考 | `operations/README.md` | 查询临时文件、环境清理与提交前检查参考 |
-| 历史基线 | `docs/design-v2/01-system/system-baseline.md` | 回看 `v0.01 Frozen` 历史执行口径 |
-| 新版设计权威层 | `blueprint/README.md` | 回看新版设计 SoT |
+| 目录 | 角色 |
+|---|---|
+| `a-stock-rules/` | A 股交易规则、涨跌停、行业口径参考 |
+| `operations/` | 环境配置、临时文件、脱敏运维模板 |
 
-## 使用规则
+## 使用边界
 
-1. `reference/` 只提供查阅材料，不直接充当设计 SoT、当前状态入口或版本归档入口。
-2. 仓库内执行边界、模块契约与固定流程，以 `blueprint/`、`docs/steering/`、`docs/workflow/` 为准。
-3. 当前状态、治理结论与重启条件，以 `docs/spec/common/records/development-status.md` 为准。
-4. 版本路线图、证据、runbook、发布记录统一进入 `docs/spec/<version>/`，不回堆到 `reference/`。
-5. 若参考摘录与交易所或数据源官方最新规则冲突，应以官方规则为准，并回写设计/治理文档修正仓库口径。
-6. 当前主线若与历史参考描述冲突，以 `blueprint/` 与 `docs/spec/v0.01-plus/` 为准。
+1. `reference/` 不是设计 SoT。
+2. 规则若与官方最新口径冲突，以官方规则为准。
+3. 历史基线看 `docs/design-v2/01-system/system-baseline.md`。
+4. 当前主线设计以 `blueprint/` 为准。
+5. 当前治理状态以 `docs/spec/common/records/development-status.md` 为准。
 
-## 相邻目录边界
+## 相邻入口
 
-- `blueprint/`：定义新版系统设计与执行语义。
-- `docs/design-v2/`：保留历史基线与兼容桥接。
-- `docs/steering/`：定义不可变约束与治理快照。
-- `docs/operations/`：存放仓库本地运维文档与敏感配置模板说明。
-- `docs/spec/`：存放分版本路线图、证据与历史记录。
-
-## 相关文档
-
-- `docs/design-v2/01-system/system-baseline.md`
-- `docs/design-migration-boundary.md`
-- `blueprint/README.md`
-- `docs/spec/v0.01-plus/README.md`
-- `docs/spec/common/records/development-status.md`
-- `docs/reference/a-stock-rules/README.md`
-- `docs/reference/operations/README.md`
+1. `a-stock-rules/README.md`
+2. `operations/README.md`
+3. `../spec/README.md`
+4. `../../blueprint/README.md`
+5. `../design-v2/01-system/system-baseline.md`
+6. `../spec/common/records/development-status.md`

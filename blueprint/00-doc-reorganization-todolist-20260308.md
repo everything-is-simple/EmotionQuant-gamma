@@ -71,14 +71,36 @@
   - 产物：`blueprint/01-full-design/08-pas-minimal-tradable-design-20260309.md`
 - [x] 已补 `IRS` 最小可交易排序层正文版。
   - 产物：`blueprint/01-full-design/09-irs-minimal-tradable-design-20260309.md`
-- [x] 已补 `MSS` 最小可交易风控层正文版。
+- [x] 已补 `MSS` 最小可交易风控层正文骨架。
   - 产物：`blueprint/01-full-design/10-mss-minimal-tradable-design-20260309.md`
 - [x] 已补设计来源登记。
   - 产物：`blueprint/01-full-design/11-design-source-register-20260309.md`
 
-### 1.5 机器检查
+### 1.6 机器检查
 
 - [x] `scripts/ops/check_docs.ps1` 当前全绿。
+
+### 1.6 从 beta 回收什么
+- [x] 回收 `beta` 中成熟的设计深度。
+- [x] 优先回收：
+  - information-flow
+  - data-models
+  - api
+  - algorithm 骨架
+- [x] 只回收"设计原子"和"表达结构"，不回收已被淘汰的 top-down 语义。
+
+### 1.7 从 alpha 回收什么
+- [x] 回收 `alpha` 中已经跑过多轮审视的治理结构和沉淀。
+- [x] 优先回收：
+  - records 的组织方式
+  - steering 的约束表达
+  - cards / roadmap 的拆解粒度经验
+  - **MSS/IRS/PAS 完整算法定义（v3.2.0/v3.3.0）**
+- [x] 不把旧治理体系整套搬回 `gamma`。
+
+### 1.8 先冻结 Full Design SoT
+- [x] 把当前主线 5 个关键对象的正文冻结成第一版稳定设计。
+- [x] 之后实现期不允许随手改设计。
 
 ---
 
@@ -86,15 +108,15 @@
 
 ### 2.1 Full Design 最后封口
 
-- [x] 把 `10` 从“骨架版”补成“正文版”。
-- [x] 对 `PAS / IRS / MSS` 三个对象补齐统一 6 段结构：
+- [ ] 把 `10` 从“骨架版”补成“正文版”。
+- [ ] 对 `PAS / IRS / MSS` 三个对象补齐统一 6 段结构：
   - 职责
   - 输入
   - 输出
   - 不负责什么
   - 决策规则 / 算法
   - 失败模式与验证证据
-- [x] 把 `03/04/05/06/07` 的角色正式收口为 `contract annex`，并固定 `08/09/10` 为各自主正文，避免并列成双 SoT。
+- [ ] 把 `03/04/05/06/07` 的角色正式收口为 `contract annex`，并固定 `08/09/10` 为各自主正文，避免并列成双 SoT。
 
 ### 2.2 来源与标签收口
 
@@ -108,8 +130,8 @@
 
 ### 2.3 下游文档同步
 
-- [ ] 基于 `08/09/10` 主正文，回写 `02-implementation-spec/` 的上游锚点和表述。
-- [ ] 基于 `08/09/10` 主正文，确认 `03-execution/` 是否还存在任何“提前替设计做决定”的语句。
+- [ ] 待 `10` 正文冻结并完成 `08/09/10` 主正文确认后，再回写 `02-implementation-spec/` 的上游锚点和表述。
+- [ ] 待 `10` 正文冻结并完成 `08/09/10` 主正文确认后，再确认 `03-execution/` 是否还存在任何“提前替设计做决定”的语句。
 - [ ] 待主正文收口后，再决定是否需要给 `docs/spec/v0.01-plus/roadmap/` 做二次降噪。
 
 ### 2.4 进入实现前的最后门槛
@@ -125,13 +147,13 @@
 
 满足以下条件，才算这轮文档整理真正完成：
 
-- [x] 三版文档资产来源已显式登记清楚。
-- [x] `gamma` 的 `Full Design / Implementation Spec / Execution` 已彻底隔离。
-- [x] `PAS / IRS / MSS` 已全部进入“正文版”。
-- [x] `contract supplement` 与主正文的主次关系已收口清楚。
-- [x] `Frozen` 文档只承担历史基线，不再被误读为当前正文。
-- [x] implementation / execution 不再替设计层补语义。
-- [x] `check_docs.ps1` 持续全绿。
+- [ ] 三版文档资产来源已显式登记清楚。
+- [ ] `gamma` 的 `Full Design / Implementation Spec / Execution` 已彻底隔离。
+- [ ] `PAS / IRS / MSS` 已全部进入“正文版”。
+- [ ] `contract supplement` 与主正文的主次关系已收口清楚。
+- [ ] `Frozen` 文档只承担历史基线，不再被误读为当前正文。
+- [ ] implementation / execution 不再替设计层补语义。
+- [ ] `check_docs.ps1` 持续全绿。
 
 ---
 
@@ -139,7 +161,7 @@
 
 从本清单改写后，推荐顺序固定为：
 
-1. 先把 `08/09/10` 的来源登记和 annex 关系同步固化
-2. 再回写 `02-implementation-spec/` 的上游锚点和表述
-3. 再确认 `03-execution/` 去掉替设计做决定的语句
+1. 先补实 `10-mss-minimal-tradable-design-20260309.md`
+2. 再把 `08/09` 的来源登记和 annex 关系同步固化
+3. 再把 `03/04/05/06/07` 退为 contract annex
 4. 最后才进入 `Phase 0`

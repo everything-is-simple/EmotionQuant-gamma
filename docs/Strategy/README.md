@@ -1,67 +1,61 @@
-# Strategy（理论基础）
+# Strategy
 
 ## 定位
 
-`docs/Strategy/` 存放 MSS / IRS / PAS 的理论来源、方法论梳理与研究映射。
+`docs/Strategy/` 只保留理论来源、方法论映射和研究留档。
 
-这里回答的是“为什么这样设计”，不是“当前系统必须怎么执行”。`v0.01 Frozen` 历史执行口径见 `docs/design-v2/01-system/system-baseline.md`；新版设计权威层见 `blueprint/README.md`。
+这里回答“为什么这样设计、理论从哪来、哪些外部方法值得吸收”，不回答“当前系统现在按什么执行”。
 
-## 当前入口
+## 当前保留结构
 
-| 类型 | 路径 | 用途 |
+| 目录/文件 | 角色 |
+|---|---|
+| `theoretical-foundations.md` | 策略理论总览与跨模块索引 |
+| `MSS/` | 市场情绪理论来源与经验补充 |
+| `IRS/` | 行业分类与行业口径来源 |
+| `PAS/` | 价格行为、形态来源与映射 |
+
+## 保留 / 降级 / 合并
+
+### 保留
+
+| 文件 | 处理结论 | 说明 |
 |---|---|---|
-| 理论总览 | `theoretical-foundations.md` | 理论来源与系统映射总说明 |
-| MSS 理论 | `MSS/` | 市场情绪系统来源 |
-| IRS 理论 | `IRS/` | 行业轮动分类与行业口径来源 |
-| PAS 理论 | `PAS/` | 价格行为方法论、形态来源与映射 |
-| 核心映射 | `PAS/volman-ytc-mapping.md` | Volman 与 YTC 的结构映射 |
+| `theoretical-foundations.md` | 保留 | 作为 Strategy 总索引，负责串联 MSS / IRS / PAS 的理论来源。 |
+| `MSS/market-sentiment-system-2024-analysis.md` | 保留 | `MSS` 一级理论来源，信息密度高，和当前主线关联明确。 |
+| `IRS/shenwan-industry-classification.md` | 保留 | `IRS` 行业口径基础资料，长期有效。 |
+| `PAS/lance-beggs-ytc-analysis.md` | 保留 | `PAS` 核心来源之一，服务 `YTC` 形态回测。 |
+| `PAS/volman-ytc-mapping.md` | 保留 | `YTC` 五形态映射主文档，当前 `PAS mini` 直接受益。 |
+| `PAS/xu-jiachong-naked-kline-analysis.md` | 保留 | 面向 A 股语境的价格行为补充，当前 `BOF / 裸K` 方向仍有价值。 |
 
-## 结构
+### 降级
 
-```
-Strategy/
-├── README.md
-├── theoretical-foundations.md
-├── MSS/
-│   ├── market-sentiment-system-2024-analysis.md
-│   └── manual-sentiment-tracking-experience.md
-├── IRS/
-│   └── shenwan-industry-classification.md
-└── PAS/
-    ├── lance-beggs-ytc-analysis.md
-    ├── xu-jiachong-naked-kline-analysis.md
-    ├── volman-ytc-mapping.md
-    └── tachibana-yoshimasa-analysis.md
-```
-
-## 使用规则
-
-1. `Strategy/` 只提供理论依据、研究材料和映射说明，不直接充当执行 SoT。
-2. 理论与实现冲突时，以 `blueprint/`、`steering/` 和当前版本 `spec/` 为准。
-3. 新增研究材料时，优先补充映射关系与“采用 / 适配 / 不采用”边界，不必在 README 重复展开全文摘要。
-4. 阶段性实现证据、回测结果、版本验收，不放在 `Strategy/`，统一归档到 `docs/spec/<version>/`。
-
-## 当前完成度
-
-| 领域 | 当前状态 | 备注 |
+| 文件 | 处理结论 | 说明 |
 |---|---|---|
-| MSS | 已有 2 份核心材料 | 足够支撑 `MSS-full` 理论溯源；当前在线实现为 `MSS-lite` |
-| IRS | 已有申万行业分类材料 | 足够支撑 `IRS-lite` 行业口径来源；轮动/牛股基因仍在升级 |
-| PAS | 已有 4 份核心材料 + 1 份关键映射 | 足够支撑 `PAS-full` 理论溯源；当前在线实现为 `PAS-trigger` |
-| 深度补充 | 仍缺 2 份候选研究材料 | 不阻塞当前文档治理与 v0.01 重启判断 |
+| `MSS/manual-sentiment-tracking-experience.md` | 降级为经验补充 | 保留经验密度，但不再视作 `MSS` 一级设计来源。 |
+| `PAS/tachibana-yoshimasa-analysis.md` | 降级为观察留档 | 保留研究痕迹，但不作为当前 `PAS` 实现或回测的直接来源。 |
 
-## 相邻目录边界
+### 合并规则
 
-- `blueprint/`：定义当前新版系统怎么做。
-- `docs/design-v2/`：保留历史基线与兼容桥接。
-- `docs/observatory/`：定义如何审视和验证。
-- `docs/spec/`：存放版本路线图、证据和历史记录。
-- `docs/reference/`：存放外部规则和运维参考。
+1. `Strategy/` 后续原则上不再新增“泛综述”文件；新总结优先并入 `theoretical-foundations.md`。
+2. 同一主题若已有“来源分析”或“映射主文档”，后续补充应并入原文，不再平行长出第二份概览稿。
+3. 仅当材料满足“一级来源 / 高价值映射 / 长期有效口径”三类之一时，才允许保留为独立文件。
+4. 偏经验、偏随笔、偏启发式的材料，默认降级为补充留档，不进入当前主线设计引用链。
 
-## 相关文档
+## 使用边界
 
-- `docs/design-v2/01-system/system-baseline.md`
-- `docs/design-migration-boundary.md`
-- `blueprint/README.md`
-- `docs/observatory/god_view_8_perspectives_report_v0.01.md`
-- `docs/spec/common/records/development-status.md`
+1. `Strategy/` 不直接充当执行 SoT。
+2. 当前可执行设计以 `blueprint/` 为准；`Strategy/` 只负责来源、映射和理论背景。
+3. 研究材料优先保留“来源 + 映射 + 采用边界”，不再堆执行草案。
+4. 历史基线看 `docs/design-v2/01-system/system-baseline.md`。
+5. 当前治理状态看 `docs/spec/common/records/development-status.md`。
+6. 版本证据、评审结论与冻结记录统一看 `docs/spec/` 与 `docs/observatory/`。
+
+## 相邻入口
+
+1. `PAS/volman-ytc-mapping.md`
+2. `../observatory/README.md`
+3. `../spec/README.md`
+4. `../../blueprint/README.md`
+5. `../design-v2/01-system/system-baseline.md`
+6. `../spec/common/records/development-status.md`
