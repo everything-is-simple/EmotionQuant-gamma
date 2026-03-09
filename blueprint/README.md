@@ -154,6 +154,11 @@
 当前 `03-execution/` 也已经落下第一份正文：
 
 1. `01-current-mainline-execution-breakdown-20260308.md`
+2. `02-phase-0-contract-trace-card-20260309.md`
+3. `03-phase-1-pas-card-20260309.md`
+4. `04-phase-2-irs-card-20260309.md`
+5. `05-phase-3-mss-card-20260309.md`
+6. `06-phase-4-gate-card-20260309.md`
 
 当前冻结后的使用顺序固定为：
 
