@@ -1365,7 +1365,17 @@ def test_selector_dtt_writes_candidate_trace_for_selected_truncated_and_rejected
     candidates = select_candidates(store, calc_date, cfg, run_id="selector_trace")
     trace = store.read_df(
         """
-        SELECT code, selected, candidate_rank, reject_reason, preselect_score, final_score
+        SELECT
+            code,
+            selected,
+            selected_for_bof,
+            candidate_rank,
+            candidate_reason,
+            coverage_flag,
+            source_snapshot_date,
+            reject_reason,
+            preselect_score,
+            final_score
         FROM selector_candidate_trace_exp
         WHERE run_id = ?
         ORDER BY code ASC
@@ -1375,11 +1385,19 @@ def test_selector_dtt_writes_candidate_trace_for_selected_truncated_and_rejected
 
     assert len(candidates) == 1
     assert candidates[0].code == "000001"
+    assert candidates[0].trade_date == calc_date
+    assert candidates[0].candidate_rank == 1
+    assert candidates[0].candidate_reason == "PRESELECT_TOP_N"
     assert "filter_reason" not in candidates[0].model_dump()
     assert trace["code"].tolist() == ["000001", "000002", "000003"]
     assert trace["selected"].tolist() == [True, False, False]
+    assert trace["selected_for_bof"].tolist() == [True, False, False]
     assert trace["candidate_rank"].tolist()[:2] == [1, 2]
     assert pd.isna(trace.iloc[2]["candidate_rank"])
+    assert trace.iloc[0]["candidate_reason"] == "PRESELECT_TOP_N"
+    assert pd.isna(trace.iloc[1]["candidate_reason"])
+    assert trace.iloc[0]["coverage_flag"] == "UNKNOWN_INDUSTRY"
+    assert trace.iloc[0]["source_snapshot_date"].date() == calc_date
     assert trace.iloc[0]["preselect_score"] == trace.iloc[0]["final_score"]
     assert trace.iloc[2]["reject_reason"] == "LOW_LIQUIDITY"
     store.close()

@@ -161,6 +161,14 @@ def _persist_selector_candidate_trace(
     trace["candidate_rank"] = trace["code"].astype(str).map(rank_map)
     trace["candidate_top_n"] = int(max(1, int(cfg.candidate_top_n)))
     trace["selected"] = trace["code"].astype(str).isin(top_codes)
+    trace["selected_for_bof"] = trace["selected"]
+    trace["candidate_reason"] = np.where(trace["selected"], "PRESELECT_TOP_N", None)
+    trace["coverage_flag"] = np.where(
+        trace["industry"].fillna("未知").astype(str) == "未知",
+        "UNKNOWN_INDUSTRY",
+        "NORMAL",
+    )
+    trace["source_snapshot_date"] = calc_date
     trace["final_score"] = pd.to_numeric(trace.get("score"), errors="coerce")
     trace["reject_reason"] = trace["reject_reason"].replace("", None)
 
@@ -179,12 +187,16 @@ def _persist_selector_candidate_trace(
                 "volume_ratio",
                 "filters_passed",
                 "reject_reason",
+                "candidate_reason",
+                "coverage_flag",
+                "source_snapshot_date",
                 "liquidity_tag",
                 "preselect_score",
                 "final_score",
                 "candidate_rank",
                 "candidate_top_n",
                 "selected",
+                "selected_for_bof",
             ],
         ].reset_index(drop=True),
     )
@@ -377,7 +389,10 @@ def select_candidates(
                 code=str(row["code"]),
                 industry=str(row["industry"]),
                 score=float(row["score"]),
+                trade_date=calc_date,
                 preselect_score=float(preselect_score),
+                candidate_rank=int(row.name) + 1,
+                candidate_reason="PRESELECT_TOP_N",
                 liquidity_tag=str(row["liquidity_tag"]) if pd.notna(row.get("liquidity_tag")) else None,
             )
         )

@@ -81,7 +81,10 @@ class StockCandidate(ContractBase):
     code: str = Field(..., description="6-digit pure stock code")
     industry: str
     score: float
+    trade_date: date | None = None
     preselect_score: float | None = None
+    candidate_rank: int | None = None
+    candidate_reason: str | None = None
     liquidity_tag: str | None = None
 
 

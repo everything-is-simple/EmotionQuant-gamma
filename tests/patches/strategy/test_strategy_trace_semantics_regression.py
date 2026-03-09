@@ -80,6 +80,9 @@ def test_pas_trace_signal_id_stays_stable_across_runs(tmp_path, monkeypatch) -> 
     assert trace_a is not None
     assert trace_b is not None
     assert trace_a["signal_id"] == trace_b["signal_id"] == "000001_2026-01-08_bof"
+    assert trace_a["candidate_rank"] == trace_b["candidate_rank"] == 1
+    assert trace_a["selected_pattern"] == trace_b["selected_pattern"] == "bof"
+    assert trace_a["detected"] == trace_b["detected"] is True
     store.close()
 
 

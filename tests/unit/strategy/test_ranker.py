@@ -365,7 +365,7 @@ def test_pas_trigger_trace_persists_triggered_and_not_triggered_candidates(tmp_p
     strategy_module.generate_signals(store, candidates, calc_date, cfg, run_id="pas_trace")
     trace = store.read_df(
         """
-        SELECT code, triggered, skip_reason
+        SELECT code, candidate_rank, detected, detect_reason, selected_pattern, pattern_strength, skip_reason
         FROM pas_trigger_trace_exp
         WHERE run_id = ?
         ORDER BY code ASC
@@ -374,7 +374,14 @@ def test_pas_trigger_trace_persists_triggered_and_not_triggered_candidates(tmp_p
     )
 
     assert trace["code"].tolist() == ["000001", "000002"]
-    assert trace["triggered"].tolist() == [True, False]
+    assert trace["candidate_rank"].tolist() == [1, 2]
+    assert trace["detected"].tolist() == [True, False]
+    assert trace.iloc[0]["selected_pattern"] == "bof"
+    assert pd.isna(trace.iloc[1]["selected_pattern"])
+    assert trace.iloc[0]["pattern_strength"] == 0.7
+    assert pd.isna(trace.iloc[1]["pattern_strength"])
+    assert pd.isna(trace.iloc[0]["detect_reason"])
+    assert trace.iloc[1]["detect_reason"] == "NO_BREAK"
     assert pd.isna(trace.iloc[0]["skip_reason"])
     assert trace.iloc[1]["skip_reason"] == "NO_BREAK"
     store.close()
