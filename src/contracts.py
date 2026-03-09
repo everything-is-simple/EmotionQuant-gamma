@@ -9,6 +9,7 @@ ActionType = Literal["BUY", "SELL"]
 SignalActionType = Literal["BUY"]
 # v0.01 勘误补充：订单生命周期允许 EXPIRED，避免 PENDING 无穷挂单。
 OrderStatusType = Literal["PENDING", "FILLED", "REJECTED", "EXPIRED"]
+OrderOriginType = Literal["UPSTREAM_SIGNAL", "EXIT_STOP_LOSS", "EXIT_TRAILING_STOP", "FORCE_CLOSE"]
 
 
 def build_signal_id(code: str, signal_date: date, pattern: str) -> str:
@@ -33,6 +34,30 @@ def build_exit_order_id(code: str, signal_date: date, reason: str) -> str:
 
 def build_force_close_order_id(code: str, trade_date: date) -> str:
     return f"FC_{code}_{trade_date.isoformat()}"
+
+
+def resolve_order_origin(order_id: str, signal_id: str | None = None) -> OrderOriginType:
+    """
+    Broker lifecycle trace 中的 origin 表示“订单来源”，不是处理阶段。
+
+    event_stage 负责描述风控/撮合/过期/强平等生命周期阶段；
+    origin 只负责回答这笔订单来自：
+    - 上游买入信号
+    - 退出单（止损 / 回撤）
+    - 回测末日强平
+    """
+    order_token = (order_id or "").strip().upper()
+    signal_token = (signal_id or "").strip().upper()
+    combined = f"{order_token} {signal_token}"
+
+    if order_token.startswith("FC_") or signal_token.startswith("FC_"):
+        return "FORCE_CLOSE"
+    if order_token.startswith("EXIT_"):
+        if "_STOP_LOSS" in combined:
+            return "EXIT_STOP_LOSS"
+        if "_TRAILING_STOP" in combined:
+            return "EXIT_TRAILING_STOP"
+    return "UPSTREAM_SIGNAL"
 
 
 class ContractBase(BaseModel):

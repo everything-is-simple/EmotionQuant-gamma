@@ -7,9 +7,13 @@ from src.contracts import (
     Signal,
     StockCandidate,
     Trade,
+    build_exit_order_id,
+    build_exit_signal_id,
+    build_force_close_order_id,
     build_order_id,
     build_signal_id,
     build_trade_id,
+    resolve_order_origin,
 )
 
 
@@ -60,3 +64,18 @@ def test_contracts_roundtrip() -> None:
     assert order.order_id == signal.signal_id
     assert trade.trade_id.endswith("_T")
 
+
+def test_resolve_order_origin_distinguishes_upstream_exit_and_force_close() -> None:
+    d = date(2026, 3, 4)
+    upstream_signal_id = build_signal_id("000001", d, "bof")
+    stop_loss_signal_id = build_exit_signal_id("000001", d, "STOP_LOSS")
+    trailing_signal_id = build_exit_signal_id("000001", d, "TRAILING_STOP")
+    force_close_order_id = build_force_close_order_id("000001", d)
+
+    assert resolve_order_origin(build_order_id(upstream_signal_id), upstream_signal_id) == "UPSTREAM_SIGNAL"
+    assert resolve_order_origin(build_exit_order_id("000001", d, "STOP_LOSS"), stop_loss_signal_id) == "EXIT_STOP_LOSS"
+    assert (
+        resolve_order_origin(build_exit_order_id("000001", d, "TRAILING_STOP"), trailing_signal_id)
+        == "EXIT_TRAILING_STOP"
+    )
+    assert resolve_order_origin(force_close_order_id, force_close_order_id) == "FORCE_CLOSE"

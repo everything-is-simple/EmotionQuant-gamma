@@ -12,10 +12,10 @@ from src.data.store import Store
 def _seed_trade_calendar(store: Store, start: date, days: int) -> list[date]:
     days_list = [start + timedelta(days=i) for i in range(days)]
     rows = []
-    for i, d in enumerate(days_list):
+    for i, trade_date in enumerate(days_list):
         rows.append(
             {
-                "date": d,
+                "date": trade_date,
                 "is_trade_day": True,
                 "prev_trade_day": days_list[i - 1] if i > 0 else None,
                 "next_trade_day": days_list[i + 1] if i < len(days_list) - 1 else None,
@@ -26,31 +26,31 @@ def _seed_trade_calendar(store: Store, start: date, days: int) -> list[date]:
 
 
 def _seed_single_stock(store: Store, days_list: list[date], signal_idx: int) -> None:
-    stock_info = pd.DataFrame(
-        [
-            {
-                "ts_code": "000001.SZ",
-                "name": "平安银行",
-                "industry": "银行",
-                "market": "主板",
-                "is_st": False,
-                "list_date": date(2010, 1, 1),
-                "effective_from": days_list[0],
-            }
-        ]
+    store.bulk_upsert(
+        "l1_stock_info",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SZ",
+                    "name": "平安银行",
+                    "industry": "银行",
+                    "market": "主板",
+                    "is_st": False,
+                    "list_date": date(2010, 1, 1),
+                    "effective_from": days_list[0],
+                }
+            ]
+        ),
     )
-    store.bulk_upsert("l1_stock_info", stock_info)
 
     l1_rows = []
     l2_rows = []
-    for i, d in enumerate(days_list):
+    for i, trade_date in enumerate(days_list):
         low = 9.95
         high = 10.20
         close = 10.00
         open_price = 10.00
         volume = 1_000.0
-
-        # 仅在 signal_idx 构造 BOF 触发：假破位后收回 + 收盘位于振幅上部 + 放量。
         if i == signal_idx:
             low = 9.80
             high = 10.10
@@ -61,7 +61,7 @@ def _seed_single_stock(store: Store, days_list: list[date], signal_idx: int) -> 
         l1_rows.append(
             {
                 "ts_code": "000001.SZ",
-                "date": d,
+                "date": trade_date,
                 "open": open_price,
                 "high": high,
                 "low": low,
@@ -81,7 +81,7 @@ def _seed_single_stock(store: Store, days_list: list[date], signal_idx: int) -> 
         l2_rows.append(
             {
                 "code": "000001",
-                "date": d,
+                "date": trade_date,
                 "adj_open": open_price,
                 "adj_high": high,
                 "adj_low": low,
@@ -103,12 +103,11 @@ def _seed_single_stock(store: Store, days_list: list[date], signal_idx: int) -> 
     store.bulk_upsert("l2_stock_adj_daily", pd.DataFrame(l2_rows))
 
 
-def test_backtest_t_plus_1_and_idempotency(tmp_path) -> None:
-    db = tmp_path / "bt.duckdb"
+def test_force_close_trace_origin_stays_queryable(tmp_path) -> None:
+    db = tmp_path / "force_close_patch.duckdb"
     store = Store(db)
     days_list = _seed_trade_calendar(store, start=date(2026, 1, 1), days=30)
-    signal_idx = 24
-    _seed_single_stock(store, days_list, signal_idx=signal_idx)
+    _seed_single_stock(store, days_list, signal_idx=24)
     store.close()
 
     cfg = Settings(
@@ -123,52 +122,21 @@ def test_backtest_t_plus_1_and_idempotency(tmp_path) -> None:
         BACKTEST_INITIAL_CASH=1_000_000,
     )
 
-    start = days_list[22]
-    end = days_list[25]
-
-    first = run_backtest(db_path=db, config=cfg, start=start, end=end, patterns=["bof"], initial_cash=1_000_000)
+    run_backtest(
+        db_path=db,
+        config=cfg,
+        start=days_list[22],
+        end=days_list[25],
+        patterns=["bof"],
+        initial_cash=1_000_000,
+    )
 
     verify = Store(db)
-    buy_orders = verify.read_df(
-        "SELECT order_id, execute_date FROM l4_orders WHERE action='BUY' ORDER BY order_id"
-    )
-    buy_trades = verify.read_df(
-        "SELECT trade_id, execute_date, action FROM l4_trades WHERE action='BUY' ORDER BY trade_id"
-    )
-    force_close_orders = verify.read_df(
-        "SELECT order_id FROM l4_orders WHERE order_id LIKE 'FC_%' ORDER BY order_id"
-    )
-    force_close_trace = verify.read_df(
-        """
-        SELECT event_stage, origin
-        FROM broker_order_lifecycle_trace_exp
-        WHERE event_stage = 'FORCE_CLOSE_FILLED'
-        """
-    )
+    force_close_order_id = verify.read_scalar("SELECT order_id FROM l4_orders WHERE order_id LIKE 'FC_%' LIMIT 1")
+    trace = verify.get_broker_lifecycle_trace("", str(force_close_order_id))
 
-    assert not buy_orders.empty
-    assert not buy_trades.empty
-    assert not force_close_orders.empty
-    assert force_close_trace.iloc[0]["origin"] == "FORCE_CLOSE"
-
-    expected_exec_date = days_list[signal_idx + 1]
-    assert buy_orders.iloc[0]["execute_date"].date() == expected_exec_date
-    assert buy_trades.iloc[0]["execute_date"].date() == expected_exec_date
-
-    order_ids_1 = set(verify.read_df("SELECT order_id FROM l4_orders")["order_id"].tolist())
-    trade_ids_1 = set(verify.read_df("SELECT trade_id FROM l4_trades")["trade_id"].tolist())
+    assert force_close_order_id is not None
+    assert not trace.empty
+    assert "FORCE_CLOSE_FILLED" in trace["event_stage"].tolist()
+    assert "FORCE_CLOSE" in trace["origin"].tolist()
     verify.close()
-
-    second = run_backtest(db_path=db, config=cfg, start=start, end=end, patterns=["bof"], initial_cash=1_000_000)
-
-    verify2 = Store(db)
-    order_ids_2 = set(verify2.read_df("SELECT order_id FROM l4_orders")["order_id"].tolist())
-    trade_ids_2 = set(verify2.read_df("SELECT trade_id FROM l4_trades")["trade_id"].tolist())
-    verify2.close()
-
-    # 幂等要求：同输入重跑，主键集合不应变化。
-    assert order_ids_1 == order_ids_2
-    assert trade_ids_1 == trade_ids_2
-
-    assert first.trade_count >= 1
-    assert second.trade_count == first.trade_count

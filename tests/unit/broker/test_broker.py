@@ -796,6 +796,17 @@ def test_broker_generates_stop_loss_exit_order_t_plus_1(tmp_path) -> None:
     assert exits[0].execute_date == exec_date
     assert exits[0].quantity == 100
     assert exits[0].order_id.startswith("EXIT_")
+    lifecycle = store.read_df(
+        """
+        SELECT event_stage, origin, reason_code
+        FROM broker_order_lifecycle_trace_exp
+        WHERE order_id = ?
+        """,
+        (exits[0].order_id,),
+    )
+    assert lifecycle.iloc[0]["event_stage"] == "EXIT_ORDER_CREATED"
+    assert lifecycle.iloc[0]["origin"] == "EXIT_STOP_LOSS"
+    assert lifecycle.iloc[0]["reason_code"] == "STOP_LOSS"
     store.close()
 
 
@@ -1129,5 +1140,51 @@ def test_broker_records_lifecycle_trace_for_reject_fill_and_expire(tmp_path) -> 
     assert "ORDER_EXPIRED" in lifecycle["event_stage"].tolist()
     expired = lifecycle[lifecycle["event_stage"] == "ORDER_EXPIRED"].iloc[0]
     assert expired["reason_code"] == "ORDER_TIMEOUT"
-    assert expired["origin"] == "broker_expiry"
+    assert expired["origin"] == "UPSTREAM_SIGNAL"
+    store.close()
+
+
+def test_broker_expires_pending_order_on_next_trade_day_when_max_pending_is_one(tmp_path) -> None:
+    db = tmp_path / "test_expire_next_trade_day.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+    next_trade_date = date(2026, 3, 5)
+    cfg = Settings(
+        BACKTEST_INITIAL_CASH=1_000_000,
+        MAX_PENDING_TRADE_DAYS=1,
+    )
+    broker = Broker(store, cfg, run_id="expire_next_trade_day")
+
+    store.bulk_upsert(
+        "l1_trade_calendar",
+        pd.DataFrame(
+            [
+                {"date": signal_date, "is_trade_day": True, "prev_trade_day": None, "next_trade_day": exec_date},
+                {"date": exec_date, "is_trade_day": True, "prev_trade_day": signal_date, "next_trade_day": next_trade_date},
+                {"date": next_trade_date, "is_trade_day": True, "prev_trade_day": exec_date, "next_trade_day": None},
+            ]
+        ),
+    )
+
+    order = Order(
+        order_id="000001_2026-03-03_bof",
+        signal_id="000001_2026-03-03_bof",
+        code="000001",
+        action="BUY",
+        quantity=100,
+        execute_date=exec_date,
+        pattern="bof",
+        status="PENDING",
+    )
+    broker.add_pending_order(order)
+    store.bulk_upsert("l4_orders", pd.DataFrame([order.model_dump()]))
+
+    expired = broker.expire_orders(next_trade_date)
+    assert expired == 1
+
+    lifecycle = store.get_broker_lifecycle_trace("expire_next_trade_day", order.order_id)
+    assert len(lifecycle) == 1
+    assert lifecycle.iloc[0]["event_stage"] == "ORDER_EXPIRED"
+    assert lifecycle.iloc[0]["origin"] == "UPSTREAM_SIGNAL"
     store.close()

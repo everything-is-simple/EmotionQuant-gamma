@@ -16,6 +16,7 @@ from src.contracts import (
     build_exit_order_id,
     build_exit_signal_id,
     build_order_id,
+    resolve_order_origin,
 )
 from src.data.store import Store
 
@@ -62,7 +63,6 @@ class Broker:
         order: Order,
         event_stage: str,
         event_date: date,
-        origin: str,
         reason_code: str | None = None,
         trade: Trade | None = None,
         price: float | None = None,
@@ -82,7 +82,7 @@ class Broker:
                     "execute_date": order.execute_date,
                     "order_status": order.status,
                     "reason_code": reason_code,
-                    "origin": origin,
+                    "origin": resolve_order_origin(order.order_id, order.signal_id),
                     "quantity": int(order.quantity),
                     "price": price,
                     "is_paper": order.is_paper,
@@ -175,7 +175,6 @@ class Broker:
                         rejected_order,
                         event_stage="RISK_REJECTED",
                         event_date=signal.signal_date,
-                        origin="risk_manager",
                         reason_code=decision.reject_reason,
                     )
                 continue
@@ -186,7 +185,6 @@ class Broker:
                 order,
                 event_stage="RISK_ACCEPTED",
                 event_date=signal.signal_date,
-                origin="risk_manager",
                 reason_code="ACCEPTED",
             )
             # 预占现金与持仓名额，避免同日后续信号“重复花钱”。
@@ -252,6 +250,26 @@ class Broker:
             o.status == "PENDING" and o.action == "SELL" and o.code == code for o in self.pending_orders
         )
 
+    def _pending_trade_days_elapsed(self, execute_date: date, today: date) -> int:
+        """
+        统计 execute_date 之后、截至 today 已推进的交易日数。
+
+        约定：
+        - execute_date 当天不计入“挂单已等待天数”
+        - `MAX_PENDING_TRADE_DAYS=1` 表示下一交易日仍未成交即过期
+        """
+        if today <= execute_date:
+            return 0
+
+        days = 0
+        cursor = execute_date
+        while True:
+            cursor = self.store.next_trade_date(cursor)
+            if cursor is None or cursor > today:
+                break
+            days += 1
+        return days
+
     def generate_exit_orders(self, signal_date: date) -> list[Order]:
         """
         最小退出机制（Gate 修复项）：
@@ -307,7 +325,6 @@ class Broker:
                 order,
                 event_stage="EXIT_ORDER_CREATED",
                 event_date=signal_date,
-                origin="broker_exit",
                 reason_code=exit_reason,
             )
 
@@ -365,7 +382,6 @@ class Broker:
                     rejected,
                     event_stage="MATCH_REJECTED",
                     event_date=trade_date,
-                    origin="matcher",
                     reason_code=reject_reason,
                 )
                 continue
@@ -379,7 +395,6 @@ class Broker:
                         rejected,
                         event_stage="MATCH_REJECTED",
                         event_date=trade_date,
-                        origin="broker_cash_check",
                         reason_code="INSUFFICIENT_CASH_AT_EXECUTION",
                     )
                     continue
@@ -389,7 +404,6 @@ class Broker:
                 filled,
                 event_stage="MATCH_FILLED",
                 event_date=trade_date,
-                origin="matcher",
                 reason_code="FILLED",
                 trade=trade,
                 price=float(trade.price),
@@ -409,24 +423,17 @@ class Broker:
         """
         expired = 0
         updated_pending: list[Order] = []
+        max_pending_trade_days = max(0, int(self.config.max_pending_trade_days))
         for order in self.pending_orders:
             if order.status != "PENDING":
                 continue
-            # 使用交易日历推进差值，避免自然日周末误差。
-            cursor: date | None = order.execute_date
-            days = 0
-            while cursor is not None and cursor < today:
-                cursor = self.store.next_trade_date(cursor)
-                days += 1
-                if days > self.config.max_pending_trade_days:
-                    break
-            if days > self.config.max_pending_trade_days:
+            elapsed_trade_days = self._pending_trade_days_elapsed(order.execute_date, today)
+            if elapsed_trade_days >= max_pending_trade_days:
                 expired_order = self._mark_order_status(order, "EXPIRED", "ORDER_TIMEOUT")
                 self._record_lifecycle_event(
                     expired_order,
                     event_stage="ORDER_EXPIRED",
                     event_date=today,
-                    origin="broker_expiry",
                     reason_code="ORDER_TIMEOUT",
                 )
                 expired += 1

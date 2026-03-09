@@ -9,7 +9,7 @@ import pandas as pd
 
 from src.broker.broker import Broker
 from src.config import Settings
-from src.contracts import Order, Trade, build_force_close_order_id, build_trade_id
+from src.contracts import Order, Trade, build_force_close_order_id, build_trade_id, resolve_order_origin
 from src.data.store import Store
 from src.logging_utils import logger
 from src.report.reporter import generate_backtest_report
@@ -135,7 +135,7 @@ def _force_close_all(store: Store, broker: Broker, trade_date: date) -> int:
                 "execute_date": order.execute_date,
                 "order_status": order.status,
                 "reason_code": "FORCE_CLOSE",
-                "origin": "force_close",
+                "origin": resolve_order_origin(order.order_id, order.signal_id),
                 "quantity": int(order.quantity),
                 "price": float(trade.price),
                 "is_paper": order.is_paper,

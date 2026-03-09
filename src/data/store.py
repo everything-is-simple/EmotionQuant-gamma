@@ -661,6 +661,79 @@ class Store:
         sql = f"SELECT * FROM {table} WHERE " + " AND ".join(where_clauses)
         return self.read_df(sql, tuple(params))
 
+    def get_selector_candidate_trace(self, run_id: str, signal_date: date, code: str) -> dict[str, Any] | None:
+        row = self.read_df(
+            """
+            SELECT *
+            FROM selector_candidate_trace_exp
+            WHERE run_id = ? AND signal_date = ? AND code = ?
+            LIMIT 1
+            """,
+            (run_id, signal_date, code),
+        )
+        if row.empty:
+            return None
+        return dict(row.iloc[0].to_dict())
+
+    def get_pas_trigger_trace(
+        self,
+        run_id: str,
+        signal_date: date,
+        code: str,
+        detector: str,
+    ) -> dict[str, Any] | None:
+        row = self.read_df(
+            """
+            SELECT *
+            FROM pas_trigger_trace_exp
+            WHERE run_id = ? AND signal_date = ? AND code = ? AND detector = ?
+            LIMIT 1
+            """,
+            (run_id, signal_date, code, detector),
+        )
+        if row.empty:
+            return None
+        return dict(row.iloc[0].to_dict())
+
+    def get_irs_industry_trace(self, run_id: str, signal_id: str) -> dict[str, Any] | None:
+        row = self.read_df(
+            """
+            SELECT *
+            FROM irs_industry_trace_exp
+            WHERE run_id = ? AND signal_id = ?
+            LIMIT 1
+            """,
+            (run_id, signal_id),
+        )
+        if row.empty:
+            return None
+        return dict(row.iloc[0].to_dict())
+
+    def get_mss_risk_overlay_trace(self, run_id: str, signal_id: str) -> dict[str, Any] | None:
+        row = self.read_df(
+            """
+            SELECT *
+            FROM mss_risk_overlay_trace_exp
+            WHERE run_id = ? AND signal_id = ?
+            LIMIT 1
+            """,
+            (run_id, signal_id),
+        )
+        if row.empty:
+            return None
+        return dict(row.iloc[0].to_dict())
+
+    def get_broker_lifecycle_trace(self, run_id: str, order_id: str) -> pd.DataFrame:
+        return self.read_df(
+            """
+            SELECT *
+            FROM broker_order_lifecycle_trace_exp
+            WHERE run_id = ? AND order_id = ?
+            ORDER BY event_date ASC, event_stage ASC
+            """,
+            (run_id, order_id),
+        )
+
     def get_fetch_progress(self, data_type: str) -> date | None:
         value = self.read_scalar(
             "SELECT last_success FROM _meta_fetch_progress WHERE data_type = ?", (data_type,)
@@ -715,3 +788,4 @@ class Store:
 
     def close(self) -> None:
         self.conn.close()
+
