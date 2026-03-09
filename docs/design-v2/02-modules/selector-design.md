@@ -1,657 +1,185 @@
 # Selector 详细设计
 
 **版本**: `v0.01 正式版`  
-**状态**: `Frozen`（与 `system-baseline.md` 对齐）  
+**状态**: `Frozen`  
 **封版日期**: `2026-03-03`  
-**变更规则**: `仅允许勘误与说明性修订；执行语义变更需进入独立实验包或后续正式版本。`  
-**上游文档**: `docs/design-v2/01-system/architecture-master.md` §4.2  
-**创建日期**: `2026-03-01`  
-**对应模块**: `src/selector/`（mss.py, irs.py, gene.py, selector.py）  
-**历史相关文档**: `docs/design-v2/01-system/system-baseline.md`, `docs/design-v2/01-system/architecture-master.md`
-
-> 本文件只保留 `v0.01 Frozen` 历史 Selector 口径。仓库现行 `Selector` 权威设计请直接查看 `blueprint/01-full-design/01-selector-contract-annex-20260308.md`。
-
-## 冻结区与冲突处理
-
-1. 本文档属于冻结区；默认只允许勘误、链接修复与说明性澄清。若涉及执行语义、模块边界或口径调整，必须进入后续版本处理。
-2. 若本文档与 `docs/design-v2/01-system/system-baseline.md` 冲突，以 baseline 为准，并应同步回写本文档。
-3. 当前治理状态与是否恢复实现，以 `docs/spec/common/records/development-status.md` 为准。
-4. 版本证据、回归结果与阶段记录，统一归档到 `docs/spec/<version>/`。
----
-
-## 现行设计桥接导航
-
-- 设计迁移边界：`docs/design-migration-boundary.md`
-- 现行 `Selector` 正文：`blueprint/01-full-design/01-selector-contract-annex-20260308.md`
-- 当前实现方案：`blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
-- 当前执行拆解：`blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`
-
-下文各节默认描述 `v0.01 Frozen` 历史漏斗口径，仅供对照与回退使用。
-
-## 1. 设计目标
-
-Selector 回答一个问题：**从全市场 ~5000 只股票中，今天应该关注哪 200 只候选池？**
-
-**v0.01 执行口径**：
-1. **基础过滤**：流动性/ST/停牌/市值 → 粗筛输出约 200 只候选。
-2. **MSS/IRS 漏斗**：在粗筛池内执行 MSS gate + IRS filter，输出 50-100 只候选池给 Strategy。
-
-> 说明：
-> - `Frozen` 设计文档只记录 v0.01 正式执行口径。
-> - 仓库现行 `Selector` 设计已迁入 `blueprint/01-full-design/01-selector-contract-annex-20260308.md` 与 `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`。
-> - `gene` 在 v0.01 不进入实时漏斗，仅保留接口用于事后分析
-
-### 1.2 v0.01 强制验证顺序（防假设漂移）
-
-MSS/IRS 在 v0.01 视为待验证假设，不得直接视为“默认有效”。回测/评审必须按以下顺序输出同口径结果：
-
-1. `BOF baseline`：`ENABLE_MSS_GATE=False` 且 `ENABLE_IRS_FILTER=False`
-2. `BOF + MSS`：`ENABLE_MSS_GATE=True` 且 `ENABLE_IRS_FILTER=False`
-3. `BOF + MSS + IRS`：`ENABLE_MSS_GATE=True` 且 `ENABLE_IRS_FILTER=True`
-
-比较指标必须一致：胜率、盈亏比、期望值、最大回撤、分环境中位数路径。
-
-### 1.1 v0.01 扫描策略（两阶段）
-
-为控制全市场扫描成本并避免 API 压力，Selector 固定采用两阶段：
-
-1. 粗筛阶段：全市场约5000只 -> 约200只（流动性/上市天数/停牌/基础波动过滤）。
-2. 精筛阶段：在约200只内执行 MSS/IRS 漏斗并输出 50-100 候选池给 Strategy。
-
-说明：
-- 粗筛目标是降低计算规模，不改变因子边界。
-- 形态触发器扫描不在全市场做，只对候选池做。
+**变更规则**: `仅允许勘误、链接修复与历史说明补充；执行语义变更必须进入后续版本或现行设计层。`  
+**上游文档**: `docs/design-v2/01-system/system-baseline.md`  
+**历史相关文档**: `docs/design-v2/01-system/architecture-master.md`
 
 ---
 
-## 2. 共用工具：zscore_normalize
+## 1. 文档定位
 
-MSS / IRS / gene 三套因子共用同一个归一化函数，定义在 `selector/` 包级别：
+本文档是 `v0.01 Frozen` 的**历史 Selector 模块参考文档**。
 
-```python
-# selector/__init__.py 或 selector/normalize.py
+它保留的价值主要是：
 
-def zscore_normalize(value: float, mean: float, std: float) -> float:
-    """
-    Z-Score 归一化，映射到 0-100。
-    [-3σ, +3σ] → [0, 100]，超出范围 clip。
-    """
-    if std == 0:
-        return 50.0                          # 零波动 → 中性分
-    z = (value - mean) / std
-    return max(0.0, min(100.0, (z + 3) / 6 * 100))
-```
+1. 说明 `v0.01` 时期 `Selector` 的历史职责。
+2. 记录当时为什么把 `MSS/IRS` 放在 Selector 前置漏斗中。
+3. 给 `system-baseline.md` 提供模块级背景补充。
 
-**mean / std 来源**：
-- **第1迭代**：硬编码离线 baseline（2015-2025 历史样本统计）
-- **后续迭代**：每日收盘后按滚动窗口（默认 120 交易日）增量更新
-- **缺失兜底**：某因子缺 mean/std → 返回 50（中性分）
-
-### baseline 数据结构
-
-```python
-# selector/baseline.py
-
-# 第1迭代硬编码，后续改为从数据库读取滚动统计
-MSS_BASELINE = {
-    "market_coefficient_raw": {"mean": 0.48, "std": 0.08},
-    "profit_effect_raw":      {"mean": 0.015, "std": 0.008},
-    "loss_effect_raw":        {"mean": 0.012, "std": 0.006},
-    "continuity_raw":         {"mean": 0.10, "std": 0.05},
-    "extreme_raw":            {"mean": 0.06, "std": 0.03},
-    "volatility_raw":         {"mean": 0.35, "std": 0.12},
-}
-
-IRS_BASELINE = {
-    "relative_strength":  {"mean": 0.0, "std": 0.015},
-    "net_inflow_10d":     {"mean": 0.0, "std": 5e8},
-    "flow_share":         {"mean": 1/31, "std": 0.01},
-}
-```
-
-> baseline 值需要在第1周拉完 3 年历史数据后，跑一次统计脚本生成。上面是占位示例。
+本文档不是仓库现行 `Selector` 设计正文。当前主线 `Selector` 权威设计已迁入 `blueprint/01-full-design/01-selector-contract-annex-20260308.md`。
 
 ---
 
-## 3. mss.py — 市场情绪评分
+## 2. 当前使用边界
 
-### 3.1 函数签名
+当前阅读本文的正确用途是：
 
-```python
-def compute_mss(store: Store, start: date, end: date) -> None:
-    """
-    读 l2_market_snapshot，计算 MSS 六因子评分，写 l3_mss_daily。
-    向量化处理整段日期范围。
-    """
+1. 回看 `v0.01 Frozen` 历史漏斗逻辑。
+2. 理解历史版本中 `MSS/IRS` 的前置位置。
+3. 对照当前主线为什么改成 `Selector` 只做基础过滤与规模控制。
 
-def compute_mss_single(row: dict, baseline: dict) -> MarketScore:
-    """
-    单日评分（纯函数，便于单测）。
-    输入：l2_market_snapshot 的一行（dict）。
-    输出：MarketScore 契约对象。
-    """
-```
+当前不应把本文当作：
 
-### 3.2 六因子计算管线
-
-```text
-l2_market_snapshot 一行 →
-
-  ┌─ 基础三因子（总权重 85%）─────────────────────────┐
-  │                                                    │
-  │  大盘系数（17%）                                    │
-  │    raw = rise_count / total_stocks                 │
-  │    market_coefficient = zscore(raw)                 │
-  │                                                    │
-  │  赚钱效应（34%）                                    │
-  │    limit_up_ratio  = limit_up_count / total_stocks │
-  │    new_high_ratio  = new_100d_high_count / total   │
-  │    strong_up_ratio = strong_up_count / total       │
-  │    raw = 0.4×limit_up_ratio + 0.3×new_high_ratio  │
-  │        + 0.3×strong_up_ratio                       │
-  │    profit_effect = zscore(raw)                      │
-  │                                                    │
-  │  亏钱效应（34%，方向翻转）                           │
-  │    broken_rate    = touched_limit_up / limit_up     │
-  │    limit_down_r   = limit_down_count / total       │
-  │    strong_down_r  = strong_down_count / total      │
-  │    new_low_ratio  = new_100d_low_count / total     │
-  │    raw = 0.3×broken_rate + 0.2×limit_down_r       │
-  │        + 0.3×strong_down_r + 0.2×new_low_ratio    │
-  │    loss_effect = zscore(raw)                        │
-  └────────────────────────────────────────────────────┘
-
-  ┌─ 增强三因子（总权重 15%）─────────────────────────┐
-  │                                                    │
-  │  连续性（5%）                                       │
-  │    cont_limit_up_r = continuous_limit_up_2d        │
-  │                    / limit_up_count                │
-  │    cont_new_high_r = continuous_new_high_2d_plus   │
-  │                    / new_100d_high_count           │
-  │    raw = 0.5×cont_limit_up_r + 0.5×cont_new_high_r│
-  │    continuity = zscore(raw)                         │
-  │                                                    │
-  │  极端因子（5%）                                     │
-  │    panic_tail_r   = high_open_low_close / total    │
-  │    squeeze_tail_r = low_open_high_close / total    │
-  │    raw = panic_tail_r + squeeze_tail_r             │
-  │    extreme = zscore(raw)                            │
-  │                                                    │
-  │  波动因子（5%，方向翻转）                            │
-  │    amount_vol_ratio = amount_volatility             │
-  │                     / (amount_volatility + 1e6)    │
-  │    raw = 0.5×pct_chg_std + 0.5×amount_vol_ratio   │
-  │    volatility = zscore(raw)                         │
-  └────────────────────────────────────────────────────┘
-
-  温度合成：
-    temperature = 0.17 × market_coefficient
-               + 0.34 × profit_effect
-               + 0.34 × (100 - loss_effect)
-               + 0.05 × continuity
-               + 0.05 × extreme
-               + 0.05 × (100 - volatility)
-
-  信号判定：
-    temperature >= 65 → BULLISH
-    temperature <= 35 → BEARISH
-    else              → NEUTRAL
-```
-
-### 3.3 分母为零保护
-
-```python
-def safe_ratio(numerator, denominator, default=0.0):
-    """分母为零时返回 default。向量化版本用 np.where。"""
-    if denominator == 0:
-        return default
-    return numerator / denominator
-```
-
-所有 ratio 计算必须经过此函数。场景：
-- `limit_up_count = 0` → `broken_rate = 0`（没有涨停就没有炸板）
-- `total_stocks = 0` → 当天无交易数据，整行跳过
-- `new_100d_high_count = 0` → `continuous_new_high_ratio = 0`
-
-### 3.4 向量化实现要点
-
-```python
-def compute_mss(store, start, end):
-    # 一次读整段日期的 market_snapshot
-    df = store.read_table("l2_market_snapshot", date_range=(start, end))
-
-    # 向量化计算所有 ratio（pandas 列运算）
-    df["limit_up_ratio"] = df["limit_up_count"] / df["total_stocks"].replace(0, np.nan)
-    # ... 其余 ratio 同理
-
-    # 向量化 zscore
-    df["market_coefficient"] = df["market_coefficient_raw"].apply(
-        lambda x: zscore_normalize(x, baseline["mean"], baseline["std"])
-    )
-    # 或用 np.clip((z + 3) / 6 * 100, 0, 100) 全列一次性算
-
-    # 合成温度
-    df["score"] = (0.17 * df["market_coefficient"]
-                 + 0.34 * df["profit_effect"]
-                 + 0.34 * (100 - df["loss_effect"])
-                 + 0.05 * df["continuity"]
-                 + 0.05 * df["extreme"]
-                 + 0.05 * (100 - df["volatility"]))
-
-    df["signal"] = np.where(df["score"] >= 65, "BULLISH",
-                   np.where(df["score"] <= 35, "BEARISH", "NEUTRAL"))
-
-    # 批量写入
-    store.bulk_upsert("l3_mss_daily", df[MSS_COLUMNS])
-```
-
-### 3.5 输出契约
-
-```python
-class MarketScore(BaseModel):    # contracts.py
-    date: date
-    score: float                 # 0-100
-    signal: str                  # BULLISH / NEUTRAL / BEARISH
-```
-
-### 3.6 信号阈值配置
-
-```python
-# config.py
-MSS_BULLISH_THRESHOLD = 65       # ≥ 此值 → BULLISH
-MSS_BEARISH_THRESHOLD = 35       # ≤ 此值 → BEARISH
-MSS_NORMALIZE_WINDOW = 120       # 滚动归一化窗口（交易日）
-```
+1. 当前主线 `Selector` 算法正文。
+2. 当前 `MSS / IRS` 的正式设计来源。
+3. 当前候选池排序或前置过滤的现行实现说明。
 
 ---
 
-## 4. irs.py — 行业轮动评分
+## 3. 当前权威入口
 
-### 4.1 函数签名
+### 3.1 历史冻结入口
 
-```python
-def compute_irs(store: Store, start: date, end: date) -> None:
-    """
-    读 l2_industry_daily + l1_index_daily，计算 IRS 评分，写 l3_irs_daily。
-    """
+`v0.01 Frozen` 的历史执行口径，以以下文件为准：
 
-def compute_irs_single(industry_df: pd.DataFrame,
-                       benchmark_df: pd.DataFrame,
-                       calc_date: date,
-                       baseline: dict) -> IndustryScore:
-    """
-    单行业单日评分（纯函数，便于单测）。
-    """
-```
+1. `docs/design-v2/01-system/system-baseline.md`
 
-### 4.2 二因子计算管线
+### 3.2 现行设计入口
 
-```text
-l2_industry_daily + l1_index_daily(000001.SH) →
+仓库现行 `Selector` 设计请直接查看：
 
-  相对强度（权重 55%）：
-    relative_strength = industry_pct_chg - benchmark_pct_chg
-    rs_score = zscore(relative_strength)
-
-  资金流向（权重 45%）：
-    industry_amount_delta = amount - lag(amount, 1)
-    net_inflow_10d = SUM(industry_amount_delta, window=10)
-    market_amount_total = SUM(ALL industries amount on date)
-    flow_share = industry_amount / market_amount_total
-    cf_score = 0.6 × zscore(net_inflow_10d) + 0.4 × zscore(flow_share)
-
-  综合评分：
-    industry_score = 0.55 × rs_score + 0.45 × cf_score
-
-  排名：
-    rank = 按 industry_score 降序排名（1 = 最强）
-```
-
-### 4.3 向量化实现要点
-
-```python
-def compute_irs(store, start, end):
-    # 读行业日线（需要 start-10 天的数据算 10 日滚动）
-    lookback_start = get_trade_date_offset(start, -15)
-    ind_df = store.read_table("l2_industry_daily", date_range=(lookback_start, end))
-
-    # 读基准指数（上证综指）
-    bench_df = store.read_df(
-        "SELECT date, pct_chg FROM l1_index_daily WHERE ts_code = '000001.SH'"
-        " AND date BETWEEN ? AND ?", (lookback_start, end)
-    )
-
-    # 合并
-    df = ind_df.merge(bench_df, on="date", suffixes=("", "_bench"))
-
-    # 相对强度
-    df["relative_strength"] = df["pct_chg"] - df["pct_chg_bench"]
-    df["rs_score"] = vectorized_zscore(df["relative_strength"], baseline)
-
-    # 资金流向：10 日滚动
-    df["amount_delta"] = df.groupby("industry")["amount"].diff(1)
-    df["net_inflow_10d"] = df.groupby("industry")["amount_delta"].rolling(10).sum().reset_index(0, drop=True)
-
-    # 每日全市场成交额
-    daily_total = df.groupby("date")["amount"].sum().rename("market_total")
-    df = df.merge(daily_total, on="date")
-    df["flow_share"] = df["amount"] / df["market_total"]
-
-    df["cf_score"] = (0.6 * vectorized_zscore(df["net_inflow_10d"], baseline_nf)
-                    + 0.4 * vectorized_zscore(df["flow_share"], baseline_fs))
-
-    # 综合评分
-    df["score"] = 0.55 * df["rs_score"] + 0.45 * df["cf_score"]
-
-    # 排名（按日分组）
-    df["rank"] = df.groupby("date")["score"].rank(ascending=False, method="min").astype(int)
-
-    # 只写 [start, end] 范围
-    result = df[df["date"].between(start, end)]
-    store.bulk_upsert("l3_irs_daily", result[IRS_COLUMNS])
-```
-
-### 4.4 输出契约
-
-```python
-class IndustryScore(BaseModel):  # contracts.py
-    date: date
-    industry: str
-    score: float
-    rank: int
-```
-
-### 4.5 IRS 配置
-
-```python
-# config.py
-IRS_TOP_N = 5                    # 取 Top-N 行业放行
-IRS_RS_WEIGHT = 0.55
-IRS_CF_WEIGHT = 0.45
-IRS_INFLOW_WINDOW = 10           # 资金流向滚动窗口（交易日）
-IRS_BENCHMARK = "000001.SH"      # 基准指数
-```
-
-### 4.6 后续迭代预留
-
-第1迭代只用 2 因子。后续 4 因子的接口预留：
-
-```python
-# irs.py 中预留函数签名，第1迭代返回 0
-def _compute_continuity_score(df) -> pd.Series:
-    """连续性因子（第2迭代）"""
-    return pd.Series(0, index=df.index)
-
-def _compute_valuation_score(df) -> pd.Series:
-    """估值因子（第2迭代）"""
-    return pd.Series(0, index=df.index)
-
-def _compute_leader_score(df) -> pd.Series:
-    """龙头因子（第3迭代）"""
-    return pd.Series(0, index=df.index)
-
-def _compute_gene_score(df) -> pd.Series:
-    """基因库因子（第3迭代）"""
-    return pd.Series(0, index=df.index)
-```
+1. `docs/design-migration-boundary.md`
+2. `blueprint/01-full-design/01-selector-contract-annex-20260308.md`
+3. `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
+4. `blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`
 
 ---
 
-## 5. gene.py — 牛股基因/衰股基因画像（第2迭代）
+## 4. `v0.01 Frozen` 中 Selector 的历史职责
 
-### 5.1 函数签名
+历史上，`Selector` 回答的问题是：
 
-```python
-def compute_gene(store: Store, start: date, end: date) -> None:
-    """
-    读 l2_stock_adj_daily（250 日窗口），计算基因画像，写 l3_stock_gene。
-    第2迭代实现，第1迭代只建表不算。
-    """
-```
+`从全市场中先缩到可扫描候选池。`
 
-### 5.2 五牛五衰基因计算
+其职责可概括为三层：
 
-```text
-输入：单只股票 250 个交易日的 l2_stock_adj_daily
+1. **基础过滤**：流动性、停牌、`ST`、次新股等。
+2. **市场级漏斗**：`MSS gate`。
+3. **行业级漏斗**：`IRS filter`。
 
-牛股基因（越高 = 历史行为越强势）：
-  limit_up_freq   = 涨停次数 / 250
-  streak_up_avg   = 所有连涨段平均长度（连涨段 = 连续 pct_chg > 0 的天数）
-  new_high_freq   = 创 60 日新高的交易日数 / 250
-  strength_ratio  = 收盘 > ma20 的交易日比例
-  resilience      = 1 / avg(回调>5%后恢复前高的天数)，无回调 → 1.0
-
-衰股基因（对称镜像）：
-  limit_down_freq = 跌停次数 / 250
-  streak_down_avg = 所有连跌段平均长度
-  new_low_freq    = 创 60 日新低的频率
-  weakness_ratio  = 收盘 < ma20 的比例
-  fragility       = 反弹后再次跌破前低的频率
-
-综合评分：
-  bull_score = 等权平均(5 个牛股基因各自 zscore) → 0-100
-  bear_score = 等权平均(5 个衰股基因各自 zscore) → 0-100
-  gene_score = bull_score - bear_score             → -100 ~ +100
-```
-
-### 5.3 selector 中的使用方式
-
-```python
-# selector.py 中的基因过滤（v0.02+ 且验证通过后开启）
-if config.ENABLE_GENE_FILTER:
-    gene_df = store.read_table("l3_stock_gene", date_range=(calc_date, calc_date))
-    candidates = candidates.merge(gene_df[["code", "gene_score"]], on="code")
-    candidates = candidates[candidates["gene_score"] > config.GENE_SCORE_THRESHOLD]
-```
-
-### 5.4 配置
-
-```python
-# config.py
-ENABLE_GENE_FILTER = False        # v0.01-v0.02 默认关闭（未验证前不启用）
-GENE_SCORE_THRESHOLD = -30        # 宽松阈值，只排除最差的
-GENE_LOOKBACK_DAYS = 250          # 基因计算窗口
-```
+历史版本里，`Selector` 输出的是候选池，而不是买卖动作。
 
 ---
 
-## 6. selector.py — 候选池生成（v0.01 正式口径）
+## 5. 历史上保留的核心结论
 
-### 6.1 函数签名
+### 5.1 两阶段扫描是历史高价值设计
 
-```python
-def select_candidates(store: Store, calc_date: date) -> list[StockCandidate]:
-    """
-    主入口：基础过滤 + MSS/IRS 漏斗，返回候选池。
-    候选池为内存对象，不落库。
-    """
-```
+`v0.01` 的一条重要历史结论是：
 
-### 6.2 标准流程（v0.01）
+1. 全市场先做粗筛
+2. 再对候选池做形态精扫
 
-```python
-def select_candidates(store, calc_date):
-    # ── Step 1: 全市场股票池 ──
-    all_stocks = store.read_df(
-        "SELECT DISTINCT code FROM l2_stock_adj_daily WHERE date = ?",
-        (calc_date,),
-    )
-    logger.info(f"全市场 {len(all_stocks)} 只")
+这个思路本身仍有价值，因为它解决的是计算规模与噪音控制问题，而不是某个特定版本的算法参数问题。
 
-    # ── Step 2: 基础过滤（流动性/ST/停牌/市值）──
-    candidates = _apply_basic_filters(store, all_stocks["code"].tolist(), calc_date)
-    logger.info(f"基础过滤后 {len(candidates)} 只")
+### 5.2 `MSS / IRS` 在历史版本中是前置漏斗
 
-    # ── Step 3: MSS gate（市场级硬门控，可配置关闭）──
-    if config.ENABLE_MSS_GATE:
-        market_score = store.read_df(
-            "SELECT score, signal FROM l3_mss_daily WHERE date = ?",
-            (calc_date,),
-        )
-        if market_score.empty or market_score.iloc[0]["signal"] == "BEARISH":
-            logger.info("MSS gate 拒绝当日交易")
-            return []
+`v0.01 Frozen` 里：
 
-    # ── Step 4: IRS filter（行业 Top-N）──
-    if config.ENABLE_IRS_FILTER:
-        top_industries = _get_top_irs_industries(store, calc_date, config.IRS_TOP_N)
-        candidates = [
-            code for code in candidates
-            if _get_industry(store, code, calc_date) in top_industries
-        ]
-        logger.info(f"IRS 过滤后 {len(candidates)} 只")
+1. `MSS` 历史上承担市场级前置 gate
+2. `IRS` 历史上承担行业级前置 filter
 
-    # ── Step 5: 基因库过滤（第2迭代，v0.01 禁用）──
-    if config.ENABLE_GENE_FILTER:
-        gene = store.read_df(
-            "SELECT code, gene_score FROM l3_stock_gene WHERE calc_date = ?",
-            (calc_date,),
-        )
-        gene_pass = set(gene[gene["gene_score"] > config.GENE_SCORE_THRESHOLD]["code"])
-        candidates = [c for c in candidates if c in gene_pass]
-        logger.info(f"基因过滤后 {len(candidates)} 只")
+这和当前主线已经不同，但作为历史对照仍然值得保留。
 
-    # ── Step 6: 候选池评分 + 截断 ──
-    ranked = _rank_candidates(store, candidates, calc_date)
+### 5.3 候选池分数只是 Selector 内部排序
 
-    # ── 构造输出 ──
-    result = []
-    for code, score in ranked[:config.SELECTOR_TOP_N]:
-        result.append(StockCandidate(
-            code=code,
-            industry=_get_industry(store, code, calc_date),
-            score=score,
-        ))
+历史版本里，`StockCandidate.score` 的角色是：
 
-    return result
-```
+1. 仅服务候选池内部排序
+2. 不直接替代 `PAS` 形态触发
+3. 不直接成为最终交易分数
 
-**当前冻结口径**：
-- MSS 仅作为市场级硬门控，不参与个股打分。
-- IRS 仅作为行业级过滤，不跨层承担 PAS 触发职责。
-- `score` 只用于 Selector 候选池排序，不改变 Strategy 的 BOF 触发条件。
-- 仓库现行 `Selector` 设计已迁出冻结区，详见 `blueprint/01-full-design/01-selector-contract-annex-20260308.md` 与 `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`。
-
-### 6.3 基础条件过滤
-
-```python
-def _apply_basic_filters(store, candidates, calc_date) -> list[str]:
-    """
-    过滤掉不满足基本交易条件的股票。
-    """
-    # 读取当日数据
-    df = store.read_df(
-        "SELECT code, volume, amount FROM l2_stock_adj_daily WHERE date = ? AND code IN (?)",
-        (calc_date, candidates)
-    )
-    info = store.read_df(
-        "SELECT ts_code, is_st, list_date, total_mv, circ_mv FROM l1_stock_daily "
-        "NATURAL JOIN l1_stock_info WHERE date = ?"
-        , (calc_date,)
-    )
-
-    passed = []
-    for code in candidates:
-        # 排除 ST
-        if _is_st(info, code):
-            continue
-        # 排除次新股（上市不足 60 交易日）
-        if _is_new_stock(info, code, calc_date, min_days=60):
-            continue
-        # 流动性过滤：日均成交额 > 阈值
-        if _daily_amount(df, code) < config.MIN_DAILY_AMOUNT:
-            continue
-        # 市值过滤（可选）
-        if config.MIN_MARKET_CAP and _market_cap(info, code) < config.MIN_MARKET_CAP:
-            continue
-        passed.append(code)
-
-    return passed
-```
-
-### 6.4 基础过滤配置
-
-```python
-# config.py
-MIN_DAILY_AMOUNT = 5_000          # 最低日成交额（千元），过滤僵尸股
-MIN_MARKET_CAP = None             # 最低总市值（万元），None=不过滤
-NEW_STOCK_MIN_DAYS = 60           # 次新股排除：上市不足 N 交易日
-EXCLUDE_ST = True                 # 排除 ST/*ST
-```
-
-### 6.4.1 候选池排序（v0.01）
-
-Selector 对通过过滤的标的计算 `score` 并排序，默认 Top-N 输出：
-
-1. 流动性分（40%）：20日平均成交额分位值。
-2. 结构稳定分（30%）：近20日波动与停牌情况。
-3. 行业优先分（30%）：IRS 行业排名映射分。
-
-该分数只用于候选池排序，不参与 PAS 形态触发判定。
-
-### 6.5 输出契约
-
-```python
-class StockCandidate(BaseModel):  # contracts.py
-    code: str
-    industry: str
-    score: float                  # selector 阶段评分
-```
-
-`liquidity_tier` / `attention_tier` 仅作为 selector 内部调度元数据，不进入跨模块契约。
-候选池为内存 `list[StockCandidate]`，**不落库**。selector 每日运行时生成，传给 strategy 消费。若需复盘，从 L3 表重放 selector 逻辑还原。
+这条边界在今天仍值得保留。
 
 ---
 
-## 7. config 开关矩阵
+## 6. 历史摘要：MSS / IRS / Gene 在 Selector 中的角色
 
-```python
-# config.py — Selector 漏斗开关
+### 6.1 MSS
 
-ENABLE_MSS_GATE    = True    # 关闭 → 不管大盘情绪，全天候交易
-ENABLE_IRS_FILTER  = True    # 关闭 → 不限行业，全市场选股
-ENABLE_GENE_FILTER = False   # v0.01-v0.02 禁止在实时漏斗启用（仅事后分析）
-```
+历史版本中的 `MSS` 作用是：
 
-**对照实验组合**：
+1. 读市场快照
+2. 计算市场温度
+3. 输出 `BULLISH / NEUTRAL / BEARISH`
+4. 在 `Selector` 阶段决定是否放行当日候选
 
-| MSS | IRS | Gene | 效果 |
-|-----|-----|------|------|
-| ✓ | ✓ | ✓ | v0.02+ 可选（需先完成反推验证） |
-| ✗ | ✗ | ✗ | 纯 PAS 形态交易 |
-| ✓ | ✗ | ✗ | 管大盘时机，不限行业 |
-| ✗ | ✓ | ✗ | 管行业轮动，不管大盘 |
-| ✓ | ✓ | ✗ | 第1迭代默认配置 |
+### 6.2 IRS
 
-### 7.1 消融回退门（强制）
+历史版本中的 `IRS` 作用是：
 
-按 `system-baseline.md` 统一口径执行：
+1. 读行业日线聚合
+2. 计算行业排序
+3. 输出 `Top-N` 强势行业
+4. 在 `Selector` 阶段缩小候选行业范围
 
-1. 只允许按 `BOF baseline -> BOF+MSS -> BOF+MSS+IRS` 顺序加漏斗。
-2. 新配置相对前一配置若出现以下任一情况，必须回退：
-   1. `expected_value` 下降超过 10%
-   2. `max_drawdown` 恶化超过 20%
-   3. 任一市场环境中位数路径由正转负且连续两个评估窗未恢复
+### 6.3 Gene
+
+历史版本中 `gene` 的定位更接近：
+
+1. 第 2 迭代预留
+2. 事后分析候选
+3. 不是 `v0.01` 的实时主链路
+
+这也是它今天不应被误读成历史正式口径的原因。
 
 ---
 
-## 8. 单测要点
+## 7. 历史验证顺序的保留价值
 
-每个模块可独立单测，不依赖其他模块：
+本文最值得保留的一条历史治理结论，是强制消融顺序：
 
-| 模块 | 测试方式 |
-|------|---------|
-| mss.py | 构造 l2_market_snapshot 的 mock 行，验证 `compute_mss_single()` 输出分数和信号 |
-| irs.py | 构造 l2_industry_daily + benchmark mock，验证排名正确性 |
-| gene.py | 构造 250 日 mock 数据，验证各基因计算公式 |
-| selector.py | mock Store 返回预设 MSS/IRS/基因数据，验证漏斗每级过滤数量 |
+1. `BOF baseline`
+2. `BOF + MSS`
+3. `BOF + MSS + IRS`
 
-**关键边界用例**：
-- MSS 全部因子为零 → 温度应该在 50 附近
-- IRS 只有 1 个行业有数据 → rank=1，无异常
-- 全市场无股票交易（节假日后第一天）→ 返回空候选池
-- limit_up_count=0 → broken_rate=0（不是 NaN）
-- **分板块阈值强制用例**：创业板股票涨 8% → 不应被计入 strong_up_count（创业板阈值=10%）；北交所股票涨 12% → 不应被计入 strong_up_count（北交所阈值=15%）；ST 股票涨 2% → 不应被计入（ST 阈值=2.5%）。实现时必须有此单测用例而非仅靠 code review。
+这条顺序的重要性在于：
 
+1. 防止把 `MSS/IRS` 直接当成默认有效。
+2. 强迫历史版本逐步验证漏斗增益。
+3. 为后续主线切换留下了清晰的证据轨迹。
 
+---
 
+## 8. 当前已经过时或容易误导的旧内容
+
+本次整理后，以下内容统一降级，不再作为当前执行语义：
+
+1. 文内 `mss.py / irs.py / gene.py / selector.py` 的详细代码草案。
+2. 历史版 `MSS` 六因子、`IRS` 两因子公式细节。
+3. `gene` 第 2 迭代设计与未来计划。
+4. 任何把本文当作当前 `Selector` SoT 的使用方式。
+
+这些内容保留追溯价值，但已不再承担现行设计职责。
+
+---
+
+## 9. 与当前主线的关系
+
+本文与当前主线的关系固定为：
+
+1. 它说明历史版本里 `Selector` 曾承担 `MSS/IRS` 前置漏斗。
+2. 它帮助解释为什么当前主线把 `Selector` 降回基础过滤与规模控制。
+3. 它不定义当前主线的正式 `Selector` 契约和实现。
+
+---
+
+## 10. 相关文档
+
+1. `docs/design-v2/01-system/system-baseline.md`
+2. `docs/design-v2/01-system/architecture-master.md`
+3. `blueprint/01-full-design/01-selector-contract-annex-20260308.md`
+4. `docs/spec/common/records/development-status.md`
