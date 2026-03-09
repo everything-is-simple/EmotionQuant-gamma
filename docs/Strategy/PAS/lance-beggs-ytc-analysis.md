@@ -1,576 +1,230 @@
 # Lance Beggs《YTC Price Action Trader》系列梳理
 
 **原始资料**：`G:\《股市浮沉二十载》\2020.(Au)LanceBeggs`  
-**文档版本**：v1.0.0  
-**创建日期**：2026-03-07  
-**对应模块**：PAS（价格行为信号）  
-**文档状态**：Draft（待补充原著细节）
+**文档版本**：`v1.1`  
+**文档状态**：`Active`  
+**封版日期**：`不适用（Active）`  
+**变更规则**：`允许补充原著摘要、形态说明与采用边界；不直接定义当前主线 PAS 触发细则。`  
+**上游文档**：`docs/Strategy/README.md`，`blueprint/README.md`
 
 ---
 
-## 1. 资料概述
+## 1. 文档定位
 
-### 1.1 基本信息
+本文档是 `PAS` 的**一级理论来源参考文档**。
 
-- **作者**：Lance Beggs（澳大利亚）
-- **系列**：YTC Price Action Trader（卷1-4）
-- **出版年份**：2010-2015
-- **核心主题**：价格行为交易（Price Action Trading）
-- **用户评价**：最喜欢、最好读、最好用
+它主要回答三件事：
 
-### 1.2 核心价值
+1. `YTC` 系列为什么是 EmotionQuant 价格行为模块的重要来源。
+2. `YTC` 五种核心形态分别提供了什么方法论价值。
+3. 当前主线从 `YTC` 中采用了什么、没有采用什么。
 
-这是**EmotionQuant PAS模块的主要理论来源**，提供了：
-- 五种核心形态（BPB/PB/TST/BOF/CPB）
-- 完整的交易系统框架
-- 大量实战案例
-- 清晰的入场和出场规则
-
-**为什么选择YTC**：
-> "许多case，够详细，完整交易系统。"（用户原话）
+本文档不是当前主线 `PAS` 的执行 SoT。当前主线正式设计，以 `blueprint/01-full-design/02-pas-trigger-registry-contract-annex-20260308.md` 与 `blueprint/01-full-design/06-pas-minimal-tradable-design-20260309.md` 为准。
 
 ---
 
-## 2. YTC系列结构
+## 2. 当前主线采用边界
 
-### 2.1 卷1：基础理论
+当前主线从 `YTC` 中主要吸收以下内容：
 
-**主题**：价格行为交易的基础概念
+1. 五种核心形态：`BOF / BPB / PB / TST / CPB`
+2. 形态判断必须依附市场结构，不能脱离位置语义
+3. 回调深度、测试次数、结构清晰度这类“质量概念”
+4. 价格行为重视形态前后的行为链，而不是只看单根 K 线
 
-**核心内容**：
-- 什么是价格行为（Price Action）
-- 为什么价格行为有效
-- 市场结构（Market Structure）
-- 支撑与阻力（Support & Resistance）
-- 趋势与区间（Trend & Range）
+当前主线不直接照搬以下内容：
 
-**关键概念**：
-- **价格行为的定义**：通过价格、成交量、K线形态判断市场，不使用技术指标
-- **市场结构的重要性**：理解市场的高点、低点、趋势、区间
-- **支撑阻力的本质**：供需平衡点，不是神秘的"线"
+1. 原书中的盘中节奏、tick 级触发细节
+2. 原书中的入场点、止损点、目标位精确写法
+3. 原书针对外汇市场的成交成本、持仓与执行前提
+4. 原书中带有强主观裁量的 discretionary 交易流程
 
-### 2.2 卷2：市场结构理论（MSS）
-
-**主题**：Market Structure & Sentiment（市场结构与情绪）
-
-**核心内容**：
-- 市场结构的识别
-- 趋势的定义和识别
-- 区间的定义和识别
-- 市场情绪的判断
-
-**关键概念**：
-- **Higher Highs & Higher Lows**：上升趋势的定义
-- **Lower Highs & Lower Lows**：下降趋势的定义
-- **Market Sentiment**：市场情绪的强弱判断
-
-**与EmotionQuant的关系**：
-- YTC的MSS ≠ EmotionQuant的MSS
-- YTC的MSS是"市场结构"，EmotionQuant的MSS是"市场情绪"
-- 但两者都强调"市场状态"的重要性
-
-### 2.3 卷3：五种架构（核心）
-
-**主题**：Five Setups（五种形态）
-
-**核心内容**：
-1. BPB（Breakout Pullback）：突破回调
-2. PB（Pullback）：简单回调
-3. TST（Test of Support/Resistance）：支撑/阻力测试
-4. BOF（Breakout Failure）：假突破反转
-5. CPB（Complex Pullback）：复杂回调
-
-**这是EmotionQuant PAS模块的核心来源**
-
-### 2.4 卷4：资金管理与心理
-
-**主题**：Money Management & Trading Psychology
-
-**核心内容**：
-- 仓位管理
-- 风险控制
-- 止损设置
-- 盈亏比计算
-- 交易心理
-
-**关键概念**：
-- **风险收益比**：至少1:2，理想1:3或更高
-- **仓位管理**：单笔风险不超过账户的1-2%
-- **交易心理**：纪律、耐心、情绪控制
+也就是说，当前主线吸收的是 `YTC` 的**形态框架与结构思想**，不是把原书交易手册原样搬进 A 股日线系统。
 
 ---
 
-## 3. 五种核心形态详解
+## 3. 为什么 YTC 对当前 PAS 重要
 
-### 3.1 BPB（Breakout Pullback）- 突破回调
+`YTC` 对当前 `PAS` 的价值主要体现在四个方面：
 
-#### 定义
-价格突破关键阻力位后，回调至支撑区域（通常是前阻力位），然后继续上涨。
+### 3.1 它提供了完整的五形态骨架
 
-#### 核心要素
-1. **突破（Breakout）**：
-   - 价格突破前高或关键阻力
-   - 突破时最好有成交量配合
-   - 突破后价格站稳在阻力位上方
+当前主线 `PAS mini` 的五形态集合，来源上直接受 `YTC` 影响：
 
-2. **回调（Pullback）**：
-   - 价格回调至前阻力位（现支撑位）
-   - 回调深度通常40-60%
-   - 回调时成交量萎缩
+| 形态 | 含义 | 当前主线角色 |
+|---|---|---|
+| `BOF` | 假突破失败后的反向机会 | 已落地核心形态 |
+| `BPB` | 突破后的回调确认 | 计划恢复的核心形态 |
+| `PB` | 趋势中的简单回调延续 | 计划恢复的核心形态 |
+| `TST` | 对支撑/阻力的测试 | 计划恢复的核心形态 |
+| `CPB` | 更复杂的回调与二次结构 | 计划恢复的核心形态 |
 
-3. **确认（Confirmation）**：
-   - 价格在支撑位获得支撑
-   - 出现反转K线（如Pin Bar、Inside Bar）
-   - 价格再次上涨，突破回调高点
+### 3.2 它强调结构优先
 
-#### 入场规则
-- **入场点**：回调低点上方1-2个tick
-- **止损点**：回调低点下方1-2个tick
-- **目标价**：前高上方，或下一个阻力位
+`YTC` 最值得保留的一条方法论，是：
 
-#### 风险收益比
-- 理想：1:2或更高
-- 最低：1:1.5
+1. 先看结构位置，再看 K 线触发。
+2. 先判断市场是在趋势、回调还是测试，再讨论入场。
+3. 同样一根反转 K 线，出现在错误的位置，价值可能接近于零。
 
-#### 成功率
-- 约60-70%（Lance Beggs估计）
+这与当前主线 `PAS` 的方向一致: 形态不是孤立标签，而是结构化事件。
 
-#### A股适配
-```python
-# BPB检测伪代码
-def detect_bpb(df, signal_date):
-    # 1. 检测突破
-    high_Nd = df.iloc[:-1].tail(N)['adj_high'].max()
-    close = df.loc[signal_date, 'adj_close']
-    breakout = close > high_Nd
-    
-    # 2. 检测回调
-    pullback_low = df.tail(5)['adj_low'].min()
-    pullback_depth = (high_Nd - pullback_low) / (high_Nd - low_Nd)
-    is_pullback = 0.4 <= pullback_depth <= 0.6
-    
-    # 3. 检测确认
-    price_position = (close - pullback_low) / (high_Nd - pullback_low)
-    is_confirmed = price_position > 0.8
-    
-    # 4. 成交量配合
-    volume_ratio = df.loc[signal_date, 'volume'] / df['volume'].rolling(20).mean()
-    is_volume_ok = volume_ratio > 1.5
-    
-    if breakout and is_pullback and is_confirmed and is_volume_ok:
-        return Signal(
-            type='BPB',
-            entry=close,
-            stop_loss=pullback_low * 0.99,
-            target=high_Nd * 1.05,
-            strength=calculate_strength(...)
-        )
-```
+### 3.3 它强调“形态质量”而不是只看命中
 
-#### 案例（Lance Beggs原著）
-- 案例1：EUR/USD突破1.3000后回调至1.2950，然后继续上涨至1.3100
-- 案例2：黄金突破1800后回调至1780，然后继续上涨至1850
+`YTC` 的实战价值不止在于定义形态，还在于不断追问：
 
-### 3.2 PB（Pullback）- 简单回调
+1. 这次回调够不够干净？
+2. 这次测试是不是第一次、第二次，还是已经钝化？
+3. 这次假突破有没有真正套住错误方向的参与者？
 
-#### 定义
-趋势中的简单回调，不需要突破新高，只是趋势的延续。
+这正是当前主线要补回 `pattern_quality_score` 的理论来源之一。
 
-#### 与BPB的区别
-- **BPB**：需要突破新高，是突破确认
-- **PB**：不需要突破新高，是趋势延续
+### 3.4 它天然适合做 registry 化拆分
 
-#### 核心要素
-1. **趋势确认**：
-   - 明确的上升或下降趋势
-   - Higher Highs & Higher Lows（上升）
-   - Lower Highs & Lower Lows（下降）
+`YTC` 五形态边界清晰，适合：
 
-2. **回调**：
-   - 价格回调至支撑区域
-   - 回调深度通常30-50%
-   - 回调时成交量萎缩
+1. 单形态单独启停
+2. 单形态单独回测
+3. 单形态单独淘汰
 
-3. **反弹**：
-   - 价格在支撑位反弹
-   - 出现反转K线
-   - 价格继续沿趋势方向运行
-
-#### 入场规则
-- **入场点**：回调低点上方1-2个tick
-- **止损点**：回调低点下方1-2个tick，或前一个低点
-- **目标价**：前高，或趋势延伸目标
-
-#### 风险收益比
-- 理想：1:2或更高
-- 最低：1:1.5
-
-#### 成功率
-- 约50-60%（低于BPB）
-
-#### A股适配
-- 适用于强势股的回调买入
-- 止损可以设置得更宽一些（如回调低点-2%）
-- 目标价可以设置得更保守一些
-
-### 3.3 TST（Test of Support/Resistance）- 支撑/阻力测试
-
-#### 定义
-价格回到前期支撑位或阻力位，测试其有效性。
-
-#### 核心要素
-1. **支撑/阻力位**：
-   - 前期低点（支撑）
-   - 前期高点（阻力）
-   - 前期突破点（支撑/阻力转换）
-
-2. **测试**：
-   - 价格回到支撑/阻力位附近
-   - 价格在该位置停留、震荡
-   - 出现测试K线（如Doji、Pin Bar）
-
-3. **反弹/反转**：
-   - 支撑有效，价格反弹
-   - 阻力有效，价格反转
-
-#### 入场规则
-- **做多入场**：支撑位上方1-2个tick
-- **做空入场**：阻力位下方1-2个tick
-- **止损点**：支撑/阻力位下方/上方1-2个tick
-- **目标价**：前高/前低，或下一个关键位置
-
-#### 风险收益比
-- 理想：1:2或更高
-- 最低：1:1.5
-
-#### 成功率
-- 约50-60%
-
-#### A股适配
-```python
-# TST检测伪代码
-def detect_tst(df, signal_date):
-    # 1. 识别支撑位
-    support_level = df.tail(60)['adj_low'].min()
-    
-    # 2. 检测测试
-    close = df.loc[signal_date, 'adj_close']
-    distance_to_support = abs(close - support_level) / support_level
-    is_testing = distance_to_support < 0.02  # 2%以内
-    
-    # 3. 检测反弹
-    prev_close = df.iloc[-2]['adj_close']
-    is_bouncing = close > prev_close
-    
-    # 4. K线形态
-    body_ratio = abs(close - open) / (high - low)
-    is_reversal_candle = body_ratio > 0.5
-    
-    if is_testing and is_bouncing and is_reversal_candle:
-        return Signal(
-            type='TST',
-            entry=close,
-            stop_loss=support_level * 0.99,
-            target=df.tail(20)['adj_high'].max(),
-            strength=calculate_strength(...)
-        )
-```
-
-### 3.4 BOF（Breakout Failure）- 假突破反转
-
-#### 定义
-价格假突破关键位置后失败，反向入场。
-
-#### 核心要素
-1. **假突破**：
-   - 价格突破关键阻力/支撑
-   - 但无法持续，很快回到区间内
-   - 通常伴随成交量不足
-
-2. **失败确认**：
-   - 价格回到突破前的区间
-   - 出现反转K线（如Pin Bar）
-   - 成交量萎缩
-
-3. **反向入场**：
-   - 做空（假突破上方阻力后）
-   - 做多（假突破下方支撑后）
-
-#### 入场规则
-- **做空入场**：假突破高点下方1-2个tick
-- **做多入场**：假突破低点上方1-2个tick
-- **止损点**：假突破高点/低点上方/下方1-2个tick
-- **目标价**：区间另一端，或更远的支撑/阻力
-
-#### 风险收益比
-- 理想：1:3或更高（因为假突破后往往有较大反向运动）
-- 最低：1:2
-
-#### 成功率
-- 约40-50%（低于其他形态，但盈亏比高）
-
-#### A股适配
-```python
-# BOF检测伪代码（v0.01核心）
-def detect_bof(df, signal_date):
-    # 1. 识别假突破
-    resistance = df.tail(60)['adj_high'].max()
-    high = df.loc[signal_date, 'adj_high']
-    close = df.loc[signal_date, 'adj_close']
-    
-    is_fake_breakout = (high > resistance) and (close < resistance)
-    
-    # 2. 检测失败确认
-    is_limit_up = df.loc[signal_date, 'is_limit_up']
-    is_touched_limit_up = df.loc[signal_date, 'is_touched_limit_up']
-    is_broken = is_touched_limit_up and not is_limit_up  # 炸板
-    
-    # 3. 成交量
-    volume_ratio = df.loc[signal_date, 'volume'] / df['volume'].rolling(20).mean()
-    is_volume_weak = volume_ratio < 2.0  # 放量不足
-    
-    # 4. K线形态
-    body_ratio = abs(close - open) / (high - low)
-    is_pin_bar = body_ratio < 0.3 and (high - close) / (high - low) > 0.6
-    
-    if is_fake_breakout and (is_broken or is_pin_bar) and is_volume_weak:
-        return Signal(
-            type='BOF',
-            entry=close,
-            stop_loss=high * 1.01,
-            target=df.tail(20)['adj_low'].min(),
-            strength=calculate_strength(...)
-        )
-```
-
-#### 案例（Lance Beggs原著）
-- 案例1：EUR/USD假突破1.3000后回落至1.2900
-- 案例2：黄金假突破1800后回落至1750
-
-#### A股典型案例
-- **涨停后炸板**：最典型的BOF形态
-- **高开低走**：开盘冲高但收盘回落
-- **假突破前高**：突破前高但无法持续
-
-### 3.5 CPB（Complex Pullback）- 复杂回调
-
-#### 定义
-回调结构复杂，多次测试支撑，形成复杂形态（如M/W、头肩底等）。
-
-#### 与PB的区别
-- **PB**：简单回调，一次性回调后反弹
-- **CPB**：复杂回调，多次测试支撑，形成复杂形态
-
-#### 核心要素
-1. **复杂结构**：
-   - M型（双顶）
-   - W型（双底）
-   - 头肩底/头肩顶
-   - 三角形整理
-
-2. **多次测试**：
-   - 价格多次测试支撑/阻力
-   - 每次测试都未突破
-   - 形成明显的形态
-
-3. **突破确认**：
-   - 价格突破形态的颈线
-   - 成交量配合
-   - 趋势延续
-
-#### 入场规则
-- **入场点**：形态颈线突破后
-- **止损点**：形态的最低点/最高点
-- **目标价**：形态高度的延伸
-
-#### 风险收益比
-- 理想：1:2或更高
-- 最低：1:1.5
-
-#### 成功率
-- 约50-60%
-
-#### A股适配
-- 适用于震荡市中的复杂形态
-- 止损可以设置在形态的关键点位
-- 目标价可以根据形态高度计算
+这与当前主线 `PAS registry` 的治理方式是对齐的。
 
 ---
 
-## 4. YTC的核心理念
+## 4. YTC 五形态摘要
 
-### 4.1 价格行为的本质
+### 4.1 BPB：Breakout Pullback
 
-Lance Beggs强调：
-> "价格行为原理非常普遍，所以在其他具有相似波动率和较低交易成本的市场采用这个方法时，也没必要进行太多的调整。"
+核心思想：
 
-**核心观点**：
-- 价格行为是市场参与者集体行为的体现
-- 支撑阻力是供需平衡点
-- 形态是市场心理的反映
-- 这些原理在任何市场都适用
+1. 先有有效突破
+2. 再有回调确认
+3. 然后沿原方向延续
 
-### 4.2 市场结构的重要性
+对当前主线的启发：
 
-Lance Beggs强调：
-> "理解市场结构是价格行为交易的基础。如果你不理解市场结构，你就无法识别高概率的交易机会。"
+1. 需要区分“已突破后的确认回调”和“普通趋势回调”。
+2. 回调深度和回调质量应纳入解释层。
+3. A 股日线下要把“盘中触发”改写成 `T` 日信号、`T+1 Open` 执行语义。
 
-**市场结构的三要素**：
-1. **趋势**：Higher Highs & Higher Lows（上升）或 Lower Highs & Lower Lows（下降）
-2. **区间**：价格在支撑和阻力之间震荡
-3. **转折**：趋势转为区间，或区间转为趋势
+### 4.2 PB：Pullback
 
-### 4.3 高概率交易的特征
+核心思想：
 
-Lance Beggs总结的高概率交易特征：
-1. **顺势交易**：与主趋势方向一致
-2. **关键位置**：在支撑/阻力位附近
-3. **确认信号**：有明确的K线确认
-4. **成交量配合**：突破时有成交量，回调时成交量萎缩
-5. **风险收益比**：至少1:2
+1. 趋势已经存在
+2. 回调不是反转，而是延续中的喘息
+3. 关键是回调后重新沿主方向发力
 
-### 4.4 交易纪律
+对当前主线的启发：
 
-Lance Beggs强调：
-> "交易纪律比交易技巧更重要。即使你有最好的交易系统，如果没有纪律，你也会失败。"
+1. `PB` 不依赖新高突破，和 `BPB` 必须分开。
+2. 若未来恢复 `PB`，不能简单写成“短期回调后上涨”。
+3. `PB` 需要明确趋势背景和回调边界。
 
-**纪律的三要素**：
-1. **严格止损**：永远不要移动止损到不利方向
-2. **耐心等待**：只交易高概率机会
-3. **情绪控制**：不要因为连续亏损而改变系统
+### 4.3 TST：Test of Support / Resistance
 
----
+核心思想：
 
-## 5. 与EmotionQuant的映射
+1. 价格回到关键位置做测试
+2. 测试后的承接或反拒，才决定后续方向
+3. 位置的有效性比单根 K 线更重要
 
-### 5.1 直接采用的部分
+对当前主线的启发：
 
-**五种形态**：
-- BPB → PAS_BPB
-- PB → PAS_PB
-- TST → PAS_TST
-- BOF → PAS_BOF（v0.01核心）
-- CPB → PAS_CPB
+1. `TST` 适合做支撑/阻力测试型触发器。
+2. 测试距离、重测次数和位置质量是关键解释位。
+3. `TST` 与 `BOF` 的边界必须定义清楚，避免重复记分。
 
-**入场规则**：
-- 形态识别逻辑
-- 入场点设置
-- 止损点设置
-- 目标价计算
+### 4.4 BOF：Breakout Failure
 
-**风险收益比**：
-- 最低1:2的要求
-- 理想1:3或更高
+核心思想：
 
-### 5.2 A股适配的部分
+1. 突破看起来成立
+2. 实际上无法延续
+3. 错误方向被套，反向运动加速
 
-**时间周期**：
-- YTC：分钟图、小时图
-- EmotionQuant：日线图（T+1制度）
+对当前主线的启发：
 
-**止损方式**：
-- YTC：日内止损
-- EmotionQuant：次日开盘止损
+1. `BOF` 适合先做最小可交易形态，因为结构相对清晰。
+2. 它与 A 股“炸板”“假突破前高”“高开低走失败”场景兼容度高。
+3. 当前主线把 `BOF` 作为先落地形态，来源上是合理的。
 
-**成交量**：
-- YTC：相对成交量
-- EmotionQuant：量比、换手率
+### 4.5 CPB：Complex Pullback
 
-**形态识别**：
-- YTC：手工识别
-- EmotionQuant：算法自动识别
+核心思想：
 
-### 5.3 未采用的部分
+1. 回调不是单次回撤，而是更复杂的二段或多段结构
+2. 市场通过更复杂的整理消化前期波动
+3. 真正的机会来自复杂结构结束后的恢复
 
-**技术指标**：
-- YTC也不使用技术指标
-- 但EmotionQuant更严格（铁律）
+对当前主线的启发：
 
-**盘中交易**：
-- YTC：盘中交易
-- EmotionQuant：收盘后决策，次日开盘执行
+1. `CPB` 是把 `PB` 从简单回调扩展到复杂结构的关键。
+2. 它需要更强的结构识别，不能靠单一阈值硬判。
+3. 适合作为后续阶段恢复的增强形态。
 
 ---
 
-## 6. 实战案例（待补充）
+## 5. YTC 里最值得保留的核心理念
 
-### 6.1 BPB案例
+### 5.1 价格行为不是“只看裸 K”
 
-**案例1**：（待补充原著案例）
-- 市场：
-- 时间：
-- 形态：
-- 入场：
-- 止损：
-- 目标：
-- 结果：
+`YTC` 的重点不是排斥一切工具，而是坚持：
 
-### 6.2 BOF案例
+1. 价格和结构是首要信息
+2. 触发必须附着在结构背景上
+3. 交易者不能只看到“像”，而要看到“为何在这里发生”
 
-**案例1**：（待补充原著案例）
-- 市场：
-- 时间：
-- 形态：
-- 入场：
-- 止损：
-- 目标：
-- 结果：
+### 5.2 市场结构先于触发
 
----
+当前主线很应该保留这条原则：
 
-## 7. 关键引用
+1. 没有结构背景的形态命中，不能自动视作高质量信号。
+2. 结构位置应成为形态质量的重要组成部分。
+3. 这比堆更多阈值更重要。
 
-### 7.1 价格行为的定义
+### 5.3 纪律和分层
 
-> "Price action trading is a methodology that relies on the analysis of price movement, without the use of indicators. It's about understanding what the market is doing right now, and what it's likely to do in the near future, based on recent price behavior."
+`YTC` 的另一条长期有效经验是：
 
-### 7.2 市场结构的重要性
+1. 形态判断
+2. 风险管理
+3. 执行与持有
 
-> "Market structure is the foundation of price action trading. If you don't understand market structure, you can't identify high-probability trading opportunities."
+这三件事必须分层。
 
-### 7.3 交易纪律
-
-> "Trading discipline is more important than trading skill. Even with the best trading system, you'll fail without discipline."
+这与 EmotionQuant 当前主线中 `PAS / IRS / MSS / Broker` 各自分工的方向是相容的。
 
 ---
 
-## 8. 后续行动
+## 6. 当前已经失效或容易误导的旧口径
 
-### 8.1 深入阅读
+本次整理后，以下内容不再视为当前主线口径：
 
-- [ ] 重读YTC卷3，提取五种形态的详细规则
-- [ ] 提取原著中的实战案例
-- [ ] 提取原著中的图表和示意图
-- [ ] 总结每种形态的成功率和盈亏比
+1. 原稿中所有带精确成功率、固定盈亏比的表述。
+2. 面向外汇/盘中交易的精确 `tick` 入场与止损写法。
+3. 把原书中的交易管理规则直接写成当前 A 股日线执行规则。
+4. 把 `YTC` 形态定义直接等同于当前仓库中已落地代码现实。
 
-### 8.2 A股验证
-
-- [ ] 使用A股历史数据验证五种形态
-- [ ] 统计每种形态在A股的成功率
-- [ ] 优化形态识别的参数
-- [ ] 形成A股适配的最佳实践
-
-### 8.3 系统实现
-
-- [ ] 实现五种形态的自动识别
-- [ ] 实现入场点、止损点、目标价的自动计算
-- [ ] 实现风险收益比的自动评估
-- [ ] 实现形态强度的自动评分
+这些内容仍有阅读价值，但只能作为来源背景，不是当前执行定义。
 
 ---
 
-## 9. 参考文献
+## 7. 与当前主线的关系
 
-1. Lance Beggs. *YTC Price Action Trader* 卷1-4.
-2. EmotionQuant PAS算法设计：`blueprint/01-full-design/02-pas-trigger-registry-contract-annex-20260308.md`
-3. Volman-YTC映射：`docs/Strategy/PAS/volman-ytc-mapping.md`
+本文与当前主线的关系固定为：
+
+1. 它提供 `PAS` 五形态的理论来源。
+2. 它解释为什么当前主线需要 registry 化、质量层和结构语义。
+3. 它不定义 formal `Signal` 字段、检测失败语义或 `T+1 Open` 的执行契约。
+
+这些正式边界，以 `blueprint` 为准。
 
 ---
 
-**文档状态**：Draft（需要补充原著细节和案例）  
-**下一步行动**：
-1. 重读YTC原著，提取详细规则
-2. 补充实战案例和图表
-3. 完善A股适配方案
-4. 形成可执行的实现指南
+## 8. 参考文献
 
+1. `YTC Price Action Trader` 系列原著
+2. `docs/Strategy/PAS/volman-ytc-mapping.md`
+3. `blueprint/01-full-design/02-pas-trigger-registry-contract-annex-20260308.md`
+4. `blueprint/01-full-design/06-pas-minimal-tradable-design-20260309.md`

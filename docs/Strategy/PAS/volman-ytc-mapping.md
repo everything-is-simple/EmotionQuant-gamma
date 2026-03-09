@@ -11,6 +11,8 @@
 > v0.01 的交易触发以 `strategy-design.md` 中 BOF 量化规则为准。
 > 文中关于 `PAS_BPB`、Week2/Week4 的实现节奏均属历史研究草案，执行计划以 `system-baseline.md` 与 `docs/spec` 为准。
 
+> **2026-03-09 当前主线说明**：本文件继续保留为 `PAS` 的高价值映射参考，但不再承担当前主线实现说明。当前主线 `PAS` 的正式设计与采用边界，以 `blueprint/01-full-design/02-pas-trigger-registry-contract-annex-20260308.md` 与 `blueprint/01-full-design/06-pas-minimal-tradable-design-20260309.md` 为准；文中所有历史实施节奏、模块落点和周计划均只作为研究痕迹保留。
+
 ---
 
 ## 1. Volman 核心理论基础
