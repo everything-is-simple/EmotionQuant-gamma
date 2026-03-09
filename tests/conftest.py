@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -7,3 +8,29 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+
+from src.config import get_settings
+
+
+def _configure_external_pytest_temp() -> Path:
+    cfg = get_settings()
+    pytest_root = (cfg.resolved_temp_path / "pytest").resolve()
+    session_temp = pytest_root / "session-temp"
+    session_temp.mkdir(parents=True, exist_ok=True)
+
+    session_temp_str = str(session_temp)
+    os.environ["TMP"] = session_temp_str
+    os.environ["TEMP"] = session_temp_str
+    os.environ["TMPDIR"] = session_temp_str
+    return pytest_root
+
+
+_PYTEST_TEMP_ROOT = _configure_external_pytest_temp()
+
+
+def pytest_configure(config) -> None:
+    if getattr(config.option, "basetemp", None):
+        return
+    basetemp = _PYTEST_TEMP_ROOT / "basetemp"
+    basetemp.parent.mkdir(parents=True, exist_ok=True)
+    config.option.basetemp = str(basetemp)

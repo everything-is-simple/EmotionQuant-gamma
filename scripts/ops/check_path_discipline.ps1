@@ -13,22 +13,22 @@ $IgnoreRelativePaths = @(
 $Rules = @(
     @{
         Name = "absolute-repo-temp"
-        Pattern = '(?i)EmotionQuant-gamma[\\/](?:\.tmp|pytest-tmp|\.pytest_cache|\.mypy_cache|\.ruff_cache|artifacts)(?:[\\/]|$)'
+        Pattern = '(?i)EmotionQuant-gamma[\\/](?:\.tmp|pytest-tmp|pytest_temp|\.pytest_cache|\.mypy_cache|\.ruff_cache|artifacts)(?:[\\/]|$)'
         Message = "Hardcoded repo-root temp path"
     },
     @{
         Name = "python-relative-temp"
-        Pattern = '(?i)\bPath\s*\(\s*["''](?:\.tmp|pytest-tmp|\.pytest_cache|\.mypy_cache|\.ruff_cache|artifacts)(?:[\\/][^"'']*)?["'']\s*\)'
+        Pattern = '(?i)\bPath\s*\(\s*["''](?:\.tmp|pytest-tmp|pytest_temp|\.pytest_cache|\.mypy_cache|\.ruff_cache|artifacts)(?:[\\/][^"'']*)?["'']\s*\)'
         Message = "Relative temp path via Path(...)"
     },
     @{
         Name = "python-repo-root-temp"
-        Pattern = '(?i)\brepo_root\s*/\s*["''](?:\.tmp|pytest-tmp|\.pytest_cache|\.mypy_cache|\.ruff_cache|artifacts)(?:[\\/][^"'']*)?["'']'
+        Pattern = '(?i)\brepo_root\s*/\s*["''](?:\.tmp|pytest-tmp|pytest_temp|\.pytest_cache|\.mypy_cache|\.ruff_cache|artifacts)(?:[\\/][^"'']*)?["'']'
         Message = "repo_root temp path composition"
     },
     @{
         Name = "powershell-repo-root-temp"
-        Pattern = '(?i)\bJoin-Path\s+\$RepoRoot\s+["''](?:\.tmp|pytest-tmp|\.pytest_cache|\.mypy_cache|\.ruff_cache|artifacts)(?:[\\/][^"'']*)?["'']'
+        Pattern = '(?i)\bJoin-Path\s+\$RepoRoot\s+["''](?:\.tmp|pytest-tmp|pytest_temp|\.pytest_cache|\.mypy_cache|\.ruff_cache|artifacts)(?:[\\/][^"'']*)?["'']'
         Message = "Join-Path RepoRoot temp path"
     }
 )
