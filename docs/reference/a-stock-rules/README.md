@@ -4,7 +4,13 @@
 
 `docs/reference/a-stock-rules/` 存放 A 股市场交易制度、涨跌停规则与申万行业分类参考。
 
-这里回答的是“外部市场规则是什么”，不是“当前系统怎么执行”。当前系统执行口径以 `docs/design-v2/01-system/system-baseline.md` 为准；当前治理状态与是否恢复实现，以 `docs/spec/common/records/development-status.md` 为准。
+这里回答的是“外部市场规则是什么”，不是“当前系统怎么执行”。
+
+当前权威入口：
+
+1. 当前主线设计：`blueprint/`
+2. 历史冻结基线：`docs/design-v2/01-system/system-baseline.md`
+3. 当前治理状态：`docs/spec/common/records/development-status.md`
 
 ## 当前入口
 
@@ -18,14 +24,14 @@
 ## 使用规则
 
 1. 本目录是外部参考，不直接定义仓库内执行语义或版本验收口径。
-2. 若参考摘录与交易所、监管或数据源官方最新规则冲突，应以官方规则为准，并回写 `design-v2 / steering / spec` 修正仓库口径。
-3. 仓库内固定执行语义、A 股约束实现边界，优先查看 `docs/steering/a-stock-rules.md` 与 `docs/design-v2/01-system/system-baseline.md`。
+2. 若参考摘录与交易所、监管或数据源官方最新规则冲突，应以官方规则为准，并按需要回写 `blueprint / design-v2 / spec` 修正仓库口径。
+3. 仓库内固定执行语义、A 股约束实现边界，优先查看 `blueprint/`、`docs/design-v2/01-system/system-baseline.md` 与当前代码。
 4. 版本证据、回归结果与阶段记录，统一进入 `docs/spec/<version>/`，不堆回本目录。
 5. 当前主开发线若对行业聚合、涨跌停校验、停牌处理有更细实现，以 `design-v2` 算法/模块设计为准，而不是以本目录文字直接替代实现。
 
 ## 相邻目录边界
 
-- `docs/steering/`：定义仓库内必须执行的 A 股硬约束。
+- `blueprint/`：定义当前主线设计与模块边界。
 - `docs/design-v2/`：定义模块如何落地这些规则。
 - `docs/spec/`：保存版本证据、问题修复与阶段记录。
 - `docs/reference/`：保存其他外部参考资料，不定义执行口径。
@@ -35,5 +41,5 @@
 - `docs/design-v2/01-system/system-baseline.md`
 - `docs/spec/common/records/development-status.md`
 - `docs/spec/README.md`
-- `docs/steering/a-stock-rules.md`
+- `blueprint/README.md`
 - `docs/design-v2/02-modules/selector-design.md`
