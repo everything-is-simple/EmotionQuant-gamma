@@ -2,7 +2,7 @@
 
 ## 定位
 
-`docs/reference/` 只保留长期可复用的外部规则与运维参考。
+`docs/reference/` 是旧设计世界退场后保留下来的参考层，只保留长期可复用的外部规则与运维参考。
 
 这里回答：
 
@@ -25,7 +25,7 @@
 
 1. `reference/` 不是设计 SoT。
 2. 若参考内容与官方最新规则冲突，以官方规则为准。
-3. 当前主线设计看 `blueprint/`。
+3. 当前主线设计看 `blueprint/`，不要把参考资料反向抬成当前正文。
 4. 历史冻结基线看 `docs/design-v2/01-system/system-baseline.md`。
 5. 当前状态看 `docs/spec/common/records/development-status.md`。
 

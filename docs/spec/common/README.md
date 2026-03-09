@@ -4,7 +4,8 @@
 
 `docs/spec/common/` 存放跨版本共用的治理记录与少量需要长期保留的历史审计材料。
 
-这里回答的是“哪些材料需要跨版本持续维护”，不是“当前系统设计怎么定义”。当前阶段与主线判定以 `docs/spec/common/records/development-status.md` 为准；版本归档入口统一在 `docs/spec/`。
+这里回答的是“哪些材料需要跨版本持续维护”，不是“当前系统设计怎么定义”。
+旧设计世界退场后，跨版本的状态、债务、审计与资产沉淀统一由这里承接。当前阶段与主线判定以 `docs/spec/common/records/development-status.md` 为准；版本归档入口统一在 `docs/spec/`。
 
 ## 当前入口
 

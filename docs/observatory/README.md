@@ -2,7 +2,9 @@
 
 ## 定位
 
-`docs/observatory/` 只保留：
+`docs/observatory/` 是旧设计世界退场后保留下来的方法层。
+
+这里只保留：
 
 1. 观察框架
 2. 评审标准
@@ -29,7 +31,7 @@
 
 1. `god_view` 用于观察和规划，不直接改写当前执行口径。
 2. `sandbox-review-standard` 用于评审方法，不替代版本证据与 Gate 结论。
-3. 当前主线设计看 `blueprint/`。
+3. 当前主线设计看 `blueprint/`，不要把本目录重新用成设计正文。
 4. 当前治理状态看 `docs/spec/common/records/development-status.md`。
 5. 历史冻结基线看 `docs/design-v2/01-system/system-baseline.md`。
 

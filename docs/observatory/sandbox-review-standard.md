@@ -220,8 +220,9 @@
 
 证据入口：
 
-1. `docs/design-v2/01-system/system-baseline.md` §9（A-S 偏差闭环）
-2. `docs/design-v2/01-system/architecture-master.md` / `broker-design.md` / `data-layer-design.md` 对齐记录
+1. `docs/design-v2/01-system/system-baseline.md` §9（历史评审与偏差闭环索引）
+2. `docs/spec/v0.01/records/` 与 `docs/spec/v0.01/README.md`
+3. `docs/design-v2/01-system/architecture-master.md` / `broker-design.md` / `data-layer-design.md` 对齐记录
 
 ---
 

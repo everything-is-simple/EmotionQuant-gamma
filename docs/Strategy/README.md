@@ -2,7 +2,7 @@
 
 ## 定位
 
-`docs/Strategy/` 只保留理论来源、方法论映射和研究留档。
+`docs/Strategy/` 是旧设计世界退场后保留下来的理论层，只保留理论来源、方法论映射和研究留档。
 
 这里回答“为什么这样设计、理论从哪来、哪些外部方法值得吸收”，不回答“当前系统现在按什么执行”。
 
@@ -46,7 +46,7 @@
 
 1. `Strategy/` 不直接充当执行 SoT。
 2. 当前可执行设计以 `blueprint/` 为准；`Strategy/` 只负责来源、映射和理论背景。
-3. 研究材料优先保留“来源 + 映射 + 采用边界”，不再堆执行草案。
+3. 研究材料优先保留“来源 + 映射 + 采用边界”，不再堆执行草案，也不再回长半设计稿。
 4. 历史基线看 `docs/design-v2/01-system/system-baseline.md`。
 5. 当前治理状态看 `docs/spec/common/records/development-status.md`。
 6. 版本证据、评审结论与冻结记录统一看 `docs/spec/` 与 `docs/observatory/`。

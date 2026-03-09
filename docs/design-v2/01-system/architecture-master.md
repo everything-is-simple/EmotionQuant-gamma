@@ -57,6 +57,16 @@
 4. `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
 5. `blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`
 
+### 3.3 历史治理与证据入口
+
+若要回看 `v0.01 Frozen` 的历史评审、release、runbook、evidence，请直接查看：
+
+1. `docs/spec/v0.01/README.md`
+2. `docs/spec/v0.01/records/`
+3. `docs/spec/common/records/development-status.md`
+
+这些内容不再回填到本文正文里。
+
 ---
 
 ## 4. 历史上保留下来的核心架构价值
@@ -157,6 +167,7 @@
 2. 针对 `v0.02 / v0.03` 的历史演进安排。
 3. 文内任何仍像当前实现说明的伪代码或落地节奏。
 4. 把 `architecture-master.md` 当成系统级 SoT 的使用方式。
+5. 把历史评审过程、偏差修复流水、Gate 记录继续追加到本文正文的做法。
 
 这些内容保留追溯价值，但不再承担现行设计职责。
 
@@ -171,3 +182,5 @@
 5. `docs/design-v2/02-modules/broker-design.md`
 6. `docs/design-v2/02-modules/backtest-report-design.md`
 7. `blueprint/README.md`
+8. `docs/spec/v0.01/README.md`
+9. `docs/spec/common/records/development-status.md`

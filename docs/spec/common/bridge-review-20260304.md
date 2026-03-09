@@ -1,58 +1,110 @@
 # 路线图-设计桥接审查记录（2026-03-04）
 
-> 历史桥接审计记录：保留用于追溯 2026-03-04 的路线图与设计桥接修复，不作为当前执行入口。
+**版本**: `历史桥接审计记录`  
+**状态**: `Frozen`  
+**封版日期**: `2026-03-04`  
+**变更规则**: `仅允许勘误、链接修复与历史说明补充；不作为当前执行入口或现行设计判断依据。`
 
-**审查范围**:
-- `docs/spec/v0.01/roadmap/v0.01-mvp-roadmap.md` ~ `docs/spec/v0.06/roadmap/v0.06-portfolio.md`
-- `docs/design-v2/01-system/architecture-master.md`、`docs/design-v2/02-modules/backtest-report-design.md`、`docs/design-v2/02-modules/broker-design.md`、`docs/design-v2/02-modules/data-layer-design.md`、`docs/spec/v0.01/records/data-rebuild-runbook-20260303.md`、`docs/design-v2/01-system/system-baseline.md`、`docs/spec/v0.01/records/release-v0.01-formal.md`、`docs/observatory/sandbox-review-standard.md`、`docs/design-v2/02-modules/selector-design.md`、`docs/design-v2/02-modules/strategy-design.md`、`docs/Strategy/PAS/volman-ytc-mapping.md`
-- `docs/observatory/god_view_8_perspectives_report_v0.01.md`
+---
 
-**审查基线**:
-- 执行口径：`docs/design-v2/01-system/system-baseline.md`
-- 评审口径：`docs/observatory/sandbox-review-standard.md`
-- 未来规划附录：`docs/observatory/god_view_8_perspectives_report_v0.01.md`
+## 1. 文档定位
 
-## 1. 宏观层结论（目标与演进）
+本文档是一次**历史桥接审计记录**。
 
-1. 版本演进主线（v0.01 -> v0.06）总体一致，未发现与 v0.01 冻结口径直接冲突的强约束违规。
-2. 路线图与“八视角”映射基本成立，但原文存在局部口径漂移（见第 4 节）。
-3. 审查前存在“桥接断点”：部分路线图链接到不存在的 spec 文件，已修复为 `docs/design-v2/*` 有效入口。
+它保留的价值主要是：
 
-## 2. 系统层结论（门禁与可执行性）
+1. 追溯 `2026-03-04` 当天对路线图和设计入口的桥接修复。
+2. 说明当时发现了哪些断链、口径漂移和门禁缺口。
+3. 为后续回看文档治理转折点提供历史证据。
 
-1. 原路线图普遍只写 `S0/S1=0`，缺少七维证据、kill-chain 回放、幂等重跑等 Go/No-Go 必备证据落点。
-2. 已在 v0.01-v0.06 路线图中补充统一门禁要求，使“能评审”从口号变为可执行清单。
-3. v0.02-v0.06 均补充了“评审证据与 Go/No-Go 门禁（补充）”段，明确每版应提交的证据类型。
+本文档不是当前执行入口，也不是当前设计正文。
 
-## 3. 分层结论（模块边界与时序）
+---
 
-1. 时序主线 `signal_date=T -> execute_date=T+1 -> price=T+1 Open` 仍保持一致。
-2. v0.02 已补充 BPB 确认期与 T+1 语义关系，避免“确认期改写撮合语义”。
-3. v0.06 已补充组合层并发冲突优先级，减少“组合风控与个股风控重复拒单/语义打架”风险。
+## 2. 当前使用边界
 
-## 4. 发现问题与修复（按严重度）
+当前阅读本文的正确用途是：
 
-1. `S1`：v0.01 路线图引用不存在的 `spec-01~05` 文件，桥接失效。  
-   修复：改为指向现有 `docs/design-v2/02-modules/data-layer-design.md`、`selector-design.md`、`strategy-design.md`、`broker-design.md`、`backtest-report-design.md`。
-2. `S1`：v0.02-v0.06 缺少定稿门禁证据落点（七维证据/kill-chain/幂等重跑/Go-No-Go）。  
-   修复：逐文件新增“评审证据与 Go/No-Go 门禁（补充）”章节。
-3. `S1`：v0.05 文档内自相矛盾（正文“自动禁用” vs 风险段“仅建议模式”）。  
-   修复：统一为默认建议模式（`AUTO_ENV_DISABLE=False`），人工审核后启用。
-4. `S2`：v0.04 引用视角三，但本版范围未落地 signal quality。  
-   修复：引用改为视角二/五/六，并注明视角三在 v0.05 深化。
-5. `S2`：v0.06 仓位描述逻辑不严谨（“取较小值”却写“R 风险下限保护”）。  
-   修复：改为“R 风险硬上限约束”，并补充组合层冲突优先级。
+1. 回看 `2026-03-04` 的桥接修复背景。
+2. 理解为什么 `docs/design-v2/`、`docs/spec/`、`docs/observatory/` 之间曾做过一次统一收口。
+3. 追溯当时对 `v0.01 -> v0.06` 路线图做过哪些门禁补丁。
 
-## 5. 剩余风险（未在本轮改动）
+当前不应把本文当作：
 
-1. `docs/design-v2/*` 为 v0.01 Frozen 文档；v0.02+ 的实现细节仍需在对应版本建立独立设计与实现卡，不能回写覆盖 v0.01 语义。
-2. v0.03+ 的新增状态机（如 CriticalPointManager）后续需补充“状态可达性 + 时间推进”回归测试设计，否则在七维“状态机完整性”维度有潜在 `S1` 风险。
+1. 当前主线设计来源。
+2. 当前版本推进判断。
+3. 当前 Gate 结论或执行清单。
 
-## 6. 本轮审查结论
+---
 
-1. 经过本轮修订，路线图作为“设计 -> 实现”桥接文档已从“可读”提升到“可执行、可审计、可回放”。
-2. 结论：**可继续推进，但必须按新增门禁条目提交证据，否则不得晋级下一版本。**
+## 3. 当前权威入口
 
+当前主线相关判断请直接查看：
 
+1. `docs/spec/common/records/development-status.md`
+2. `docs/design-migration-boundary.md`
+3. `blueprint/README.md`
 
+若涉及 `v0.01 Frozen` 历史执行口径，仍以：
 
+1. `docs/design-v2/01-system/system-baseline.md`
+
+为准。
+
+---
+
+## 4. 历史保留价值
+
+本文最值得保留的历史信息有三类：
+
+### 4.1 它记录了文档桥接期的真实问题
+
+当时审到的主要问题包括：
+
+1. 路线图断链
+2. 门禁证据缺口
+3. 版本间口径漂移
+4. 若干版本文档内部自相矛盾
+
+### 4.2 它记录了“如何修”而不是只记录“有问题”
+
+这份文档的价值，不在于今天继续照着执行，而在于它留下了：
+
+1. 当时修了哪些入口
+2. 哪些章节被补成可审计口径
+3. 哪些风险留到了后续版本
+
+### 4.3 它是治理转折点的追溯材料
+
+如果要回看仓库从“桥接期”走向“入口收口期”的过程，这份文档仍然有参考价值。
+
+---
+
+## 5. 当前已经失效或容易误导的旧口径
+
+本次整理后，以下内容统一降级：
+
+1. 把本文当成当前路线图的执行依据。
+2. 把本文里的修复项当成今天仍待执行的任务单。
+3. 把本文里的“可继续推进”结论当成当前阶段判断。
+
+这些结论只代表 `2026-03-04` 当时的审计结论。
+
+---
+
+## 6. 原审计结论保留
+
+原文的核心历史结论可以简化保留为：
+
+1. 当时桥接层存在断链与口径漂移。
+2. 当轮修订后，路线图文档从“可读”提升到“可执行、可审计、可回放”。
+3. 但继续推进的前提，是后续版本必须提交新增门禁证据。
+
+---
+
+## 7. 相关文档
+
+1. `docs/spec/common/README.md`
+2. `docs/spec/common/records/development-status.md`
+3. `docs/design-v2/01-system/system-baseline.md`
+4. `blueprint/README.md`
