@@ -13,12 +13,13 @@
 6. `blueprint/01-full-design/06-pas-minimal-tradable-design-20260309.md`
 7. `blueprint/01-full-design/07-irs-minimal-tradable-design-20260309.md`
 8. `blueprint/01-full-design/08-mss-minimal-tradable-design-20260309.md`
-9. `docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md`
-10. `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`
-11. `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-02-irs-upgrade.md`
-12. `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-03-pas-upgrade.md`
-13. `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-04-mss-upgrade.md`
-14. `docs/spec/common/records/development-status.md`
+9. `blueprint/01-full-design/09-mainline-system-operating-baseline-20260309.md`
+10. `docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md`
+11. `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`
+12. `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-02-irs-upgrade.md`
+13. `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-03-pas-upgrade.md`
+14. `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-04-mss-upgrade.md`
+15. `docs/spec/common/records/development-status.md`
 
 ---
 

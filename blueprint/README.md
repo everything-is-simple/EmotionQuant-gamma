@@ -68,6 +68,7 @@
 - `01-full-design/06-pas-minimal-tradable-design-20260309.md`
 - `01-full-design/07-irs-minimal-tradable-design-20260309.md`
 - `01-full-design/08-mss-minimal-tradable-design-20260309.md`
+- `01-full-design/09-mainline-system-operating-baseline-20260309.md`
 - `01-full-design/90-design-source-register-appendix-20260309.md`
 - `01-full-design/91-cross-version-object-mapping-reference-20260308.md`
 - `01-full-design/92-mainline-design-atom-closure-record-20260308.md`
@@ -78,9 +79,10 @@
 
 1. `01-05`：当前主线 core contract annex
 2. `06-08`：当前主线 core algorithm body
-3. `90-92`：来源、映射、闭环记录附录
-4. `02-implementation-spec/`：当前唯一实现方案
-5. `03-execution/`：当前唯一执行拆解
+3. `09`：当前主线 system operating baseline
+4. `90-92`：来源、映射、闭环记录附录
+5. `02-implementation-spec/`：当前唯一实现方案
+6. `03-execution/`：当前唯一执行拆解
 
 ## 4.1 设计来源声明
 
@@ -96,14 +98,15 @@
 | `06-pas-minimal-tradable-design-20260309.md` | gamma 新写 | core algorithm body | 基于 beta 四件套 + alpha v3.2.0 提炼 |
 | `07-irs-minimal-tradable-design-20260309.md` | gamma 新写 | core algorithm body | 基于 beta 四件套 + alpha v3.3.0 提炼 |
 | `08-mss-minimal-tradable-design-20260309.md` | gamma 新写 | core algorithm body | 基于 beta 四件套 + alpha v3.2.0 提炼 |
+| `09-mainline-system-operating-baseline-20260309.md` | gamma 新写 | system operating baseline | 端到端运行路径、场景矩阵与系统级证据口径 |
 | `90-design-source-register-appendix-20260309.md` | gamma 新增 | appendix | 来源登记，不参与当前主线排序 |
 | `91-cross-version-object-mapping-reference-20260308.md` | gamma 新增 | appendix | 跨版本来源参考，不参与当前主线排序 |
 | `92-mainline-design-atom-closure-record-20260308.md` | gamma 新增 | appendix | 闭环记录，不参与当前主线排序 |
 
 **迁移原则**：
 
-- `01-08` 组成当前主线核心设计包
-- `01-05` 是 core contract annex，`06-08` 是 core algorithm body
+- `01-09` 组成当前主线核心设计包
+- `01-05` 是 core contract annex，`06-08` 是 core algorithm body，`09` 是 system operating baseline
 - `90-92` 全部是附录，不参与当前主线排序
 - 所有文件默认冻结，只在"逻辑错误"或"外部约束变化"时修改
 - alpha/beta 的完整算法文件保留在原仓库作为参考，不直接迁移到 gamma
@@ -141,7 +144,8 @@
 1. `PAS` 最小可交易形态层正文已落地（`06-pas-minimal-tradable-design-20260309.md`）
 2. `IRS` 最小可交易排序层正文已落地（`07-irs-minimal-tradable-design-20260309.md`）
 3. `MSS` 最小可交易风控层正文已落地（`08-mss-minimal-tradable-design-20260309.md`）
-4. 附录层已落地：来源登记、映射参考、闭环记录
+4. 系统总纲已落地（`09-mainline-system-operating-baseline-20260309.md`）
+5. 附录层已落地：来源登记、映射参考、闭环记录
 
 当前 `02-implementation-spec/` 也已经落下第一份正文：
 
@@ -155,5 +159,6 @@
 
 1. 先看 `01-05`，确认跨模块 contract 边界
 2. 再看 `06-08`，确认算法正文
-3. 只有在做来源审计或历史回看时，才看 `90-92`
-4. 实现只允许从 `01-08` 裁出，不允许跳过正文直接拿附录下定义
+3. 再看 `09`，确认端到端运行路径、系统级场景矩阵与证据口径
+4. 只有在做来源审计或历史回看时，才看 `90-92`
+5. 实现只允许从 `01-09` 裁出，不允许跳过正文直接拿附录下定义

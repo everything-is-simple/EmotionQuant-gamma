@@ -14,7 +14,8 @@
 7. `blueprint/01-full-design/06-pas-minimal-tradable-design-20260309.md`
 8. `blueprint/01-full-design/07-irs-minimal-tradable-design-20260309.md`
 9. `blueprint/01-full-design/08-mss-minimal-tradable-design-20260309.md`
-10. `docs/spec/common/records/development-status.md`
+10. `blueprint/01-full-design/09-mainline-system-operating-baseline-20260309.md`
+11. `docs/spec/common/records/development-status.md`
 
 ---
 
