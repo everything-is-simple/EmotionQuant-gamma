@@ -1,4 +1,4 @@
-# 跨版本对象映射总表
+# 跨版本对象映射参考表
 
 **状态**: `Active`  
 **日期**: `2026-03-08`  
@@ -14,13 +14,14 @@
 
 ## 1. 用途
 
-本文是 `blueprint/` 新体系的第一张源表。
+本文是 `blueprint/01-full-design/` 的来源参考附录。
 
 它只做一件事：
 
 `把 alpha / beta / gamma 三版中与关键对象相关的设计入口、治理入口、当前入口拉平。`
 
 它不直接写新版正文，也不直接写实现方案。
+它的角色是把“这些正文是从哪里提炼来的”讲清楚。
 
 ---
 
@@ -52,11 +53,11 @@
 
 | 对象 | beta 设计来源 | beta 治理来源 | alpha 设计来源 | alpha 治理来源 | gamma 当前来源 | 归类判断 | blueprint 动作 |
 |---|---|---|---|---|---|---|---|
-| `Selector` | 无独立模块文；需从 `docs/system-overview.md`、`docs/module-index.md`、`docs/design/core-algorithms/{mss,irs,pas}/` 反提炼 | `Governance/archive/archive-capability-v8-20260223/CP-02-mss.md`、`CP-03-irs.md`、`CP-04-pas.md` | 同 beta，无独立 Selector 正文 | `Governance/cards/R2-mss-cards.md`、`R3-irs-pas-cards.md` | `docs/design-v2/02-modules/selector-design.md`、`blueprint/01-full-design/03-selector-contract-supplement-20260308.md`、`docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md` | `Selector` 作为独立对象是 `gamma` 明确化后的产物；`alpha / beta` 只能提供设计原子，不能直接复用正文 | 以 `gamma` 当前主线为骨架，回收 `alpha / beta` 中关于样本收缩、入口排序、漏斗分段的设计原子 |
-| `PAS-trigger / BOF` | `docs/design/core-algorithms/pas/pas-algorithm.md`、`pas-api.md`、`pas-data-models.md`、`pas-information-flow.md` | `Governance/archive/archive-capability-v8-20260223/CP-04-pas.md`、`record/reusable-assets.md` | 同 beta 四件套 | `Governance/cards/R3-irs-pas-cards.md`、`record/reusable-assets.md` | `docs/design-v2/02-modules/strategy-design.md`、`blueprint/01-full-design/04-pas-trigger-bof-contract-supplement-20260308.md`、`docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-03-pas-upgrade.md` | `alpha / beta` 的 PAS 设计深度高，但属于 `PAS-full` 或更宽语义；`gamma` 当前只落 `PAS-trigger / BOF` | 复用 `alpha / beta` 的 detector 骨架、数据模型、信息流表达；丢弃超出当前主线的多形态在线语义 |
-| `IRS-lite` | `docs/design/core-algorithms/irs/irs-algorithm.md`、`irs-api.md`、`irs-data-models.md`、`irs-information-flow.md` | `Governance/archive/archive-capability-v8-20260223/CP-03-irs.md`、`record/reusable-assets.md` | 同 beta 四件套 | `Governance/cards/R3-irs-pas-cards.md`、`record/reusable-assets.md` | `docs/design-v2/02-modules/selector-design.md`、`blueprint/01-full-design/05-irs-lite-contract-supplement-20260308.md`、`docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-02-irs-upgrade.md` | `alpha / beta` 的 IRS 四件套是高价值设计资产；但前置过滤语义已过时 | 复用行业口径、评分结构、data-models 与 info-flow；明确舍弃 `Top-N` 前置行业硬过滤 |
-| `MSS-lite` | `docs/design/core-algorithms/mss/mss-algorithm.md`、`mss-api.md`、`mss-data-models.md`、`mss-information-flow.md` | `Governance/archive/archive-capability-v8-20260223/CP-02-mss.md`、`record/reusable-assets.md` | 同 beta 四件套 | `Governance/cards/R2-mss-cards.md`、`record/reusable-assets.md` | `docs/design-v2/02-modules/broker-design.md`、`blueprint/01-full-design/06-mss-lite-contract-supplement-20260308.md`、`docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-04-mss-upgrade.md` | `alpha / beta` 的 MSS 算法骨架很成熟；但前置 gate 语义在当前主线已降级 | 复用六因子、接口契约和信息流表达；明确改写消费位置为 `Broker / Risk` 风险覆盖 |
-| `Broker / Risk` | 无独立 Broker 文；对应 `docs/design/core-infrastructure/trading/trading-algorithm.md`、`trading-api.md`、`trading-data-models.md`、`trading-information-flow.md` | `Governance/archive/archive-capability-v8-20260223/CP-07-trading.md` | 同 beta Trading 四件套 | `Governance/cards/R6-trading-cards.md` | `docs/design-v2/02-modules/broker-design.md`、`blueprint/01-full-design/07-broker-risk-contract-supplement-20260308.md`、`docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md` | `Broker / Risk` 在 `gamma` 中已被当前主线显式化；`alpha / beta` 对应对象名称更接近 `Trading` | 以 `Trading -> Broker / Risk` 做语义映射，复用执行模型、订单契约、信息流表达，不复用旧集成依赖 |
+| `Selector` | 无独立模块文；需从 `docs/system-overview.md`、`docs/module-index.md`、`docs/design/core-algorithms/{mss,irs,pas}/` 反提炼 | `Governance/archive/archive-capability-v8-20260223/CP-02-mss.md`、`CP-03-irs.md`、`CP-04-pas.md` | 同 beta，无独立 Selector 正文 | `Governance/cards/R2-mss-cards.md`、`R3-irs-pas-cards.md` | `docs/design-v2/02-modules/selector-design.md`、`blueprint/01-full-design/01-selector-contract-annex-20260308.md`、`docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md` | `Selector` 作为独立对象是 `gamma` 明确化后的产物；`alpha / beta` 只能提供设计原子，不能直接复用正文 | 以 `gamma` 当前主线为骨架，回收 `alpha / beta` 中关于样本收缩、入口排序、漏斗分段的设计原子 |
+| `PAS Trigger / Registry` | `docs/design/core-algorithms/pas/pas-algorithm.md`、`pas-api.md`、`pas-data-models.md`、`pas-information-flow.md` | `Governance/archive/archive-capability-v8-20260223/CP-04-pas.md`、`record/reusable-assets.md` | 同 beta 四件套 | `Governance/cards/R3-irs-pas-cards.md`、`record/reusable-assets.md` | `docs/design-v2/02-modules/strategy-design.md`、`blueprint/01-full-design/02-pas-trigger-registry-contract-annex-20260308.md`、`docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-03-pas-upgrade.md` | `alpha / beta` 的 PAS 设计深度高，但属于 `PAS-full` 或更宽语义；`gamma` 当前只落 `PAS Trigger / Registry` | 复用 `alpha / beta` 的 detector 骨架、数据模型、信息流表达；丢弃超出当前主线的多形态在线语义 |
+| `IRS-lite` | `docs/design/core-algorithms/irs/irs-algorithm.md`、`irs-api.md`、`irs-data-models.md`、`irs-information-flow.md` | `Governance/archive/archive-capability-v8-20260223/CP-03-irs.md`、`record/reusable-assets.md` | 同 beta 四件套 | `Governance/cards/R3-irs-pas-cards.md`、`record/reusable-assets.md` | `docs/design-v2/02-modules/selector-design.md`、`blueprint/01-full-design/03-irs-lite-contract-annex-20260308.md`、`docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-02-irs-upgrade.md` | `alpha / beta` 的 IRS 四件套是高价值设计资产；但前置过滤语义已过时 | 复用行业口径、评分结构、data-models 与 info-flow；明确舍弃 `Top-N` 前置行业硬过滤 |
+| `MSS-lite` | `docs/design/core-algorithms/mss/mss-algorithm.md`、`mss-api.md`、`mss-data-models.md`、`mss-information-flow.md` | `Governance/archive/archive-capability-v8-20260223/CP-02-mss.md`、`record/reusable-assets.md` | 同 beta 四件套 | `Governance/cards/R2-mss-cards.md`、`record/reusable-assets.md` | `docs/design-v2/02-modules/broker-design.md`、`blueprint/01-full-design/04-mss-lite-contract-annex-20260308.md`、`docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-04-mss-upgrade.md` | `alpha / beta` 的 MSS 算法骨架很成熟；但前置 gate 语义在当前主线已降级 | 复用六因子、接口契约和信息流表达；明确改写消费位置为 `Broker / Risk` 风险覆盖 |
+| `Broker / Risk` | 无独立 Broker 文；对应 `docs/design/core-infrastructure/trading/trading-algorithm.md`、`trading-api.md`、`trading-data-models.md`、`trading-information-flow.md` | `Governance/archive/archive-capability-v8-20260223/CP-07-trading.md` | 同 beta Trading 四件套 | `Governance/cards/R6-trading-cards.md` | `docs/design-v2/02-modules/broker-design.md`、`blueprint/01-full-design/05-broker-risk-contract-annex-20260308.md`、`docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md` | `Broker / Risk` 在 `gamma` 中已被当前主线显式化；`alpha / beta` 对应对象名称更接近 `Trading` | 以 `Trading -> Broker / Risk` 做语义映射，复用执行模型、订单契约、信息流表达，不复用旧集成依赖 |
 
 ### 4.2 基础设施对象
 
@@ -107,9 +108,17 @@
 
 ---
 
-## 7. 下一步输入
+## 7. 本轮产出 / 使用边界
 
-基于这张总表，下一步应继续做两件事：
+基于这张参考表，本轮已经形成下面 3 类正式产物：
 
-1. 为 5 个关键对象分别补“设计原子缺口清单”
-2. 从这 5 份稳定设计中裁出唯一 `Implementation Spec`
+1. `01-05`：当前主线 contract annex
+2. `06-08`：当前主线算法正文
+3. `90`：设计来源登记附录
+
+本文从现在起只承担 4 个用途：
+
+1. 审计 `alpha / beta / gamma` 三版之间的来源映射
+2. 解释为什么旧对象没有整包回收
+3. 为来源争议提供参考，不参与当前主线排序
+4. 在正文与参考表冲突时，无条件以 `01-08` 当前正文为准

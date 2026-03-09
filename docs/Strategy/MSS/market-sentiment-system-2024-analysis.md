@@ -93,6 +93,6 @@
 
 **参考文献**：
 1. 《2024.大盘情绪交易系统》原文
-2. `blueprint/01-full-design/06-mss-lite-contract-supplement-20260308.md`
+2. `blueprint/01-full-design/04-mss-lite-contract-annex-20260308.md`
 3. `docs/design-v2/01-system/system-baseline.md`
 

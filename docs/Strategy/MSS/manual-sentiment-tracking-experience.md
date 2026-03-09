@@ -445,7 +445,7 @@
 ## 12. 参考文献
 
 1. 手工记录表格：`G:\《Trade Journal》\《市场情绪表-手工》`
-2. EmotionQuant MSS算法设计：`blueprint/01-full-design/06-mss-lite-contract-supplement-20260308.md`
+2. EmotionQuant MSS算法设计：`blueprint/01-full-design/04-mss-lite-contract-annex-20260308.md`
 3. 《大盘情绪交易系统》分析：`docs/reference/MSS/market-sentiment-system-2024-analysis.md`
 
 ---

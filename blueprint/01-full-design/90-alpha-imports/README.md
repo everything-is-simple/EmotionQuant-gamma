@@ -11,11 +11,11 @@
 ## 使用边界
 
 1. 这里不是当前主线正文。
-2. 这里不参与 `08/09/10` 的主编号排序。
+2. 这里不参与 `01-08` 的主编号排序。
 3. 当前现行算法口径一律以：
-   - `08-pas-minimal-tradable-design-20260309.md`
-   - `09-irs-minimal-tradable-design-20260309.md`
-   - `10-mss-minimal-tradable-design-20260309.md`
+   - `06-pas-minimal-tradable-design-20260309.md`
+   - `07-irs-minimal-tradable-design-20260309.md`
+   - `08-mss-minimal-tradable-design-20260309.md`
    为准。
 4. 若原稿与当前主线正文冲突，以当前主线正文为准。
 

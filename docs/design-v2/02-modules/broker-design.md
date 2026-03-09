@@ -8,7 +8,7 @@
 **创建日期**: `2026-03-01`  
 **对应模块**: `src/broker/`（risk.py, matcher.py）
 
-> 本文件只保留 `v0.01 Frozen` 历史 Broker 口径。仓库现行 `Broker / Risk` 权威设计请直接查看 `blueprint/01-full-design/07-broker-risk-contract-supplement-20260308.md`。
+> 本文件只保留 `v0.01 Frozen` 历史 Broker 口径。仓库现行 `Broker / Risk` 权威设计请直接查看 `blueprint/01-full-design/05-broker-risk-contract-annex-20260308.md`。
 
 ## 冻结区与冲突处理
 
@@ -21,8 +21,8 @@
 ## 现行设计桥接导航
 
 - 设计迁移边界：`docs/design-migration-boundary.md`
-- 现行 `Broker / Risk` 正文：`blueprint/01-full-design/07-broker-risk-contract-supplement-20260308.md`
-- 现行 `MSS-lite` 正文：`blueprint/01-full-design/06-mss-lite-contract-supplement-20260308.md`
+- 现行 `Broker / Risk` 正文：`blueprint/01-full-design/05-broker-risk-contract-annex-20260308.md`
+- 现行 `MSS-lite` 正文：`blueprint/01-full-design/04-mss-lite-contract-annex-20260308.md`
 - 当前实现方案：`blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
 - 当前执行拆解：`blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`
 

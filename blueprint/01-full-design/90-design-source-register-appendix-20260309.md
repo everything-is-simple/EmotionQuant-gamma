@@ -1,0 +1,129 @@
+# Design Source Register Appendix
+
+**状态**: `Active`  
+**日期**: `2026-03-09`  
+**对象**: `blueprint 当前主线设计来源登记附录`  
+**定位**: `把“从哪来、保留什么、裁掉什么、落到哪”显式登记；不承担算法正文`  
+**上游锚点**:
+
+1. `blueprint/01-full-design/91-cross-version-object-mapping-reference-20260308.md`
+2. `blueprint/01-full-design/92-mainline-design-atom-closure-record-20260308.md`
+3. `blueprint/01-full-design/01-selector-contract-annex-20260308.md`
+4. `blueprint/01-full-design/02-pas-trigger-registry-contract-annex-20260308.md`
+5. `blueprint/01-full-design/03-irs-lite-contract-annex-20260308.md`
+6. `blueprint/01-full-design/04-mss-lite-contract-annex-20260308.md`
+7. `blueprint/01-full-design/05-broker-risk-contract-annex-20260308.md`
+8. `G:\EmotionQuant\EmotionQuant-beta\docs\design\`
+9. `G:\EmotionQuant\EmotionQuant-alpha\docs\design\`
+
+---
+
+## 1. 用途
+
+本文不定义算法本体。
+
+本文只做一件事：
+
+`把 blueprint 当前主线各对象的设计来源、回收范围、裁剪边界和目标落点做成显式登记。`
+
+这样做的目的只有两个：
+
+1. 防止“明明是从旧文档回收来的，却在新文里看不出来源”
+2. 防止“把旧语义整包带回当前主线，却没有留下裁剪记录”
+
+---
+
+## 2. 来源分类规则
+
+后续统一使用下面 4 类来源标签：
+
+| 标签 | 含义 | 当前用法 |
+|---|---|---|
+| `gamma-mainline` | 当前主线已确认的现行语义 | 作为最终落点和裁剪锚 |
+| `beta-design` | 最优先回收的设计结构资产 | 提供 algorithm / data-models / information-flow / api |
+| `alpha-review` | 经过多轮审视的成熟算法或治理回看 | 提供边界复核和验收口径回看 |
+| `history-only` | 只保留历史对照，不进入当前正文 | `Frozen`、旧 `Integration`、旧前置 gate |
+
+---
+
+## 3. 当前对象来源登记
+
+### 3.1 当前 5 个关键对象
+
+| 对象 | blueprint 当前落点 | 主来源 | 主要回收内容 | 明确裁掉内容 | 当前状态 |
+|---|---|---|---|---|---|
+| `Selector` | `01-selector-contract-annex-20260308.md` | `gamma-mainline` + `beta-design` | 候选入口、过滤分段、候选追溯、contract 原子 | `MSS gate`、`IRS filter`、旧 Integration 排序 | `annex 已冻结；当前对象不另起第二份正文` |
+| `PAS` | `02-pas-trigger-registry-contract-annex-20260308.md`、`06-pas-minimal-tradable-design-20260309.md` | `gamma-mainline` + `beta-design` + `alpha-review` | `YTC` 五形态、quality/reference 表达、registry / detector / pipeline 分层 | `PAS-full` 机会等级、非 `YTC` 额外形态直接上线、旧集成耦合 | `annex + 算法正文双层冻结` |
+| `IRS` | `03-irs-lite-contract-annex-20260308.md`、`07-irs-minimal-tradable-design-20260309.md` | `gamma-mainline` + `beta-design` + `alpha-review` | 行业快照、后置增强、五层排序框架、industry -> signal 附着 | 前置行业硬过滤、事件主题层、旧配置建议强输出 | `annex + 算法正文双层冻结` |
+| `MSS` | `04-mss-lite-contract-annex-20260308.md`、`08-mss-minimal-tradable-design-20260309.md` | `gamma-mainline` + `beta-design` + `alpha-review` | 六因子、市场状态层、`risk_regime`、overlay 映射 | 前置 gate、写回 `final_score`、完整自适应周期模型 | `annex + 算法正文双层冻结` |
+| `Broker / Risk` | `05-broker-risk-contract-annex-20260308.md` | `gamma-mainline` + `beta-design` | `Signal / Order / Trade` 边界、执行时序、生命周期 trace、A 股约束 | 旧 `Integration -> Trading` 桥接包袱 | `annex 已冻结；当前对象不另起第二份正文` |
+
+### 3.2 本轮新增主正文的角色
+
+| 文件 | 角色 | 不是 |
+|---|---|---|
+| `06-pas-minimal-tradable-design-20260309.md` | 当前主线 `PAS` 五形态算法正文 | 不是第二份 contract annex |
+| `07-irs-minimal-tradable-design-20260309.md` | 当前主线 `IRS` 算法正文 | 不是第二份 implementation spec |
+| `08-mss-minimal-tradable-design-20260309.md` | 当前主线 `MSS` 算法正文 | 不是第二份 execution 文 |
+
+### 3.3 alpha 导入原稿的角色
+
+| 目录/文件 | 角色 | 不是 |
+|---|---|---|
+| `90-alpha-imports/` | 来源留档区 | 不是当前主线正文区 |
+| `90-alpha-imports/mss-algorithm-from-alpha-v3.2.0.md` | `MSS` 原稿来源留档 | 不是现行 `MSS` SoT |
+| `90-alpha-imports/irs-algorithm-from-alpha-v3.3.0.md` | `IRS` 原稿来源留档 | 不是现行 `IRS` SoT |
+| `90-alpha-imports/pas-algorithm-from-alpha-v3.2.0.md` | `PAS` 原稿来源留档 | 不是现行 `PAS` SoT |
+
+---
+
+## 4. 按来源文件登记
+
+### 4.1 PAS
+
+| 来源文件 | 来源标签 | 回收了什么 | 没回收什么 | 目标落点 |
+|---|---|---|---|---|
+| `beta ... pas-algorithm.md` | `beta-design` | 因子边界、五形态体系表达、验收粒度 | `PAS-full` 完整机会等级在线化 | `06-pas-minimal-tradable-design-20260309.md` |
+| `beta ... pas-data-models.md` | `beta-design` | 输入快照和结果对象表达方式 | 全量字段直接照搬 | `02-pas-trigger-registry-contract-annex-20260308.md` |
+| `beta ... pas-information-flow.md` | `beta-design` | `registry -> detector -> output` 分段结构 | 旧集成和 GUI 出口 | `06-pas-minimal-tradable-design-20260309.md` |
+| `alpha ... pas-algorithm.md` | `alpha-review` | 单指标不得独立决策的边界复核 | 完整 `PAS-full` 机会层 | `06-pas-minimal-tradable-design-20260309.md` |
+
+### 4.2 IRS
+
+| 来源文件 | 来源标签 | 回收了什么 | 没回收什么 | 目标落点 |
+|---|---|---|---|---|
+| `beta ... irs-algorithm.md` | `beta-design` | 因子分层、行业排序表达、验收粒度 | 前置行业过滤、完整配置建议 | `07-irs-minimal-tradable-design-20260309.md` |
+| `beta ... irs-data-models.md` | `beta-design` | 行业快照与结果对象表达方式 | 全量字段直接照搬 | `03-irs-lite-contract-annex-20260308.md` |
+| `beta ... irs-information-flow.md` | `beta-design` | 行业层到 signal 层的信息流结构 | 旧 Integration 出口 | `07-irs-minimal-tradable-design-20260309.md` |
+| `alpha ... irs-algorithm.md` | `alpha-review` | 六因子历史边界、验收口径复核 | 完整行业配置建议语义 | `07-irs-minimal-tradable-design-20260309.md` |
+
+### 4.3 MSS
+
+| 来源文件 | 来源标签 | 回收了什么 | 没回收什么 | 目标落点 |
+|---|---|---|---|---|
+| `beta ... mss-algorithm.md` | `beta-design` | 六因子骨架、市场状态表达、验收粒度 | 前置 gate、完整自适应模型 | `08-mss-minimal-tradable-design-20260309.md` |
+| `beta ... mss-data-models.md` | `beta-design` | 市场快照与 overlay 对象表达方式 | 全量字段直接照搬 | `04-mss-lite-contract-annex-20260308.md` |
+| `beta ... mss-information-flow.md` | `beta-design` | `snapshot -> score -> overlay -> consumer` 分段结构 | GUI / analysis 侧出口 | `08-mss-minimal-tradable-design-20260309.md` |
+| `alpha ... mss-algorithm.md` | `alpha-review` | 状态层与仓位建议的边界复核 | 旧三三制集成语义 | `08-mss-minimal-tradable-design-20260309.md` |
+
+---
+
+## 5. 当前冻结结论
+
+从本文生效起，统一冻结下面 4 条：
+
+1. `gamma` 是唯一语义落点
+2. `beta` 是设计结构的主来源
+3. `alpha` 是边界复核和成熟表达的辅来源
+4. 旧 `Integration`、旧 `MSS / IRS` 前置 gate 只保留为历史对照，不再进入当前正文
+
+---
+
+## 6. 使用边界
+
+基于本文，当前统一采用下面 4 条：
+
+1. `01-08` 才参与当前主线核心设计排序
+2. 本文是来源附录，不是算法正文，也不是实现方案
+3. 若来源登记与 `01-08` 正文冲突，以 `01-08` 为准
+4. 只有在来源审计、裁剪争议或历史回溯时，才需要回看本文

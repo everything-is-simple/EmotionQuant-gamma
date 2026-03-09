@@ -537,7 +537,7 @@ def is_pin_bar(open, high, low, close, direction='bullish'):
 ## 11. 参考文献
 
 1. 许佳冲. *裸K线交易法*. 中国，2021.
-2. EmotionQuant PAS算法设计：`blueprint/01-full-design/04-pas-trigger-bof-contract-supplement-20260308.md`
+2. EmotionQuant PAS算法设计：`blueprint/01-full-design/02-pas-trigger-registry-contract-annex-20260308.md`
 3. Lance Beggs YTC分析：`docs/reference/PAS/lance-beggs-ytc-analysis.md`
 
 ---

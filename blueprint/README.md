@@ -60,37 +60,27 @@
 当前已经落下的入口文件有：
 
 - `00-doc-reorganization-todolist-20260308.md`
-- `01-full-design/01-cross-version-object-mapping-matrix-20260308.md`
-- `01-full-design/02-mainline-design-atom-gap-checklist-20260308.md`
-- `01-full-design/03-selector-contract-supplement-20260308.md`
-- `01-full-design/04-pas-trigger-bof-contract-supplement-20260308.md`
-- `01-full-design/05-irs-lite-contract-supplement-20260308.md`
-- `01-full-design/06-mss-lite-contract-supplement-20260308.md`
-- `01-full-design/07-broker-risk-contract-supplement-20260308.md`
-- `01-full-design/08-pas-minimal-tradable-design-20260309.md`
-- `01-full-design/09-irs-minimal-tradable-design-20260309.md`
-- `01-full-design/10-mss-minimal-tradable-design-20260309.md`
-- `01-full-design/11-design-source-register-20260309.md`
+- `01-full-design/01-selector-contract-annex-20260308.md`
+- `01-full-design/02-pas-trigger-registry-contract-annex-20260308.md`
+- `01-full-design/03-irs-lite-contract-annex-20260308.md`
+- `01-full-design/04-mss-lite-contract-annex-20260308.md`
+- `01-full-design/05-broker-risk-contract-annex-20260308.md`
+- `01-full-design/06-pas-minimal-tradable-design-20260309.md`
+- `01-full-design/07-irs-minimal-tradable-design-20260309.md`
+- `01-full-design/08-mss-minimal-tradable-design-20260309.md`
+- `01-full-design/90-design-source-register-appendix-20260309.md`
+- `01-full-design/91-cross-version-object-mapping-reference-20260308.md`
+- `01-full-design/92-mainline-design-atom-closure-record-20260308.md`
 - `02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
 - `03-execution/01-current-mainline-execution-breakdown-20260308.md`
 
 它们分别负责：
 
-1. 定整理顺序和收口标准
-2. 定跨版本对象来源
-3. 定当前主线 5 个关键对象还缺哪些设计原子
-4. 定 `Selector` 的正式候选契约、兼容映射与 trace 口径
-5. 定 `PAS-trigger / BOF` 的输入快照、formal signal、trace 与 sidecar 边界
-6. 定 `IRS-lite` 的行业层契约、signal 附着规则与 fallback 口径
-7. 定 `MSS-lite` 的市场层契约、overlay 矩阵与执行归因口径
-8. 定 `Broker / Risk` 的正式执行契约、幂等键、时序与生命周期追溯口径
-9. 定 `PAS` 最小可交易形态层的算法正文
-10. 定 `IRS` 最小可交易排序层的算法正文
-11. 定 `MSS` 最小可交易风控层的算法正文
-12. 登记当前主线设计来源、回收范围与裁剪边界
-13. 存放 `alpha` 导入算法原稿（仅来源留档，不是当前 SoT）
-14. 从 `01-full-design/` 裁出当前主线唯一实现方案首稿
-15. 把唯一实现方案拆成可直接执行的 phase / task / checklist
+1. `01-05`：当前主线 core contract annex
+2. `06-08`：当前主线 core algorithm body
+3. `90-92`：来源、映射、闭环记录附录
+4. `02-implementation-spec/`：当前唯一实现方案
+5. `03-execution/`：当前唯一执行拆解
 
 ## 4.1 设计来源声明
 
@@ -98,21 +88,23 @@
 
 | 文件 | 来源 | 当前角色 | 说明 |
 |------|------|------|------|
-| `03-selector-contract-supplement-20260308.md` | gamma 新增 | contract annex | 当前主线特有 |
-| `04-pas-trigger-bof-contract-supplement-20260308.md` | gamma 新增 | contract annex | 当前主线特有 |
-| `05-irs-lite-contract-supplement-20260308.md` | gamma 新增 | contract annex | 当前主线特有 |
-| `06-mss-lite-contract-supplement-20260308.md` | gamma 新增 | contract annex | 当前主线特有 |
-| `07-broker-risk-contract-supplement-20260308.md` | gamma 新增 | contract annex | 当前主线特有 |
-| `08-pas-minimal-tradable-design-20260309.md` | gamma 新写 | PAS 主正文 | 基于 beta 四件套 + alpha v3.2.0 提炼 |
-| `09-irs-minimal-tradable-design-20260309.md` | gamma 新写 | IRS 主正文 | 基于 beta 四件套 + alpha v3.3.0 提炼 |
-| `10-mss-minimal-tradable-design-20260309.md` | gamma 新写 | MSS 主正文 | 基于 beta 四件套 + alpha v3.2.0 提炼 |
-| `11-design-source-register-20260309.md` | gamma 新增 | 来源登记 | 设计来源显式登记 |
+| `01-selector-contract-annex-20260308.md` | gamma 新增 | core contract annex | 当前主线核心设计 |
+| `02-pas-trigger-registry-contract-annex-20260308.md` | gamma 新增 | core contract annex | 当前主线核心设计 |
+| `03-irs-lite-contract-annex-20260308.md` | gamma 新增 | core contract annex | 当前主线核心设计 |
+| `04-mss-lite-contract-annex-20260308.md` | gamma 新增 | core contract annex | 当前主线核心设计 |
+| `05-broker-risk-contract-annex-20260308.md` | gamma 新增 | core contract annex | 当前主线核心设计 |
+| `06-pas-minimal-tradable-design-20260309.md` | gamma 新写 | core algorithm body | 基于 beta 四件套 + alpha v3.2.0 提炼 |
+| `07-irs-minimal-tradable-design-20260309.md` | gamma 新写 | core algorithm body | 基于 beta 四件套 + alpha v3.3.0 提炼 |
+| `08-mss-minimal-tradable-design-20260309.md` | gamma 新写 | core algorithm body | 基于 beta 四件套 + alpha v3.2.0 提炼 |
+| `90-design-source-register-appendix-20260309.md` | gamma 新增 | appendix | 来源登记，不参与当前主线排序 |
+| `91-cross-version-object-mapping-reference-20260308.md` | gamma 新增 | appendix | 跨版本来源参考，不参与当前主线排序 |
+| `92-mainline-design-atom-closure-record-20260308.md` | gamma 新增 | appendix | 闭环记录，不参与当前主线排序 |
 
 **迁移原则**：
 
-- `08/09/10` 是从 alpha/beta 提炼后的"最小可交易版"，不是完整照搬
-- `03-07` 是 gamma 当前主线特有的契约补充文件（contract annex）
-- `11` 是设计来源的显式登记
+- `01-08` 组成当前主线核心设计包
+- `01-05` 是 core contract annex，`06-08` 是 core algorithm body
+- `90-92` 全部是附录，不参与当前主线排序
 - 所有文件默认冻结，只在"逻辑错误"或"外部约束变化"时修改
 - alpha/beta 的完整算法文件保留在原仓库作为参考，不直接迁移到 gamma
 
@@ -121,7 +113,7 @@
 1. `beta` 四件套（algorithm / data-models / information-flow / api）提供结构表达
 2. `alpha` 算法文（v3.2.0 / v3.3.0）提供边界复核和验收口径
 3. `gamma` 的 minimal tradable design 是提炼后的最小可交易版
-4. 详细来源登记见 `11-design-source-register-20260309.md`
+4. 详细来源登记见 `90-design-source-register-appendix-20260309.md`
 
 ---
 
@@ -136,20 +128,20 @@
 
 ## 6. 当前目标
 
-当前 `01-full-design/` 第一层 `contract supplement` 已经补齐：
+当前 `01-full-design/` 第一层 `contract annex` 已经补齐：
 
 1. Selector
-2. PAS-trigger / BOF
+2. PAS Trigger / Registry
 3. IRS-lite
 4. MSS-lite
 5. Broker / Risk
 
 当前 `01-full-design/` 第二层正文推进状态如下：
 
-1. `PAS` 最小可交易形态层正文已落地（`08-pas-minimal-tradable-design-20260309.md`）
-2. `IRS` 最小可交易排序层正文骨架已落地（`09-irs-minimal-tradable-design-20260309.md`）
-3. `MSS` 最小可交易风控层正文骨架已落地（`10-mss-minimal-tradable-design-20260309.md`）
-4. 设计来源登记已落地（`11-design-source-register-20260309.md`）
+1. `PAS` 最小可交易形态层正文已落地（`06-pas-minimal-tradable-design-20260309.md`）
+2. `IRS` 最小可交易排序层正文已落地（`07-irs-minimal-tradable-design-20260309.md`）
+3. `MSS` 最小可交易风控层正文已落地（`08-mss-minimal-tradable-design-20260309.md`）
+4. 附录层已落地：来源登记、映射参考、闭环记录
 
 当前 `02-implementation-spec/` 也已经落下第一份正文：
 
@@ -159,8 +151,9 @@
 
 1. `01-current-mainline-execution-breakdown-20260308.md`
 
-当前下一步不是直接继续补散文，而是按下面顺序收口：
+当前冻结后的使用顺序固定为：
 
-1. 先继续压缩 `docs/Strategy/`，补“保留 / 降级 / 合并”清单
-2. 再把 `03/04/05/06/07` 明确收口为 contract annex，并固定 `08/09/10` 为各自主正文
-3. 然后进入 `Phase 0 / Task P0-A ~ P0-E`
+1. 先看 `01-05`，确认跨模块 contract 边界
+2. 再看 `06-08`，确认算法正文
+3. 只有在做来源审计或历史回看时，才看 `90-92`
+4. 实现只允许从 `01-08` 裁出，不允许跳过正文直接拿附录下定义

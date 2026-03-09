@@ -10,7 +10,7 @@
 **理论来源**: `docs/Strategy/PAS/volman-ytc-mapping.md`（Volman与YTC映射）  
 **历史相关文档**: `docs/design-v2/01-system/system-baseline.md`, `docs/design-v2/01-system/architecture-master.md`
 
-> 本文件只保留 `v0.01 Frozen` 历史 Strategy 口径。仓库现行 `Strategy` 权威设计请直接查看 `blueprint/01-full-design/04-pas-trigger-bof-contract-supplement-20260308.md`、`blueprint/01-full-design/05-irs-lite-contract-supplement-20260308.md`。
+> 本文件只保留 `v0.01 Frozen` 历史 Strategy 口径。仓库现行 `Strategy` 权威设计请直接查看 `blueprint/01-full-design/02-pas-trigger-registry-contract-annex-20260308.md`、`blueprint/01-full-design/03-irs-lite-contract-annex-20260308.md`。
 
 ## 冻结区与冲突处理
 
@@ -23,8 +23,8 @@
 ## 现行设计桥接导航
 
 - 设计迁移边界：`docs/design-migration-boundary.md`
-- 现行 `PAS-trigger / BOF` 正文：`blueprint/01-full-design/04-pas-trigger-bof-contract-supplement-20260308.md`
-- 现行 `IRS-lite` 正文：`blueprint/01-full-design/05-irs-lite-contract-supplement-20260308.md`
+- 现行 `PAS-trigger / BOF` 正文：`blueprint/01-full-design/02-pas-trigger-registry-contract-annex-20260308.md`
+- 现行 `IRS-lite` 正文：`blueprint/01-full-design/03-irs-lite-contract-annex-20260308.md`
 - 当前实现方案：`blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
 - 当前执行拆解：`blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`
 

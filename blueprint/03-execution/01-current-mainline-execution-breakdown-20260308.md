@@ -6,11 +6,11 @@
 **上游锚点**:
 
 1. `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
-2. `blueprint/01-full-design/03-selector-contract-supplement-20260308.md`
-3. `blueprint/01-full-design/04-pas-trigger-bof-contract-supplement-20260308.md`
-4. `blueprint/01-full-design/05-irs-lite-contract-supplement-20260308.md`
-5. `blueprint/01-full-design/06-mss-lite-contract-supplement-20260308.md`
-6. `blueprint/01-full-design/07-broker-risk-contract-supplement-20260308.md`
+2. `blueprint/01-full-design/01-selector-contract-annex-20260308.md`
+3. `blueprint/01-full-design/02-pas-trigger-registry-contract-annex-20260308.md`
+4. `blueprint/01-full-design/03-irs-lite-contract-annex-20260308.md`
+5. `blueprint/01-full-design/04-mss-lite-contract-annex-20260308.md`
+6. `blueprint/01-full-design/05-broker-risk-contract-annex-20260308.md`
 7. `docs/spec/common/records/development-status.md`
 
 ---

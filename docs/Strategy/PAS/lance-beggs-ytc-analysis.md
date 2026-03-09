@@ -562,7 +562,7 @@ Lance Beggs强调：
 ## 9. 参考文献
 
 1. Lance Beggs. *YTC Price Action Trader* 卷1-4.
-2. EmotionQuant PAS算法设计：`blueprint/01-full-design/04-pas-trigger-bof-contract-supplement-20260308.md`
+2. EmotionQuant PAS算法设计：`blueprint/01-full-design/02-pas-trigger-registry-contract-annex-20260308.md`
 3. Volman-YTC映射：`docs/Strategy/PAS/volman-ytc-mapping.md`
 
 ---

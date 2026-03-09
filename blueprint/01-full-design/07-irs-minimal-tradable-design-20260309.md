@@ -6,7 +6,7 @@
 **定位**: `当前主线 IRS 算法正文`  
 **上游锚点**:
 
-1. `blueprint/01-full-design/05-irs-lite-contract-supplement-20260308.md`
+1. `blueprint/01-full-design/03-irs-lite-contract-annex-20260308.md`
 2. `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
 3. `blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`
 4. `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-02-irs-upgrade.md`
@@ -24,7 +24,7 @@
 
 ## 1. 用途
 
-本文不是第二份 `IRS-lite contract supplement`。
+本文不是第二份 `IRS-lite contract annex`。
 
 本文回答的是：
 

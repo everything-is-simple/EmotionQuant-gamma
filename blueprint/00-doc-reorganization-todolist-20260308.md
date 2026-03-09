@@ -43,7 +43,7 @@
 
 - [x] 已列出 `alpha / beta / gamma` 三版关键设计入口。
 - [x] 已产出跨版本对象映射总表。
-  - 产物：`blueprint/01-full-design/01-cross-version-object-mapping-matrix-20260308.md`
+  - 产物：`blueprint/01-full-design/91-cross-version-object-mapping-reference-20260308.md`
 - [x] 已锁定当前主线第一批 5 个关键对象。
   - `Selector`
   - `PAS-trigger / BOF`
@@ -54,12 +54,12 @@
 
 ### 1.3 第一层 Full Design 与下游拆解
 
-- [x] 已产出 5 份 `contract supplement`，先把当前主线字段、trace、fallback 和时序边界钉住。
-  - `03-selector-contract-supplement-20260308.md`
-  - `04-pas-trigger-bof-contract-supplement-20260308.md`
-  - `05-irs-lite-contract-supplement-20260308.md`
-  - `06-mss-lite-contract-supplement-20260308.md`
-  - `07-broker-risk-contract-supplement-20260308.md`
+- [x] 已产出 5 份 `contract annex`，先把当前主线字段、trace、fallback 和时序边界钉住。
+  - `01-selector-contract-annex-20260308.md`
+  - `02-pas-trigger-registry-contract-annex-20260308.md`
+  - `03-irs-lite-contract-annex-20260308.md`
+  - `04-mss-lite-contract-annex-20260308.md`
+  - `05-broker-risk-contract-annex-20260308.md`
 - [x] 已产出当前主线唯一 implementation spec 首稿。
   - 产物：`blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
 - [x] 已产出当前主线 execution breakdown 首稿。
@@ -68,13 +68,13 @@
 ### 1.4 第二层 Full Design 推进
 
 - [x] 已补 `PAS` 最小可交易形态层正文版。
-  - 产物：`blueprint/01-full-design/08-pas-minimal-tradable-design-20260309.md`
+  - 产物：`blueprint/01-full-design/06-pas-minimal-tradable-design-20260309.md`
 - [x] 已补 `IRS` 最小可交易排序层正文版。
-  - 产物：`blueprint/01-full-design/09-irs-minimal-tradable-design-20260309.md`
+  - 产物：`blueprint/01-full-design/07-irs-minimal-tradable-design-20260309.md`
 - [x] 已补 `MSS` 最小可交易风控层正文骨架。
-  - 产物：`blueprint/01-full-design/10-mss-minimal-tradable-design-20260309.md`
+  - 产物：`blueprint/01-full-design/08-mss-minimal-tradable-design-20260309.md`
 - [x] 已补设计来源登记。
-  - 产物：`blueprint/01-full-design/11-design-source-register-20260309.md`
+  - 产物：`blueprint/01-full-design/90-design-source-register-appendix-20260309.md`
 
 ### 1.6 机器检查
 
@@ -120,7 +120,7 @@
 
 ### 2.2 来源与标签收口
 
-- [ ] 基于 `11-design-source-register-20260309.md`，把“来源文件 / 回收内容 / 裁掉内容”继续补到对象级正文中。
+- [ ] 基于 `90-design-source-register-appendix-20260309.md`，把“来源文件 / 回收内容 / 裁掉内容”继续补到对象级正文中。
 - [ ] 给当前第一批关键对象补齐统一标签判断：
   - `历史基线`
   - `可复用设计资产`
@@ -150,7 +150,7 @@
 - [ ] 三版文档资产来源已显式登记清楚。
 - [ ] `gamma` 的 `Full Design / Implementation Spec / Execution` 已彻底隔离。
 - [ ] `PAS / IRS / MSS` 已全部进入“正文版”。
-- [ ] `contract supplement` 与主正文的主次关系已收口清楚。
+- [ ] `contract annex` 与主正文的主次关系已收口清楚。
 - [ ] `Frozen` 文档只承担历史基线，不再被误读为当前正文。
 - [ ] implementation / execution 不再替设计层补语义。
 - [ ] `check_docs.ps1` 持续全绿。
@@ -161,7 +161,7 @@
 
 从本清单改写后，推荐顺序固定为：
 
-1. 先补实 `10-mss-minimal-tradable-design-20260309.md`
+1. 先补实 `08-mss-minimal-tradable-design-20260309.md`
 2. 再把 `08/09` 的来源登记和 annex 关系同步固化
 3. 再把 `03/04/05/06/07` 退为 contract annex
 4. 最后才进入 `Phase 0`
