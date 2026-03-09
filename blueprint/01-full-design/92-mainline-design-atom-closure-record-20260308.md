@@ -85,7 +85,7 @@
 - `G:\EmotionQuant\EmotionQuant-beta\docs\design\core-algorithms\{mss,irs,pas}\*.md`
 - `alpha` 同源设计与 cards/records 只作为回看佐证
 
-**gamma 当前已具备**
+**闭环启动时代码现实**
 
 - `Selector` 已被拉成独立对象
 - 已明确只负责基础过滤、`preselect_score`、`candidate_top_n`
@@ -122,15 +122,15 @@
 - `G:\EmotionQuant\EmotionQuant-beta\docs\design\core-algorithms\pas\pas-information-flow.md`
 - `G:\EmotionQuant\EmotionQuant-beta\docs\design\core-algorithms\pas\pas-api.md`
 
-**gamma 当前已具备**
+**闭环启动时代码现实**
 
-- 已把当前主线收窄到 `PAS-trigger`
-- 已明确当前唯一在线形态是 `BOF`
-- 已明确正式 `Signal` 与 sidecar 可分离
+- 闭环启动时，当前主线仍以 `PAS-trigger` 形态进入收口
+- 闭环启动时，在线实现仍以 `BOF` 为唯一已落地形态
+- 闭环启动时，正式 `Signal` 与 sidecar 已可分离
 
 **已闭环的设计原子**
 
-- 已闭环：从 `PasStockSnapshot` 裁出一份 `BOF-only` 输入快照契约
+- 已闭环：从 `PasStockSnapshot` 裁出一份冻结后采用的最小输入快照契约
 - 已闭环：正式 `Signal` 与 `bof_trace sidecar` 的字段边界
 - 已闭环：历史窗口不足、量能字段缺失、stale 数据时的降级与拒绝规则
 - 已闭环：`registry -> detector -> batch strategy` 的阶段信息流与责任边界
@@ -159,20 +159,20 @@
 - `G:\EmotionQuant\EmotionQuant-beta\docs\design\core-algorithms\irs\irs-information-flow.md`
 - `G:\EmotionQuant\EmotionQuant-beta\docs\design\core-algorithms\irs\irs-api.md`
 
-**gamma 当前已具备**
+**闭环启动时代码现实**
 
-- 已明确 `IRS` 只进入排序层，不做前置过滤
-- 已收敛为两因子 `IRS-lite`
-- 已明确 `未知行业 -> 50` 的主线 fallback
+- 闭环启动时，`IRS` 已明确只进入排序层，不做前置过滤
+- 闭环启动时，代码现实仍停留在两因子 `IRS-lite`
+- 闭环启动时，`未知行业 -> 50` 的主线 fallback 已经存在
 
 **已闭环的设计原子**
 
-- 已闭环：从 `IrsIndustrySnapshot` 裁出当前 `IRS-lite` 输入字段表
+- 已闭环：从 `IrsIndustrySnapshot` 裁出当前冻结后采用的输入字段表
 - 已闭环：`IndustryScore` 的 required / optional / trace 字段表
 - 已闭环：`sample_days / quality_flag / stale_days / min_industries` 的有效性规则
 - 已闭环：行业映射版本、未知行业、缺行业、退市成分的处理规则
 - 已闭环：`industry -> stock -> signal` 的附着路径与 sidecar 真相源
-- 已闭环：两因子 raw 值、归一化、fallback 50 的落库与追溯口径
+- 已闭环：本轮最终落地产物已明确 raw 值、归一化与 fallback 50 的落库和追溯口径
 
 **已冻结不回收的旧语义**
 
@@ -196,15 +196,15 @@
 - `G:\EmotionQuant\EmotionQuant-beta\docs\design\core-algorithms\mss\mss-information-flow.md`
 - `G:\EmotionQuant\EmotionQuant-beta\docs\design\core-algorithms\mss\mss-api.md`
 
-**gamma 当前已具备**
+**闭环启动时代码现实**
 
-- 已明确 `MSS` 只给 `Broker / Risk` 提供风险覆盖
-- 已保留六因子主骨架
-- 已明确 `score / signal` 不进入个股横截面总分
+- 闭环启动时，`MSS` 已明确只给 `Broker / Risk` 提供风险覆盖
+- 闭环启动时，代码已保留六因子主骨架
+- 闭环启动时，`score / signal` 已明确不进入个股横截面总分
 
 **已闭环的设计原子**
 
-- 已闭环：从 `MssMarketSnapshot` 裁出当前主线输入快照契约
+- 已闭环：从 `MssMarketSnapshot` 裁出当前冻结后采用的输入快照契约
 - 已闭环：`MarketScore` 的字段表，以及 `score -> signal -> risk overlay` 映射字段
 - 已闭环：baseline 缺失、stale、冷启动、观测缺列时的降级规则
 - 已闭环：六因子 raw 值、归一化快照、解释字段的落库口径
@@ -233,11 +233,11 @@
 - `G:\EmotionQuant\EmotionQuant-beta\docs\design\core-infrastructure\trading\trading-information-flow.md`
 - `G:\EmotionQuant\EmotionQuant-beta\docs\design\core-infrastructure\trading\trading-api.md`
 
-**gamma 当前已具备**
+**闭环启动时代码现实**
 
-- 已明确 `Broker / Risk` 只消费正式 `Signal`
-- 已明确 `MSS-lite` 只在执行层覆盖容量
-- 已明确执行语义固定为 `T+1 Open`
+- 闭环启动时，`Broker / Risk` 已明确只消费正式 `Signal`
+- 闭环启动时，`MSS-lite` 已明确只在执行层覆盖容量
+- 闭环启动时，执行语义已固定为 `T+1 Open`
 
 **已闭环的设计原子**
 
