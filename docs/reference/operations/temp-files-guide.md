@@ -4,6 +4,7 @@
 > - 仓库根目录不放运行时缓存、临时 DuckDB、测试临时目录
 > - 临时文件统一放 `G:\EmotionQuant-temp`
 > - 数据文件统一放 `G:\EmotionQuant_data`
+> - 当前主线设计看 `blueprint/`，本文只解释缓存和清理策略，不定义设计口径
 
 本文档说明 EmotionQuant 项目中各种临时文件和缓存目录的作用，以及为什么不彻底删除它们。
 
@@ -29,7 +30,7 @@
 
 ### 2. IDE 配置（个人偏好）
 
-#### `.vscode/`
+#### `.vscode/`（如本地存在）
 - **作用**：VS Code 编辑器的工作区配置
 - **内容**：
   - `settings.json`：编辑器设置（Python 解释器路径、格式化工具等）
@@ -68,8 +69,8 @@
 
 ### 4. Agent 追踪（开发辅助）
 
-#### `.specstory/`
-- **作用**：AI Agent（如 Cursor）的对话历史和上下文追踪
+#### `.specstory/`（如本地工具生成）
+- **作用**：部分 AI/IDE 工具的对话历史和上下文追踪
 - **内容**：对话记录、代码变更历史、上下文快照
 - **是否提交**：❌ 否（已在 `.gitignore` 中）
 - **是否删除**：✅ 可以删除，但会丢失对话历史
@@ -86,14 +87,14 @@
 #### `G:\EmotionQuant-temp`
 - **作用**：临时文件统一落点（工作副本、pytest、ruff/mypy cache、临时脚本）
 - **内容**：
-  - `TEMP_PATH/codex-home/`：MCP 服务配置
+  - `G:\EmotionQuant-temp\codex-home\`：本地工具/MCP 配置（如启用）
   - `TEMP_PATH/backtest/`：工作副本 DuckDB
   - `TEMP_PATH/artifacts/`：脚本运行时中间结果
 - **是否提交**：❌ 否（已在 `.gitignore` 中）
-- **是否删除**：✅ 可以删除，但会丢失 MCP 配置
+- **是否删除**：✅ 可以删除，但可能丢失本地工具配置或中间产物
 
 **为什么不彻底删除**：
-- MCP 配置需要手动设置（删除后需要重新运行 `bootstrap_dev_tooling.ps1`）
+- 本地工具配置可能需要重新初始化
 - 临时文件可能包含开发中的中间结果
 
 ---
@@ -149,7 +150,7 @@ Get-ChildItem -Recurse -Directory -Filter "__pycache__" | Remove-Item -Recurse -
 Remove-Item -Recurse -Force .pytest_cache
 
 # 删除外部临时目录中的运行时产物
-Remove-Item -Recurse -Force $env:TEMP_PATH\\backtest, $env:TEMP_PATH\\artifacts
+Remove-Item -Recurse -Force G:\EmotionQuant-temp\backtest, G:\EmotionQuant-temp\artifacts
 ```
 
 **方法 3：Git 清理（最彻底）**
@@ -199,14 +200,14 @@ cache/
 
 ## ❓ 常见问题
 
-### Q1: 为什么 `.vscode/` 不删除？
-**A**: 包含项目级的调试配置和团队共享的编辑器设置。删除后需要重新配置调试环境。
+### Q1: 为什么 `.vscode/` 不建议直接删除？
+**A**: 如果本地存在，它可能包含项目级调试配置和共享编辑器设置。删除后通常需要重新配置开发环境。
 
 ### Q2: 为什么 `__pycache__/` 总是重新生成？
 **A**: Python 运行时自动生成，用于加速模块导入。这是 Python 的正常行为。
 
-### Q3: 为什么 `.specstory/` 占用空间很大？
-**A**: 包含 AI Agent 的对话历史和上下文快照。可以定期清理旧的对话记录。
+### Q3: 为什么 `.specstory/` 之类目录会占用空间？
+**A**: 它们通常保存本地 AI/IDE 的对话历史和上下文快照。若当前工具链不依赖，可定期清理。
 
 ### Q4: 为什么 `artifacts/` 不提交？
 **A**: 包含脚本运行的中间文件，每个人的运行结果不同，不应该提交到版本控制。
@@ -220,7 +221,7 @@ cache/
 
 1. **定期清理**：每周清理一次临时文件，保持仓库整洁
 2. **提交前检查**：使用 `git status` 确认没有临时文件被误提交
-3. **保留配置**：不要删除 `.vscode/` 和 `TEMP_PATH/codex-home/`（除非需要重新配置）
+3. **保留配置**：如需保留本地 IDE / MCP 配置，清理前先确认对应目录的作用
 4. **使用脚本**：优先使用 `clean_temp_files.ps1`，避免手动删除出错
 5. **备份重要数据**：清理前确认 `artifacts/` 中没有重要的中间结果
 

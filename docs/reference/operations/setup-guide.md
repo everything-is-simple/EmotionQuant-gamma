@@ -5,6 +5,12 @@
 > - `G:\EmotionQuant_data` 只放数据库与日志
 > - `G:\EmotionQuant-temp` 只放临时文件与运行时产物
 
+> 当前定位：
+> - 本文是环境与运维参考，不是当前主线设计 SoT
+> - 当前主线设计看 `blueprint/`
+> - 当前状态看 `docs/spec/common/records/development-status.md`
+> - 本文中的参数和值以示例为主，实际默认值以 `src/config.py` 与当前实现为准
+
 本指南帮助你快速配置 EmotionQuant 的开发和运行环境。
 
 ---
@@ -105,7 +111,7 @@ LOG_LEVEL=INFO
 ENVIRONMENT=development
 
 # ========================================
-# 主线模式（当前以 v0.01-plus 为主）
+# 主线模式示例（仅示例，实际以当前代码与 blueprint 为准）
 # ========================================
 PIPELINE_MODE=dtt
 DTT_VARIANT=v0_01_dtt_bof_plus_irs_score
@@ -129,7 +135,8 @@ MAX_POSITIONS=10
 RISK_FREE_RATE=0.015
 
 # ========================================
-# Selector / Strategy 默认参数
+# Selector / Strategy 示例参数
+# 实际默认值以 src/config.py 为准
 # ========================================
 MSS_VARIANT=zscore_weighted6
 MSS_BULLISH_THRESHOLD=65
@@ -198,17 +205,17 @@ python main.py build --layers l3
 python main.py build --layers all
 ```
 
-### 3. 运行回测
+### 3. 运行回测（示例）
 
 ```powershell
-# 运行当前主线回测
+# 运行回测
 python main.py backtest --start 2020-01-01 --end 2024-12-31 --patterns bof
 
 # 指定初始资金
 python main.py backtest --start 2020-01-01 --end 2024-12-31 --patterns bof --cash 1000000
 ```
 
-### 4. 日常运行（Week4）
+### 4. 日常运行（示例）
 
 ```powershell
 # 运行今日全流程（fetch → build → selector → strategy → broker）
@@ -331,7 +338,7 @@ LOG_LEVEL=INFO
 
 ### Q5: 数据库太大，如何清理？
 
-**A**: 删除不需要的历史数据：
+**A**: 删除不需要的历史数据前，先确认保留窗口、备份策略和当前主线证据需求：
 
 ```sql
 -- 连接数据库
@@ -349,8 +356,9 @@ VACUUM;
 
 ## 📚 相关文档
 
-- 系统设计：`docs/design-v2/01-system/system-baseline.md`
-- 数据层设计：`docs/design-v2/02-modules/data-layer-design.md`
+- 当前主线设计：`blueprint/README.md`
+- 当前状态：`docs/spec/common/records/development-status.md`
+- 历史基线：`docs/design-v2/01-system/system-baseline.md`
 - 开发工作流：`docs/workflow/6A-WORKFLOW.md`
 - 临时文件指南：`docs/reference/operations/temp-files-guide.md`
 
@@ -372,4 +380,4 @@ VACUUM;
 
 ---
 
-**配置完成后，你就可以开始使用 EmotionQuant 了！** 🎉
+**说明**：配置完成后，请先按当前 `blueprint` 主线和实际脚本入口选择运行方式，不要把本文示例误读为唯一正式流程。

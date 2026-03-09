@@ -6,6 +6,34 @@
 
 ---
 
+## 当前定位
+
+本文是：
+
+1. 脱敏运维模板
+2. 数据源与数据库迁移参考
+3. 本地敏感记录的填写骨架
+
+本文不是：
+
+1. 当前主线设计 SoT
+2. 当前实现方案
+3. 当前执行状态看板
+
+当前权威入口：
+
+1. 当前主线设计：`blueprint/`
+2. 当前实现与执行状态：`docs/spec/common/records/development-status.md`
+3. 历史冻结基线：`docs/design-v2/01-system/system-baseline.md`
+
+使用规则：
+
+1. 本文中的路径、命令和时间跨度用于运维参考，不自动等于当前默认运行口径。
+2. 真实 Token、真实网关地址、私有链接和续费信息必须放在仓库外或 `.env` 中。
+3. 若本文与 `blueprint/` 或当前代码现实冲突，以 `blueprint/` 和代码为准。
+
+---
+
 ## 使用说明
 
 本文件是 `data-source-and-migration.md` 的脱敏模板。
@@ -89,8 +117,8 @@ TUSHARE_FALLBACK_TOKEN=<填写你的官方 Token>
 <数据根目录>\
 ├── EmotionQuant-gamma\              # 代码仓库
 │   ├── scripts/data/
-│   │   └── bulk_download.py         # 老版下载工具（已废弃）
-│   └── main.py                      # 新版 CLI 入口
+│   │   └── bulk_download.py         # 历史脚本（如仍存在，仅作兼容参考）
+│   └── main.py                      # 当前 CLI 入口
 │
 ├── EmotionQuant_data\               # 数据根目录（新）
 │   ├── emotionquant.duckdb          # 新数据库（推荐使用）
@@ -115,10 +143,10 @@ TUSHARE_FALLBACK_TOKEN=<填写你的官方 Token>
 - 数据完整性：可能不完整（使用老版下载工具下载）
 - 用途：历史数据参考，迁移源
 
-**下载工具**：
-- 脚本：`scripts/data/bulk_download.py`（老版，已废弃）
-- 使用双 Key 下载
-- 数据落袋到旧数据库
+**历史说明**：
+- `scripts/data/bulk_download.py` 属于早期下载方式的历史参考
+- 若当前仓库已有新的 fetch/build 入口，应优先以当前 CLI 和 `blueprint/` 约束为准
+- 旧库的主要角色是迁移源和历史回看参考
 
 #### 新数据库（当前使用）
 
@@ -130,10 +158,11 @@ TUSHARE_FALLBACK_TOKEN=<填写你的官方 Token>
 - 支持 L1-L4 数据分层
 - 支持增量更新
 
-**下载工具**：
+**当前常用入口**：
 - 命令：`python main.py fetch`
 - 支持增量拉取
 - 支持从旧库导入（`--from-raw-db`）
+- 具体运行范围和主线模式，仍以当前 `blueprint/` 与代码参数为准
 
 ---
 
@@ -141,7 +170,7 @@ TUSHARE_FALLBACK_TOKEN=<填写你的官方 Token>
 
 ### 场景 1：从旧库迁移到新库
 
-如果需要将旧库的数据迁移到新库，使用以下命令：
+如果需要将旧库的数据迁移到新库，可参考以下命令：
 
 ```powershell
 # 方式 1：使用 --from-raw-db 参数（推荐）
@@ -169,7 +198,7 @@ python main.py fetch --from-raw-db "<旧数据库路径>" --refresh-stock-info-o
 
 ### 场景 3：增量更新（日常使用）
 
-日常使用时，直接使用增量更新：
+日常使用时，可参考以下增量更新方式：
 
 ```powershell
 # 更新最近一个月的数据
@@ -285,25 +314,25 @@ python main.py backtest --start 2020-01-01 --end 2020-12-31 --patterns bof
 - 有效期：`<填写有效期>`
 - 续费方式：`<填写续费方式>`
 
-### 数据更新策略
+### 数据更新策略（运维示例）
 
 **日常更新**（推荐）：
 ```powershell
-# 每天运行一次，增量更新
+# 示例：每天运行一次，增量更新
 python main.py fetch
 python main.py build --layers all
 ```
 
 **周末补全**（可选）：
 ```powershell
-# 每周末运行一次，补全可能缺失的数据
+# 示例：每周末运行一次，补全可能缺失的数据
 python main.py fetch --start 2026-02-01 --end 2026-03-07
 python main.py build --layers all --force
 ```
 
 **月度验证**（必需）：
 ```powershell
-# 每月运行一次，验证数据完整性
+# 示例：每月运行一次，验证数据完整性
 python main.py backtest --start 2026-02-01 --end 2026-02-28 --patterns bof
 ```
 
@@ -311,10 +340,10 @@ python main.py backtest --start 2026-02-01 --end 2026-02-28 --patterns bof
 
 ## 🔗 相关文档
 
-- 环境配置指南：`SETUP-GUIDE.md`
-- 数据层设计：`docs/design-v2/02-modules/data-layer-design.md`
-- 系统基线：`docs/design-v2/01-system/system-baseline.md`
-- 老版下载工具：`scripts/data/bulk_download.py`（已废弃）
+- 环境配置指南：`docs/reference/operations/setup-guide.md`
+- 当前主线设计：`blueprint/README.md`
+- 当前状态：`docs/spec/common/records/development-status.md`
+- 历史基线：`docs/design-v2/01-system/system-baseline.md`
 
 ---
 
@@ -334,5 +363,5 @@ python main.py backtest --start 2026-02-01 --end 2026-02-28 --patterns bof
 
 ---
 
-**模板位置**：`G:\EmotionQuant-gamma\DATA-SOURCE-AND-MIGRATION.md.template`  
-**实际文档**：`G:\EmotionQuant-gamma\DATA-SOURCE-AND-MIGRATION.md`（不提交到 Git）
+**模板位置**：`docs/reference/operations/data-source-and-migration.md.template`  
+**实际文档**：建议放在仓库外的本地敏感目录中（不提交到 Git）
