@@ -4,7 +4,16 @@
 
 `docs/workflow/` 只保留固定执行流程。
 
-这里回答“任务怎么推进、怎么收口、怎么同步”，不回答系统设计本体。
+这里回答：
+
+1. 任务怎么推进
+2. 任务怎么收口
+3. 任务怎么同步
+
+这里不回答：
+
+1. 当前系统怎么设计
+2. 当前版本做到哪一步
 
 ## 当前保留文件
 
@@ -15,11 +24,11 @@
 ## 使用边界
 
 1. 工作流不替代设计 SoT。
-2. 历史基线看 `docs/design-v2/01-system/system-baseline.md`。
-3. 涉及当前主线定义时，先看 `blueprint/`。
-4. 涉及当前阶段和任务状态时，先看 `docs/spec/common/records/development-status.md`。
+2. 当前主线设计看 `blueprint/`。
+3. 历史冻结基线看 `docs/design-v2/01-system/system-baseline.md`。
+4. 当前阶段和任务状态看 `docs/spec/common/records/development-status.md`。
 
-## 相邻入口
+## 入口
 
 1. `6A-WORKFLOW.md`
 2. `../spec/common/records/development-status.md`
