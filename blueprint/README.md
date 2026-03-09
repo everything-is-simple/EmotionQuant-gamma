@@ -96,46 +96,22 @@
 
 `01-full-design/` 中的算法文件来源：
 
-| 文件/目录 | 来源 | 当前角色 | 说明 |
+| 文件 | 来源 | 当前角色 | 说明 |
 |------|------|------|------|
-| `03-selector-contract-supplement-20260308.md` | gamma 新增 | `Selector contract annex` | 当前主线特有 |
-| `04-pas-trigger-bof-contract-supplement-20260308.md` | gamma 新增 | `PAS contract annex` | 当前主线特有 |
-| `05-irs-lite-contract-supplement-20260308.md` | gamma 新增 | `IRS contract annex` | 当前主线特有 |
-| `06-mss-lite-contract-supplement-20260308.md` | gamma 新增 | `MSS contract annex` | 当前主线特有 |
-| `07-broker-risk-contract-supplement-20260308.md` | gamma 新增 | `Broker/Risk contract annex` | 当前主线特有 |
-| `08-pas-minimal-tradable-design-20260309.md` | gamma 主线 + alpha/beta 回收 | `PAS 主正文` | 当前唯一现行 `PAS` 正文 |
-| `09-irs-minimal-tradable-design-20260309.md` | gamma 主线 + alpha/beta 回收 | `IRS 主正文` | 当前唯一现行 `IRS` 正文 |
-| `10-mss-minimal-tradable-design-20260309.md` | gamma 主线 + alpha/beta 回收 | `MSS 主正文` | 当前唯一现行 `MSS` 正文 |
-| `90-alpha-imports/` | alpha 导入 | `历史来源留档` | 只保留原稿来源，不参与当前 SoT 排序 |
-
-**迁移原则**：
-- `08/09/10` 是当前主线唯一正文
-- `90-alpha-imports/` 只保留来源原稿，不与 `08/09/10` 并列成双 SoT
-- 从 alpha/beta 回收的正文，保留来源和版本说明，但正文语义以当前主线裁剪稿为准
-- 迁移后的文件默认冻结，只在"逻辑错误"或"外部约束变化"时修改
-
----
-
-## 4.1 设计来源声明
-
-`01-full-design/` 中的算法文件来源：
-
-| 文件 | 来源 | 版本 | 说明 |
-|------|------|------|------|
-| `08-pas-minimal-tradable-design-20260309.md` | gamma 新写 | - | 基于 beta 四件套 + alpha v3.2.0 提炼 |
-| `09-irs-minimal-tradable-design-20260309.md` | gamma 新写 | - | 基于 beta 四件套 + alpha v3.3.0 提炼 |
-| `10-mss-minimal-tradable-design-20260309.md` | gamma 新写 | - | 基于 beta 四件套 + alpha v3.2.0 提炼 |
-| `11-design-source-register-20260309.md` | gamma 新增 | - | 设计来源登记 |
-| `03-selector-contract-supplement-20260308.md` | gamma 新增 | - | 当前主线特有 |
-| `04-pas-trigger-bof-contract-supplement-20260308.md` | gamma 新增 | - | 当前主线特有 |
-| `05-irs-lite-contract-supplement-20260308.md` | gamma 新增 | - | 当前主线特有 |
-| `06-mss-lite-contract-supplement-20260308.md` | gamma 新增 | - | 当前主线特有 |
-| `07-broker-risk-contract-supplement-20260308.md` | gamma 新增 | - | 当前主线特有 |
+| `03-selector-contract-supplement-20260308.md` | gamma 新增 | contract annex | 当前主线特有 |
+| `04-pas-trigger-bof-contract-supplement-20260308.md` | gamma 新增 | contract annex | 当前主线特有 |
+| `05-irs-lite-contract-supplement-20260308.md` | gamma 新增 | contract annex | 当前主线特有 |
+| `06-mss-lite-contract-supplement-20260308.md` | gamma 新增 | contract annex | 当前主线特有 |
+| `07-broker-risk-contract-supplement-20260308.md` | gamma 新增 | contract annex | 当前主线特有 |
+| `08-pas-minimal-tradable-design-20260309.md` | gamma 新写 | PAS 主正文 | 基于 beta 四件套 + alpha v3.2.0 提炼 |
+| `09-irs-minimal-tradable-design-20260309.md` | gamma 新写 | IRS 主正文 | 基于 beta 四件套 + alpha v3.3.0 提炼 |
+| `10-mss-minimal-tradable-design-20260309.md` | gamma 新写 | MSS 主正文 | 基于 beta 四件套 + alpha v3.2.0 提炼 |
+| `11-design-source-register-20260309.md` | gamma 新增 | 来源登记 | 设计来源显式登记 |
 
 **迁移原则**：
 
 - `08/09/10` 是从 alpha/beta 提炼后的"最小可交易版"，不是完整照搬
-- `03-07` 是 gamma 当前主线特有的契约补充文件
+- `03-07` 是 gamma 当前主线特有的契约补充文件（contract annex）
 - `11` 是设计来源的显式登记
 - 所有文件默认冻结，只在"逻辑错误"或"外部约束变化"时修改
 - alpha/beta 的完整算法文件保留在原仓库作为参考，不直接迁移到 gamma
@@ -170,11 +146,10 @@
 
 当前 `01-full-design/` 第二层正文推进状态如下：
 
-1. `PAS` 最小可交易形态层正文已落地
-2. `IRS` 最小可交易排序层正文已落地
-3. `MSS` 最小可交易风控层正文已落地
-4. `alpha` 导入原稿已移到 `90-alpha-imports/`
-5. 设计来源登记已落地
+1. `PAS` 最小可交易形态层正文已落地（`08-pas-minimal-tradable-design-20260309.md`）
+2. `IRS` 最小可交易排序层正文骨架已落地（`09-irs-minimal-tradable-design-20260309.md`）
+3. `MSS` 最小可交易风控层正文骨架已落地（`10-mss-minimal-tradable-design-20260309.md`）
+4. 设计来源登记已落地（`11-design-source-register-20260309.md`）
 
 当前 `02-implementation-spec/` 也已经落下第一份正文：
 
