@@ -1,7 +1,7 @@
 # Phase 0 Card
 
-**状态**: `Active`  
-**日期**: `2026-03-09`  
+**状态**: `Completed`  
+**日期**: `2026-03-10`  
 **对象**: `P0 契约与 Trace 收口`  
 **定位**: `当前主线第一张执行卡`  
 **上游锚点**:
@@ -24,6 +24,8 @@
 `先把 5 个关键对象的正式契约落点和真相源补齐。`
 
 它的价值不是提升收益，而是让后面的收益变化可以被系统级解释。
+
+截至 `2026-03-10`，本卡代码、测试和 docs gate 已全部收口，允许进入后续 phase。
 
 ---
 
@@ -65,9 +67,9 @@
 
 **检查项**
 
-- [ ] `StockCandidate.score == preselect_score`
-- [ ] 正式候选不再混入 `reject_reason`
-- [ ] `candidate_top_n` 截断可解释
+- [x] `StockCandidate.score == preselect_score`
+- [x] 正式候选不再混入 `reject_reason`
+- [x] `candidate_top_n` 截断可解释
 
 ### 3.2 Task P0-B PAS Trigger / Registry Trace
 
@@ -89,9 +91,9 @@
 
 **检查项**
 
-- [ ] `l3_signals` 只保留 formal 最小字段
-- [ ] trigger reason 与 rank sidecar 不混写
-- [ ] `signal_id` 幂等稳定
+- [x] `l3_signals` 只保留 formal 最小字段
+- [x] trigger reason 与 rank sidecar 不混写
+- [x] `signal_id` 幂等稳定
 
 ### 3.3 Task P0-C IRS Trace
 
@@ -112,9 +114,9 @@
 
 **检查项**
 
-- [ ] `l3_irs_daily.score` 与 signal 层 `irs_score` 明确分离
-- [ ] 未知行业与缺匹配行业统一 `FILL=50.0`
-- [ ] 每日行业层 `SKIP / FILL` 可追溯
+- [x] `l3_irs_daily.score` 与 signal 层 `irs_score` 明确分离
+- [x] 未知行业与缺匹配行业统一 `FILL=50.0`
+- [x] 每日行业层 `SKIP / FILL` 可追溯
 
 ### 3.4 Task P0-D MSS Trace
 
@@ -136,9 +138,9 @@
 
 **检查项**
 
-- [ ] `mss_score` 只作为 sidecar 解释位
-- [ ] 执行容量变化可追到 `MssRiskOverlay`
-- [ ] `DISABLED / MISSING / NORMAL` 可区分
+- [x] `mss_score` 只作为 sidecar 解释位
+- [x] 执行容量变化可追到 `MssRiskOverlay`
+- [x] `DISABLED / MISSING / NORMAL` 可区分
 
 ### 3.5 Task P0-E Broker Lifecycle Trace
 
@@ -160,19 +162,19 @@
 
 **检查项**
 
-- [ ] 风控拒绝、撮合拒绝、执行拒绝、过期四类原因可区分
-- [ ] `signal_id -> order_id -> trade_id` 可完整追踪
-- [ ] `origin` 能区分 `UPSTREAM_SIGNAL / EXIT_* / FORCE_CLOSE`
+- [x] 风控拒绝、撮合拒绝、执行拒绝、过期四类原因可区分
+- [x] `signal_id -> order_id -> trade_id` 可完整追踪
+- [x] `origin` 能区分 `UPSTREAM_SIGNAL / EXIT_* / FORCE_CLOSE`
 
 ---
 
 ## 4. 出场条件
 
-- [ ] 5 个对象各自都有 trace 真相源
-- [ ] 关键拒绝语义已有单测
-- [ ] `run_id + signal_id` 可以串起全链
-- [ ] docs gate 通过
-- [ ] 不改当前默认参数
+- [x] 5 个对象各自都有 trace 真相源
+- [x] 关键拒绝语义已有单测
+- [x] `run_id + signal_id` 可以串起全链
+- [x] docs gate 通过
+- [x] 不改当前默认参数
 
 ---
 

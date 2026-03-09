@@ -155,13 +155,13 @@
 
 ## 6. 下一步
 
-从本执行文生效起，下一步不再继续写新的执行散文。
+从 `2026-03-10` 起，`Phase 0` 已完成出场，下一步不再回到 contract/trace 卡反复补散点。
 
 直接进入：
 
-1. `Phase 0`
-2. 以 `blueprint/03-execution/02-phase-0-contract-trace-card-20260309.md` 为唯一开工卡
+1. `Phase 1`
+2. 以 `blueprint/03-execution/03-phase-1-pas-card-20260309.md` 为唯一开工卡
 
 也就是：
 
-`先把契约与 trace 收口做完，再谈 PAS / IRS / MSS 的升级。`
+`Phase 0 已完成，后续按 PAS -> IRS -> MSS -> Gate 顺序推进主线升级。`

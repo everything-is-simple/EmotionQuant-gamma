@@ -909,6 +909,33 @@ def test_broker_writes_mss_overlay_trace_for_disabled_missing_and_normal(tmp_pat
             }
         ],
     )
+    store.bulk_upsert(
+        "l2_market_snapshot",
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "total_stocks": 100,
+                    "rise_count": 60,
+                    "fall_count": 40,
+                    "strong_up_count": 10,
+                    "strong_down_count": 5,
+                    "limit_up_count": 4,
+                    "limit_down_count": 2,
+                    "touched_limit_up_count": 1,
+                    "new_100d_high_count": 6,
+                    "new_100d_low_count": 3,
+                    "continuous_limit_up_2d": 2,
+                    "continuous_limit_up_3d_plus": 1,
+                    "continuous_new_high_2d_plus": 2,
+                    "high_open_low_close_count": 2,
+                    "low_open_high_close_count": 1,
+                    "pct_chg_std": 0.02,
+                    "amount_volatility": 100000.0,
+                }
+            ]
+        ),
+    )
 
     signal = Signal(
         signal_id=build_signal_id("000001", signal_date, "bof"),
@@ -945,13 +972,28 @@ def test_broker_writes_mss_overlay_trace_for_disabled_missing_and_normal(tmp_pat
 
     store.bulk_upsert(
         "l3_mss_daily",
-        pd.DataFrame([{"date": signal_date, "score": 20.0, "signal": "BEARISH"}]),
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "score": 20.0,
+                    "signal": "BEARISH",
+                    "market_coefficient": 40.0,
+                    "profit_effect": 30.0,
+                    "loss_effect": 70.0,
+                    "continuity": 45.0,
+                    "extreme": 35.0,
+                    "volatility": 55.0,
+                }
+            ]
+        ),
     )
     Broker(store, cfg_enabled, run_id="mss_normal").process_signals([signal])
 
     trace = store.read_df(
         """
-        SELECT run_id, overlay_state, market_signal
+        SELECT run_id, overlay_enabled, overlay_state, coverage_flag, market_signal, ranker_mss_score,
+               market_coefficient_raw, market_coefficient
         FROM mss_risk_overlay_trace_exp
         WHERE signal_id = ?
         ORDER BY run_id ASC
@@ -959,8 +1001,121 @@ def test_broker_writes_mss_overlay_trace_for_disabled_missing_and_normal(tmp_pat
         (signal.signal_id,),
     )
     assert trace["run_id"].tolist() == ["mss_disabled", "mss_missing", "mss_normal"]
+    assert trace["overlay_enabled"].tolist() == [False, True, True]
     assert trace["overlay_state"].tolist() == ["DISABLED", "MISSING", "NORMAL"]
+    assert trace["coverage_flag"].tolist() == ["OVERLAY_DISABLED", "SNAPSHOT_MISSING", "NORMAL"]
     assert trace.iloc[2]["market_signal"] == "BEARISH"
+    assert trace.iloc[2]["ranker_mss_score"] == 20.0
+    assert pd.notna(trace.iloc[2]["market_coefficient_raw"])
+    assert trace.iloc[2]["market_coefficient"] == 40.0
+    store.close()
+
+
+def test_broker_writes_mss_overlay_trace_for_score_fill_and_signal_normalized(tmp_path) -> None:
+    db = tmp_path / "test_mss_trace_fallbacks.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+
+    _seed_trade_calendar(store, signal_date, exec_date)
+    _seed_adj_daily(
+        store,
+        [
+            {
+                "code": "000001",
+                "date": signal_date,
+                "adj_open": 10.0,
+                "adj_high": 10.2,
+                "adj_low": 9.8,
+                "adj_close": 10.0,
+                "volume": 10000,
+                "amount": 1e8,
+                "pct_chg": 0.0,
+                "ma5": 10.0,
+                "ma10": 10.0,
+                "ma20": 10.0,
+                "ma60": 10.0,
+                "volume_ma5": 10000,
+                "volume_ma20": 10000,
+                "volume_ratio": 1.0,
+            }
+        ],
+    )
+    store.bulk_upsert(
+        "l2_market_snapshot",
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "total_stocks": 100,
+                    "rise_count": 60,
+                    "fall_count": 40,
+                    "strong_up_count": 10,
+                    "strong_down_count": 5,
+                    "limit_up_count": 4,
+                    "limit_down_count": 2,
+                    "touched_limit_up_count": 1,
+                    "new_100d_high_count": 6,
+                    "new_100d_low_count": 3,
+                    "continuous_limit_up_2d": 2,
+                    "continuous_limit_up_3d_plus": 1,
+                    "continuous_new_high_2d_plus": 2,
+                    "high_open_low_close_count": 2,
+                    "low_open_high_close_count": 1,
+                    "pct_chg_std": 0.02,
+                    "amount_volatility": 100000.0,
+                }
+            ]
+        ),
+    )
+
+    signal = Signal(
+        signal_id=build_signal_id("000001", signal_date, "bof"),
+        code="000001",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.8,
+        pattern="bof",
+        reason_code="PAS_BOF",
+        final_score=90.0,
+        mss_score=50.0,
+        variant="v0_01_dtt_bof_plus_irs_mss_score",
+    )
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_bof_plus_irs_mss_score",
+        BACKTEST_INITIAL_CASH=1_000_000,
+        RISK_PER_TRADE_PCT=0.2,
+        MAX_POSITION_PCT=0.5,
+        STOP_LOSS_PCT=0.05,
+    )
+
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame([{"date": signal_date, "score": None, "signal": "BEARISH"}]),
+    )
+    Broker(store, cfg, run_id="mss_score_fill").process_signals([signal])
+
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame([{"date": signal_date, "score": 80.0, "signal": "INVALID"}]),
+    )
+    Broker(store, cfg, run_id="mss_signal_normalized").process_signals([signal])
+
+    trace = store.read_df(
+        """
+        SELECT run_id, coverage_flag, market_signal, market_score
+        FROM mss_risk_overlay_trace_exp
+        WHERE signal_id = ?
+        ORDER BY run_id ASC
+        """,
+        (signal.signal_id,),
+    )
+
+    assert trace["run_id"].tolist() == ["mss_score_fill", "mss_signal_normalized"]
+    assert trace["coverage_flag"].tolist() == ["SCORE_FILL", "SIGNAL_NORMALIZED"]
+    assert trace.iloc[0]["market_score"] == 50.0
+    assert trace.iloc[1]["market_signal"] == "NEUTRAL"
     store.close()
 
 

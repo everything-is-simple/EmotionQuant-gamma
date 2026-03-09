@@ -8,6 +8,7 @@ import pandas as pd
 from src.config import Settings
 from src.contracts import Signal, StockCandidate
 from src.data.store import Store
+from src.selector.irs import IRS_TRACE_SCOPE_SIGNAL_ATTACH, IRS_TRACE_SOURCE_CLASSIFICATION
 
 
 @dataclass(frozen=True)
@@ -174,8 +175,12 @@ def build_dtt_score_frame(
                 "industry": industry,
                 "variant": variant.label,
                 "uses_irs": variant.uses_irs,
+                "trace_scope": IRS_TRACE_SCOPE_SIGNAL_ATTACH,
+                "source_classification": IRS_TRACE_SOURCE_CLASSIFICATION,
                 "daily_score": None if snapshot is None else float(snapshot["score"]),
                 "daily_rank": None if snapshot is None else int(snapshot["rank"]),
+                "industry_score": None if snapshot is None else float(snapshot["score"]),
+                "industry_rank": None if snapshot is None else int(snapshot["rank"]),
                 "signal_irs_score": float(irs_score),
                 "fill_score": fill_score,
                 "status": irs_status,

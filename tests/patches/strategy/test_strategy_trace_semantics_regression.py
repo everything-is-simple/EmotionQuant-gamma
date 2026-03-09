@@ -136,7 +136,7 @@ def test_irs_trace_status_covers_disabled_unknown_missing_and_normal(tmp_path) -
     build_dtt_rank_frame(store, signals, candidates, calc_date, "irs_disabled", disabled_cfg)
 
     enabled = store.read_df(
-        "SELECT code, status FROM irs_industry_trace_exp WHERE run_id = ? ORDER BY code ASC",
+        "SELECT code, trace_scope, status FROM irs_industry_trace_exp WHERE run_id = ? ORDER BY code ASC",
         ("irs_enabled",),
     )
     sample = store.read_df("SELECT * FROM irs_industry_trace_exp WHERE run_id = ? LIMIT 1", ("irs_enabled",))
@@ -144,6 +144,8 @@ def test_irs_trace_status_covers_disabled_unknown_missing_and_normal(tmp_path) -
 
     assert "status" in sample.columns
     assert "irs_status" not in sample.columns
+    assert "trace_scope" in sample.columns
+    assert enabled["trace_scope"].tolist() == ["SIGNAL_ATTACH", "SIGNAL_ATTACH", "SIGNAL_ATTACH"]
     assert enabled["status"].tolist() == ["NORMAL", "FILL_UNKNOWN_INDUSTRY", "FILL_NO_DAILY_SCORE"]
     assert disabled is not None
     assert disabled["status"] == "DISABLED"

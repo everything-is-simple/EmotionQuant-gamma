@@ -3,9 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
+import pandas as pd
+
 from src.config import Settings
 from src.contracts import Order, Signal, build_order_id
 from src.data.store import Store
+from src.selector.mss import compute_mss_raw_components
 
 
 @dataclass
@@ -35,6 +38,20 @@ class MssRiskOverlay:
     max_positions: int
     risk_per_trade_pct: float
     max_position_pct: float
+    overlay_enabled: bool
+    coverage_flag: str
+    market_coefficient_raw: float | None = None
+    profit_effect_raw: float | None = None
+    loss_effect_raw: float | None = None
+    continuity_raw: float | None = None
+    extreme_raw: float | None = None
+    volatility_raw: float | None = None
+    market_coefficient: float | None = None
+    profit_effect: float | None = None
+    loss_effect: float | None = None
+    continuity: float | None = None
+    extreme: float | None = None
+    volatility: float | None = None
 
 
 class RiskManager:
@@ -104,6 +121,36 @@ class RiskManager:
             self.config.mss_neutral_max_position_mult,
         )
 
+    @staticmethod
+    def _safe_optional_float(value: object | None) -> float | None:
+        if value is None or pd.isna(value):
+            return None
+        return float(value)
+
+    def _load_mss_trace_components(self, signal_date: date) -> dict[str, float | None]:
+        snapshot = self.store.read_df(
+            """
+            SELECT *
+            FROM l2_market_snapshot
+            WHERE date = ?
+            LIMIT 1
+            """,
+            (signal_date,),
+        )
+        if snapshot.empty:
+            return {f"{factor}_raw": None for factor in (
+                "market_coefficient",
+                "profit_effect",
+                "loss_effect",
+                "continuity",
+                "extreme",
+                "volatility",
+            )}
+        return {
+            key: float(value)
+            for key, value in compute_mss_raw_components(snapshot.iloc[0]).items()
+        }
+
     def _load_mss_overlay(self, signal_date: date) -> MssRiskOverlay:
         cached = self._mss_overlay_cache.get(signal_date)
         if cached is not None:
@@ -120,28 +167,64 @@ class RiskManager:
                 max_positions=int(self.config.max_positions),
                 risk_per_trade_pct=float(self.config.risk_per_trade_pct),
                 max_position_pct=float(self.config.max_position_pct),
+                overlay_enabled=False,
+                coverage_flag="OVERLAY_DISABLED",
             )
             self._mss_overlay_cache[signal_date] = overlay
             return overlay
 
         row = self.store.read_df(
             """
-            SELECT score, signal
+            SELECT
+                score,
+                signal,
+                market_coefficient,
+                profit_effect,
+                loss_effect,
+                continuity,
+                extreme,
+                volatility
             FROM l3_mss_daily
             WHERE date = ?
             LIMIT 1
             """,
             (signal_date,),
         )
+        raw_components = self._load_mss_trace_components(signal_date)
+        normalized_components = {
+            "market_coefficient": None,
+            "profit_effect": None,
+            "loss_effect": None,
+            "continuity": None,
+            "extreme": None,
+            "volatility": None,
+        }
         if row.empty:
             overlay_state = "MISSING"
             signal_label = "NEUTRAL"
             score = float(self.config.dtt_score_fill)
+            coverage_flag = "SNAPSHOT_MISSING"
         else:
             overlay_state = "NORMAL"
-            signal_label = self._resolve_mss_signal_label(row.iloc[0]["signal"])
+            raw_signal = row.iloc[0]["signal"]
+            raw_signal_label = str(raw_signal or "").strip().upper()
+            signal_label = self._resolve_mss_signal_label(raw_signal)
             raw_score = row.iloc[0]["score"]
             score = float(raw_score if raw_score is not None else self.config.dtt_score_fill)
+            coverage_flag = "NORMAL"
+            if raw_score is None or pd.isna(raw_score):
+                score = float(self.config.dtt_score_fill)
+                coverage_flag = "SCORE_FILL"
+            if raw_signal_label not in {"BULLISH", "NEUTRAL", "BEARISH"} and coverage_flag == "NORMAL":
+                coverage_flag = "SIGNAL_NORMALIZED"
+            normalized_components = {
+                "market_coefficient": self._safe_optional_float(row.iloc[0]["market_coefficient"]),
+                "profit_effect": self._safe_optional_float(row.iloc[0]["profit_effect"]),
+                "loss_effect": self._safe_optional_float(row.iloc[0]["loss_effect"]),
+                "continuity": self._safe_optional_float(row.iloc[0]["continuity"]),
+                "extreme": self._safe_optional_float(row.iloc[0]["extreme"]),
+                "volatility": self._safe_optional_float(row.iloc[0]["volatility"]),
+            }
 
         max_positions_mult, risk_per_trade_mult, max_position_mult = self._resolve_mss_multipliers(
             signal_label
@@ -157,6 +240,20 @@ class RiskManager:
             # MSS 在 v0.01-plus 当前阶段只压缩执行风险，不反向改写排序层分数。
             risk_per_trade_pct=float(self.config.risk_per_trade_pct) * max(risk_per_trade_mult, 0.0),
             max_position_pct=float(self.config.max_position_pct) * max(max_position_mult, 0.0),
+            overlay_enabled=True,
+            coverage_flag=coverage_flag,
+            market_coefficient_raw=raw_components["market_coefficient_raw"],
+            profit_effect_raw=raw_components["profit_effect_raw"],
+            loss_effect_raw=raw_components["loss_effect_raw"],
+            continuity_raw=raw_components["continuity_raw"],
+            extreme_raw=raw_components["extreme_raw"],
+            volatility_raw=raw_components["volatility_raw"],
+            market_coefficient=normalized_components["market_coefficient"],
+            profit_effect=normalized_components["profit_effect"],
+            loss_effect=normalized_components["loss_effect"],
+            continuity=normalized_components["continuity"],
+            extreme=normalized_components["extreme"],
+            volatility=normalized_components["volatility"],
         )
         self._mss_overlay_cache[signal_date] = overlay
         return overlay

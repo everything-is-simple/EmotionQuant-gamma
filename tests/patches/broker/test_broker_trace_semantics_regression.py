@@ -103,8 +103,11 @@ def test_mss_overlay_trace_helper_exposes_disabled_missing_and_normal_states(tmp
     assert missing is not None
     assert normal is not None
     assert disabled["overlay_state"] == "DISABLED"
+    assert disabled["coverage_flag"] == "OVERLAY_DISABLED"
     assert missing["overlay_state"] == "MISSING"
+    assert missing["coverage_flag"] == "SNAPSHOT_MISSING"
     assert normal["overlay_state"] == "NORMAL"
+    assert normal["coverage_flag"] == "NORMAL"
     assert normal["market_signal"] == "BEARISH"
     store.close()
 

@@ -437,7 +437,7 @@ def test_irs_trace_marks_missing_industry_scores_as_fill(tmp_path) -> None:
     build_dtt_rank_frame(store, signals, candidates, calc_date, "irs_trace", cfg)
     trace = store.read_df(
         """
-        SELECT code, status, signal_irs_score
+        SELECT code, trace_scope, status, signal_irs_score
         FROM irs_industry_trace_exp
         WHERE run_id = ?
         ORDER BY code ASC
@@ -446,6 +446,7 @@ def test_irs_trace_marks_missing_industry_scores_as_fill(tmp_path) -> None:
     )
 
     assert trace["code"].tolist() == ["000001", "000002"]
+    assert trace["trace_scope"].tolist() == ["SIGNAL_ATTACH", "SIGNAL_ATTACH"]
     assert trace["status"].tolist() == ["NORMAL", "FILL_NO_DAILY_SCORE"]
     assert trace.iloc[0]["signal_irs_score"] == 100.0
     assert trace.iloc[1]["signal_irs_score"] == 50.0

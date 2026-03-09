@@ -83,6 +83,11 @@ def _compute_mss_raw_components(row: pd.Series) -> dict[str, float]:
     }
 
 
+def compute_mss_raw_components(row: pd.Series) -> dict[str, float]:
+    """公开原始六因子，供 Broker trace 解释层复用。"""
+    return _compute_mss_raw_components(row)
+
+
 def _normalize_mss_components(raw: dict[str, float], baseline: dict[str, float] | None = None) -> dict[str, float]:
     base = baseline or MSS_BASELINE
     # v0.01 主链仍以 z-score 为正式口径；percentile 对照只放在实验模块中。
@@ -133,6 +138,28 @@ def _aggregate_mss_score(components: dict[str, float]) -> float:
             100.0,
         )
     )
+
+
+def materialize_mss_trace_snapshot(
+    row: pd.Series,
+    baseline: dict[str, float] | None = None,
+    bullish_threshold: float = 65.0,
+    bearish_threshold: float = 35.0,
+) -> dict[str, float | str | date]:
+    """把市场快照展开成 trace 友好的原始值、标准化值和总分。"""
+    raw = _compute_mss_raw_components(row)
+    components = _normalize_mss_components(raw, baseline=baseline)
+    score = _aggregate_mss_score(components)
+    d = row["date"]
+    if isinstance(d, pd.Timestamp):
+        d = d.date()
+    return {
+        "date": d,
+        "score": score,
+        "signal": _signal_from_score(score, bullish_threshold=bullish_threshold, bearish_threshold=bearish_threshold),
+        **raw,
+        **components,
+    }
 
 
 def _compute_mss_components(
