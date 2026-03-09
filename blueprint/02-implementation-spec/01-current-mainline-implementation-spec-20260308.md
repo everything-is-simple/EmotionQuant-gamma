@@ -10,12 +10,15 @@
 3. `blueprint/01-full-design/03-irs-lite-contract-annex-20260308.md`
 4. `blueprint/01-full-design/04-mss-lite-contract-annex-20260308.md`
 5. `blueprint/01-full-design/05-broker-risk-contract-annex-20260308.md`
-6. `docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md`
-7. `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`
-8. `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-02-irs-upgrade.md`
-9. `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-03-pas-upgrade.md`
-10. `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-04-mss-upgrade.md`
-11. `docs/spec/common/records/development-status.md`
+6. `blueprint/01-full-design/06-pas-minimal-tradable-design-20260309.md`
+7. `blueprint/01-full-design/07-irs-minimal-tradable-design-20260309.md`
+8. `blueprint/01-full-design/08-mss-minimal-tradable-design-20260309.md`
+9. `docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md`
+10. `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md`
+11. `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-02-irs-upgrade.md`
+12. `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-03-pas-upgrade.md`
+13. `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-04-mss-upgrade.md`
+14. `docs/spec/common/records/development-status.md`
 
 ---
 
@@ -40,6 +43,10 @@
 一句话说：
 
 `01-full-design` 已经冻结“该做成什么样”，本文只冻结“这一版具体做哪一刀”。 
+
+当前还必须额外强调一条：
+
+`P1 / P2 / P3` 不是只从 contract annex 往下做，而是必须同时受对应算法正文约束。
 
 ---
 
@@ -114,6 +121,18 @@ Selector 初选
 原因很直接：
 
 `没有 P0，后面没有真相源；没有 P1/P2/P3，后面没有真正的 MVP；没有 P4，前面全都不能切主线。`
+
+### 4.3 实现包和 Full Design 的绑定关系
+
+| 实现包 | 必须绑定的 Full Design 文档 | 说明 |
+|---|---|---|
+| `P0` | `01 / 02 / 03 / 04 / 05` | 只做 contract、trace、truth-source 收口 |
+| `P1` | `02 + 06` | `02` 钉住 PAS formal 边界，`06` 钉住五形态算法正文 |
+| `P2` | `03 + 07` | `03` 钉住 IRS contract 边界，`07` 钉住排序层算法正文 |
+| `P3` | `04 + 08` | `04` 钉住 MSS contract 边界，`08` 钉住风控层算法正文 |
+| `P4` | `01-08` | 只负责把已冻结主线重跑、归因、判定 `GO / NO-GO` |
+
+执行期若发现 `02-implementation-spec/` 与 `01-full-design/01-08` 表述冲突，必须先回到上游正文消歧，不能在实现层私自解释。
 
 ---
 
@@ -415,7 +434,7 @@ Selector 初选
 
 本文当前在 `blueprint/` 中的角色是：
 
-`当前主线唯一实现方案首稿`
+`当前主线唯一实现方案`
 
 下一步不是再写第二份实现 spec，而是：
 

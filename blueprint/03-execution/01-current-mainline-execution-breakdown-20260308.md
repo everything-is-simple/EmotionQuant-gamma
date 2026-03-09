@@ -2,7 +2,7 @@
 
 **状态**: `Active`  
 **日期**: `2026-03-08`  
-**对象**: `当前主线执行拆解首稿`  
+**对象**: `当前主线执行拆解`  
 **上游锚点**:
 
 1. `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
@@ -11,7 +11,10 @@
 4. `blueprint/01-full-design/03-irs-lite-contract-annex-20260308.md`
 5. `blueprint/01-full-design/04-mss-lite-contract-annex-20260308.md`
 6. `blueprint/01-full-design/05-broker-risk-contract-annex-20260308.md`
-7. `docs/spec/common/records/development-status.md`
+7. `blueprint/01-full-design/06-pas-minimal-tradable-design-20260309.md`
+8. `blueprint/01-full-design/07-irs-minimal-tradable-design-20260309.md`
+9. `blueprint/01-full-design/08-mss-minimal-tradable-design-20260309.md`
+10. `docs/spec/common/records/development-status.md`
 
 ---
 
@@ -47,6 +50,7 @@
    - done checklist
 5. `legacy_bof_baseline` 必须始终保持可重跑。
 6. 所有新增 trace / sidecar / artifact 都必须可通过 `run_id` 或 `signal_id` 回溯。
+7. `P1 / P2 / P3` 执行前，必须同时检查对应 `contract annex + algorithm body`，不能只看 annex 开工。
 
 ---
 
@@ -65,6 +69,16 @@
 1. 不允许先改默认参数再补 trace
 2. 不允许先跑大矩阵再补契约
 3. 不允许同时并行改 `PAS / IRS / MSS` 三条主线
+
+### 3.1 Phase 与 Full Design 绑定表
+
+| Phase | 上游绑定 | 执行边界 |
+|---|---|---|
+| `Phase 0` | `01 / 02 / 03 / 04 / 05` | 只补 contract、trace、truth-source，不升级算法 |
+| `Phase 1` | `02 + 06` | `02` 定 formal 边界，`06` 定 PAS 算法面 |
+| `Phase 2` | `03 + 07` | `03` 定 contract 边界，`07` 定 IRS 算法面 |
+| `Phase 3` | `04 + 08` | `04` 定 contract 边界，`08` 定 MSS 算法面 |
+| `Phase 4` | `01-08` | 只重跑、归因、给出主线结论，不再改写正文 |
 
 ---
 
