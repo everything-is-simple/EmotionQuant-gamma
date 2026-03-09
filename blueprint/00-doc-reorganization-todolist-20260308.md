@@ -1,7 +1,7 @@
 # 跨版本文档整理 TodoList
 
 **状态**: `Active`  
-**日期**: `2026-03-08`  
+**日期**: `2026-03-09`  
 **目标仓库**: `G:\EmotionQuant-gamma`  
 **源版本**:
 
@@ -27,225 +27,119 @@
 
 ---
 
-## 1. 整理铁律
+## 1. 已完成事项
 
-- [ ] 以 `gamma` 为唯一落地仓库，不回退到 `alpha / beta` 作为当前执行仓库。
-- [ ] `alpha / beta` 只作为设计资产来源，不直接覆盖 `gamma`。
-- [ ] 不再用 `MVP` 裁掉核心算法语义，只裁实现范围。
-- [ ] 不再让 `development-status` 承担设计正文。
-- [ ] 不再让 `Frozen` 文档承担当前主线正文。
-- [ ] 当前主线只保留一套稳定设计入口，不允许同一对象分散在多份正文里互相打架。
+### 1.1 权威入口与目录分层
+
+- [x] `gamma` 已固定为唯一当前执行仓库。
+- [x] `alpha / beta` 已降级为设计资产来源，不再作为当前正文落点。
+- [x] `blueprint/` 已立成新版设计权威层。
+- [x] `docs/spec/` 已收口为治理 / roadmap / evidence / records / status 层。
+- [x] `docs/design-v2/` 已收口为 `v0.01 Frozen` 历史基线层。
+- [x] `docs/README.md`、`docs/design-v2/README.md`、`docs/spec/v0.01-plus/README.md` 已统一改成入口导航文。
+- [x] `development-status.md` 已显式声明不再承担当前主线设计正文。
+
+### 1.2 跨版本清点与对象锁定
+
+- [x] 已列出 `alpha / beta / gamma` 三版关键设计入口。
+- [x] 已产出跨版本对象映射总表。
+  - 产物：`blueprint/01-full-design/01-cross-version-object-mapping-matrix-20260308.md`
+- [x] 已锁定当前主线第一批 5 个关键对象。
+  - `Selector`
+  - `PAS-trigger / BOF`
+  - `IRS-lite`
+  - `MSS-lite`
+  - `Broker / Risk`
+- [x] 其余对象已暂时降级为“保留入口和边界，不进入当前补原子批次”。
+
+### 1.3 第一层 Full Design 与下游拆解
+
+- [x] 已产出 5 份 `contract supplement`，先把当前主线字段、trace、fallback 和时序边界钉住。
+  - `03-selector-contract-supplement-20260308.md`
+  - `04-pas-trigger-bof-contract-supplement-20260308.md`
+  - `05-irs-lite-contract-supplement-20260308.md`
+  - `06-mss-lite-contract-supplement-20260308.md`
+  - `07-broker-risk-contract-supplement-20260308.md`
+- [x] 已产出当前主线唯一 implementation spec 首稿。
+  - 产物：`blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
+- [x] 已产出当前主线 execution breakdown 首稿。
+  - 产物：`blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`
+
+### 1.4 第二层 Full Design 推进
+
+- [x] 已补 `PAS` 最小可交易形态层正文版。
+  - 产物：`blueprint/01-full-design/08-pas-minimal-tradable-design-20260309.md`
+- [x] 已补 `IRS` 最小可交易排序层正文版。
+  - 产物：`blueprint/01-full-design/09-irs-minimal-tradable-design-20260309.md`
+- [x] 已补 `MSS` 最小可交易风控层正文版。
+  - 产物：`blueprint/01-full-design/10-mss-minimal-tradable-design-20260309.md`
+- [x] 已补设计来源登记。
+  - 产物：`blueprint/01-full-design/11-design-source-register-20260309.md`
+
+### 1.5 机器检查
+
+- [x] `scripts/ops/check_docs.ps1` 当前全绿。
 
 ---
 
-## 2. 先做版本清点
+## 2. 剩余事项
 
-### 2.1 建立跨版本总表
+### 2.1 Full Design 最后封口
 
-- [x] 列出 `alpha / beta / gamma` 三版中所有关键设计文档入口。
-- [ ] 给每份文档打标签：
+- [x] 把 `10` 从“骨架版”补成“正文版”。
+- [x] 对 `PAS / IRS / MSS` 三个对象补齐统一 6 段结构：
+  - 职责
+  - 输入
+  - 输出
+  - 不负责什么
+  - 决策规则 / 算法
+  - 失败模式与验证证据
+- [x] 把 `03/04/05/06/07` 的角色正式收口为 `contract annex`，并固定 `08/09/10` 为各自主正文，避免并列成双 SoT。
+
+### 2.2 来源与标签收口
+
+- [ ] 基于 `11-design-source-register-20260309.md`，把“来源文件 / 回收内容 / 裁掉内容”继续补到对象级正文中。
+- [ ] 给当前第一批关键对象补齐统一标签判断：
   - `历史基线`
   - `可复用设计资产`
   - `已过时实现口径`
   - `当前主线入口`
   - `证据 / 状态 / 治理`
-- [x] 建一个“对象 -> 文档来源”矩阵，至少覆盖：
-  - Selector
-  - PAS / BOF
-  - IRS
-  - MSS
-  - Broker / Risk
-  - Data Layer
-  - Backtest / Report
 
-### 2.2 锁定当前主线对象
+### 2.3 下游文档同步
 
-- [x] 明确当前主线只先收 5 个关键对象：
-  - Selector
-  - PAS-trigger / BOF
-  - IRS-lite
-  - MSS-lite
-  - Broker / Risk
-- [x] 其余对象先不扩写，只保留入口和边界。
+- [ ] 基于 `08/09/10` 主正文，回写 `02-implementation-spec/` 的上游锚点和表述。
+- [ ] 基于 `08/09/10` 主正文，确认 `03-execution/` 是否还存在任何“提前替设计做决定”的语句。
+- [ ] 待主正文收口后，再决定是否需要给 `docs/spec/v0.01-plus/roadmap/` 做二次降噪。
+
+### 2.4 进入实现前的最后门槛
+
+- [ ] `01-full-design/` 内部不再自相矛盾：
+  - 不再一边说“细原子还没补够”，一边直接进入实现
+- [ ] 当前主线每个关键对象只有一个主正文落点，其他文档都退为补充、附录或下游裁剪文
+- [ ] 然后才正式进入 `Phase 0 / Task P0-A ~ P0-E`
 
 ---
 
-## 3. 再做文档分层
+## 3. 完成标准
 
-### 3.1 Full Design SoT 层
+满足以下条件，才算这轮文档整理真正完成：
 
-位置建议：
-
-- `docs/design-v2/02-modules/`
-- `docs/design-v2/03-algorithms/core-algorithms/`
-
-Todo：
-
-- [ ] 每个关键对象只保留一份当前正文。
-- [ ] 每份正文统一 6 段结构：
-  - 职责
-  - 输入
-  - 输出契约
-  - 不负责什么
-  - 决策规则 / 算法
-  - 失败模式与验证证据
-- [ ] `Frozen` 文档只保留历史口径和跳转链接。
-- [x] 迁移期 bridge 层已清除，`design-v2` 不再保留 `down-to-top / mainline` 过渡稿。
-
-### 3.2 Implementation Spec 层
-
-位置建议：
-
-- `docs/spec/v0.01-plus/roadmap/`
-- `docs/spec/v0.01-plus/governance/`
-
-Todo：
-
-- [ ] 为当前主线保留唯一实现方案入口。
-- [ ] 每份实现方案只回答：
-  - 这次实现什么
-  - 不实现什么
-  - 用什么契约
-  - 如何验证 done
-- [ ] 禁止在实现方案里重新发明算法定义。
-- [ ] spec 只裁能力范围，不改设计本体。
-
-### 3.3 Execution / Evidence / Status 层
-
-位置建议：
-
-- `docs/spec/common/records/`
-- `docs/spec/v0.01-plus/evidence/`
-- `docs/spec/v0.01-plus/records/`
-
-Todo：
-
-- [ ] `development-status.md` 只保留状态、风险、看板、版本记录。
-- [ ] evidence 只保留实验与结果，不写设计正文。
-- [ ] records 只保留阶段结论、归因与变更记录。
-- [ ] 一次性整理报告不进入主入口首屏。
+- [x] 三版文档资产来源已显式登记清楚。
+- [x] `gamma` 的 `Full Design / Implementation Spec / Execution` 已彻底隔离。
+- [x] `PAS / IRS / MSS` 已全部进入“正文版”。
+- [x] `contract supplement` 与主正文的主次关系已收口清楚。
+- [x] `Frozen` 文档只承担历史基线，不再被误读为当前正文。
+- [x] implementation / execution 不再替设计层补语义。
+- [x] `check_docs.ps1` 持续全绿。
 
 ---
 
-## 4. 再做跨版本资产回收
+## 4. 当前建议顺序
 
-### 4.1 从 beta 回收什么
+从本清单改写后，推荐顺序固定为：
 
-- [ ] 回收 `beta` 中成熟的设计深度。
-- [ ] 优先回收：
-  - information-flow
-  - data-models
-  - api
-  - algorithm 骨架
-- [ ] 只回收“设计原子”和“表达结构”，不回收已被淘汰的 top-down 语义。
-
-### 4.2 从 alpha 回收什么
-
-- [ ] 回收 `alpha` 中已经跑过多轮审视的治理结构和沉淀。
-- [ ] 优先回收：
-  - records 的组织方式
-  - steering 的约束表达
-  - cards / roadmap 的拆解粒度经验
-- [ ] 不把旧治理体系整套搬回 `gamma`。
-
-### 4.3 回收方法
-
-- [ ] 每次只回收一个对象，不做全量搬运。
-- [ ] 每次回收都写清楚：
-  - 来源文件
-  - 回收了什么
-  - 为什么保留
-  - 为什么裁掉其他部分
-
----
-
-## 5. 再做 gamma 收口
-
-### 5.1 当前主线入口
-
-- [ ] `docs/design-v2/README.md` 明确当前主线入口。
-- [ ] `docs/design-v2/03-algorithms/core-algorithms/README.md` 明确 5 个关键对象入口。
-- [ ] `docs/spec/v0.01-plus/README.md` 只做当前主线实现入口。
-- [ ] `docs/README.md` 只做总导航，不重复正文。
-
-### 5.2 Frozen 文档收口
-
-- [ ] 把 `selector-design.md` 改成纯历史文档。
-- [ ] 把 `strategy-design.md` 改成纯历史文档。
-- [ ] 把 `broker-design.md` 改成纯历史文档。
-- [ ] 对仍保留的历史正文统一加“当前主线跳转入口”。
-
-### 5.3 状态文档收口
-
-- [ ] 给 `development-status.md` 加显式边界声明。
-- [ ] 把设计解释从 status 文档移走。
-- [ ] 把“当前主线是否 GO / NO-GO”保留在 status，而不是写到算法正文里。
-
----
-
-## 6. 再做执行闭环
-
-### 6.1 先冻结 Full Design SoT
-
-- [x] 把当前主线 5 个关键对象的正文冻结成第一版稳定设计。
-- [ ] 之后实现期不允许随手改设计。
-
-### 6.2 再裁唯一 Implementation Spec
-
-- [x] 从稳定设计里裁一版当前实现方案。
-  - 产物：`blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
-- [x] 该实现方案必须明确：
-  - 本轮目标
-  - 非目标
-  - 契约
-  - 测试
-  - artifact
-  - done 标准
-
-### 6.3 最后再拆 roadmap / phase / task
-
-- [ ] roadmap 只从 Implementation Spec 往下拆。
-- [ ] phase 只拆实现步骤，不改算法定义。
-- [ ] task 只对实现、测试、证据负责。
-
----
-
-## 7. 完成标准
-
-满足以下条件，才算这轮文档整理完成：
-
-- [ ] 三版文档资产来源被梳理清楚。
-- [ ] `gamma` 中 3 层结构被明确隔离。
-- [x] 当前主线 5 个关键对象都有独立稳定正文。
-- [ ] `Frozen` 文档不再承担当前主线正文。
-- [ ] `development-status.md` 不再承担设计解释。
-- [ ] roadmap / phase / spec 只从实现方案往下拆。
-- [ ] `check_docs.ps1` 全绿。
-
----
-
-## 8. 建议执行顺序
-
-按下面顺序做，不跳步：
-
-1. 先做跨版本总表
-2. 再锁定 5 个关键对象
-3. 再收 `Full Design SoT`
-4. 再裁 `Implementation Spec`
-5. 再清 `development-status / evidence / records`
-6. 最后才整理 roadmap / phase / task
-
----
-
-## 9. 本轮起点
-
-本轮整理建议从下面 3 件事开始：
-
-- [x] 先补一份“跨版本对象映射总表”
-  - 产物：`blueprint/01-full-design/01-cross-version-object-mapping-matrix-20260308.md`
-- [x] 再检查当前 5 个关键对象的正文是否还缺设计原子
-  - 产物：`blueprint/01-full-design/02-mainline-design-atom-gap-checklist-20260308.md`
-- [x] 再把当前主线唯一实现方案起成第一版正文
-  - 产物：`blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
-- [x] 再起第一份执行拆解文
-  - 产物：`blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`
+1. 先把 `08/09/10` 的来源登记和 annex 关系同步固化
+2. 再回写 `02-implementation-spec/` 的上游锚点和表述
+3. 再确认 `03-execution/` 去掉替设计做决定的语句
+4. 最后才进入 `Phase 0`

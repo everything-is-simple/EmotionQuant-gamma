@@ -53,7 +53,7 @@
 
 ```text
 Selector 初选
--> PAS-trigger / BOF
+-> PAS trigger / registry
 -> IRS 排序
 -> MSS 控仓位
 -> Broker 执行
@@ -78,7 +78,7 @@ Selector 初选
 2. 不恢复旧 `Integration -> TradeSignal -> Trading` 整套桥接
 3. 不把 `MSS` 拉回前置 gate
 4. 不把 `IRS` 拉回前置行业硬过滤
-5. 不做 `TST / PB / CPB` 全生态恢复
+5. 不做非 `YTC` 额外 `PAS` 形态扩张
 6. 不做政策 / 事件 / 主题语义层
 7. 不做 formal `Signal` 全量 schema migration
 8. 不做部分成交、拆单、分批执行状态机
@@ -106,7 +106,7 @@ Selector 初选
 本版只做下面 5 个实现包，而且必须按顺序推进：
 
 1. `P0` 契约与 trace 收口
-2. `P1` PAS 最小可交易形态层
+2. `P1` PAS 最小可交易五形态层
 3. `P2` IRS 最小可交易排序层
 4. `P3` MSS 最小可交易风控层
 5. `P4` 全链回归与 Gate 收口
@@ -130,7 +130,7 @@ Selector 初选
 1. `Selector`：
    - 清理 `filter_reason <- reject_reason` 过渡残留
    - 增加 `selector_candidate_trace_exp` 或同等 artifact
-2. `PAS-trigger / BOF`：
+2. `PAS trigger / registry`：
    - 增加 `pas_trigger_trace_exp`
    - 固定 `formal Signal` 与 trace 边界
 3. `IRS-lite`：
@@ -173,20 +173,23 @@ Selector 初选
 
 **本包目标**
 
-把当前 `PAS-trigger` 补到“最小可交易形态层”，而不是继续停留在纯 `BOF trigger`。
+把当前 `PAS-trigger` 补到“最小可交易五形态层”，而不是继续停留在纯 `BOF trigger`。
 
 **本包必须做**
 
 1. 保持 `BOF` 为在线基形态
-2. 恢复 `BPB`，作为本版唯一新增形态
-3. 增加 `pattern_quality_score`
-4. 增加 `stop / target / failure` 参考层输出
+2. 恢复 `BPB / PB / TST / CPB`
+3. 建立五形态 registry 与单形态启停
+4. 增加 `pattern_quality_score`
+5. 增加 `stop / target / failure` 参考层输出
+6. 增加单形态独立回测与 registry summary
 
 **本包明确不做**
 
-1. 不恢复 `TST / PB / CPB`
+1. 不恢复 `PAS-full` 机会等级体系
 2. 不把形态质量层直接写回 formal `Signal`
 3. 不让 Broker 直接依赖 PAS 参考止损/目标位做强耦合执行
+4. 不在没有专项证据的前提下继续扩非 `YTC` 额外形态
 
 **本包主要落点**
 
@@ -200,11 +203,14 @@ Selector 初选
 
 1. 至少能跑：
    - `BOF`
-   - `BOF + BPB`
-   - `BOF + quality`
-   - `BOF + BPB + quality`
+   - `BPB`
+   - `PB`
+   - `TST`
+   - `CPB`
+   - `YTC5_ANY`
+   - `YTC5_ANY + quality`
 2. 能输出 `pattern_quality_score` 与参考层字段
-3. 能解释新增形态/质量层改变了哪些票、哪些日子、哪些执行结果
+3. 能输出 registry summary，并解释新增形态/质量层改变了哪些票、哪些日子、哪些执行结果
 
 ---
 

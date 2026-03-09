@@ -107,7 +107,7 @@
 - [ ] 正式候选不再混入 `reject_reason`
 - [ ] `candidate_top_n` 截断可在 trace 中解释
 
-#### Task P0-B PAS Trigger Trace
+#### Task P0-B PAS Trigger / Registry Trace
 
 **目标**
 
@@ -236,17 +236,19 @@
 
 ### 5.1 目标
 
-把 `PAS-trigger` 补到最小可交易形态层。
+把 `PAS-trigger` 补到最小可交易五形态层。
 
 本 phase 只做：
 
-1. `BPB`
-2. `pattern_quality_score`
-3. `stop / target / failure` 参考层
+1. `BPB / PB / TST / CPB`
+2. 五形态 registry 与单形态启停
+3. `pattern_quality_score`
+4. `stop / target / failure` 参考层
+5. 单形态独立回测与 registry summary
 
 ### 5.2 任务
 
-#### Task P1-A BPB Detector
+#### Task P1-A Pattern Registry + BPB/PB Detector
 
 **代码落点**
 
@@ -256,15 +258,35 @@
 
 **测试落点**
 
-1. 新增 `tests/unit/strategy/` 下 BPB detector 单测
+1. 新增 `tests/unit/strategy/` 下 `BPB / PB` detector 单测
+2. 新增 registry 单测
 
 **检查项**
 
-- [ ] `BPB` 已进入 registry
+- [ ] `BPB / PB` 已进入 registry
+- [ ] `PAS_SINGLE_PATTERN_MODE` 可稳定切换
 - [ ] 单形态幂等稳定
 - [ ] 不破坏 `BOF` 当前路径
 
-#### Task P1-B Pattern Quality
+#### Task P1-B TST / CPB Detector
+
+**代码落点**
+
+1. `src/strategy/`
+2. `src/strategy/registry.py`
+3. `src/strategy/strategy.py`
+
+**测试落点**
+
+1. 新增 `tests/unit/strategy/` 下 `TST / CPB` detector 单测
+
+**检查项**
+
+- [ ] `TST / CPB` 已进入 registry
+- [ ] 多形态同时命中时能稳定仲裁
+- [ ] 不破坏 `BOF / BPB / PB` 当前路径
+
+#### Task P1-C Pattern Quality + Arbitration
 
 **代码落点**
 
@@ -275,14 +297,16 @@
 **测试落点**
 
 1. 新增 `tests/unit/strategy/` 下 quality 单测
+2. 新增 arbitration 单测
 
 **检查项**
 
 - [ ] `pattern_quality_score` 可稳定产出
 - [ ] `quality_breakdown` 可解释
+- [ ] `selected_pattern` 可追溯
 - [ ] formal `Signal` 不被污染
 
-#### Task P1-C PAS Reference Layer
+#### Task P1-D PAS Reference Layer
 
 **代码落点**
 
@@ -298,7 +322,7 @@
 - [ ] `stop / target / failure` 已进入 sidecar 或 trace
 - [ ] Broker 当前不强依赖这些参考字段
 
-#### Task P1-D PAS Evidence
+#### Task P1-E PAS Evidence
 
 **脚本落点**
 
@@ -312,13 +336,18 @@
 **检查项**
 
 - [ ] 能跑 `BOF`
-- [ ] 能跑 `BOF + BPB`
-- [ ] 能跑 `BOF + quality`
-- [ ] 能跑 `BOF + BPB + quality`
+- [ ] 能跑 `BPB`
+- [ ] 能跑 `PB`
+- [ ] 能跑 `TST`
+- [ ] 能跑 `CPB`
+- [ ] 能跑 `YTC5_ANY`
+- [ ] 能跑 `YTC5_ANY + quality`
+- [ ] 能输出 registry summary
 
 ### 5.3 Phase 1 出场清单
 
-- [ ] `BPB` 已落地
+- [ ] `BPB / PB / TST / CPB` 已落地
+- [ ] 五形态 registry 已落地
 - [ ] `pattern_quality_score` 已落地
 - [ ] 参考层字段已落地
 - [ ] `PAS` 专项 evidence 已生成
