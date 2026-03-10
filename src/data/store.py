@@ -312,6 +312,9 @@ class Store:
                 date               DATE NOT NULL PRIMARY KEY,
                 score              DOUBLE,
                 signal             VARCHAR,
+                -- Phase 0-2 正式消费面仍只有 score/signal + 六因子展开。
+                -- phase / phase_trend / phase_days / position_advice / risk_regime
+                -- 属于 Phase 3 正文，不应在这一阶段静默塞进 formal schema。
                 market_coefficient_raw DOUBLE,
                 profit_effect_raw      DOUBLE,
                 loss_effect_raw        DOUBLE,
@@ -809,6 +812,9 @@ class Store:
         return len(df)
 
     def read_df(self, sql: str, params: tuple[Any, ...] | list[Any] | None = None) -> pd.DataFrame:
+        # 注意：这里会把结果完整物化成 pandas DataFrame。
+        # 主链高频路径应尽量只在“窗口已受控”的查询上使用它；更大的 join / group / rank
+        # 优先留在 DuckDB 里完成，再把缩小后的结果取回 Python。
         if params is None:
             return self.conn.execute(sql).df()
         return self.conn.execute(sql, params).df()

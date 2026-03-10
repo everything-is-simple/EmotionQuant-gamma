@@ -334,6 +334,9 @@ def _select_legacy_candidates_frame(
     cfg: Settings,
     universe: pd.DataFrame,
 ) -> pd.DataFrame:
+    # 这条分支只服务 legacy compare / rollback。
+    # 当前默认主链不应再从这里解释 Selector 职责，否则 MSS gate / IRS filter
+    # 会重新前移到候选层，直接偏离 v0.01-plus 的主线边界。
     stage1 = _apply_basic_filters(universe, calc_date, cfg)
     if not stage1.empty:
         # legacy 对照链继续保留“先粗筛再门控”的历史行为，用于 compare / rollback。
@@ -391,6 +394,8 @@ def select_candidates(
     candidates: list[StockCandidate] = []
     for _, row in top.iterrows():
         preselect_score = row["preselect_score"] if "preselect_score" in row else row["score"]
+        # Strategy 只需要“入 PAS 的 top_n 候选”及其局部顺序；
+        # 全市场里的完整过滤/截断原因继续读取 selector_candidate_trace_exp。
         candidates.append(
             StockCandidate(
                 code=str(row["code"]),
@@ -414,6 +419,8 @@ def select_candidates_frame(
 ) -> pd.DataFrame:
     cfg = config or get_settings()
     universe = _load_universe_snapshot(store, calc_date)
+    # DTT / legacy 的分叉只允许发生在这里这一层。
+    # 后续调用方不应该再通过零散的 if/else 重写“当前主线到底走哪条漏斗”。
     if cfg.use_dtt_pipeline:
         return _select_dtt_candidates_frame(store, calc_date, cfg, universe, run_id=(run_id or "").strip())
     return _select_legacy_candidates_frame(store, calc_date, cfg, universe)

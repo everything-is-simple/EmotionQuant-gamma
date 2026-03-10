@@ -102,6 +102,8 @@ class RiskManager:
         return "NEUTRAL"
 
     def _resolve_mss_multipliers(self, signal_label: str) -> tuple[float, float, float]:
+        # Phase 0-2 兼容口径仍按 MarketScore.signal 选倍率。
+        # Phase 3 的正式目标是切到 risk_regime；在那之前，这里不应擅自发明第二套状态机。
         if signal_label == "BULLISH":
             return (
                 self.config.mss_bullish_max_positions_mult,
@@ -281,6 +283,8 @@ class RiskManager:
         # 头寸大小同时受两层约束：
         # - 风险预算：risk_per_trade_pct
         # - 单票容量：max_position_pct
+        # Broker 侧永远以 NAV 估算，不直接吃 PAS reference stop/target，
+        # 避免形态解释层和执行风险层在当前阶段发生强耦合。
         nav = state.cash + state.portfolio_market_value
         risk_budget = nav * overlay.risk_per_trade_pct
         max_notional = nav * overlay.max_position_pct
@@ -317,6 +321,8 @@ class RiskManager:
             )
 
         # 同一股票已有持仓（或已被更强信号占位）时，不重复开仓。
+        # 这里的 holdings 同时包含“已有持仓”和“本批次更靠前 signal 已预占的名额”，
+        # 这是为了让同日竞争顺序真正影响结果，而不是让后续信号假装还能再次开仓。
         if signal.code in state.holdings:
             return RiskDecision(
                 order=None,

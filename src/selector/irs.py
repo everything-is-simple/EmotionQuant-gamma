@@ -546,6 +546,9 @@ def compute_irs(
         """,
         (history_start, end),
     )
+    # 这里仍会把“受控窗口内的行业日线”物化到 pandas；
+    # 当前行业层体量足够小、而且 Phase 2 需要逐日推进 RT 状态，所以这是可接受的折中。
+    # 如果后续 IRS 继续横向扩因子/扩 trace，优先考虑把更多聚合前推回 DuckDB。
     if industry_df.empty:
         return 0
 
@@ -573,6 +576,8 @@ def compute_irs(
         day_df = day_df.copy()
         unknown_df = day_df[day_df["industry"] == "未知"].copy()
         known_df = day_df[day_df["industry"] != "未知"].copy()
+        # “未知行业”只保留 trace，不进入 formal 排名。
+        # 这样可以显式暴露覆盖缺口，同时避免把错误行业桶带进 DTT attach。
 
         if start <= day <= end:
             for _, row in unknown_df.iterrows():
@@ -811,6 +816,8 @@ def compute_irs(
                 )
             )
 
+    # 这里按 run 末尾一次写回的前提是：行业层日记录量可控，且 trace 需要和正式 ranking 一起落地。
+    # 若未来行业维度或 trace 宽度显著增加，应优先改成按日分批 upsert，而不是继续扩大这两个列表。
     if trace_rows:
         store.bulk_upsert("irs_industry_trace_exp", pd.DataFrame(trace_rows))
     if not output_rows:

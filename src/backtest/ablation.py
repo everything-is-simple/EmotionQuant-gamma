@@ -137,6 +137,10 @@ GLOBAL_RUNTIME_TABLES = (
 
 
 def clear_runtime_tables(store: Store, run_id: str | None = None) -> None:
+    # 当前 ablation 约定是“同一 working DB 串行跑矩阵”：
+    # - formal cache / 报表 / 成交表按全局清空
+    # - run-scoped truth-source 只清当前 run
+    # 这样能兼顾单机实验成本和跨场景 trace 可追溯性，但不适用于并发共享同一工作库。
     for table in GLOBAL_RUNTIME_TABLES:
         store.conn.execute(f"DELETE FROM {table}")
 

@@ -90,6 +90,7 @@ def _compute_final_score(
 ) -> float:
     # 当前 DTT formal 只把 PAS 强度和 IRS 后置增强汇总进 final_score。
     # MSS 仍然留在执行层，只写 sidecar，不反向改写排序真相源。
+    # 也因此 Settings 里即使保留了 DTT_MSS_WEIGHT，占位语义也不能被误读成“已生效”。
     pattern_score = pattern_strength * 100.0 if pattern_strength <= 1.0 else pattern_strength
     total_weight = cfg.dtt_pattern_weight
     score = cfg.dtt_pattern_weight * pattern_score
@@ -129,6 +130,7 @@ def build_dtt_score_frame(
     candidate_map = {candidate.code: candidate for candidate in candidates}
     irs_snapshot_map = _load_irs_snapshot_map(store, asof_date)
     # MSS 当前只服务于执行层风险覆盖；ranker 继续把它写入 sidecar，供解释和 Broker 对照使用。
+    # 这里故意把“是否携带 mss_score”与“是否进入 final_score”拆开，防止未来维护时把两者混成一件事。
     market_score = _load_mss_score(store, asof_date) if variant.carries_mss_overlay else None
     fill_score = float(config.dtt_score_fill)
     irs_total = max(int(len(irs_snapshot_map)), 1)

@@ -270,6 +270,9 @@ def _ensure_dtt_stage_table(store: Store) -> None:
         )
         """
     )
+    # DTT staging 只存在于当前会话：
+    # - batch 级打分先落 DuckDB temp table，避免在 Python 侧长期攒大列表
+    # - final_rank 统一在 run 尾部计算，保证跨 batch 的全局顺序稳定
     # 兼容长会话里已存在的旧 temp schema：至少保证新主线需要的 pattern_strength 列存在。
     for ddl in ("ALTER TABLE _tmp_dtt_rank_stage ADD COLUMN IF NOT EXISTS pattern_strength DOUBLE",):
         try:
@@ -632,6 +635,10 @@ def generate_signals(
     prepared_signals_by_id: dict[str, Signal] = {}
     legacy_prepared: list[Signal] = []
     pas_trace_rows: list[dict[str, object]] = []
+    # 运行期只暂存“当前 run 最终要写出的内容”：
+    # - prepared_signals_by_id 负责 final signal 去重
+    # - pas_trace_rows 负责当前 run 的 PAS 真相源
+    # 真正可回放的长期结果仍以 DuckDB 表为准，而不是这些进程内容器。
 
     for batch in _iter_candidate_batches(candidates, cfg.pas_eval_batch_size):
         batch_signals, batch_trace_rows, trace_payload_by_key = _evaluate_batch_candidates(
@@ -716,6 +723,8 @@ def generate_signals(
         """,
         (run_id_text,),
     )
+    # 这里才做全 run 的最终排名：
+    # batch 阶段只负责把局部结果落盘，避免“边算边排”把前后 batch 的相对顺序算错。
     rank_frame = finalize_dtt_rank_frame(score_frame, cfg.dtt_top_n)
     if not rank_frame.empty:
         store.bulk_upsert("l3_signal_rank_exp", rank_frame)
