@@ -38,3 +38,13 @@ def test_default_pipeline_mode_uses_dtt_mainline() -> None:
     assert cfg.dtt_variant == "v0_01_dtt_bof_plus_irs_score"
     assert cfg.dtt_top_n == 50
     assert cfg.preselect_score_mode == "amount_plus_volume_ratio"
+
+
+def test_pas_priority_and_single_pattern_override() -> None:
+    cfg = Settings(
+        PAS_PATTERNS="bof,bpb,pb,tst,cpb",
+        PAS_PATTERN_PRIORITY="pb,bpb",
+        PAS_SINGLE_PATTERN_MODE="tst",
+    )
+    assert cfg.pas_pattern_priority_list == ["pb", "bpb", "tst", "cpb", "bof"]
+    assert cfg.pas_effective_patterns == ["tst"]

@@ -451,3 +451,103 @@ def test_irs_trace_marks_missing_industry_scores_as_fill(tmp_path) -> None:
     assert trace.iloc[0]["signal_irs_score"] == 100.0
     assert trace.iloc[1]["signal_irs_score"] == 50.0
     store.close()
+
+
+def test_pas_trace_persists_quality_and_reference_sidecar_for_selected_pattern(tmp_path, monkeypatch) -> None:
+    db = tmp_path / "pas_trace_sidecar.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 8)
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_bof_only",
+        DTT_TOP_N=10,
+        PAS_PATTERNS="bpb",
+        PAS_PATTERN_PRIORITY="bpb,pb,tst,cpb,bof",
+        PAS_MIN_HISTORY_DAYS=30,
+        PAS_EVAL_BATCH_SIZE=1,
+    )
+    candidates = [StockCandidate(code="000001", industry="银行", score=10.0, preselect_score=10.0)]
+
+    class _BpbTraceableDetector:
+        name = "bpb"
+
+        def evaluate(self, code: str, asof_date: date, history: pd.DataFrame):
+            signal_id = f"{code}_{asof_date.isoformat()}_bpb"
+            signal = Signal(
+                signal_id=signal_id,
+                code=code,
+                signal_date=asof_date,
+                action="BUY",
+                strength=0.82,
+                pattern="bpb",
+                reason_code="PAS_BPB",
+            )
+            return signal, {
+                "signal_id": signal_id,
+                "pattern": "bpb",
+                "triggered": True,
+                "reason_code": "PAS_BPB",
+                "history_days": 40,
+                "required_window": 26,
+                "required_mult": 1.2,
+                "today_low": 10.2,
+                "today_close": 10.6,
+                "today_open": 10.3,
+                "today_high": 10.8,
+                "volume": 1400.0,
+                "volume_ma20": 1000.0,
+                "volume_ratio": 1.4,
+                "breakout_ref": 10.0,
+                "breakout_peak": 10.5,
+                "pullback_low": 10.15,
+                "confirm_strength": 0.6,
+                "support_hold_score": 0.8,
+                "depth_score": 0.9,
+                "strength": 0.82,
+            }
+
+    monkeypatch.setattr(strategy_module, "get_active_detectors", lambda _cfg: [_BpbTraceableDetector()])
+    monkeypatch.setattr(
+        strategy_module,
+        "_load_candidate_histories_batch",
+        lambda *_args, **_kwargs: pd.DataFrame(
+            [
+                {
+                    "code": "000001",
+                    "date": calc_date - timedelta(days=offset),
+                    "adj_low": 1.0,
+                    "adj_close": 1.0,
+                    "adj_open": 1.0,
+                    "adj_high": 1.1,
+                    "volume": 1.0,
+                    "volume_ma20": 1.0,
+                }
+                for offset in range(cfg.pas_min_history_days)
+            ]
+        ),
+    )
+
+    strategy_module.generate_signals(store, candidates, calc_date, cfg, run_id="pas_trace_sidecar")
+    trace = store.read_df(
+        """
+        SELECT selected_pattern, pattern_quality_score, entry_ref, stop_ref, target_ref,
+               risk_reward_ref, failure_handling_tag, pattern_group, registry_run_label,
+               quality_status, reference_status
+        FROM pas_trigger_trace_exp
+        WHERE run_id = ? AND code = ? AND detector = ?
+        """,
+        ("pas_trace_sidecar", "000001", "bpb"),
+    )
+
+    assert trace.iloc[0]["selected_pattern"] == "bpb"
+    assert trace.iloc[0]["pattern_quality_score"] > 0
+    assert trace.iloc[0]["entry_ref"] == 10.6
+    assert trace.iloc[0]["stop_ref"] > 0
+    assert trace.iloc[0]["target_ref"] >= 10.6
+    assert trace.iloc[0]["risk_reward_ref"] > 0
+    assert trace.iloc[0]["failure_handling_tag"] is not None
+    assert trace.iloc[0]["pattern_group"] == "BREAKOUT_PULLBACK"
+    assert trace.iloc[0]["registry_run_label"] == "BPB + quality"
+    assert trace.iloc[0]["quality_status"] == "OK"
+    assert trace.iloc[0]["reference_status"] == "OK"
+    store.close()

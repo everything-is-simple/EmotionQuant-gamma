@@ -144,15 +144,36 @@ class Settings(BaseSettings):
     dtt_irs_weight: float = Field(default=0.30, alias="DTT_IRS_WEIGHT")
     dtt_mss_weight: float = Field(default=0.20, alias="DTT_MSS_WEIGHT")
 
-    # PAS parameters (v0.01 only BOF active)
+    # PAS parameters (Phase 1 / minimal tradable layer)
     pas_patterns: str = Field(default="bof", alias="PAS_PATTERNS")
     pas_combination: str = Field(default="ANY", alias="PAS_COMBINATION")
+    pas_pattern_priority: str = Field(default="bpb,pb,tst,cpb,bof", alias="PAS_PATTERN_PRIORITY")
+    pas_single_pattern_mode: str = Field(default="", alias="PAS_SINGLE_PATTERN_MODE")
+    pas_registry_enabled: bool = Field(default=True, alias="PAS_REGISTRY_ENABLED")
+    pas_quality_enabled: bool = Field(default=True, alias="PAS_QUALITY_ENABLED")
+    pas_reference_enabled: bool = Field(default=True, alias="PAS_REFERENCE_ENABLED")
     pas_lookback_days: int = Field(default=60, alias="PAS_LOOKBACK_DAYS")
     pas_min_history_days: int = Field(default=30, alias="PAS_MIN_HISTORY_DAYS")
     # BOF 长窗口回测按批拉历史，避免 5000+ 标的逐只查库把个人 PC 内存打满。
     pas_eval_batch_size: int = Field(default=32, alias="PAS_EVAL_BATCH_SIZE")
     pas_bof_break_pct: float = Field(default=0.01, alias="PAS_BOF_BREAK_PCT")
     pas_bof_volume_mult: float = Field(default=1.2, alias="PAS_BOF_VOLUME_MULT")
+    pas_bpb_lookback: int = Field(default=25, alias="PAS_BPB_LOOKBACK")
+    pas_bpb_breakout_window: int = Field(default=20, alias="PAS_BPB_BREAKOUT_WINDOW")
+    pas_bpb_pullback_min: float = Field(default=0.25, alias="PAS_BPB_PULLBACK_MIN")
+    pas_bpb_pullback_max: float = Field(default=0.80, alias="PAS_BPB_PULLBACK_MAX")
+    pas_bpb_volume_mult: float = Field(default=1.2, alias="PAS_BPB_VOLUME_MULT")
+    pas_pb_lookback: int = Field(default=40, alias="PAS_PB_LOOKBACK")
+    pas_pb_pullback_min: float = Field(default=0.20, alias="PAS_PB_PULLBACK_MIN")
+    pas_pb_pullback_max: float = Field(default=0.50, alias="PAS_PB_PULLBACK_MAX")
+    pas_pb_volume_mult: float = Field(default=1.15, alias="PAS_PB_VOLUME_MULT")
+    pas_tst_lookback: int = Field(default=60, alias="PAS_TST_LOOKBACK")
+    pas_tst_distance_max: float = Field(default=0.03, alias="PAS_TST_DISTANCE_MAX")
+    pas_tst_volume_mult: float = Field(default=1.1, alias="PAS_TST_VOLUME_MULT")
+    pas_cpb_lookback: int = Field(default=40, alias="PAS_CPB_LOOKBACK")
+    pas_cpb_retest_min: int = Field(default=2, alias="PAS_CPB_RETEST_MIN")
+    pas_cpb_neckline_break_pct: float = Field(default=0.01, alias="PAS_CPB_NECKLINE_BREAK_PCT")
+    pas_cpb_volume_mult: float = Field(default=1.2, alias="PAS_CPB_VOLUME_MULT")
 
     # Order lifecycle
     max_pending_trade_days: int = Field(default=1, alias="MAX_PENDING_TRADE_DAYS")
@@ -230,6 +251,30 @@ class Settings(BaseSettings):
         # 配置用逗号字符串，运行时统一解析为小写列表。
         return [part.strip().lower() for part in self.pas_patterns.split(",") if part.strip()]
 
+    @property
+    def pas_pattern_priority_list(self) -> list[str]:
+        parsed = [part.strip().lower() for part in self.pas_pattern_priority.split(",") if part.strip()]
+        for fallback in ["bpb", "pb", "tst", "cpb", "bof"]:
+            if fallback not in parsed:
+                parsed.append(fallback)
+        return parsed
+
+    @property
+    def pas_single_pattern_mode_normalized(self) -> str:
+        return self.pas_single_pattern_mode.strip().lower()
+
+    @property
+    def pas_effective_patterns(self) -> list[str]:
+        override = self.pas_single_pattern_mode_normalized
+        if override and override not in {"off", "false", "0", "none", "disabled"}:
+            return [override]
+
+        deduped: list[str] = []
+        for pattern in self.pas_pattern_list:
+            if pattern not in deduped:
+                deduped.append(pattern)
+        return deduped or ["bof"]
+
     @classmethod
     def from_env(cls, env_file: str = ".env") -> Settings:
         return cls(_env_file=env_file, _env_file_encoding="utf-8")  # type: ignore[call-arg]
@@ -238,4 +283,5 @@ class Settings(BaseSettings):
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     return Settings()
+
 

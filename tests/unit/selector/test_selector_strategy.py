@@ -530,14 +530,14 @@ def test_generate_signals_empty_candidates_returns_empty(tmp_path) -> None:
     store.close()
 
 
-def test_registry_enforces_v001_single_bof_pattern() -> None:
-    cfg = Settings(PAS_PATTERNS="bof,bpb")
-    try:
-        get_active_detectors(cfg)
-    except ValueError as exc:
-        assert "PAS_PATTERNS=bof" in str(exc)
-    else:
-        raise AssertionError("expected v0.01 single-pattern validation to fail")
+def test_registry_supports_phase1_multi_pattern_and_single_pattern_override() -> None:
+    cfg = Settings(PAS_PATTERNS="bof,bpb,pb", PAS_SINGLE_PATTERN_MODE="pb")
+    detectors = get_active_detectors(cfg)
+    assert [detector.name for detector in detectors] == ["pb"]
+
+    cfg_multi = Settings(PAS_PATTERNS="bof,bpb,pb")
+    detectors_multi = get_active_detectors(cfg_multi)
+    assert [detector.name for detector in detectors_multi] == ["bof", "bpb", "pb"]
 
 
 def test_selector_asof_prefers_latest_status_snapshot(tmp_path) -> None:
@@ -1401,3 +1401,4 @@ def test_selector_dtt_writes_candidate_trace_for_selected_truncated_and_rejected
     assert trace.iloc[0]["preselect_score"] == trace.iloc[0]["final_score"]
     assert trace.iloc[2]["reject_reason"] == "LOW_LIQUIDITY"
     store.close()
+

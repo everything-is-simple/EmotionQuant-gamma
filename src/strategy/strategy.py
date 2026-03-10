@@ -7,6 +7,12 @@ import pandas as pd
 from src.config import Settings, get_settings
 from src.contracts import Signal, StockCandidate, build_signal_id
 from src.data.store import Store
+from src.strategy.pas_sidecar import (
+    PATTERN_GROUP,
+    build_registry_run_label,
+    compute_pattern_quality,
+    compute_reference_layer,
+)
 from src.strategy.ranker import (
     build_dtt_score_frame,
     finalize_dtt_rank_frame,
@@ -15,13 +21,31 @@ from src.strategy.ranker import (
 from src.strategy.registry import get_active_detectors
 
 
-def _combine_signals(signals: list[Signal], active_detector_count: int, mode: str = "ANY") -> list[Signal]:
-    """
-    多检测器组合规则：
-    - ANY: 任一触发即保留
-    - ALL: 同股同日需所有激活检测器触发（v0.01 默认不会用到）
-    - VOTE: 票数过半保留
-    """
+def _pattern_priority_rank(pattern: str, pattern_priority: list[str] | None = None) -> int:
+    priorities = pattern_priority or ["bpb", "pb", "tst", "cpb", "bof"]
+    try:
+        return priorities.index(pattern)
+    except ValueError:
+        return len(priorities)
+
+
+def _select_preferred_signal(group: list[Signal], pattern_priority: list[str] | None = None) -> Signal:
+    return max(
+        group,
+        key=lambda signal: (
+            float(signal.strength),
+            -_pattern_priority_rank(signal.pattern, pattern_priority),
+            signal.signal_id,
+        ),
+    )
+
+
+def _combine_signals(
+    signals: list[Signal],
+    active_detector_count: int,
+    mode: str = "ANY",
+    pattern_priority: list[str] | None = None,
+) -> list[Signal]:
     if not signals:
         return []
     mode_norm = mode.upper()
@@ -31,8 +55,8 @@ def _combine_signals(signals: list[Signal], active_detector_count: int, mode: st
 
     merged: list[Signal] = []
     for group in grouped.values():
-        best = max(group, key=lambda s: s.strength)
-        unique_patterns = {s.pattern for s in group}
+        best = _select_preferred_signal(group, pattern_priority)
+        unique_patterns = {signal.pattern for signal in group}
         if mode_norm == "ANY":
             merged.append(best)
             continue
@@ -104,7 +128,6 @@ def _load_candidate_histories_batch(
 
 
 def _ensure_dtt_stage_table(store: Store) -> None:
-    # DTT 排序中间结果先落本地临时表，避免长窗口里所有 batch 都堆在 Python 内存。
     store.conn.execute(
         """
         CREATE TEMP TABLE IF NOT EXISTS _tmp_dtt_rank_stage (
@@ -175,7 +198,54 @@ def _build_pas_trace_row(
         "cond_recover": payload.get("cond_recover"),
         "cond_close_pos": payload.get("cond_close_pos"),
         "cond_volume": payload.get("cond_volume"),
+        "pattern_quality_score": payload.get("pattern_quality_score"),
+        "quality_breakdown_json": payload.get("quality_breakdown_json"),
+        "quality_status": payload.get("quality_status"),
+        "entry_ref": payload.get("entry_ref"),
+        "stop_ref": payload.get("stop_ref"),
+        "target_ref": payload.get("target_ref"),
+        "risk_reward_ref": payload.get("risk_reward_ref"),
+        "failure_handling_tag": payload.get("failure_handling_tag"),
+        "pattern_group": payload.get("pattern_group"),
+        "registry_run_label": payload.get("registry_run_label"),
+        "reference_status": payload.get("reference_status"),
     }
+
+
+def _enrich_selected_trace_payload(
+    payload: dict[str, object],
+    config: Settings,
+    registry_run_label: str,
+) -> dict[str, object]:
+    enriched = dict(payload)
+    pattern = str(enriched.get("pattern") or "")
+    enriched["pattern_group"] = PATTERN_GROUP.get(pattern, pattern.upper())
+    enriched["registry_run_label"] = registry_run_label
+
+    reference: dict[str, object] | None = None
+    if config.pas_reference_enabled:
+        try:
+            reference = compute_reference_layer(pattern, enriched)
+            enriched.update(reference)
+            enriched["reference_status"] = "OK"
+        except Exception:
+            enriched["reference_status"] = "ERROR"
+    else:
+        enriched["reference_status"] = "DISABLED"
+
+    if config.pas_quality_enabled:
+        if reference is not None:
+            try:
+                enriched.update(compute_pattern_quality(pattern, enriched, reference, config))
+                enriched["quality_status"] = "OK"
+            except Exception:
+                enriched["quality_status"] = "ERROR"
+        else:
+            enriched["quality_status"] = "REFERENCE_UNAVAILABLE"
+    else:
+        enriched["quality_status"] = "DISABLED"
+
+    return enriched
 
 
 def generate_signals(
@@ -190,6 +260,8 @@ def generate_signals(
     if not detectors or not candidates:
         return []
 
+    detector_names = [getattr(detector, "name", detector.__class__.__name__.lower()) for detector in detectors]
+    registry_run_label = build_registry_run_label(detector_names, cfg.pas_combination, cfg.pas_quality_enabled)
     run_id_text = (run_id or "").strip()
     if cfg.use_dtt_pipeline:
         if not run_id_text:
@@ -214,6 +286,7 @@ def generate_signals(
         }
         batch_signals: list[Signal] = []
         batch_trace_rows: list[dict[str, object]] = []
+        trace_payload_by_key: dict[tuple[str, str], dict[str, object]] = {}
         for candidate in batch:
             history = history_by_code.get(candidate.code)
             for detector in detectors:
@@ -221,6 +294,17 @@ def generate_signals(
                 history_days = 0 if history is None or history.empty else len(history)
                 if history is None or history.empty or history_days < cfg.pas_min_history_days:
                     if run_id_text:
+                        trace_payload = {
+                            "signal_id": build_signal_id(candidate.code, asof_date, detector_name),
+                            "pattern": detector_name,
+                            "triggered": False,
+                            "skip_reason": "INSUFFICIENT_HISTORY",
+                            "detect_reason": "INSUFFICIENT_HISTORY",
+                            "reason_code": f"PAS_{detector_name.upper()}",
+                            "pattern_group": PATTERN_GROUP.get(detector_name, detector_name.upper()),
+                            "registry_run_label": registry_run_label,
+                        }
+                        trace_payload_by_key[(candidate.code, detector_name)] = dict(trace_payload)
                         batch_trace_rows.append(
                             _build_pas_trace_row(
                                 run_id=run_id_text,
@@ -232,13 +316,7 @@ def generate_signals(
                                 combination_mode=cfg.pas_combination,
                                 min_history_days=cfg.pas_min_history_days,
                                 history_days=history_days,
-                                trace_payload={
-                                    "signal_id": build_signal_id(candidate.code, asof_date, detector_name),
-                                    "pattern": detector_name,
-                                    "triggered": False,
-                                    "skip_reason": "INSUFFICIENT_HISTORY",
-                                    "reason_code": f"PAS_{detector_name.upper()}",
-                                },
+                                trace_payload=trace_payload,
                             )
                         )
                     continue
@@ -260,6 +338,13 @@ def generate_signals(
                         if signal is None or signal.bof_strength is None
                         else float(signal.bof_strength),
                     }
+
+                trace_payload = dict(trace_payload)
+                trace_payload.setdefault("pattern", detector_name)
+                trace_payload.setdefault("pattern_group", PATTERN_GROUP.get(detector_name, detector_name.upper()))
+                trace_payload.setdefault("registry_run_label", registry_run_label)
+                trace_payload_by_key[(candidate.code, detector_name)] = dict(trace_payload)
+
                 if run_id_text:
                     batch_trace_rows.append(
                         _build_pas_trace_row(
@@ -278,14 +363,42 @@ def generate_signals(
                 if signal is not None:
                     batch_signals.append(signal)
 
-        merged_batch = _combine_signals(batch_signals, len(detectors), cfg.pas_combination)
+        merged_batch = _combine_signals(
+            batch_signals,
+            len(detectors),
+            cfg.pas_combination,
+            cfg.pas_pattern_priority_list,
+        )
         if batch_trace_rows:
-            selected_pattern_map = {
-                signal.code: signal.pattern
-                for signal in merged_batch
-            }
+            selected_signal_map = {signal.code: signal for signal in merged_batch}
             for row in batch_trace_rows:
-                row["selected_pattern"] = selected_pattern_map.get(str(row["code"]))
+                selected_signal = selected_signal_map.get(str(row["code"]))
+                row["selected_pattern"] = None if selected_signal is None else selected_signal.pattern
+                row["pattern_group"] = row.get("pattern_group") or PATTERN_GROUP.get(str(row["pattern"]), str(row["pattern"]).upper())
+                row["registry_run_label"] = row.get("registry_run_label") or registry_run_label
+
+            for signal in merged_batch:
+                payload_key = (signal.code, signal.pattern)
+                trace_payload = trace_payload_by_key.get(payload_key)
+                if trace_payload is None:
+                    continue
+                enriched_payload = _enrich_selected_trace_payload(trace_payload, cfg, registry_run_label)
+                for row in batch_trace_rows:
+                    if str(row["code"]) == signal.code and str(row["detector"]) == signal.pattern:
+                        row.update(_build_pas_trace_row(
+                            run_id=run_id_text,
+                            asof_date=asof_date,
+                            code=signal.code,
+                            detector_name=signal.pattern,
+                            candidate_rank=candidate_rank_map.get(signal.code),
+                            active_detector_count=len(detectors),
+                            combination_mode=cfg.pas_combination,
+                            min_history_days=cfg.pas_min_history_days,
+                            history_days=int(enriched_payload.get("history_days") or 0),
+                            trace_payload=enriched_payload,
+                        ))
+                        row["selected_pattern"] = signal.pattern
+                        break
             pas_trace_rows.extend(batch_trace_rows)
         if not merged_batch:
             continue
@@ -320,7 +433,6 @@ def generate_signals(
     if not cfg.use_dtt_pipeline:
         if not legacy_prepared:
             return []
-        # legacy 对照链继续沿用旧 formal schema，只做 BOF 输出。
         rows = pd.DataFrame([signal.to_formal_signal_row() for signal in legacy_prepared])
         store.bulk_upsert("l3_signals", rows)
         return legacy_prepared
@@ -345,3 +457,4 @@ def generate_signals(
         store.bulk_upsert("l3_signals", rows)
     store.conn.execute("DELETE FROM _tmp_dtt_rank_stage WHERE run_id = ?", (run_id_text,))
     return selected
+

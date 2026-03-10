@@ -71,6 +71,17 @@ class Store:
             ("pas_trigger_trace_exp", "detected", "BOOLEAN"),
             ("pas_trigger_trace_exp", "detect_reason", "VARCHAR"),
             ("pas_trigger_trace_exp", "pattern_strength", "DOUBLE"),
+            ("pas_trigger_trace_exp", "pattern_quality_score", "DOUBLE"),
+            ("pas_trigger_trace_exp", "quality_breakdown_json", "VARCHAR"),
+            ("pas_trigger_trace_exp", "quality_status", "VARCHAR"),
+            ("pas_trigger_trace_exp", "entry_ref", "DOUBLE"),
+            ("pas_trigger_trace_exp", "stop_ref", "DOUBLE"),
+            ("pas_trigger_trace_exp", "target_ref", "DOUBLE"),
+            ("pas_trigger_trace_exp", "risk_reward_ref", "DOUBLE"),
+            ("pas_trigger_trace_exp", "failure_handling_tag", "VARCHAR"),
+            ("pas_trigger_trace_exp", "pattern_group", "VARCHAR"),
+            ("pas_trigger_trace_exp", "registry_run_label", "VARCHAR"),
+            ("pas_trigger_trace_exp", "reference_status", "VARCHAR"),
             ("irs_industry_trace_exp", "trace_scope", "VARCHAR DEFAULT 'SIGNAL_ATTACH'"),
             ("irs_industry_trace_exp", "industry_code", "VARCHAR"),
             ("irs_industry_trace_exp", "source_classification", "VARCHAR"),
@@ -367,6 +378,17 @@ class Store:
                 cond_recover          BOOLEAN,
                 cond_close_pos        BOOLEAN,
                 cond_volume           BOOLEAN,
+                pattern_quality_score DOUBLE,
+                quality_breakdown_json VARCHAR,
+                quality_status        VARCHAR,
+                entry_ref             DOUBLE,
+                stop_ref              DOUBLE,
+                target_ref            DOUBLE,
+                risk_reward_ref       DOUBLE,
+                failure_handling_tag  VARCHAR,
+                pattern_group         VARCHAR,
+                registry_run_label    VARCHAR,
+                reference_status      VARCHAR,
                 created_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (run_id, signal_date, code, detector)
             )
@@ -868,4 +890,5 @@ class Store:
 
     def close(self) -> None:
         self.conn.close()
+
 
