@@ -47,6 +47,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional working copy DuckDB path; default uses TEMP_PATH/backtest",
     )
     parser.add_argument(
+        "--use-db-as-working-copy",
+        action="store_true",
+        help="Use --db-path as an already prepared working copy instead of copying it again",
+    )
+    parser.add_argument(
         "--output",
         default=None,
         help="Output JSON path, default docs/spec/v0.01-plus/evidence/<run_id>__irs_ablation.json",
@@ -102,6 +107,7 @@ def main() -> int:
         working_db_path=working_db_path,
         artifact_root=cfg.resolved_temp_path / "artifacts",
         factor_modes=factor_modes,
+        use_db_as_working_copy=args.use_db_as_working_copy,
     )
     payload["summary_run_id"] = summary_run_id
     path = write_irs_ablation_evidence(output_path, payload)

@@ -78,3 +78,65 @@ def test_store_applies_memory_limit_from_env(tmp_path, monkeypatch) -> None:
         assert text.endswith("MIB") or text.endswith("MB")
     finally:
         store.close()
+
+
+def test_bulk_upsert_mirrors_pattern_strength_for_legacy_rank_table(tmp_path) -> None:
+    db = tmp_path / "legacy_rank.duckdb"
+    store = Store(db)
+    try:
+        store.conn.execute("DROP TABLE l3_signal_rank_exp")
+        store.conn.execute(
+            """
+            CREATE TABLE l3_signal_rank_exp (
+                run_id       VARCHAR NOT NULL,
+                signal_id    VARCHAR NOT NULL,
+                signal_date  DATE    NOT NULL,
+                code         VARCHAR NOT NULL,
+                industry     VARCHAR,
+                variant      VARCHAR NOT NULL,
+                bof_strength DOUBLE NOT NULL,
+                irs_score    DOUBLE NOT NULL,
+                mss_score    DOUBLE NOT NULL,
+                final_score  DOUBLE NOT NULL,
+                final_rank   INTEGER NOT NULL,
+                selected     BOOLEAN NOT NULL,
+                created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (run_id, signal_id)
+            )
+            """
+        )
+        frame = pd.DataFrame(
+            [
+                {
+                    "run_id": "run-1",
+                    "signal_id": "000001_2026-03-03_bof",
+                    "signal_date": date(2026, 3, 3),
+                    "code": "000001",
+                    "industry": "银行",
+                    "variant": "v0_01_dtt_pattern_plus_irs_score",
+                    "pattern_strength": 82.5,
+                    "irs_score": 61.0,
+                    "mss_score": 50.0,
+                    "final_score": 74.0,
+                    "final_rank": 1,
+                    "selected": True,
+                }
+            ]
+        )
+
+        inserted = store.bulk_upsert("l3_signal_rank_exp", frame)
+
+        row = store.read_df(
+            """
+            SELECT run_id, signal_id, bof_strength, irs_score, final_score
+            FROM l3_signal_rank_exp
+            """
+        ).iloc[0]
+        assert inserted == 1
+        assert row["run_id"] == "run-1"
+        assert row["signal_id"] == "000001_2026-03-03_bof"
+        assert float(row["bof_strength"]) == 82.5
+        assert float(row["irs_score"]) == 61.0
+        assert float(row["final_score"]) == 74.0
+    finally:
+        store.close()

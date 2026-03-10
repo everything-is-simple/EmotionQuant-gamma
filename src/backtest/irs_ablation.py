@@ -191,6 +191,7 @@ def run_irs_ablation(
     working_db_path: str | Path | None = None,
     artifact_root: str | Path | None = None,
     factor_modes: list[str] | None = None,
+    use_db_as_working_copy: bool = False,
 ) -> dict[str, object]:
     source_db = Path(db_path).expanduser().resolve()
     selected_modes = [normalize_irs_factor_mode(mode) for mode in (factor_modes or [])]
@@ -202,7 +203,10 @@ def run_irs_ablation(
     if skip_rebuild_irs and len(scenarios) != 1:
         raise ValueError("skip_rebuild_irs can only be used with a single IRS factor mode scenario")
 
-    db_file = prepare_working_db(source_db, working_db_path) if working_db_path is not None else source_db
+    if use_db_as_working_copy:
+        db_file = source_db
+    else:
+        db_file = prepare_working_db(source_db, working_db_path) if working_db_path is not None else source_db
     artifact_root_path = Path(artifact_root).expanduser().resolve() if artifact_root is not None else db_file.parent
     artifact_root_path.mkdir(parents=True, exist_ok=True)
 

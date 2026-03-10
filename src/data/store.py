@@ -66,6 +66,12 @@ class Store:
             ("l2_industry_daily", "amount_ma20", "DOUBLE"),
             ("l2_industry_daily", "return_5d", "DOUBLE"),
             ("l2_industry_daily", "return_20d", "DOUBLE"),
+            ("l3_irs_daily", "rv_score", "DOUBLE"),
+            ("l3_irs_daily", "rt_score", "DOUBLE"),
+            ("l3_irs_daily", "bd_score", "DOUBLE"),
+            ("l3_irs_daily", "gn_score", "DOUBLE"),
+            ("l3_irs_daily", "rotation_status", "VARCHAR"),
+            ("l3_irs_daily", "rotation_slope", "DOUBLE"),
             ("l3_signal_rank_exp", "pattern_strength", "DOUBLE"),
             ("selector_candidate_trace_exp", "candidate_reason", "VARCHAR"),
             ("selector_candidate_trace_exp", "coverage_flag", "VARCHAR"),
@@ -763,16 +769,32 @@ class Store:
     def bulk_upsert(self, table: str, df: pd.DataFrame) -> int:
         if df.empty:
             return 0
+        target_info = self.read_df(f"PRAGMA table_info('{table}')")
+        if not target_info.empty:
+            target_columns = target_info["name"].astype(str).tolist()
+            normalized = df.copy()
+            if (
+                table == "l3_signal_rank_exp"
+                and "bof_strength" in target_columns
+                and "bof_strength" not in normalized.columns
+                and "pattern_strength" in normalized.columns
+            ):
+                # 兼容旧库里仍要求 bof_strength NOT NULL 的历史 schema：
+                # 当前主线正式口径已切到 pattern_strength，但回写旧库时保留镜像列，避免实验脚本在现网库上撞约束。
+                normalized["bof_strength"] = normalized["pattern_strength"]
+            normalized = normalized[[col for col in normalized.columns if col in target_columns]]
+        else:
+            normalized = df
         # 幂等核心：所有重跑覆盖写都走 upsert，禁止同主键重复追加。
         # 对 trace / sidecar 来说，这意味着“同一 run_id + 主键”永远只保留一份真相源记录。
         tmp_name = "_tmp_df_upsert"
-        self.conn.register(tmp_name, df)
+        self.conn.register(tmp_name, normalized)
         try:
-            columns = ", ".join(df.columns)
+            columns = ", ".join(normalized.columns)
             self.conn.execute(f"INSERT OR REPLACE INTO {table} ({columns}) SELECT {columns} FROM {tmp_name}")
         finally:
             self.conn.unregister(tmp_name)
-        return len(df)
+        return len(normalized)
 
     def bulk_insert(self, table: str, df: pd.DataFrame) -> int:
         if df.empty:
