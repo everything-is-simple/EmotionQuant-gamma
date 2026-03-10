@@ -254,6 +254,17 @@ Selector 初选
 2. 不让 `IRS` 回到前置过滤
 3. 不把 `IRS` 扩到完整自适应学习系统
 
+**本包资源硬约束**
+
+1. `Phase 2` 默认按 `27GB RAM ceiling` 设计与验证；`27GB` 是硬上限，目标峰值尽量 `<= 25GB`。
+2. 临时 DuckDB、工作副本、实验缓存必须落在 `G:\EmotionQuant-temp`，不得写入仓库根目录。
+3. `IRS` 实现默认采用 `incremental-first`：优先增量窗口、分日/分行业处理，不默认全量重建。
+4. `IRS` 实现默认采用 `DuckDB-first`：能在 DuckDB 做的 `join / group by / window / rank`，不先搬到 pandas。
+5. 禁止：
+   - 一次读取过多数据
+   - 让大 DataFrame / 大中间态长时间常驻内存
+   - 为了省代码而牺牲机器稳定性
+
 **本包主要落点**
 
 1. `src/data/cleaner.py`
