@@ -45,6 +45,7 @@ def _resolve_window(
 
 def build_l2(store: Store, config: Settings, start: date | None, end: date | None, force: bool) -> int:
     if force:
+        # force 只清 L2 自己的产物，不连坐上层，避免为了重做加工层把 L3/L4 一起冲掉。
         store.conn.execute("DELETE FROM l2_stock_adj_daily")
         store.conn.execute("DELETE FROM l2_industry_daily")
         store.conn.execute("DELETE FROM l2_industry_structure_daily")
@@ -90,6 +91,8 @@ def build_l3(store: Store, config: Settings, start: date | None, end: date | Non
     n2 = 0
     if irs_window is not None:
         irs_begin, irs_finish = irs_window
+        # Phase 2 起，IRS 的正式窗口/阈值/权重都从 config 注入；
+        # build_l3 只负责把配置传透，不在这里再藏第二份硬编码。
         n2 = compute_irs(
             store,
             irs_begin,

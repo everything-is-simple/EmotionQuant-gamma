@@ -211,6 +211,7 @@ def run_irs_ablation(
     if use_db_as_working_copy:
         db_file = source_db
     else:
+        # 默认优先在 working copy 上跑 ablation，避免把主库 runtime 表和实验 trace 搅在一起。
         db_file = prepare_working_db(source_db, working_db_path) if working_db_path is not None else source_db
     artifact_root_path = Path(artifact_root).expanduser().resolve() if artifact_root is not None else db_file.parent
     artifact_root_path.mkdir(parents=True, exist_ok=True)
@@ -245,6 +246,8 @@ def run_irs_ablation(
         if not skip_rebuild_irs:
             irs_store = Store(db_file)
             try:
+                # 每个 scenario 都重建对应 factor_mode 的 l3_irs_daily，
+                # 否则多场景对比会变成“共用同一份 IRS 结果”的假证据。
                 compute_irs(
                     irs_store,
                     start,

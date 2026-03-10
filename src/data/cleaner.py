@@ -236,6 +236,8 @@ def clean_industry_structure_daily(store: Store, start: date, end: date) -> int:
     _clear_date_range(store, "l2_industry_structure_daily", start, end)
     lookback_start = start - timedelta(days=220)
     follow_end = store.next_trade_date(end) or end
+    # 结构表是 P2 给 IRS 提供的“行业内部广度/龙头/跟随”输入层：
+    # 仍然严格停留在 L2，只允许消费 L1 明细，不反向读取 PAS/L3 结果。
     grouped = store.read_df(
         """
         WITH stock_base AS (
@@ -378,6 +380,8 @@ def clean_industry_structure_daily(store: Store, start: date, end: date) -> int:
 
 
 def _streak_lengths(flag: pd.Series) -> pd.Series:
+    # streak 需要逐元素状态转移，用一个很短的 Python 循环反而比来回构造
+    # 多个中间列更直观；上游已经把窗口限制在 220 天 lookback 内。
     values = flag.fillna(False).astype(bool).to_numpy()
     out = np.zeros(len(values), dtype=int)
     run = 0
@@ -393,6 +397,8 @@ def _streak_lengths(flag: pd.Series) -> pd.Series:
 def clean_market_snapshot(store: Store, start: date, end: date) -> int:
     _clear_date_range(store, "l2_market_snapshot", start, end)
     lookback_start = start - timedelta(days=220)
+    # MSS 需要一段更长的历史来判断新高/新低、连板和波动率，
+    # 这里一次性读 220 天后再压成“日级市场截面”，避免把个股长窗口结果长期留在 L3。
     df = _stock_daily_with_info(store, lookback_start, end)
     if df.empty:
         return 0

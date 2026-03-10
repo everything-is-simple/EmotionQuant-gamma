@@ -85,6 +85,9 @@ class Settings(BaseSettings):
     )
     irs_top_n: int = Field(default=10, alias="IRS_TOP_N")
     irs_min_industries_per_day: int = Field(default=25, alias="IRS_MIN_INDUSTRIES_PER_DAY")
+    # Phase 2 / IRS 参数治理：
+    # - 默认值保持与执行卡一致，避免“配置接通后主链默默变样”
+    # - 这里只暴露真正需要在实验/证据中切换的窗口、阈值和权重
     irs_factor_mode: str = Field(default="rsrvrtbdgn", alias="IRS_FACTOR_MODE")
     irs_rt_lookback_days: int = Field(default=5, alias="IRS_RT_LOOKBACK_DAYS")
     irs_top_rank_threshold: int = Field(default=3, alias="IRS_TOP_RANK_THRESHOLD")

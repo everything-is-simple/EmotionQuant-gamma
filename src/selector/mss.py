@@ -257,6 +257,8 @@ def score_mss_raw_frame(
         return pd.DataFrame(columns=["date", "score", "signal"] + MSS_FACTOR_NAMES)
 
     base = baseline or MSS_BASELINE
+    # 这个 helper 主要服务校准/实验脚本，不在主链高频路径里；
+    # 逐日展开比过度压缩成一段难维护的向量逻辑更合适。
     rows: list[dict[str, float | str | date]] = []
     for _, row in raw_df.iterrows():
         raw = {key: float(row[key]) for key in raw_df.columns if key.endswith("_raw")}
@@ -320,6 +322,7 @@ def compute_mss(
     for _, row in df.iterrows():
         # MSS 仍然是“市场日评分器”：每个交易日只产出一条 MarketScore，不参与个股横截面筛选。
         # 这里直接把 raw + normalized 一起持久化到 l3_mss_daily，避免 Broker 为了 trace 再回头重算。
+        # 日级记录量本身很小，所以这里优先选“结果清晰、trace 完整”，不刻意把代码压成难读向量化。
         snapshot = materialize_mss_trace_snapshot(
             row,
             baseline=baseline,
@@ -328,7 +331,6 @@ def compute_mss(
         )
         records.append(snapshot)
     return store.bulk_upsert("l3_mss_daily", pd.DataFrame(records))
-
 
 
 

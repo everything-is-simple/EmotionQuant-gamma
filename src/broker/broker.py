@@ -342,6 +342,8 @@ class Broker:
             # 退出逻辑仍然只看 Broker 自己维护的持仓状态：
             # - entry_price 给 stop loss 用
             # - max_price 给 trailing stop 用
+            # PAS sidecar 虽然会产 stop_ref/target_ref，但当前执行内核先不强依赖形态参考价，
+            # 这样 Broker 还能保持统一、稳定、容易回放的退出语义。
             stop_loss_price = pos.entry_price * (1 - self.config.stop_loss_pct)
             trailing_price = pos.max_price * (1 - self.config.trailing_stop_pct)
 
@@ -505,4 +507,3 @@ class Broker:
             updated_pending.append(order)
         self.pending_orders = updated_pending
         return expired
-

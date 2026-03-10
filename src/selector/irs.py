@@ -26,6 +26,8 @@ IRS_HISTORY_LOOKBACK_DAYS = 25
 IRS_FACTOR_MODE_LITE = "lite"
 IRS_FACTOR_MODE_RSRV = "rsrv"
 IRS_FACTOR_MODE_FULL = "rsrvrtbdgn"
+# 这组常量保留“无配置时的安全默认值”：
+# 真正运行时会优先吃 config.py 传下来的窗口、阈值和权重。
 
 
 def normalize_irs_factor_mode(value: str | None) -> str:
@@ -312,6 +314,8 @@ def _compute_rt_components(
 
 
 def _weighted_score(components: list[tuple[float, float]], fallback: float) -> float:
+    # 允许某些因子在 ablation 中权重为 0；此时自动回落到 fallback，
+    # 避免除以 0 或把“关闭的因子”误算成噪声。
     positive = [(float(score), float(weight)) for score, weight in components if float(weight) > 0.0]
     total_weight = sum(weight for _, weight in positive)
     if total_weight <= 0:
@@ -512,6 +516,7 @@ def compute_irs(
     trace_variant = _trace_variant_for_factor_mode(normalized_factor_mode)
     trace_run_id = _build_irs_trace_run_id(start, end, normalized_factor_mode)
     base = baseline or IRS_BASELINE
+    # 只回看“够支撑 RT/多周期收益”的最小历史，不把整段 history_start..today 一次吞进来。
     history_start = _lookback_trade_start(store, start, IRS_HISTORY_LOOKBACK_DAYS)
     store.conn.execute(
         """
@@ -559,6 +564,9 @@ def compute_irs(
     score_history_by_industry: dict[str, list[float]] = {}
 
     for day, day_df in industry_df.groupby("date", sort=True):
+        # IRS 是“按交易日推进”的状态计算：
+        # RS/RV/BD/GN 先在当日行业横截面上得 provisional score，
+        # RT 再利用近几日 rank/score 历史补 rotation 语义，最后才产正式 daily rank。
         benchmark_snapshot = benchmark_map.get(day, {"pct_chg": 0.0, "return_5d": 0.0, "return_20d": 0.0, "filled": True})
         benchmark_pct = float(benchmark_snapshot["pct_chg"])
         coverage_flag = "BENCHMARK_FILL" if bool(benchmark_snapshot["filled"]) else "NORMAL"
@@ -654,6 +662,8 @@ def compute_irs(
         ).sort_values(["score", "industry"], ascending=[False, True]).reset_index(drop=True)
         provisional_df["rank"] = np.arange(1, len(provisional_df) + 1, dtype=int)
         provisional_rank_map = {str(row["industry"]): int(row["rank"]) for _, row in provisional_df.iterrows()}
+        # RT 不直接参与 provisional rank；
+        # 它的职责是根据 provisional rank + 历史 rank/score，判断“启动/延续/衰竭”。
 
         day_results: list[dict[str, object]] = []
         for item in day_components:
@@ -735,6 +745,7 @@ def compute_irs(
             score_history = score_history_by_industry.setdefault(industry, [])
             rank_history.append(rank_map[industry])
             score_history.append(score_map[industry])
+            # 只保留 RT 需要的近几日历史，避免 score/rank 序列随回测窗口无限增长。
             if len(rank_history) > rt_lookback_days:
                 del rank_history[0]
             if len(score_history) > rt_lookback_days:

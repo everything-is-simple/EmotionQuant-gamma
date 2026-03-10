@@ -23,6 +23,8 @@ from src.strategy.registry import get_active_detectors
 
 
 PAS_TRACE_SCHEMA_VERSION = 2
+# 这些是“仍保留稳定列投影”的字段。
+# 其余 detector-specific 观测统一进入 pattern_context_json，避免 trace schema 再回到 BOF-only。
 PAS_TRACE_PROJECTED_PAYLOAD_KEYS = {
     "signal_id",
     "pattern",
@@ -117,6 +119,8 @@ def _build_trace_payload_json(payload: dict[str, object]) -> str | None:
 def _build_pattern_context_json(payload: dict[str, object]) -> str | None:
     if not payload:
         return None
+    # pattern_context_json 是 PAS trace 的 pattern-neutral 扩展位：
+    # 任何没有投影成稳定列的 detector 观测，都应留在这里，而不是静默丢掉。
     context_payload = {
         str(key): _normalize_trace_json_value(value)
         for key, value in payload.items()
@@ -449,6 +453,8 @@ def _enrich_batch_trace_rows(
             continue
         # quality / reference 只给最终被选中的 pattern 补，避免把“候选解释层”误当成正式触发结果。
         enriched_payload = _enrich_selected_trace_payload(trace_payload, config, registry_run_label)
+        # 这里是 O(n*m) 的小循环，但 batch_size 已经被 pas_eval_batch_size 限住；
+        # 当前优先保留实现直观性，而不是为了这点规模提前引入更复杂的索引结构。
         for row in batch_trace_rows:
             if str(row["code"]) == signal.code and str(row["detector"]) == signal.pattern:
                 row.update(
@@ -719,5 +725,6 @@ def generate_signals(
     if selected:
         rows = pd.DataFrame([signal.to_formal_signal_row() for signal in selected])
         store.bulk_upsert("l3_signals", rows)
+    # staging temp table 按 run_id 清理，避免长会话里不同 run 的 batch 排序结果互相污染。
     store.conn.execute("DELETE FROM _tmp_dtt_rank_stage WHERE run_id = ?", (run_id_text,))
     return selected

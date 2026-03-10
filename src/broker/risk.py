@@ -369,6 +369,8 @@ class RiskManager:
                 overlay=overlay,
             )
 
+        # 这里预占的是“按 T 日估价估出来的预算”，不是最终成交成本；
+        # Broker 会在 T+1 Open 真成交前再做一次现金校验，防守隔夜跳空。
         reserved_cash = self._estimate_buy_cost(float(est_price), quantity)
         return RiskDecision(
             order=Order(

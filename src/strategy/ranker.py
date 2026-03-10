@@ -154,6 +154,8 @@ def build_dtt_score_frame(
             irs_score = fill_score
             irs_status = "FILL_NO_DAILY_SCORE"
         else:
+            # 正式排序层只消费“行业日名次 -> signal_irs_score”这个后置增强结果，
+            # 不把行业内部五因子明细重新拖回横截面排序。
             irs_score = _rank_to_signal_irs_score(int(snapshot["rank"]), irs_total)
             irs_status = "NORMAL"
         mss_score = float(market_score if market_score is not None else fill_score)
@@ -243,6 +245,8 @@ def build_dtt_rank_frame(
 def materialize_ranked_signals(signals: list[Signal], rank_frame: pd.DataFrame) -> list[Signal]:
     if not signals or rank_frame.empty:
         return []
+    # 只有 selected=True 的 signal 会回写到 formal Signal：
+    # 其余排序结果继续留在 l3_signal_rank_exp，避免 formal 层和实验真相源混在一起。
     rank_map = {
         str(row["signal_id"]): row
         for _, row in rank_frame.iterrows()

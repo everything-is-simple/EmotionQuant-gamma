@@ -46,6 +46,9 @@ def _load_universe_snapshot(store: Store, calc_date: date) -> pd.DataFrame:
     - L1 给出停牌真相
     - stock_info 采用 as-of 最近生效信息
     """
+    # 这是 Selector 最重的单日快照查询：
+    # 需要在一个 SQL 里把 L2 横截面、行业归属、ST/上市状态拼齐，
+    # 后面所有过滤和 preselect 都建立在这张 snapshot 上。
     return store.read_df(
         """
         SELECT
@@ -107,6 +110,7 @@ def _annotate_basic_filters(df: pd.DataFrame, calc_date: date, config: Settings)
     work["list_status"] = work["list_status"].fillna("UNKNOWN")
     work["list_date"] = pd.to_datetime(work["list_date"], errors="coerce")
     work["list_days"] = (pd.Timestamp(calc_date) - work["list_date"]).dt.days
+    # 先 annotate 再 filter：被挡掉的票也要保留 reject_reason，供 trace 回放。
     work["filters_passed"] = "LIST_STATUS;HALT;ST;LIST_DAYS;AMOUNT"
     work["reject_reason"] = ""
     work.loc[work["list_status"] != "L", "reject_reason"] = "NOT_LIVE"
@@ -307,6 +311,8 @@ def _select_dtt_candidates_frame(
         ]
         .reset_index(drop=True)
     )
+    # DTT 主线在这里就把算力预算切成 top_n：
+    # 这一步不是交易决策，只是决定哪些票会进入 PAS 层继续算。
     _persist_selector_candidate_trace(
         store=store,
         calc_date=calc_date,
