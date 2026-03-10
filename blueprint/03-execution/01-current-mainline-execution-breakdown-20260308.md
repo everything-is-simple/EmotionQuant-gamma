@@ -70,9 +70,10 @@
 
 1. `Phase 0 = P0 契约与 trace 收口`
 2. `Phase 1 = P1 PAS 最小可交易形态层`
-3. `Phase 2 = P2 IRS 最小可交易排序层`
-4. `Phase 3 = P3 MSS 最小可交易风控层`
-5. `Phase 4 = P4 全链回归与 Gate 收口`
+3. `Phase 1.5 = P1.5 主链稳定化收口`
+4. `Phase 2 = P2 IRS 最小可交易排序层`
+5. `Phase 3 = P3 MSS 最小可交易风控层`
+6. `Phase 4 = P4 全链回归与 Gate 收口`
 
 当前不允许跳步：
 
@@ -86,6 +87,7 @@
 |---|---|---|
 | `Phase 0` | `01 / 02 / 03 / 04 / 05` | 只补 contract、trace、truth-source，不升级算法 |
 | `Phase 1` | `02 + 06` | `02` 定 formal 边界，`06` 定 PAS 算法面 |
+| `Phase 1.5` | `P0 + P1 + 09` | 只做稳定化收口，不升级算法正文 |
 | `Phase 2` | `03 + 07` | `03` 定 contract 边界，`07` 定 IRS 算法面 |
 | `Phase 3` | `04 + 08` | `04` 定 contract 边界，`08` 定 MSS 算法面 |
 | `Phase 4` | `01-08` | 只重跑、归因、给出主线结论，不再改写正文 |
@@ -94,25 +96,28 @@
 
 1. `blueprint/03-execution/02-phase-0-contract-trace-card-20260309.md`
 2. `blueprint/03-execution/03-phase-1-pas-card-20260309.md`
-3. `blueprint/03-execution/04-phase-2-irs-card-20260309.md`
-4. `blueprint/03-execution/05-phase-3-mss-card-20260309.md`
-5. `blueprint/03-execution/06-phase-4-gate-card-20260309.md`
+3. `blueprint/03-execution/03.5-phase-1.5-stabilization-card-20260310.md`
+4. `blueprint/03-execution/04-phase-2-irs-card-20260309.md`
+5. `blueprint/03-execution/05-phase-3-mss-card-20260309.md`
+6. `blueprint/03-execution/06-phase-4-gate-card-20260309.md`
 
 ---
 
 ## 4. Phase 摘要
 
-### 4.1 当前 5 张卡
+### 4.1 当前 6 张卡
 
 1. `Phase 0`：
    - `blueprint/03-execution/02-phase-0-contract-trace-card-20260309.md`
 2. `Phase 1`：
    - `blueprint/03-execution/03-phase-1-pas-card-20260309.md`
-3. `Phase 2`：
+3. `Phase 1.5`：
+   - `blueprint/03-execution/03.5-phase-1.5-stabilization-card-20260310.md`
+4. `Phase 2`：
    - `blueprint/03-execution/04-phase-2-irs-card-20260309.md`
-4. `Phase 3`：
+5. `Phase 3`：
    - `blueprint/03-execution/05-phase-3-mss-card-20260309.md`
-5. `Phase 4`：
+6. `Phase 4`：
    - `blueprint/03-execution/06-phase-4-gate-card-20260309.md`
 
 ### 4.2 使用规则
@@ -157,11 +162,16 @@
 
 从 `2026-03-10` 起，`Phase 0` 与 `Phase 1` 都已完成出场，不再回到 contract/trace 卡或 PAS 卡反复补散点。
 
-直接进入：
+先进入：
+
+1. `Phase 1.5`
+2. 以 `blueprint/03-execution/03.5-phase-1.5-stabilization-card-20260310.md` 为唯一收口卡
+
+本卡出场后，再进入：
 
 1. `Phase 2`
 2. 以 `blueprint/03-execution/04-phase-2-irs-card-20260309.md` 为唯一开工卡
 
 也就是：
 
-`Phase 0 / Phase 1 已完成，后续按 IRS -> MSS -> Gate 顺序推进主线升级。`
+`Phase 0 / Phase 1 已完成，先做 P1.5 稳定化收口，再按 IRS -> MSS -> Gate 顺序推进主线升级。`
