@@ -117,22 +117,36 @@ def build_selector_ablation_scenarios(config: Settings) -> list[AblationScenario
     ]
 
 
-def clear_runtime_tables(store: Store) -> None:
-    for table in (
-        "l4_pattern_stats",
-        "l4_daily_report",
-        "broker_order_lifecycle_trace_exp",
-        "l4_trades",
-        "l4_orders",
-        "l4_stock_trust",
-        "mss_risk_overlay_trace_exp",
-        "irs_industry_trace_exp",
-        "pas_trigger_trace_exp",
-        "selector_candidate_trace_exp",
-        "l3_signals",
-        "l3_signal_rank_exp",
-    ):
+RUN_SCOPED_RUNTIME_TABLES = (
+    "broker_order_lifecycle_trace_exp",
+    "mss_risk_overlay_trace_exp",
+    "irs_industry_trace_exp",
+    "pas_trigger_trace_exp",
+    "selector_candidate_trace_exp",
+    "l3_signal_rank_exp",
+)
+
+GLOBAL_RUNTIME_TABLES = (
+    "l4_pattern_stats",
+    "l4_daily_report",
+    "l4_trades",
+    "l4_orders",
+    "l4_stock_trust",
+    "l3_signals",
+)
+
+
+def clear_runtime_tables(store: Store, run_id: str | None = None) -> None:
+    for table in GLOBAL_RUNTIME_TABLES:
         store.conn.execute(f"DELETE FROM {table}")
+
+    if run_id is None:
+        for table in RUN_SCOPED_RUNTIME_TABLES:
+            store.conn.execute(f"DELETE FROM {table}")
+        return
+
+    for table in RUN_SCOPED_RUNTIME_TABLES:
+        store.conn.execute(f"DELETE FROM {table} WHERE run_id = ?", (run_id,))
 
 
 def _finite_or_none(value: float | int | None) -> float | None:
@@ -220,12 +234,6 @@ def run_selector_ablation(
 
     runs: list[AblationRunResult] = []
     for scenario in scenarios:
-        clear_store = Store(db_file)
-        try:
-            clear_runtime_tables(clear_store)
-        finally:
-            clear_store.close()
-
         cfg = config.model_copy(deep=True)
         cfg.pipeline_mode = scenario.pipeline_mode
         cfg.enable_dtt_mode = scenario.pipeline_mode == "dtt"
@@ -250,6 +258,12 @@ def run_selector_ablation(
             end=end,
         )
         meta_store.close()
+
+        clear_store = Store(db_file)
+        try:
+            clear_runtime_tables(clear_store, run_id=run.run_id)
+        finally:
+            clear_store.close()
 
         try:
             # 每个 scenario 独立生成 run_id，便于把 sidecar 和证据文件一一追回到矩阵项。

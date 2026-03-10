@@ -2,7 +2,7 @@
 
 **状态**: Active（v0.01 Frozen + v0.01-plus 主线替代切换）  
 **最后更新**: 2026-03-10
-**当前阶段**: Mainline MVP Strengthening（`v0.01` 已冻结为历史尝试；`v0.01-plus` 已升格为当前主开发线；`Phase 0 / Phase 1` 已完成，下一步进入 `Phase 2 / IRS`）
+**当前阶段**: Mainline MVP Strengthening（`v0.01` 已冻结为历史尝试；`v0.01-plus` 已升格为当前主开发线；`Phase 0 / Phase 1` 已完成，当前处于 `Phase 1.5 / Stabilization`，完成后再进入 `Phase 2 / IRS`）
 
 > 本文件只维护状态、看板、风险与版本记录，不承担当前主线设计正文。新版设计权威层统一查看 `blueprint/`，边界声明见 `docs/design-migration-boundary.md`。
 
@@ -44,7 +44,7 @@
 | v0.01-plus 版本决策 | ✅ 已完成 | 定义为当前主开发线，用于替代 legacy top-down；`v0.01` 保持 Frozen 历史基线 |
 | v0.01-plus 文档骨架 | ✅ 已完成 | `README / roadmap / spec / gate / data-contract` 已建立 |
 | 主线切换口径 | ✅ 已完成 | `v0.01-plus` 目录、状态记录与设计草案已按“主线替代版”重写 |
-| 代码实现 | 进行中 | `Phase 0 / Phase 1` 已完成；当前进入 `Phase 2 / IRS` 开工准备 |
+| 代码实现 | 进行中 | `Phase 0 / Phase 1` 已完成；当前先做 `Phase 1.5` 稳定化收口，再进入 `Phase 2 / IRS` |
 
 ---
 
@@ -67,6 +67,7 @@
 | Phase 0 契约与 Trace 收口 | 补齐 `Selector / PAS / IRS / MSS / Broker lifecycle` 五类真相源，并锁死关键拒绝语义 | `blueprint/03-execution/02-phase-0-contract-trace-card-20260309.md`, `src/`, `tests/` | completed |
 | Phase 1 PAS 最小可交易形态层 | 补齐五形态 registry、quality/reference sidecar 与 PAS 专项 evidence | `blueprint/03-execution/03-phase-1-pas-card-20260309.md`, `src/strategy/`, `scripts/backtest/`, `docs/spec/v0.01-plus/` | completed |
 | v0.01-plus 主线开工 Gate | 固化主线切换矩阵、run 命名、sidecar 与脚本入口 | `blueprint/02-implementation-spec/`, `blueprint/03-execution/`, `docs/spec/v0.01-plus/governance/`, `src/`, `scripts/backtest/` | in_progress |
+| Phase 1.5 稳定化收口 | 拆分 `L3` 进度锚、收口 trace/run 策略、冻结 quality 解释层定位、定性 `l3_signals` 角色 | `blueprint/03-execution/03.5-phase-1.5-stabilization-card-20260310.md`, `src/data/builder.py`, `src/backtest/ablation.py`, `src/backtest/pas_ablation.py`, `src/data/store.py`, `tests/` | in_progress |
 
 ---
 
@@ -92,7 +93,7 @@
 
 | 任务 | 负责人 | 开始日期 | 状态 | 阻塞 |
 |---|---|---|---|---|
-| v0.01-plus 主线开工准备（Gate / run 命名 / sidecar / script） | wangweiyun | 2026-03-07 | DOING | `Phase 0 / Phase 1` 已完成；下一步转入 `Phase 2 / IRS`，并继续处理 EG5 七维评审与默认路径切换前的最终收口 |
+| v0.01-plus 主线开工准备（Gate / run 命名 / sidecar / script） | wangweiyun | 2026-03-07 | DOING | `Phase 0 / Phase 1` 已完成；当前先做 `Phase 1.5` 稳定化收口，再转入 `Phase 2 / IRS`，并继续处理 EG5 七维评审与默认路径切换前的最终收口 |
 
 ### 4.3 文档治理期（2026-03-07）
 
@@ -192,6 +193,7 @@
 | 2026-03-08 | 治理决策 | 更长窗口初选消融已完成：当前主线默认初选不切到 `volume_ratio_only` | 继续保持 `CANDIDATE_TOP_N=100` 与 `PRESELECT_SCORE_MODE=amount_plus_volume_ratio`；`volume_ratio_only` 降级为专项实验候选 | closed |
 | 2026-03-10 | 治理决策 | `Phase 0` 契约与 trace 收口已完成，允许进入 `Phase 1 / PAS` | `Selector / PAS / IRS / MSS / Broker lifecycle` 五类真相源已补齐，后续主线按 `P1 -> P2 -> P3 -> P4` 顺序推进 | closed |
 | 2026-03-10 | 治理决策 | `Phase 1 / PAS` 已完成：允许进入 `Phase 2 / IRS` | 五形态 registry、quality/reference sidecar 与 PAS 专项 evidence 已收口；`quality` 保持解释层定位，不进入 formal `Signal` 与 `final_score` | closed |
+| 2026-03-10 | 治理决策 | `l3_signals` 当前定性为 `latest formal cache`，不承担多实验 `run_id` 真相源语义 | 跨 run 归因统一读取 `l3_signal_rank_exp + trace`；`ablation` 允许整表清理 `l3_signals`，但带 `run_id` 的真相源只允许按当前 run 清理 | closed |
 
 ---
 
@@ -219,6 +221,7 @@
 | 2026-03-08 | v1.17 | 完成四个执行日逐笔归因、更长窗口五场景敏感性与 `BOF` 第一轮内存优化；新增窗口化批处理脚本，并给出当前 `NO-GO` 结论 |
 | 2026-03-10 | v1.18 | 完成 `Phase 0` 契约与 trace 收口：`P0-A ~ P0-E` 全部出场，`IRS/MSS` trace 真相源补齐并允许进入 `Phase 1 / PAS` |
 | 2026-03-10 | v1.19 | 完成 `Phase 1 / PAS`：五形态 registry、quality/reference sidecar 与 PAS 专项 ablation/evidence 全部收口，并允许进入 `Phase 2 / IRS` |
+| 2026-03-10 | v1.20 | 启动 `Phase 1.5` 稳定化收口，并写死 `l3_signals = latest formal cache` 的运行口径 |
 
 
 

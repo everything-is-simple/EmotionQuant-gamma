@@ -408,12 +408,6 @@ def _run_pas_scenario(
     initial_cash: float | None,
     artifact_root: Path,
 ) -> PasScenarioRunArtifacts:
-    clear_store = Store(db_file)
-    try:
-        clear_runtime_tables(clear_store)
-    finally:
-        clear_store.close()
-
     cfg = _build_scenario_config(base_config, scenario, dtt_variant)
     meta_store = Store(db_file)
     run = start_run(
@@ -427,6 +421,12 @@ def _run_pas_scenario(
         end=end,
     )
     meta_store.close()
+
+    clear_store = Store(db_file)
+    try:
+        clear_runtime_tables(clear_store, run_id=run.run_id)
+    finally:
+        clear_store.close()
 
     try:
         result = run_backtest(

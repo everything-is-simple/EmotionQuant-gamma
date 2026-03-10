@@ -107,6 +107,59 @@ class _PatternContextDetector:
         }
 
 
+class _QualityIsolationDetector:
+    name = "bpb"
+    required_window = 26
+
+    def evaluate(self, code: str, asof_date: date, history: pd.DataFrame):
+        signal_id = f"{code}_{asof_date.isoformat()}_bpb"
+        signal = Signal(
+            signal_id=signal_id,
+            code=code,
+            signal_date=asof_date,
+            action="BUY",
+            strength=0.82,
+            pattern="bpb",
+            reason_code="PAS_BPB",
+        )
+        quality_map = {
+            "000001": {
+                "confirm_strength": 0.90,
+                "support_hold_score": 0.95,
+                "depth_score": 0.92,
+            },
+            "000002": {
+                "confirm_strength": 0.35,
+                "support_hold_score": 0.40,
+                "depth_score": 0.38,
+            },
+        }
+        quality = quality_map[code]
+        return signal, {
+            "signal_id": signal_id,
+            "pattern": "bpb",
+            "triggered": True,
+            "reason_code": "PAS_BPB",
+            "strength": 0.82,
+            "history_days": 26,
+            "required_window": 26,
+            "required_mult": 1.2,
+            "today_low": 10.1,
+            "today_close": 10.8,
+            "today_open": 10.4,
+            "today_high": 10.9,
+            "volume": 1500.0,
+            "volume_ma20": 1000.0,
+            "volume_ratio": 1.5,
+            "breakout_ref": 10.2,
+            "breakout_peak": 10.7,
+            "pullback_low": 10.05,
+            "pullback_depth": 0.42,
+            "body_ratio": 0.57,
+            **quality,
+        }
+
+
 def test_pas_trace_signal_id_stays_stable_across_runs(tmp_path, monkeypatch) -> None:
     db = tmp_path / "pas_trace_patch.duckdb"
     store = Store(db)
@@ -313,4 +366,70 @@ def test_irs_trace_status_covers_disabled_unknown_missing_and_normal(tmp_path) -
     assert enabled["status"].tolist() == ["NORMAL", "FILL_UNKNOWN_INDUSTRY", "FILL_NO_DAILY_SCORE"]
     assert disabled is not None
     assert disabled["status"] == "DISABLED"
+    store.close()
+
+
+def test_pattern_quality_stays_in_sidecar_and_does_not_change_final_score(tmp_path, monkeypatch) -> None:
+    db = tmp_path / "quality_sidecar_only.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 8)
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_pattern_only",
+        DTT_TOP_N=2,
+        PAS_PATTERNS="bpb",
+        PAS_PATTERN_PRIORITY="bpb,pb,tst,cpb,bof",
+        PAS_MIN_HISTORY_DAYS=30,
+        PAS_EVAL_BATCH_SIZE=2,
+    )
+    candidates = [
+        StockCandidate(code="000001", industry="银行", score=10.0, preselect_score=10.0),
+        StockCandidate(code="000002", industry="电子", score=9.0, preselect_score=9.0),
+    ]
+
+    monkeypatch.setattr(strategy_module, "get_active_detectors", lambda _cfg: [_QualityIsolationDetector()])
+    monkeypatch.setattr(
+        strategy_module,
+        "_load_candidate_histories_batch",
+        lambda *_args, **_kwargs: pd.DataFrame(
+            [
+                {
+                    "code": code,
+                    "date": calc_date - timedelta(days=offset),
+                    "adj_low": 10.0,
+                    "adj_close": 10.4,
+                    "adj_open": 10.3,
+                    "adj_high": 10.8,
+                    "volume": 1000.0,
+                    "volume_ma20": 950.0,
+                }
+                for code in ["000001", "000002"]
+                for offset in range(26)
+            ]
+        ),
+    )
+
+    strategy_module.generate_signals(store, candidates, calc_date, cfg, run_id="quality_sidecar_only")
+
+    ranked = store.read_df(
+        """
+        SELECT code, final_score
+        FROM l3_signal_rank_exp
+        WHERE run_id = ?
+        ORDER BY code ASC
+        """,
+        ("quality_sidecar_only",),
+    )
+    traced = store.read_df(
+        """
+        SELECT code, pattern_quality_score
+        FROM pas_trigger_trace_exp
+        WHERE run_id = ? AND detector = ?
+        ORDER BY code ASC
+        """,
+        ("quality_sidecar_only", "bpb"),
+    )
+
+    assert traced.iloc[0]["pattern_quality_score"] != traced.iloc[1]["pattern_quality_score"]
+    assert ranked["final_score"].tolist() == [82.0, 82.0]
     store.close()

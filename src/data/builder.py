@@ -65,22 +65,35 @@ def build_l3(store: Store, config: Settings, start: date | None, end: date | Non
         store.conn.execute("DELETE FROM l3_mss_daily")
         store.conn.execute("DELETE FROM l3_irs_daily")
 
-    window = _resolve_window(store, "l3_mss_daily", config, start, end, force)
-    if window is None:
+    # MSS / IRS 进度锚必须各自独立推进，避免其中一层已追平时把另一层的缺口静默跳过。
+    mss_window = _resolve_window(store, "l3_mss_daily", config, start, end, force)
+    irs_window = _resolve_window(store, "l3_irs_daily", config, start, end, force)
+    if mss_window is None and irs_window is None:
         logger.info("L3 already up-to-date, skip.")
         return 0
-    begin, finish = window
 
     # L3 在 v0.01 只构建 MSS/IRS；signal 仍由 Strategy 运行时写入。
-    n1 = compute_mss_variant(
-        store,
-        begin,
-        finish,
-        variant_label=config.mss_variant,
-        bullish_threshold=config.mss_bullish_threshold,
-        bearish_threshold=config.mss_bearish_threshold,
-    )
-    n2 = compute_irs(store, begin, finish, min_industries_per_day=config.irs_min_industries_per_day)
+    n1 = 0
+    if mss_window is not None:
+        mss_begin, mss_finish = mss_window
+        n1 = compute_mss_variant(
+            store,
+            mss_begin,
+            mss_finish,
+            variant_label=config.mss_variant,
+            bullish_threshold=config.mss_bullish_threshold,
+            bearish_threshold=config.mss_bearish_threshold,
+        )
+
+    n2 = 0
+    if irs_window is not None:
+        irs_begin, irs_finish = irs_window
+        n2 = compute_irs(
+            store,
+            irs_begin,
+            irs_finish,
+            min_industries_per_day=config.irs_min_industries_per_day,
+        )
     return n1 + n2
 
 

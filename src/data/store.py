@@ -296,6 +296,8 @@ class Store:
             """,
             """
             CREATE TABLE IF NOT EXISTS l3_signals (
+                -- l3_signals 只保留“最近一次 formal Signal 输出”的兼容缓存。
+                -- 它不是 run-isolated 真相源；跨 run 对比与归因必须读取 l3_signal_rank_exp + trace 表。
                 signal_id   VARCHAR NOT NULL PRIMARY KEY,
                 code        VARCHAR NOT NULL,
                 signal_date DATE    NOT NULL,
@@ -308,6 +310,7 @@ class Store:
             """,
             """
             CREATE TABLE IF NOT EXISTS l3_signal_rank_exp (
+                -- rank_exp 是 DTT 正式实验真相源：run_id 隔离、排序结果可回放、可与 trace 链拼接。
                 run_id       VARCHAR NOT NULL,
                 signal_id    VARCHAR NOT NULL,
                 signal_date  DATE    NOT NULL,
