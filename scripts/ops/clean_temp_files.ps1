@@ -107,7 +107,7 @@ $RepoPatterns = @(
     ".vscode", ".idea", "*.swp", "*.swo",
     ".tmp", "*.tmp", "*.temp", "*.bak", "*.backup",
     ".specstory", ".claude",
-    ".ruff_cache", ".mypy_cache", "pytest-tmp", "pytest_temp", "pytest-cache-files-*",
+    ".ruff_cache", ".mypy_cache", "pytest-tmp", "pytest_temp", "pytest_tmp*", "pytest-cache-files-*",
     "*.log", "logs"
 )
 $TempPatterns = @("backtest", "audit", "pytest", "preflight", "artifacts")

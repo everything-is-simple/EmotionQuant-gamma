@@ -181,6 +181,7 @@ __pycache__/
 # 测试缓存
 .pytest_cache/
 .coverage
+pytest_tmp*/
 
 # Agent 追踪
 .specstory/

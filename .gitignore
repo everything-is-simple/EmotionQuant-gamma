@@ -107,6 +107,7 @@ pip-wheel-metadata/
 .pytest_cache/
 pytest-tmp/
 pytest_temp/
+pytest_tmp*/
 pytest-cache-files-*/
 htmlcov/
 .tox/
