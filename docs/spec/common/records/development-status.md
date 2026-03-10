@@ -2,7 +2,7 @@
 
 **状态**: Active（v0.01 Frozen + v0.01-plus 主线替代切换）  
 **最后更新**: 2026-03-10
-**当前阶段**: Mainline MVP Strengthening（`v0.01` 已冻结为历史尝试；`v0.01-plus` 已升格为当前主开发线；`Phase 0 / Phase 1` 已完成，当前处于 `Phase 1.5 / Stabilization`，完成后再进入 `Phase 2 / IRS`）
+**当前阶段**: Mainline MVP Strengthening（`v0.01` 已冻结为历史尝试；`v0.01-plus` 已升格为当前主开发线；`Phase 0 / Phase 1 / Phase 1.5` 已完成，下一步进入 `Phase 2 / IRS`）
 
 > 本文件只维护状态、看板、风险与版本记录，不承担当前主线设计正文。新版设计权威层统一查看 `blueprint/`，边界声明见 `docs/design-migration-boundary.md`。
 
@@ -44,7 +44,7 @@
 | v0.01-plus 版本决策 | ✅ 已完成 | 定义为当前主开发线，用于替代 legacy top-down；`v0.01` 保持 Frozen 历史基线 |
 | v0.01-plus 文档骨架 | ✅ 已完成 | `README / roadmap / spec / gate / data-contract` 已建立 |
 | 主线切换口径 | ✅ 已完成 | `v0.01-plus` 目录、状态记录与设计草案已按“主线替代版”重写 |
-| 代码实现 | 进行中 | `Phase 0 / Phase 1` 已完成；当前先做 `Phase 1.5` 稳定化收口，再进入 `Phase 2 / IRS` |
+| 代码实现 | 进行中 | `Phase 0 / Phase 1 / Phase 1.5` 已完成；当前进入 `Phase 2 / IRS` 开工准备 |
 
 ---
 
@@ -67,7 +67,7 @@
 | Phase 0 契约与 Trace 收口 | 补齐 `Selector / PAS / IRS / MSS / Broker lifecycle` 五类真相源，并锁死关键拒绝语义 | `blueprint/03-execution/02-phase-0-contract-trace-card-20260309.md`, `src/`, `tests/` | completed |
 | Phase 1 PAS 最小可交易形态层 | 补齐五形态 registry、quality/reference sidecar 与 PAS 专项 evidence | `blueprint/03-execution/03-phase-1-pas-card-20260309.md`, `src/strategy/`, `scripts/backtest/`, `docs/spec/v0.01-plus/` | completed |
 | v0.01-plus 主线开工 Gate | 固化主线切换矩阵、run 命名、sidecar 与脚本入口 | `blueprint/02-implementation-spec/`, `blueprint/03-execution/`, `docs/spec/v0.01-plus/governance/`, `src/`, `scripts/backtest/` | in_progress |
-| Phase 1.5 稳定化收口 | 拆分 `L3` 进度锚、收口 trace/run 策略、冻结 quality 解释层定位、定性 `l3_signals` 角色 | `blueprint/03-execution/03.5-phase-1.5-stabilization-card-20260310.md`, `src/data/builder.py`, `src/backtest/ablation.py`, `src/backtest/pas_ablation.py`, `src/data/store.py`, `tests/` | in_progress |
+| Phase 1.5 稳定化收口 | 拆分 `L3` 进度锚、收口 trace/run 策略、冻结 quality 解释层定位、定性 `l3_signals` 角色并完成 `MSS overlay` 显式激活验证 | `blueprint/03-execution/03.5-phase-1.5-stabilization-card-20260310.md`, `src/data/builder.py`, `src/backtest/ablation.py`, `src/backtest/pas_ablation.py`, `src/data/store.py`, `tests/`, `docs/spec/v0.01-plus/` | completed |
 
 ---
 
@@ -93,7 +93,7 @@
 
 | 任务 | 负责人 | 开始日期 | 状态 | 阻塞 |
 |---|---|---|---|---|
-| v0.01-plus 主线开工准备（Gate / run 命名 / sidecar / script） | wangweiyun | 2026-03-07 | DOING | `Phase 0 / Phase 1` 已完成；当前先做 `Phase 1.5` 稳定化收口，再转入 `Phase 2 / IRS`，并继续处理 EG5 七维评审与默认路径切换前的最终收口 |
+| v0.01-plus 主线开工准备（Gate / run 命名 / sidecar / script） | wangweiyun | 2026-03-07 | DOING | `Phase 0 / Phase 1 / Phase 1.5` 已完成；下一步转入 `Phase 2 / IRS`，并继续处理 EG5 七维评审与默认路径切换前的最终收口 |
 
 ### 4.3 文档治理期（2026-03-07）
 
@@ -115,6 +115,7 @@
 | 2026-03-08 | `v0.01-plus` 四个执行日逐笔归因 + 长窗口分场景敏感性 | in_progress | `docs/spec/v0.01-plus/evidence/trade_attribution_dtt_v0_01_dtt_bof_only_vs_v0_01_dtt_bof_plus_irs_score_w20260105_20260224_t165536__trade_attribution.json`, `docs/spec/v0.01-plus/evidence/windowed_sensitivity_dtt_v0_01_dtt_bof_only_vs_v0_01_dtt_bof_plus_irs_score_w20251222_20260224_t_after_opt__windowed_sensitivity.json`, `docs/spec/v0.01-plus/records/v0.01-plus-trade-attribution-and-windowed-sensitivity-20260308.md`, `scripts/backtest/run_v001_plus_trade_attribution.py`, `scripts/backtest/run_v001_plus_windowed_sensitivity.py`, `src/data/store.py`, `src/config.py`, `src/strategy/strategy.py`, `src/strategy/ranker.py`, `tests/unit/strategy/test_ranker.py`, `tests/unit/data/test_store.py` |
 | 2026-03-08 | `v0.01-plus` 初选消融：`candidate_top_n / preselect_score_mode` | in_progress | `docs/spec/v0.01-plus/evidence/preselect_ablation_dtt_selector_preselect_matrix_w20260105_20260224_t200058__preselect_ablation.json`, `docs/spec/v0.01-plus/records/v0.01-plus-preselect-ablation-20260308.md`, `scripts/backtest/run_v001_plus_preselect_ablation.py`, `src/selector/selector.py`, `src/config.py`, `tests/unit/selector/test_selector_strategy.py`, `tests/unit/core/test_config.py` |
 | 2026-03-10 | `Phase 1 / PAS` 五形态、quality/reference 与专项 evidence 收口 | completed | `docs/spec/v0.01-plus/evidence/pas_ablation_dtt_v0_01_dtt_bof_plus_irs_score_pas_registry_matrix_w20260105_20260224_t021051__pas_ablation.json`, `docs/spec/v0.01-plus/records/v0.01-plus-pas-ablation-20260310.md`, `scripts/backtest/run_v001_plus_pas_ablation.py`, `src/strategy/pas_bpb.py`, `src/strategy/pas_pb.py`, `src/strategy/pas_tst.py`, `src/strategy/pas_cpb.py`, `src/strategy/pas_sidecar.py`, `src/strategy/registry.py`, `src/strategy/strategy.py`, `tests/unit/strategy/test_pas_detectors.py`, `tests/unit/strategy/test_pas_sidecar.py`, `tests/unit/backtest/test_pas_ablation.py` |
+| 2026-03-10 | `Phase 1.5` 稳定化收口：`L3` 双进度锚、run-scoped trace 清理、quality freeze、settings cache hygiene、`MSS overlay` 激活证据、`l3_signals` 角色定性 | completed | `docs/spec/v0.01-plus/evidence/mss_overlay_activation_dtt_v0_01_dtt_pattern_plus_irs_mss_score_t20260310__mss_overlay_activation.json`, `docs/spec/v0.01-plus/records/v0.01-plus-mss-overlay-activation-20260310.md`, `blueprint/03-execution/03.5-phase-1.5-stabilization-card-20260310.md`, `src/data/builder.py`, `src/backtest/ablation.py`, `src/backtest/pas_ablation.py`, `src/data/store.py`, `tests/conftest.py`, `tests/patches/data/test_builder_window_semantics_regression.py`, `tests/patches/strategy/test_strategy_trace_semantics_regression.py`, `tests/unit/backtest/test_ablation.py`, `tests/unit/broker/test_broker.py` |
 
 ### 4.4 旧实现期（2026-03-02 ~ 2026-03-06）阶段摘要
 
@@ -194,6 +195,7 @@
 | 2026-03-10 | 治理决策 | `Phase 0` 契约与 trace 收口已完成，允许进入 `Phase 1 / PAS` | `Selector / PAS / IRS / MSS / Broker lifecycle` 五类真相源已补齐，后续主线按 `P1 -> P2 -> P3 -> P4` 顺序推进 | closed |
 | 2026-03-10 | 治理决策 | `Phase 1 / PAS` 已完成：允许进入 `Phase 2 / IRS` | 五形态 registry、quality/reference sidecar 与 PAS 专项 evidence 已收口；`quality` 保持解释层定位，不进入 formal `Signal` 与 `final_score` | closed |
 | 2026-03-10 | 治理决策 | `l3_signals` 当前定性为 `latest formal cache`，不承担多实验 `run_id` 真相源语义 | 跨 run 归因统一读取 `l3_signal_rank_exp + trace`；`ablation` 允许整表清理 `l3_signals`，但带 `run_id` 的真相源只允许按当前 run 清理 | closed |
+| 2026-03-10 | 治理决策 | `Phase 1.5` 已完成：允许进入 `Phase 2 / IRS` | `L3` 双进度锚、run-scoped trace 清理、quality freeze、settings cache hygiene、`MSS overlay` 显式激活验证与 `l3_signals` 角色定性均已完成 | closed |
 
 ---
 
@@ -222,6 +224,7 @@
 | 2026-03-10 | v1.18 | 完成 `Phase 0` 契约与 trace 收口：`P0-A ~ P0-E` 全部出场，`IRS/MSS` trace 真相源补齐并允许进入 `Phase 1 / PAS` |
 | 2026-03-10 | v1.19 | 完成 `Phase 1 / PAS`：五形态 registry、quality/reference sidecar 与 PAS 专项 ablation/evidence 全部收口，并允许进入 `Phase 2 / IRS` |
 | 2026-03-10 | v1.20 | 启动 `Phase 1.5` 稳定化收口，并写死 `l3_signals = latest formal cache` 的运行口径 |
+| 2026-03-10 | v1.21 | 完成 `Phase 1.5`：补齐 `MSS overlay` 激活证据并正式收口，下一步进入 `Phase 2 / IRS` |
 
 
 

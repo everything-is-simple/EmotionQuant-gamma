@@ -1,0 +1,62 @@
+{
+  "generated_at": "2026-03-10T00:00:00+08:00",
+  "scope": "phase_1_5_mss_overlay_activation",
+  "variant": "v0_01_dtt_pattern_plus_irs_mss_score",
+  "verification_method": "targeted_unit_tests",
+  "test_command": "pytest tests/unit/broker/test_broker.py -k \"mss_overlay_reduces_effective_max_positions_under_bearish_regime or mss_overlay_reduces_position_size_under_bearish_regime or writes_mss_overlay_trace_for_disabled_missing_and_normal\" -q",
+  "tests": [
+    {
+      "name": "test_broker_writes_mss_overlay_trace_for_disabled_missing_and_normal",
+      "assertions": [
+        "variant mismatch writes overlay_state=DISABLED and coverage_flag=OVERLAY_DISABLED",
+        "enabled but missing snapshot writes overlay_state=MISSING and coverage_flag=SNAPSHOT_MISSING",
+        "enabled with l3_mss_daily snapshot writes overlay_state=NORMAL",
+        "NORMAL case persists market_signal=BEARISH and ranker_mss_score=20.0"
+      ]
+    },
+    {
+      "name": "test_broker_mss_overlay_reduces_position_size_under_bearish_regime",
+      "assertions": [
+        "BULLISH quantity = 50000",
+        "BEARISH quantity = 20000",
+        "BEARISH quantity is strictly lower than BULLISH quantity"
+      ]
+    },
+    {
+      "name": "test_broker_mss_overlay_reduces_effective_max_positions_under_bearish_regime",
+      "assertions": [
+        "with MAX_POSITIONS=3 and holdings=2, BULLISH still accepts order",
+        "with BEARISH overlay, effective_max_positions clamps to 1",
+        "same signal is rejected with MAX_POSITIONS_REACHED under BEARISH"
+      ]
+    }
+  ],
+  "findings": {
+    "overlay_activation": {
+      "disabled_case": "confirmed",
+      "missing_case": "confirmed",
+      "normal_case": "confirmed"
+    },
+    "capacity_response": {
+      "bullish_to_bearish_position_size": {
+        "bullish_quantity": 50000,
+        "bearish_quantity": 20000,
+        "ratio": 0.4
+      },
+      "bullish_to_bearish_max_positions": {
+        "base_max_positions": 3,
+        "bullish_effective_max_positions": 3,
+        "bearish_effective_max_positions": 1
+      }
+    }
+  },
+  "conclusion": {
+    "overlay_entered_normal": true,
+    "capacity_changes_with_regime": true,
+    "phase_1_5_e_completed": true,
+    "notes": [
+      "Current evidence proves execution-layer MSS overlay is live under the MSS-enabled DTT variant.",
+      "This evidence is test-scoped; it verifies semantics and regime response, not long-window alpha contribution."
+    ]
+  }
+}
