@@ -94,7 +94,7 @@ def _to_iso(value: object) -> str | None:
     return str(value)
 
 
-def _snapshot_runtime_metrics(store: Store, start: date, end: date) -> tuple[int, int, int]:
+def _snapshot_runtime_metrics(store: Store, start: date, end: date, run_id: str) -> tuple[int, int, int]:
     signals_count = int(
         store.read_scalar(
             "SELECT COUNT(*) FROM l3_signals WHERE signal_date BETWEEN ? AND ?",
@@ -104,8 +104,13 @@ def _snapshot_runtime_metrics(store: Store, start: date, end: date) -> tuple[int
     )
     ranked_signals_count = int(
         store.read_scalar(
-            "SELECT COUNT(*) FROM l3_signal_rank_exp WHERE signal_date BETWEEN ? AND ?",
-            (start, end),
+            """
+            SELECT COUNT(*)
+            FROM l3_signal_rank_exp
+            WHERE run_id = ?
+              AND signal_date BETWEEN ? AND ?
+            """,
+            (run_id, start, end),
         )
         or 0
     )
@@ -275,7 +280,9 @@ def run_irs_ablation(
 
         snap = Store(db_file)
         try:
-            signals_count, ranked_signals_count, trades_count = _snapshot_runtime_metrics(snap, start, end)
+            signals_count, ranked_signals_count, trades_count = _snapshot_runtime_metrics(
+                snap, start, end, run.run_id
+            )
             industry_frames[scenario.label] = _read_industry_rank_frame(snap, start, end)
             selected_rank_frames[scenario.label] = _read_selected_rank_frame(snap, run.run_id)
             buy_execution_frames[scenario.label] = _read_buy_execution_frame(snap, start, end)
