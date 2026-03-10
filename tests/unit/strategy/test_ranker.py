@@ -551,3 +551,73 @@ def test_pas_trace_persists_quality_and_reference_sidecar_for_selected_pattern(t
     assert trace.iloc[0]["quality_status"] == "OK"
     assert trace.iloc[0]["reference_status"] == "OK"
     store.close()
+
+
+def test_pas_trace_bof_sidecar_keeps_reference_and_quality_queryable(tmp_path, monkeypatch) -> None:
+    db = tmp_path / "pas_trace_bof_sidecar.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 8)
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_bof_only",
+        DTT_TOP_N=10,
+        PAS_PATTERNS="bof",
+        PAS_MIN_HISTORY_DAYS=30,
+        PAS_EVAL_BATCH_SIZE=1,
+    )
+    candidates = [StockCandidate(code="000001", industry="银行", score=10.0, preselect_score=10.0)]
+
+    history_rows: list[dict[str, object]] = []
+    start_date = calc_date - timedelta(days=29)
+    for offset in range(29):
+        history_rows.append(
+            {
+                "code": "000001",
+                "date": start_date + timedelta(days=offset),
+                "adj_low": 10.0 if offset >= 9 else 10.2,
+                "adj_close": 10.4,
+                "adj_open": 10.3,
+                "adj_high": 12.0 if offset == 20 else 10.8,
+                "volume": 900.0,
+                "volume_ma20": 1000.0,
+            }
+        )
+    history_rows.append(
+        {
+            "code": "000001",
+            "date": calc_date,
+            "adj_low": 9.7,
+            "adj_close": 10.5,
+            "adj_open": 9.9,
+            "adj_high": 10.8,
+            "volume": 1500.0,
+            "volume_ma20": 1000.0,
+        }
+    )
+
+    monkeypatch.setattr(
+        strategy_module,
+        "_load_candidate_histories_batch",
+        lambda *_args, **_kwargs: pd.DataFrame(history_rows),
+    )
+
+    strategy_module.generate_signals(store, candidates, calc_date, cfg, run_id="pas_trace_bof_sidecar")
+    trace = store.read_df(
+        """
+        SELECT selected_pattern, pattern_quality_score, entry_ref, stop_ref, target_ref,
+               risk_reward_ref, quality_status, reference_status
+        FROM pas_trigger_trace_exp
+        WHERE run_id = ? AND code = ? AND detector = ?
+        """,
+        ("pas_trace_bof_sidecar", "000001", "bof"),
+    )
+
+    assert trace.iloc[0]["selected_pattern"] == "bof"
+    assert trace.iloc[0]["pattern_quality_score"] > 0
+    assert trace.iloc[0]["entry_ref"] == 10.5
+    assert trace.iloc[0]["stop_ref"] > 0
+    assert trace.iloc[0]["target_ref"] >= 12.0
+    assert trace.iloc[0]["risk_reward_ref"] > 0
+    assert trace.iloc[0]["quality_status"] == "OK"
+    assert trace.iloc[0]["reference_status"] == "OK"
+    store.close()

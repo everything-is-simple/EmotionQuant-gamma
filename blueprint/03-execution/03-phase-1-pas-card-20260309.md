@@ -1,7 +1,7 @@
 # Phase 1 Card
 
-**状态**: `Active`  
-**日期**: `2026-03-09`  
+**状态**: `Completed`  
+**日期**: `2026-03-10`  
 **对象**: `P1 PAS 最小可交易形态层`  
 **定位**: `当前主线第二张执行卡`  
 **上游锚点**:
@@ -19,6 +19,8 @@
 把当前 `PAS-trigger` 补到：
 
 `最小可交易五形态层`
+
+截至 `2026-03-10`，本卡代码、测试、PAS 专项 evidence 与 records 已全部收口，允许进入后续 `Phase 2 / IRS`。
 
 ---
 
@@ -107,12 +109,12 @@
 
 ## 4. 出场条件
 
-- [ ] `BPB / PB / TST / CPB` 已落地
-- [ ] 五形态 registry 已落地
-- [ ] `pattern_quality_score` 已落地
-- [ ] 参考层字段已落地
-- [ ] `PAS` 专项 evidence 已生成
-- [ ] 不破坏当前 `BOF` 基线
+- [x] `BPB / PB / TST / CPB` 已落地
+- [x] 五形态 registry 已落地
+- [x] `pattern_quality_score` 已落地
+- [x] 参考层字段已落地
+- [x] `PAS` 专项 evidence 已生成
+- [x] 不破坏当前 `BOF` 基线
 
 ---
 
@@ -122,3 +124,15 @@
 2. 哪些票是因为 `quality` 被筛下去或排上来
 3. 哪个形态在什么环境桶下有效
 4. 单形态和组合形态的执行摩擦是否不同
+
+当前结论见：
+
+1. `docs/spec/v0.01-plus/records/v0.01-plus-pas-ablation-20260310.md`
+2. `docs/spec/v0.01-plus/evidence/pas_ablation_dtt_v0_01_dtt_bof_plus_irs_score_pas_registry_matrix_w20260105_20260224_t021051__pas_ablation.json`
+
+收口摘要：
+
+1. 新增形态里，`CPB / PB / TST` 都已显著改变选中集与成交集；`BPB` 在当前窗口没有形成成交样本。
+2. `quality` 当前仍只停留在 `PAS trace / sidecar`，因此本轮 `rank_diff_days = 0`、`execution_diff_days = 0`，没有任何票因 `quality` 被筛下去或排上来。
+3. 当前窗口里新增形态的有效样本几乎都落在 `NEUTRAL`，只足够支持“当前尚不能做环境桶启停”的保守结论。
+4. 单形态与组合形态的执行摩擦差异明显：`CPB` 和 `YTC5_ANY` 的 `reject_rate / skip_maxpos_count` 明显高于 `BOF`，说明组合后拥挤摩擦已经成为正式问题。

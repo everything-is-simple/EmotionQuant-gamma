@@ -155,13 +155,13 @@
 
 ## 6. 下一步
 
-从 `2026-03-10` 起，`Phase 0` 已完成出场，下一步不再回到 contract/trace 卡反复补散点。
+从 `2026-03-10` 起，`Phase 0` 与 `Phase 1` 都已完成出场，不再回到 contract/trace 卡或 PAS 卡反复补散点。
 
 直接进入：
 
-1. `Phase 1`
-2. 以 `blueprint/03-execution/03-phase-1-pas-card-20260309.md` 为唯一开工卡
+1. `Phase 2`
+2. 以 `blueprint/03-execution/04-phase-2-irs-card-20260309.md` 为唯一开工卡
 
 也就是：
 
-`Phase 0 已完成，后续按 PAS -> IRS -> MSS -> Gate 顺序推进主线升级。`
+`Phase 0 / Phase 1 已完成，后续按 IRS -> MSS -> Gate 顺序推进主线升级。`

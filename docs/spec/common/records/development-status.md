@@ -2,7 +2,7 @@
 
 **状态**: Active（v0.01 Frozen + v0.01-plus 主线替代切换）  
 **最后更新**: 2026-03-10
-**当前阶段**: Mainline MVP Strengthening（`v0.01` 已冻结为历史尝试；`v0.01-plus` 已升格为当前主开发线；`Phase 0` 契约与 trace 收口已完成，下一步进入 `Phase 1 / PAS`）
+**当前阶段**: Mainline MVP Strengthening（`v0.01` 已冻结为历史尝试；`v0.01-plus` 已升格为当前主开发线；`Phase 0 / Phase 1` 已完成，下一步进入 `Phase 2 / IRS`）
 
 > 本文件只维护状态、看板、风险与版本记录，不承担当前主线设计正文。新版设计权威层统一查看 `blueprint/`，边界声明见 `docs/design-migration-boundary.md`。
 
@@ -44,7 +44,7 @@
 | v0.01-plus 版本决策 | ✅ 已完成 | 定义为当前主开发线，用于替代 legacy top-down；`v0.01` 保持 Frozen 历史基线 |
 | v0.01-plus 文档骨架 | ✅ 已完成 | `README / roadmap / spec / gate / data-contract` 已建立 |
 | 主线切换口径 | ✅ 已完成 | `v0.01-plus` 目录、状态记录与设计草案已按“主线替代版”重写 |
-| 代码实现 | 进行中 | `Phase 0` 契约与 trace 收口已完成；当前进入 `Phase 1 / PAS` 开工准备 |
+| 代码实现 | 进行中 | `Phase 0 / Phase 1` 已完成；当前进入 `Phase 2 / IRS` 开工准备 |
 
 ---
 
@@ -65,6 +65,7 @@
 | v0.01-plus 版本切分 | 将 `v0.01-plus` 从 `v0.01 Frozen` 中切出并建立单独版本目录 | `docs/spec/v0.01-plus/`, `system-baseline.md`, `selector-design.md` | completed |
 | v0.01-plus 主线升格 | 将 `v0.01-plus` 从独立实验版提升为当前主开发线 | `docs/spec/v0.01-plus/`, `development-status.md`, `blueprint/README.md` | completed |
 | Phase 0 契约与 Trace 收口 | 补齐 `Selector / PAS / IRS / MSS / Broker lifecycle` 五类真相源，并锁死关键拒绝语义 | `blueprint/03-execution/02-phase-0-contract-trace-card-20260309.md`, `src/`, `tests/` | completed |
+| Phase 1 PAS 最小可交易形态层 | 补齐五形态 registry、quality/reference sidecar 与 PAS 专项 evidence | `blueprint/03-execution/03-phase-1-pas-card-20260309.md`, `src/strategy/`, `scripts/backtest/`, `docs/spec/v0.01-plus/` | completed |
 | v0.01-plus 主线开工 Gate | 固化主线切换矩阵、run 命名、sidecar 与脚本入口 | `blueprint/02-implementation-spec/`, `blueprint/03-execution/`, `docs/spec/v0.01-plus/governance/`, `src/`, `scripts/backtest/` | in_progress |
 
 ---
@@ -85,12 +86,13 @@
 - [x] 完成 `v0.01-plus` 独立实验版切分与最小文档骨架
 - [x] 完成 `v0.01-plus` 从独立实验版到当前主开发线的治理切换
 - [x] 完成 `Phase 0` 契约与 trace 收口
+- [x] 完成 `Phase 1 / PAS` 五形态与专项 evidence 收口
 
 ### 4.2 进行中任务
 
 | 任务 | 负责人 | 开始日期 | 状态 | 阻塞 |
 |---|---|---|---|---|
-| v0.01-plus 主线开工准备（Gate / run 命名 / sidecar / script） | wangweiyun | 2026-03-07 | DOING | `Phase 0` 契约与 trace 已完成；下一步转入 `Phase 1 / PAS`，并继续处理 EG5 七维评审与默认路径切换前的最终收口 |
+| v0.01-plus 主线开工准备（Gate / run 命名 / sidecar / script） | wangweiyun | 2026-03-07 | DOING | `Phase 0 / Phase 1` 已完成；下一步转入 `Phase 2 / IRS`，并继续处理 EG5 七维评审与默认路径切换前的最终收口 |
 
 ### 4.3 文档治理期（2026-03-07）
 
@@ -111,6 +113,7 @@
 | 2026-03-07 | `v0.01-plus` 数据覆盖审计 + 排序拆解 | completed | `docs/spec/v0.01-plus/evidence/coverage_audit_dtt_v0_01_dtt_bof_plus_irs_score_w20260210_20260213_t163939__coverage_audit.json`, `docs/spec/v0.01-plus/evidence/rank_decomposition_dtt_v0_01_dtt_bof_plus_irs_score_w20260105_20260224_t154940__rank_decomposition.json`, `docs/spec/v0.01-plus/records/v0.01-plus-coverage-and-rank-audit-20260307.md`, `scripts/data/audit_trade_date_coverage.py`, `scripts/backtest/run_v001_plus_rank_decomposition.py` |
 | 2026-03-08 | `v0.01-plus` 四个执行日逐笔归因 + 长窗口分场景敏感性 | in_progress | `docs/spec/v0.01-plus/evidence/trade_attribution_dtt_v0_01_dtt_bof_only_vs_v0_01_dtt_bof_plus_irs_score_w20260105_20260224_t165536__trade_attribution.json`, `docs/spec/v0.01-plus/evidence/windowed_sensitivity_dtt_v0_01_dtt_bof_only_vs_v0_01_dtt_bof_plus_irs_score_w20251222_20260224_t_after_opt__windowed_sensitivity.json`, `docs/spec/v0.01-plus/records/v0.01-plus-trade-attribution-and-windowed-sensitivity-20260308.md`, `scripts/backtest/run_v001_plus_trade_attribution.py`, `scripts/backtest/run_v001_plus_windowed_sensitivity.py`, `src/data/store.py`, `src/config.py`, `src/strategy/strategy.py`, `src/strategy/ranker.py`, `tests/unit/strategy/test_ranker.py`, `tests/unit/data/test_store.py` |
 | 2026-03-08 | `v0.01-plus` 初选消融：`candidate_top_n / preselect_score_mode` | in_progress | `docs/spec/v0.01-plus/evidence/preselect_ablation_dtt_selector_preselect_matrix_w20260105_20260224_t200058__preselect_ablation.json`, `docs/spec/v0.01-plus/records/v0.01-plus-preselect-ablation-20260308.md`, `scripts/backtest/run_v001_plus_preselect_ablation.py`, `src/selector/selector.py`, `src/config.py`, `tests/unit/selector/test_selector_strategy.py`, `tests/unit/core/test_config.py` |
+| 2026-03-10 | `Phase 1 / PAS` 五形态、quality/reference 与专项 evidence 收口 | completed | `docs/spec/v0.01-plus/evidence/pas_ablation_dtt_v0_01_dtt_bof_plus_irs_score_pas_registry_matrix_w20260105_20260224_t021051__pas_ablation.json`, `docs/spec/v0.01-plus/records/v0.01-plus-pas-ablation-20260310.md`, `scripts/backtest/run_v001_plus_pas_ablation.py`, `src/strategy/pas_bpb.py`, `src/strategy/pas_pb.py`, `src/strategy/pas_tst.py`, `src/strategy/pas_cpb.py`, `src/strategy/pas_sidecar.py`, `src/strategy/registry.py`, `src/strategy/strategy.py`, `tests/unit/strategy/test_pas_detectors.py`, `tests/unit/strategy/test_pas_sidecar.py`, `tests/unit/backtest/test_pas_ablation.py` |
 
 ### 4.4 旧实现期（2026-03-02 ~ 2026-03-06）阶段摘要
 
@@ -159,6 +162,7 @@
 | 2026-03-07 | `v0.01-plus` 数据覆盖修复 + 执行约束敏感性 | `python scripts/data/bulk_download.py --start 20260210 --end 20260213 --tables raw_daily,raw_daily_basic,raw_index_daily,raw_limit_list`; `python scripts/data/repair_l1_partitions_from_raw_duckdb.py --start 2026-02-10 --end 2026-02-13`; `python main.py build --layers l2,l3 --start 2026-02-09 --end 2026-02-24`; `python scripts/data/audit_trade_date_coverage.py --dates 2026-02-10 2026-02-11 2026-02-13`; `python scripts/backtest/run_v001_plus_dtt_matrix.py --start 2026-01-05 --end 2026-02-24 --skip-rebuild-l3`; `python scripts/backtest/run_v001_plus_execution_sensitivity.py --start 2026-01-05 --end 2026-02-24 --skip-rebuild-l3` | `python -m pytest tests/unit/data/test_fetcher.py tests/unit/data/test_cleaner.py tests/patches/selector/test_irs_nan_score_regression.py tests/unit/backtest/test_execution_sensitivity.py -q`; `powershell -ExecutionPolicy Bypass -File scripts/ops/check_docs.ps1`; `powershell -ExecutionPolicy Bypass -File scripts/ops/preflight.ps1 -Profile full` | `docs/spec/v0.01-plus/evidence/coverage_audit_dtt_v0_01_dtt_bof_plus_irs_score_w20260210_20260213_t163939__coverage_audit.json`, `docs/spec/v0.01-plus/evidence/matrix_summary_dtt_v0_01_dtt_bof_plus_irs_score_w20260105_20260224_t160708__dtt_matrix.json`, `docs/spec/v0.01-plus/evidence/execution_sensitivity_dtt_v0_01_dtt_bof_only_vs_v0_01_dtt_bof_plus_irs_score_w20260105_20260224_t162521__execution_sensitivity.json`, `docs/spec/v0.01-plus/records/v0.01-plus-short-window-matrix-20260307.md`, `docs/spec/v0.01-plus/records/v0.01-plus-coverage-and-rank-audit-20260307.md`, `scripts/data/audit_trade_date_coverage.py`, `scripts/data/repair_l1_partitions_from_raw_duckdb.py`, `scripts/backtest/run_v001_plus_execution_sensitivity.py`, `src/data/fetcher.py`, `src/data/cleaner.py`, `src/selector/irs.py`, `src/selector/mss_experiments.py` | raw 分区修复、执行库分区重建、DTT 宽约束重跑与 Top-N/仓位敏感性复核 | debts=无变化, status=已同步, assets=无变化, roadmap=v0.01-plus 已同步, spec=records 已同步 |
 | 2026-03-08 | `v0.01-plus` 四个执行日逐笔归因 + 长窗口分场景敏感性 | `python scripts/backtest/run_v001_plus_trade_attribution.py --start 2026-01-05 --end 2026-02-24 --execute-dates 2026-01-20,2026-01-30,2026-02-04,2026-02-05 --scenarios top1_pos2:1:2,top50_pos10:50:10 --skip-rebuild-l3`; `python scripts/backtest/run_v001_plus_windowed_sensitivity.py --windows mid_window:2025-12-22:2026-02-24 --scenarios top1_pos1:1:1,top1_pos2:1:2,top2_pos1:2:1,top2_pos2:2:2,top50_pos10:50:10 --memory-limit 4GB --skip-rebuild-l3 --output docs/spec/v0.01-plus/evidence/windowed_sensitivity_dtt_v0_01_dtt_bof_only_vs_v0_01_dtt_bof_plus_irs_score_w20251222_20260224_t_after_opt__windowed_sensitivity.json`; `python scripts/backtest/run_v001_plus_rank_decomposition.py --start 2025-12-22 --end 2026-02-24 --dtt-top-n 2 --max-positions 1 --skip-rebuild-l3` | `python -m py_compile scripts/backtest/run_v001_plus_trade_attribution.py scripts/backtest/run_v001_plus_windowed_sensitivity.py src/data/store.py src/strategy/strategy.py src/strategy/ranker.py src/config.py`; `python -m pytest tests/unit/data/test_store.py tests/unit/strategy/test_ranker.py -q`; `powershell -ExecutionPolicy Bypass -File scripts/ops/preflight.ps1 -Profile full` | `docs/spec/v0.01-plus/evidence/trade_attribution_dtt_v0_01_dtt_bof_only_vs_v0_01_dtt_bof_plus_irs_score_w20260105_20260224_t165536__trade_attribution.json`, `docs/spec/v0.01-plus/evidence/windowed_sensitivity_dtt_v0_01_dtt_bof_only_vs_v0_01_dtt_bof_plus_irs_score_w20251222_20260224_t_after_opt__windowed_sensitivity.json`, `docs/spec/v0.01-plus/records/v0.01-plus-trade-attribution-and-windowed-sensitivity-20260308.md`, `scripts/backtest/run_v001_plus_trade_attribution.py`, `scripts/backtest/run_v001_plus_windowed_sensitivity.py`, `src/data/store.py`, `src/config.py`, `src/strategy/strategy.py`, `src/strategy/ranker.py`, `tests/unit/data/test_store.py`, `tests/unit/strategy/test_ranker.py` | 四个执行日逐笔归因、长窗口五场景敏感性全量跑通、BOF 批量预取/分批计算/临时表落地优化与 `NO-GO` 当前结论 | debts=无变化, status=已同步, assets=无变化, roadmap=v0.01-plus 已同步, spec=records/gate 已同步 |
 | 2026-03-10 | `Phase 0` 契约与 trace 收口完成 | `python -m pytest tests/unit/selector/test_irs.py tests/unit/selector/test_mss.py tests/unit/strategy/test_ranker.py tests/unit/broker/test_broker.py tests/patches/strategy/test_strategy_trace_semantics_regression.py tests/patches/broker/test_broker_trace_semantics_regression.py -q`; `python -m pytest tests/unit/selector/test_selector_strategy.py tests/patches/selector/test_irs_nan_score_regression.py tests/integration/backtest/test_backtest_engine.py -q` | `53 passed`; `powershell -ExecutionPolicy Bypass -File scripts/ops/preflight.ps1 -Profile hook` | `blueprint/03-execution/02-phase-0-contract-trace-card-20260309.md`, `src/selector/irs.py`, `src/selector/mss.py`, `src/strategy/ranker.py`, `src/broker/risk.py`, `src/broker/broker.py`, `src/data/store.py`, `tests/unit/selector/test_irs.py`, `tests/unit/selector/test_mss.py`, `tests/unit/strategy/test_ranker.py`, `tests/unit/broker/test_broker.py`, `tests/patches/strategy/test_strategy_trace_semantics_regression.py`, `tests/patches/broker/test_broker_trace_semantics_regression.py` | `Selector / PAS / IRS / MSS / Broker lifecycle` 五类真相源收口完成，`Phase 0` 达到出场条件 | debts=无变化, status=已同步, assets=无变化, roadmap=execution 已同步, spec=development-status 已同步 |
+| 2026-03-10 | `Phase 1 / PAS` 五形态、quality/reference 与专项 evidence 收口 | `python -m pytest tests/unit/strategy/test_pas_detectors.py tests/unit/strategy/test_pas_sidecar.py tests/unit/backtest/test_pas_ablation.py -q`; `python scripts/backtest/run_v001_plus_pas_ablation.py --start 2026-01-05 --end 2026-02-24 --skip-rebuild-l3 --working-db-path G:\\EmotionQuant-temp\\backtest\\pas-ablation-20260310-full-v2.duckdb`; `powershell -ExecutionPolicy Bypass -File scripts/ops/preflight.ps1 -Profile hook` | `12 passed`; `PAS ablation evidence generated`; `preflight -Profile hook passed` | `docs/spec/v0.01-plus/evidence/pas_ablation_dtt_v0_01_dtt_bof_plus_irs_score_pas_registry_matrix_w20260105_20260224_t021051__pas_ablation.json`, `docs/spec/v0.01-plus/records/v0.01-plus-pas-ablation-20260310.md`, `blueprint/03-execution/03-phase-1-pas-card-20260309.md`, `scripts/backtest/run_v001_plus_pas_ablation.py`, `src/strategy/pas_bpb.py`, `src/strategy/pas_pb.py`, `src/strategy/pas_tst.py`, `src/strategy/pas_cpb.py`, `src/strategy/pas_sidecar.py`, `tests/unit/strategy/test_pas_detectors.py`, `tests/unit/strategy/test_pas_sidecar.py`, `tests/unit/backtest/test_pas_ablation.py` | `Phase 1` 达到出场条件：五形态、quality/reference sidecar 与 PAS 专项 evidence 全部收口，且 `quality` 仍保持零侵入运行时选择 | debts=无变化, status=已同步, assets=无变化, roadmap=execution 已同步, spec=records/development-status 已同步 |
 
 ### 5.2 旧实现期（2026-03-02 ~ 2026-03-06）摘要索引
 
@@ -187,6 +191,7 @@
 | 2026-03-08 | 实现风险 | 初选消融已证明 `candidate_top_n / preselect_score_mode` 会直接改变交易结果；短窗下 `volume_ratio_only` 显著优于当前默认，但证据仍局限于短窗 | 暂不直接翻默认；先将 `volume_ratio_only` 作为候选默认值，待更长窗口复核后再决定是否切换 | open |
 | 2026-03-08 | 治理决策 | 更长窗口初选消融已完成：当前主线默认初选不切到 `volume_ratio_only` | 继续保持 `CANDIDATE_TOP_N=100` 与 `PRESELECT_SCORE_MODE=amount_plus_volume_ratio`；`volume_ratio_only` 降级为专项实验候选 | closed |
 | 2026-03-10 | 治理决策 | `Phase 0` 契约与 trace 收口已完成，允许进入 `Phase 1 / PAS` | `Selector / PAS / IRS / MSS / Broker lifecycle` 五类真相源已补齐，后续主线按 `P1 -> P2 -> P3 -> P4` 顺序推进 | closed |
+| 2026-03-10 | 治理决策 | `Phase 1 / PAS` 已完成：允许进入 `Phase 2 / IRS` | 五形态 registry、quality/reference sidecar 与 PAS 专项 evidence 已收口；`quality` 保持解释层定位，不进入 formal `Signal` 与 `final_score` | closed |
 
 ---
 
@@ -213,6 +218,7 @@
 | 2026-03-07 | v1.16 | 完成 raw/execution 覆盖修复、宽约束短窗重跑与 `Top-N / max_positions` 敏感性矩阵：确认 `IRS` 已进入 `Top-N / MAX_POSITIONS / BUY 数量` 约束 |
 | 2026-03-08 | v1.17 | 完成四个执行日逐笔归因、更长窗口五场景敏感性与 `BOF` 第一轮内存优化；新增窗口化批处理脚本，并给出当前 `NO-GO` 结论 |
 | 2026-03-10 | v1.18 | 完成 `Phase 0` 契约与 trace 收口：`P0-A ~ P0-E` 全部出场，`IRS/MSS` trace 真相源补齐并允许进入 `Phase 1 / PAS` |
+| 2026-03-10 | v1.19 | 完成 `Phase 1 / PAS`：五形态 registry、quality/reference sidecar 与 PAS 专项 ablation/evidence 全部收口，并允许进入 `Phase 2 / IRS` |
 
 
 

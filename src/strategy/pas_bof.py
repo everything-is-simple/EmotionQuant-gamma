@@ -43,7 +43,10 @@ class BofDetector(PatternDetector):
             "reason_code": "PAS_BOF",
             "history_days": int(len(df)),
             "min_history_days": 21,
+            "required_window": 20,
+            "required_mult": float(self.params.volume_mult),
             "lower_bound": None,
+            "lookback_high_20": None,
             "today_low": None,
             "today_close": None,
             "today_open": None,
@@ -87,6 +90,7 @@ class BofDetector(PatternDetector):
         trace.update(
             {
                 "lower_bound": lower_bound,
+                "lookback_high_20": float(lookback["adj_high"].max()),
                 "today_low": today_low,
                 "today_close": today_close,
                 "today_open": today_open,
@@ -138,6 +142,7 @@ class BofDetector(PatternDetector):
                 "triggered": True,
                 "strength": strength,
                 "bof_strength": strength,
+                "body_ratio": float(body_ratio),
             }
         )
 
