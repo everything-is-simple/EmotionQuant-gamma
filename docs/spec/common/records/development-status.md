@@ -1,8 +1,8 @@
 # EmotionQuant 开发状态（重启版模板）
 
 **状态**: Active（v0.01 Frozen + v0.01-plus 主线替代切换）  
-**最后更新**: 2026-03-10
-**当前阶段**: Mainline MVP Strengthening（`v0.01` 已冻结为历史尝试；`v0.01-plus` 已升格为当前主开发线；`Phase 0 / Phase 1 / Phase 1.5` 已完成，下一步进入 `Phase 2 / IRS`）
+**最后更新**: 2026-03-11
+**当前阶段**: Mainline MVP Strengthening（`v0.01` 已冻结为历史尝试；`v0.01-plus` 已升格为当前主开发线；`Phase 0 / Phase 1 / Phase 1.5` 已完成，当前处于 `Phase 2 / IRS` 收口中）
 
 > 本文件只维护状态、看板、风险与版本记录，不承担当前主线设计正文。新版设计权威层统一查看 `blueprint/`，边界声明见 `docs/design-migration-boundary.md`。
 
@@ -44,7 +44,7 @@
 | v0.01-plus 版本决策 | ✅ 已完成 | 定义为当前主开发线，用于替代 legacy top-down；`v0.01` 保持 Frozen 历史基线 |
 | v0.01-plus 文档骨架 | ✅ 已完成 | `README / roadmap / spec / gate / data-contract` 已建立 |
 | 主线切换口径 | ✅ 已完成 | `v0.01-plus` 目录、状态记录与设计草案已按“主线替代版”重写 |
-| 代码实现 | 进行中 | `Phase 0 / Phase 1 / Phase 1.5` 已完成；当前进入 `Phase 2 / IRS` 开工准备 |
+| 代码实现 | 进行中 | `Phase 0 / Phase 1 / Phase 1.5` 已完成；当前进入 `Phase 2 / IRS` 收口期，`IRS baseline` 已提升为出场门槛之一 |
 
 ---
 
@@ -196,6 +196,7 @@
 | 2026-03-10 | 治理决策 | `Phase 1 / PAS` 已完成：允许进入 `Phase 2 / IRS` | 五形态 registry、quality/reference sidecar 与 PAS 专项 evidence 已收口；`quality` 保持解释层定位，不进入 formal `Signal` 与 `final_score` | closed |
 | 2026-03-10 | 治理决策 | `l3_signals` 当前定性为 `latest formal cache`，不承担多实验 `run_id` 真相源语义 | 跨 run 归因统一读取 `l3_signal_rank_exp + trace`；`ablation` 允许整表清理 `l3_signals`，但带 `run_id` 的真相源只允许按当前 run 清理 | closed |
 | 2026-03-10 | 治理决策 | `Phase 1.5` 已完成：允许进入 `Phase 2 / IRS` | `L3` 双进度锚、run-scoped trace 清理、quality freeze、settings cache hygiene、`MSS overlay` 显式激活验证与 `l3_signals` 角色定性均已完成 | closed |
+| 2026-03-11 | 治理决策 | `IRS baseline` 从技术债升级为 `Phase 2` 出场门槛之一 | `Phase 2` 当前先证明排序链接通与稳定性；未经 baseline 处置，不宣布 `IRS absolute score calibration completed`；下一步先补长窗口 evidence 再裁决是否出场 | closed |
 
 ---
 
@@ -225,6 +226,7 @@
 | 2026-03-10 | v1.19 | 完成 `Phase 1 / PAS`：五形态 registry、quality/reference sidecar 与 PAS 专项 ablation/evidence 全部收口，并允许进入 `Phase 2 / IRS` |
 | 2026-03-10 | v1.20 | 启动 `Phase 1.5` 稳定化收口，并写死 `l3_signals = latest formal cache` 的运行口径 |
 | 2026-03-10 | v1.21 | 完成 `Phase 1.5`：补齐 `MSS overlay` 激活证据并正式收口，下一步进入 `Phase 2 / IRS` |
+| 2026-03-11 | v1.22 | 将 `IRS baseline` 正式提升为 `Phase 2` 出场门槛之一，并写入执行卡与状态记录 |
 
 
 

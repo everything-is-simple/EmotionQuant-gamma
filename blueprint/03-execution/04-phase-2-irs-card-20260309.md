@@ -311,6 +311,36 @@ Phase 2 额外要求：
    - skip-rebuild
    - working-db-path 或等价参数
 
+### 3.5 Task P2-Exit IRS Baseline Decision
+
+**目标**
+
+在 `Phase 2` 正式出场前，先把 `IRS baseline` 的口径定性清楚，避免“排序链已接通”和“绝对分值已完成标定”被混为一谈。
+
+**当前约束**
+
+1. `IRS_BASELINE` 当前仍是占位值，不等同于正式历史标定结果。
+2. 本轮 `Phase 2` 已证明的是：
+   - `RS / RV / RT / BD / GN` 已接入正式排序链
+   - 排序结果会真实变化
+   - 当前短窗口下未见明显执行回归
+3. 本轮 `Phase 2` 尚未证明的是：
+   - `IRS absolute score calibration completed`
+   - `IRS_RSRVRTBDGN` 在更长窗口上稳定优于 `IRS_LITE`
+
+**允许的收口方式**
+
+1. 方案 A：补正式 `IRS baseline` 标定，并将标定口径回写到代码与记录
+2. 方案 B：在 `Phase 2` 出场记录中明确声明：
+   - 当前只证明“排序链接通与稳定性”
+   - 不宣称绝对分值已完成正式标定
+
+**执行顺序**
+
+1. 先完成 `IRS baseline` 口径决策
+2. 再跑更长窗口 `IRS evidence`
+3. 最后才裁决 `Phase 2 Completed`
+
 ---
 
 ## 4. 出场条件
@@ -321,6 +351,8 @@ Phase 2 额外要求：
 - [ ] 扩散度已落地
 - [ ] 牛股基因轻量层已落地
 - [ ] IRS 专项 evidence 已生成
+- [ ] `IRS baseline` 已完成正式标定，或已在出场记录中明确声明“当前不宣称 absolute score calibration completed”
+- [ ] 已补一轮更长窗口 `IRS evidence`（当前推荐窗口：`2025-09-01` 至 `2026-02-24`）
 - [ ] `Phase 2` 新实现未违反 `27GB RAM ceiling / temp path discipline / incremental-first / DuckDB-first`
 
 ---
