@@ -250,7 +250,14 @@ def run_irs_ablation(
                     start,
                     end,
                     min_industries_per_day=cfg.irs_min_industries_per_day,
+                    rt_lookback_days=cfg.irs_rt_lookback_days,
+                    top_rank_threshold=cfg.irs_top_rank_threshold,
                     factor_mode=scenario.factor_mode,
+                    factor_weight_rs=cfg.irs_factor_weight_rs,
+                    factor_weight_rv=cfg.irs_factor_weight_rv,
+                    factor_weight_rt=cfg.irs_factor_weight_rt,
+                    factor_weight_bd=cfg.irs_factor_weight_bd,
+                    factor_weight_gn=cfg.irs_factor_weight_gn,
                 )
             finally:
                 irs_store.close()

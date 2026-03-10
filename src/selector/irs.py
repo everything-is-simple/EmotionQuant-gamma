@@ -118,8 +118,8 @@ def _load_benchmark_snapshot_map(store: Store, start: date, end: date) -> dict[d
     return snapshot_map
 
 
-def _rank_stability_raw(rank_history: list[int], industry_count_today: int) -> float:
-    if len(rank_history) < IRS_RT_LOOKBACK_DAYS:
+def _rank_stability_raw(rank_history: list[int], industry_count_today: int, rt_lookback_days: int) -> float:
+    if len(rank_history) < rt_lookback_days:
         return 0.5
     denominator = max(industry_count_today / 3.0, 1.0)
     return 1.0 - _clip01(float(np.std(rank_history, ddof=0)) / denominator)
@@ -159,6 +159,7 @@ def _compute_rs_components(
     rank_history: list[int],
     industry_count_today: int,
     baseline: dict[str, float],
+    rt_lookback_days: int,
 ) -> dict[str, float]:
     rs_1d_raw = _safe_float(industry_row.get("pct_chg"), 0.0) - float(benchmark_snapshot["pct_chg"])
     rs_5d_raw = (
@@ -171,7 +172,7 @@ def _compute_rs_components(
         if pd.notna(pd.to_numeric(industry_row.get("return_20d"), errors="coerce"))
         else None
     )
-    rank_stability = _rank_stability_raw(rank_history, industry_count_today)
+    rank_stability = _rank_stability_raw(rank_history, industry_count_today, rt_lookback_days)
     rs_score = (
         0.35 * _zscore_or_fill(rs_1d_raw, baseline["rs_score_mean"], baseline["rs_score_std"])
         + 0.35 * _zscore_or_fill(rs_5d_raw, baseline["rs_score_mean"], baseline["rs_score_std"])
@@ -310,6 +311,14 @@ def _compute_rt_components(
     }
 
 
+def _weighted_score(components: list[tuple[float, float]], fallback: float) -> float:
+    positive = [(float(score), float(weight)) for score, weight in components if float(weight) > 0.0]
+    total_weight = sum(weight for _, weight in positive)
+    if total_weight <= 0:
+        return float(fallback)
+    return sum(score * weight for score, weight in positive) / total_weight
+
+
 def _pre_rt_score_for_mode(
     rs_score: float,
     cf_score: float,
@@ -317,20 +326,28 @@ def _pre_rt_score_for_mode(
     bd_score: float,
     gn_score: float,
     factor_mode: str,
+    factor_weight_rs: float,
+    factor_weight_rv: float,
+    factor_weight_bd: float,
+    factor_weight_gn: float,
 ) -> float:
     normalized = normalize_irs_factor_mode(factor_mode)
     if normalized == IRS_FACTOR_MODE_LITE:
         return 0.55 * rs_score + 0.45 * cf_score
     if normalized == IRS_FACTOR_MODE_RSRV:
-        score = IRS_FACTOR_WEIGHT_RS * rs_score + IRS_FACTOR_WEIGHT_RV * rv_score
-        return score / (IRS_FACTOR_WEIGHT_RS + IRS_FACTOR_WEIGHT_RV)
-    score = (
-        IRS_FACTOR_WEIGHT_RS * rs_score
-        + IRS_FACTOR_WEIGHT_RV * rv_score
-        + IRS_FACTOR_WEIGHT_BD * bd_score
-        + IRS_FACTOR_WEIGHT_GN * gn_score
+        return _weighted_score(
+            [(rs_score, factor_weight_rs), (rv_score, factor_weight_rv)],
+            fallback=IRS_TRACE_FILL_SCORE,
+        )
+    return _weighted_score(
+        [
+            (rs_score, factor_weight_rs),
+            (rv_score, factor_weight_rv),
+            (bd_score, factor_weight_bd),
+            (gn_score, factor_weight_gn),
+        ],
+        fallback=IRS_TRACE_FILL_SCORE,
     )
-    return score / (IRS_FACTOR_WEIGHT_RS + IRS_FACTOR_WEIGHT_RV + IRS_FACTOR_WEIGHT_BD + IRS_FACTOR_WEIGHT_GN)
 
 
 def _total_score_for_mode(
@@ -341,19 +358,29 @@ def _total_score_for_mode(
     bd_score: float,
     gn_score: float,
     factor_mode: str,
+    factor_weight_rs: float,
+    factor_weight_rv: float,
+    factor_weight_rt: float,
+    factor_weight_bd: float,
+    factor_weight_gn: float,
 ) -> float:
     normalized = normalize_irs_factor_mode(factor_mode)
     if normalized == IRS_FACTOR_MODE_LITE:
         return 0.55 * rs_score + 0.45 * cf_score
     if normalized == IRS_FACTOR_MODE_RSRV:
-        score = IRS_FACTOR_WEIGHT_RS * rs_score + IRS_FACTOR_WEIGHT_RV * rv_score
-        return score / (IRS_FACTOR_WEIGHT_RS + IRS_FACTOR_WEIGHT_RV)
-    return (
-        IRS_FACTOR_WEIGHT_RS * rs_score
-        + IRS_FACTOR_WEIGHT_RV * rv_score
-        + IRS_FACTOR_WEIGHT_RT * rt_score
-        + IRS_FACTOR_WEIGHT_BD * bd_score
-        + IRS_FACTOR_WEIGHT_GN * gn_score
+        return _weighted_score(
+            [(rs_score, factor_weight_rs), (rv_score, factor_weight_rv)],
+            fallback=IRS_TRACE_FILL_SCORE,
+        )
+    return _weighted_score(
+        [
+            (rs_score, factor_weight_rs),
+            (rv_score, factor_weight_rv),
+            (rt_score, factor_weight_rt),
+            (bd_score, factor_weight_bd),
+            (gn_score, factor_weight_gn),
+        ],
+        fallback=IRS_TRACE_FILL_SCORE,
     )
 
 
@@ -424,6 +451,11 @@ def compute_irs_single(
     benchmark_pct: float,
     baseline: dict[str, float] | None = None,
     factor_mode: str = IRS_FACTOR_MODE_FULL,
+    factor_weight_rs: float = IRS_FACTOR_WEIGHT_RS,
+    factor_weight_rv: float = IRS_FACTOR_WEIGHT_RV,
+    factor_weight_rt: float = IRS_FACTOR_WEIGHT_RT,
+    factor_weight_bd: float = IRS_FACTOR_WEIGHT_BD,
+    factor_weight_gn: float = IRS_FACTOR_WEIGHT_GN,
 ) -> tuple[float, float, float]:
     base = baseline or IRS_BASELINE
     normalized_factor_mode = normalize_irs_factor_mode(factor_mode)
@@ -437,6 +469,7 @@ def compute_irs_single(
         [],
         int(seeded["stock_count"]),
         base,
+        IRS_RT_LOOKBACK_DAYS,
     )
     rv = _compute_rv_components(seeded, base)
     legacy_cf = _compute_legacy_cf_components(rv["flow_share"], rv["amount_delta_10d"], base)
@@ -450,6 +483,11 @@ def compute_irs_single(
         bd["bd_score"],
         gn["gn_score"],
         normalized_factor_mode,
+        factor_weight_rs,
+        factor_weight_rv,
+        factor_weight_rt,
+        factor_weight_bd,
+        factor_weight_gn,
     )
     secondary_score = legacy_cf["cf_score"] if normalized_factor_mode == IRS_FACTOR_MODE_LITE else rv["rv_score"]
     return rs["rs_score"], float(secondary_score), float(total_score)
@@ -464,6 +502,11 @@ def compute_irs(
     rt_lookback_days: int = IRS_RT_LOOKBACK_DAYS,
     top_rank_threshold: int = IRS_TOP_RANK_THRESHOLD,
     factor_mode: str = IRS_FACTOR_MODE_FULL,
+    factor_weight_rs: float = IRS_FACTOR_WEIGHT_RS,
+    factor_weight_rv: float = IRS_FACTOR_WEIGHT_RV,
+    factor_weight_rt: float = IRS_FACTOR_WEIGHT_RT,
+    factor_weight_bd: float = IRS_FACTOR_WEIGHT_BD,
+    factor_weight_gn: float = IRS_FACTOR_WEIGHT_GN,
 ) -> int:
     normalized_factor_mode = normalize_irs_factor_mode(factor_mode)
     trace_variant = _trace_variant_for_factor_mode(normalized_factor_mode)
@@ -568,7 +611,14 @@ def compute_irs(
         day_components: list[dict[str, object]] = []
         for _, row in known_df.iterrows():
             industry = str(row["industry"])
-            rs = _compute_rs_components(row, benchmark_snapshot, rank_history_by_industry.get(industry, []), industry_count_today, base)
+            rs = _compute_rs_components(
+                row,
+                benchmark_snapshot,
+                rank_history_by_industry.get(industry, []),
+                industry_count_today,
+                base,
+                rt_lookback_days,
+            )
             rv = _compute_rv_components(row, base)
             legacy_cf = _compute_legacy_cf_components(rv["flow_share"], rv["amount_delta_10d"], base)
             bd = _compute_bd_components(row)
@@ -586,6 +636,10 @@ def compute_irs(
                         bd["bd_score"],
                         gn["gn_score"],
                         normalized_factor_mode,
+                        factor_weight_rs,
+                        factor_weight_rv,
+                        factor_weight_bd,
+                        factor_weight_gn,
                     ),
                     **rs,
                     **rv,
@@ -619,6 +673,11 @@ def compute_irs(
                 float(item["bd_score"]),
                 float(item["gn_score"]),
                 normalized_factor_mode,
+                factor_weight_rs,
+                factor_weight_rv,
+                factor_weight_rt,
+                factor_weight_bd,
+                factor_weight_gn,
             )
             day_results.append({**item, **rt, "score": float(total_score), "industry_count_today": industry_count_today})
 

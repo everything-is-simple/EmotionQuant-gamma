@@ -18,6 +18,39 @@ def test_default_irs_min_industries_per_day_is_25() -> None:
     assert cfg.irs_min_industries_per_day == 25
 
 
+def test_default_phase2_irs_factor_config_matches_card() -> None:
+    cfg = Settings()
+    assert cfg.irs_factor_mode == "rsrvrtbdgn"
+    assert cfg.irs_rt_lookback_days == 5
+    assert cfg.irs_top_rank_threshold == 3
+    assert cfg.irs_factor_weight_rs == 0.30
+    assert cfg.irs_factor_weight_rv == 0.25
+    assert cfg.irs_factor_weight_rt == 0.15
+    assert cfg.irs_factor_weight_bd == 0.15
+    assert cfg.irs_factor_weight_gn == 0.15
+
+
+def test_phase2_irs_factor_config_can_be_overridden_from_env_aliases() -> None:
+    cfg = Settings(
+        IRS_FACTOR_MODE="rsrv",
+        IRS_RT_LOOKBACK_DAYS=7,
+        IRS_TOP_RANK_THRESHOLD=2,
+        IRS_FACTOR_WEIGHT_RS=0.4,
+        IRS_FACTOR_WEIGHT_RV=0.3,
+        IRS_FACTOR_WEIGHT_RT=0.1,
+        IRS_FACTOR_WEIGHT_BD=0.1,
+        IRS_FACTOR_WEIGHT_GN=0.1,
+    )
+    assert cfg.irs_factor_mode == "rsrv"
+    assert cfg.irs_rt_lookback_days == 7
+    assert cfg.irs_top_rank_threshold == 2
+    assert cfg.irs_factor_weight_rs == 0.4
+    assert cfg.irs_factor_weight_rv == 0.3
+    assert cfg.irs_factor_weight_rt == 0.1
+    assert cfg.irs_factor_weight_bd == 0.1
+    assert cfg.irs_factor_weight_gn == 0.1
+
+
 def test_default_mss_thresholds_match_v001_gate() -> None:
     cfg = Settings()
     assert cfg.mss_bullish_threshold == 65.0

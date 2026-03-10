@@ -314,3 +314,127 @@ def test_compute_irs_factor_modes_produce_distinct_scores_and_trace_variants(tmp
         assert score_by_mode[IRS_FACTOR_MODE_RSRV] != score_by_mode[IRS_FACTOR_MODE_FULL]
     finally:
         store.close()
+
+
+def test_compute_irs_respects_configurable_rt_threshold_and_factor_weights(tmp_path) -> None:
+    db = tmp_path / "irs_configurable_params.duckdb"
+    store = Store(db)
+    try:
+        base = date(2026, 1, 5)
+        cal = []
+        for i in range(6):
+            day = base + timedelta(days=i)
+            cal.append({"date": day, "is_trade_day": True, "prev_trade_day": None, "next_trade_day": None})
+        cal_df = pd.DataFrame(cal)
+        cal_df["prev_trade_day"] = cal_df["date"].shift(1)
+        cal_df["next_trade_day"] = cal_df["date"].shift(-1)
+        store.bulk_upsert("l1_trade_calendar", cal_df)
+
+        industry_rows = []
+        structure_rows = []
+        benchmark_rows = []
+        for i in range(6):
+            day = base + timedelta(days=i)
+            benchmark_rows.append({"ts_code": "000001.SH", "date": day, "pct_chg": 0.004})
+            industry_rows.extend(
+                [
+                    {
+                        "industry": "电子",
+                        "date": day,
+                        "pct_chg": 0.03,
+                        "amount": 230.0 + i * 10,
+                        "stock_count": 10,
+                        "rise_count": 8,
+                        "fall_count": 2,
+                        "amount_ma20": 150.0,
+                        "return_5d": 0.11 if i >= 4 else None,
+                        "return_20d": None,
+                    },
+                    {
+                        "industry": "银行",
+                        "date": day,
+                        "pct_chg": 0.01,
+                        "amount": 120.0 + i * 5,
+                        "stock_count": 10,
+                        "rise_count": 6,
+                        "fall_count": 4,
+                        "amount_ma20": 100.0,
+                        "return_5d": 0.03 if i >= 4 else None,
+                        "return_20d": None,
+                    },
+                ]
+            )
+            structure_rows.extend(
+                [
+                    {
+                        "industry": "电子",
+                        "date": day,
+                        "strong_up_count": 4,
+                        "new_high_count": 3,
+                        "leader_count": 2,
+                        "leader_strength": 0.85,
+                        "strong_stock_ratio": 0.42,
+                        "strong_stock_amount_share": 0.58,
+                        "leader_follow_through": 0.72,
+                        "bof_hit_density_5d": 0.05,
+                    },
+                    {
+                        "industry": "银行",
+                        "date": day,
+                        "strong_up_count": 2,
+                        "new_high_count": 1,
+                        "leader_count": 1,
+                        "leader_strength": 0.35,
+                        "strong_stock_ratio": 0.18,
+                        "strong_stock_amount_share": 0.28,
+                        "leader_follow_through": 0.38,
+                        "bof_hit_density_5d": 0.0,
+                    },
+                ]
+            )
+        store.bulk_upsert("l2_industry_daily", pd.DataFrame(industry_rows))
+        store.bulk_upsert("l2_industry_structure_daily", pd.DataFrame(structure_rows))
+        store.bulk_upsert("l1_index_daily", pd.DataFrame(benchmark_rows))
+
+        target_day = base + timedelta(days=5)
+        trace_run_id = f"IRS_DAILY::{IRS_FACTOR_MODE_FULL}::{target_day.isoformat()}::{target_day.isoformat()}"
+
+        compute_irs(store, target_day, target_day, min_industries_per_day=2, factor_mode=IRS_FACTOR_MODE_FULL)
+        default_trace = store.read_df(
+            """
+            SELECT industry, top_rank_streak_5d, rt_score, industry_score
+            FROM irs_industry_trace_exp
+            WHERE run_id = ? AND industry = '银行'
+            """,
+            (trace_run_id,),
+        ).iloc[0]
+
+        compute_irs(
+            store,
+            target_day,
+            target_day,
+            min_industries_per_day=2,
+            factor_mode=IRS_FACTOR_MODE_FULL,
+            rt_lookback_days=10,
+            top_rank_threshold=1,
+            factor_weight_rs=1.0,
+            factor_weight_rv=0.0,
+            factor_weight_rt=0.0,
+            factor_weight_bd=0.0,
+            factor_weight_gn=0.0,
+        )
+        custom_trace = store.read_df(
+            """
+            SELECT industry, top_rank_streak_5d, rt_score, industry_score
+            FROM irs_industry_trace_exp
+            WHERE run_id = ? AND industry = '银行'
+            """,
+            (trace_run_id,),
+        ).iloc[0]
+
+        assert int(default_trace["top_rank_streak_5d"]) > 0
+        assert int(custom_trace["top_rank_streak_5d"]) == 0
+        assert float(custom_trace["rt_score"]) == 50.0
+        assert float(default_trace["industry_score"]) != float(custom_trace["industry_score"])
+    finally:
+        store.close()
