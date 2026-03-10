@@ -1,0 +1,485 @@
+{
+  "generated_at": "2026-03-10T17:08:43Z",
+  "source_db_path": "G:\\EmotionQuant-temp\\backtest\\irs-ablation-20260311-long-window.duckdb",
+  "db_path": "G:\\EmotionQuant-temp\\backtest\\irs-ablation-20260311-long-window.duckdb",
+  "artifact_root": "G:\\EmotionQuant-temp\\artifacts",
+  "start": "2025-09-01",
+  "end": "2026-02-24",
+  "dtt_variant": "v0_01_dtt_pattern_plus_irs_score",
+  "patterns": [
+    "bof"
+  ],
+  "initial_cash": 1000000.0,
+  "skip_rebuild_irs": false,
+  "runs": [
+    {
+      "label": "IRS_LITE",
+      "factor_mode": "lite",
+      "run_id": "irs_ablation_irs_lite_dtt_v0_01_dtt_pattern_plus_irs_score_w20250901_20260224_t165938",
+      "trade_days": 112,
+      "trade_count": 35,
+      "win_rate": 0.45714285714285713,
+      "avg_win": 0.09113537566199145,
+      "avg_loss": 0.06451431991276547,
+      "expected_value": 0.0066398266356948316,
+      "profit_factor": 1.4126379350386433,
+      "max_drawdown": 0.04742630998480542,
+      "reject_rate": 0.014084507042253521,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.9107142857142857,
+      "opportunity_count": 36.0,
+      "filled_count": 35.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 1.0,
+      "participation_rate": 0.9722222222222222,
+      "signals_count": 36,
+      "ranked_signals_count": 36,
+      "trades_count": 70,
+      "environment_breakdown": {
+        "BULLISH": {
+          "trade_count": 1.0,
+          "win_rate": 1.0,
+          "avg_win": 0.013239362508435885,
+          "avg_loss": 0.0,
+          "profit_factor": null,
+          "expected_value": 0.013239362508435885,
+          "median_pnl_pct": 0.013239362508435885
+        },
+        "NEUTRAL": {
+          "trade_count": 32.0,
+          "win_rate": 0.40625,
+          "avg_win": 0.08688256476033175,
+          "avg_loss": 0.06451431991276547,
+          "profit_factor": 1.3467175175652788,
+          "expected_value": -0.0030093355143197276,
+          "median_pnl_pct": -0.053176115920105196
+        },
+        "BEARISH": {
+          "trade_count": 2.0,
+          "win_rate": 1.0,
+          "avg_win": 0.15772665309955727,
+          "avg_loss": 0.0,
+          "profit_factor": null,
+          "expected_value": 0.15772665309955727,
+          "median_pnl_pct": 0.15772665309955727
+        }
+      },
+      "industry_rank_diff_days_vs_lite": 0,
+      "execution_diff_days_vs_lite": 0
+    },
+    {
+      "label": "IRS_RSRV",
+      "factor_mode": "rsrv",
+      "run_id": "irs_ablation_irs_rsrv_dtt_v0_01_dtt_pattern_plus_irs_score_w20250901_20260224_t170229",
+      "trade_days": 112,
+      "trade_count": 35,
+      "win_rate": 0.4857142857142857,
+      "avg_win": 0.08880453217684876,
+      "avg_loss": 0.06434715864353285,
+      "expected_value": 0.01004080546922393,
+      "profit_factor": 1.3800847473126767,
+      "max_drawdown": 0.03926595006006297,
+      "reject_rate": 0.014084507042253521,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.9107142857142857,
+      "opportunity_count": 36.0,
+      "filled_count": 35.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 1.0,
+      "participation_rate": 0.9722222222222222,
+      "signals_count": 36,
+      "ranked_signals_count": 36,
+      "trades_count": 70,
+      "environment_breakdown": {
+        "BULLISH": {
+          "trade_count": 1.0,
+          "win_rate": 1.0,
+          "avg_win": 0.013239362508435885,
+          "avg_loss": 0.0,
+          "profit_factor": null,
+          "expected_value": 0.013239362508435885,
+          "median_pnl_pct": 0.013239362508435885
+        },
+        "NEUTRAL": {
+          "trade_count": 32.0,
+          "win_rate": 0.4375,
+          "avg_win": 0.08435602702134848,
+          "avg_loss": 0.06434715864353285,
+          "profit_factor": 1.3109518555226307,
+          "expected_value": 0.0007104850848527258,
+          "median_pnl_pct": -0.05114386061914917
+        },
+        "BEARISH": {
+          "trade_count": 2.0,
+          "win_rate": 1.0,
+          "avg_win": 0.15772665309955727,
+          "avg_loss": 0.0,
+          "profit_factor": null,
+          "expected_value": 0.15772665309955727,
+          "median_pnl_pct": 0.15772665309955727
+        }
+      },
+      "industry_rank_diff_days_vs_lite": 112,
+      "execution_diff_days_vs_lite": 1
+    },
+    {
+      "label": "IRS_RSRVRTBDGN",
+      "factor_mode": "rsrvrtbdgn",
+      "run_id": "irs_ablation_irs_rsrvrtbdgn_dtt_v0_01_dtt_pattern_plus_irs_score_w20250901_20260224_t170528",
+      "trade_days": 112,
+      "trade_count": 35,
+      "win_rate": 0.4857142857142857,
+      "avg_win": 0.08880453217684876,
+      "avg_loss": 0.06434715864353285,
+      "expected_value": 0.01004080546922393,
+      "profit_factor": 1.3800847473126767,
+      "max_drawdown": 0.03924373636364105,
+      "reject_rate": 0.014084507042253521,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.9107142857142857,
+      "opportunity_count": 36.0,
+      "filled_count": 35.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 1.0,
+      "participation_rate": 0.9722222222222222,
+      "signals_count": 36,
+      "ranked_signals_count": 36,
+      "trades_count": 70,
+      "environment_breakdown": {
+        "BULLISH": {
+          "trade_count": 1.0,
+          "win_rate": 1.0,
+          "avg_win": 0.013239362508435885,
+          "avg_loss": 0.0,
+          "profit_factor": null,
+          "expected_value": 0.013239362508435885,
+          "median_pnl_pct": 0.013239362508435885
+        },
+        "NEUTRAL": {
+          "trade_count": 32.0,
+          "win_rate": 0.4375,
+          "avg_win": 0.08435602702134848,
+          "avg_loss": 0.06434715864353285,
+          "profit_factor": 1.3109518555226307,
+          "expected_value": 0.0007104850848527258,
+          "median_pnl_pct": -0.05114386061914917
+        },
+        "BEARISH": {
+          "trade_count": 2.0,
+          "win_rate": 1.0,
+          "avg_win": 0.15772665309955727,
+          "avg_loss": 0.0,
+          "profit_factor": null,
+          "expected_value": 0.15772665309955727,
+          "median_pnl_pct": 0.15772665309955727
+        }
+      },
+      "industry_rank_diff_days_vs_lite": 112,
+      "execution_diff_days_vs_lite": 1
+    }
+  ],
+  "baseline_label": "IRS_LITE",
+  "top_industry_changes_vs_lite": {
+    "IRS_RSRV": {
+      "count": 972,
+      "sample": [
+        {
+          "date": "2025-09-01",
+          "industry": "有色金属",
+          "rank": 1
+        },
+        {
+          "date": "2025-09-01",
+          "industry": "电子",
+          "rank": 2
+        },
+        {
+          "date": "2025-09-01",
+          "industry": "通信",
+          "rank": 3
+        },
+        {
+          "date": "2025-09-01",
+          "industry": "电力设备",
+          "rank": 4
+        },
+        {
+          "date": "2025-09-01",
+          "industry": "综合",
+          "rank": 5
+        },
+        {
+          "date": "2025-09-01",
+          "industry": "商贸零售",
+          "rank": 6
+        },
+        {
+          "date": "2025-09-01",
+          "industry": "计算机",
+          "rank": 7
+        },
+        {
+          "date": "2025-09-01",
+          "industry": "社会服务",
+          "rank": 8
+        },
+        {
+          "date": "2025-09-01",
+          "industry": "家用电器",
+          "rank": 10
+        },
+        {
+          "date": "2025-09-02",
+          "industry": "有色金属",
+          "rank": 1
+        },
+        {
+          "date": "2025-09-02",
+          "industry": "电子",
+          "rank": 2
+        },
+        {
+          "date": "2025-09-02",
+          "industry": "综合",
+          "rank": 3
+        },
+        {
+          "date": "2025-09-02",
+          "industry": "汽车",
+          "rank": 4
+        },
+        {
+          "date": "2025-09-02",
+          "industry": "家用电器",
+          "rank": 5
+        },
+        {
+          "date": "2025-09-02",
+          "industry": "石油石化",
+          "rank": 7
+        },
+        {
+          "date": "2025-09-02",
+          "industry": "环保",
+          "rank": 8
+        },
+        {
+          "date": "2025-09-02",
+          "industry": "商贸零售",
+          "rank": 9
+        },
+        {
+          "date": "2025-09-03",
+          "industry": "汽车",
+          "rank": 2
+        },
+        {
+          "date": "2025-09-03",
+          "industry": "电子",
+          "rank": 3
+        },
+        {
+          "date": "2025-09-03",
+          "industry": "传媒",
+          "rank": 4
+        }
+      ]
+    },
+    "IRS_RSRVRTBDGN": {
+      "count": 1021,
+      "sample": [
+        {
+          "date": "2025-09-01",
+          "industry": "综合",
+          "rank": 1
+        },
+        {
+          "date": "2025-09-01",
+          "industry": "有色金属",
+          "rank": 2
+        },
+        {
+          "date": "2025-09-01",
+          "industry": "电子",
+          "rank": 3
+        },
+        {
+          "date": "2025-09-01",
+          "industry": "通信",
+          "rank": 4
+        },
+        {
+          "date": "2025-09-01",
+          "industry": "建筑装饰",
+          "rank": 5
+        },
+        {
+          "date": "2025-09-01",
+          "industry": "社会服务",
+          "rank": 6
+        },
+        {
+          "date": "2025-09-01",
+          "industry": "纺织服饰",
+          "rank": 7
+        },
+        {
+          "date": "2025-09-01",
+          "industry": "医药生物",
+          "rank": 8
+        },
+        {
+          "date": "2025-09-01",
+          "industry": "电力设备",
+          "rank": 9
+        },
+        {
+          "date": "2025-09-01",
+          "industry": "传媒",
+          "rank": 10
+        },
+        {
+          "date": "2025-09-02",
+          "industry": "综合",
+          "rank": 1
+        },
+        {
+          "date": "2025-09-02",
+          "industry": "有色金属",
+          "rank": 2
+        },
+        {
+          "date": "2025-09-02",
+          "industry": "汽车",
+          "rank": 3
+        },
+        {
+          "date": "2025-09-02",
+          "industry": "公用事业",
+          "rank": 4
+        },
+        {
+          "date": "2025-09-02",
+          "industry": "纺织服饰",
+          "rank": 5
+        },
+        {
+          "date": "2025-09-02",
+          "industry": "机械设备",
+          "rank": 6
+        },
+        {
+          "date": "2025-09-02",
+          "industry": "银行",
+          "rank": 7
+        },
+        {
+          "date": "2025-09-02",
+          "industry": "环保",
+          "rank": 8
+        },
+        {
+          "date": "2025-09-02",
+          "industry": "电力设备",
+          "rank": 9
+        },
+        {
+          "date": "2025-09-02",
+          "industry": "家用电器",
+          "rank": 10
+        }
+      ]
+    }
+  },
+  "selected_signal_changes_vs_lite": {
+    "IRS_RSRV": {
+      "count": 4,
+      "sample": [
+        {
+          "signal_date": "2026-02-03",
+          "code": "002227",
+          "signal_id": "002227_2026-02-03_bof",
+          "final_rank": 1
+        },
+        {
+          "signal_date": "2026-02-03",
+          "code": "002517",
+          "signal_id": "002517_2026-02-03_bof",
+          "final_rank": 2
+        },
+        {
+          "signal_date": "2026-02-04",
+          "code": "002547",
+          "signal_id": "002547_2026-02-04_bof",
+          "final_rank": 2
+        },
+        {
+          "signal_date": "2026-02-04",
+          "code": "300308",
+          "signal_id": "300308_2026-02-04_bof",
+          "final_rank": 3
+        }
+      ]
+    },
+    "IRS_RSRVRTBDGN": {
+      "count": 9,
+      "sample": [
+        {
+          "signal_date": "2026-01-19",
+          "code": "600010",
+          "signal_id": "600010_2026-01-19_bof",
+          "final_rank": 1
+        },
+        {
+          "signal_date": "2026-01-19",
+          "code": "600340",
+          "signal_id": "600340_2026-01-19_bof",
+          "final_rank": 2
+        },
+        {
+          "signal_date": "2026-01-29",
+          "code": "300755",
+          "signal_id": "300755_2026-01-29_bof",
+          "final_rank": 1
+        },
+        {
+          "signal_date": "2026-01-29",
+          "code": "601668",
+          "signal_id": "601668_2026-01-29_bof",
+          "final_rank": 2
+        },
+        {
+          "signal_date": "2026-02-03",
+          "code": "002227",
+          "signal_id": "002227_2026-02-03_bof",
+          "final_rank": 1
+        },
+        {
+          "signal_date": "2026-02-03",
+          "code": "002517",
+          "signal_id": "002517_2026-02-03_bof",
+          "final_rank": 2
+        },
+        {
+          "signal_date": "2026-02-04",
+          "code": "002547",
+          "signal_id": "002547_2026-02-04_bof",
+          "final_rank": 1
+        },
+        {
+          "signal_date": "2026-02-04",
+          "code": "002175",
+          "signal_id": "002175_2026-02-04_bof",
+          "final_rank": 2
+        },
+        {
+          "signal_date": "2026-02-04",
+          "code": "300308",
+          "signal_id": "300308_2026-02-04_bof",
+          "final_rank": 3
+        }
+      ]
+    }
+  },
+  "summary_run_id": "irs_ablation_dtt_v0_01_dtt_pattern_plus_irs_score_all_w20250901_20260224_t165938"
+}

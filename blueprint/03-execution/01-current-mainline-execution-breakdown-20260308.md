@@ -160,19 +160,18 @@
 
 ## 6. 下一步
 
-从 `2026-03-10` 起，`Phase 0`、`Phase 1` 与 `Phase 1.5` 都已完成出场，不再回到这些卡反复补散点。
+从 `2026-03-11` 起，`Phase 0`、`Phase 1`、`Phase 1.5` 与 `Phase 2` 都已完成出场，不再回到这些卡反复补散点。
 
 先进入：
 
-1. `Phase 2`
-2. 以 `blueprint/03-execution/04-phase-2-irs-card-20260309.md` 为唯一开工卡
+1. `Phase 3`
+2. 以 `blueprint/03-execution/05-phase-3-mss-card-20260309.md` 为唯一开工卡
 
 后续顺序固定为：
 
-1. `Phase 2 / IRS`
-2. `Phase 3 / MSS`
-3. `Phase 4 / Gate`
+1. `Phase 3 / MSS`
+2. `Phase 4 / Gate`
 
 也就是：
 
-`Phase 0 / Phase 1 / Phase 1.5 已完成，下一步按 IRS -> MSS -> Gate 顺序推进主线升级。`
+`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 已完成，下一步按 MSS -> Gate 顺序推进主线升级。`

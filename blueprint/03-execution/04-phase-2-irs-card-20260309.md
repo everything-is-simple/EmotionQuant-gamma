@@ -1,6 +1,6 @@
 # Phase 2 Card
 
-**状态**: `Active`  
+**状态**: `Completed`  
 **日期**: `2026-03-09`  
 **对象**: `P2 IRS 最小可交易排序层`  
 **定位**: `当前主线第三张执行卡`  
@@ -345,15 +345,15 @@ Phase 2 额外要求：
 
 ## 4. 出场条件
 
-- [ ] 多周期强度已落地
-- [ ] 相对量能已落地
-- [ ] 轮动状态已落地
-- [ ] 扩散度已落地
-- [ ] 牛股基因轻量层已落地
-- [ ] IRS 专项 evidence 已生成
-- [ ] `IRS baseline` 已完成正式标定，或已在出场记录中明确声明“当前不宣称 absolute score calibration completed”
-- [ ] 已补一轮更长窗口 `IRS evidence`（当前推荐窗口：`2025-09-01` 至 `2026-02-24`）
-- [ ] `Phase 2` 新实现未违反 `27GB RAM ceiling / temp path discipline / incremental-first / DuckDB-first`
+- [x] 多周期强度已落地
+- [x] 相对量能已落地
+- [x] 轮动状态已落地
+- [x] 扩散度已落地
+- [x] 牛股基因轻量层已落地
+- [x] IRS 专项 evidence 已生成
+- [x] `IRS baseline` 已完成正式标定，或已在出场记录中明确声明“当前不宣称 absolute score calibration completed”
+- [x] 已补一轮更长窗口 `IRS evidence`（当前推荐窗口：`2025-09-01` 至 `2026-02-24`）
+- [x] `Phase 2` 新实现未违反 `27GB RAM ceiling / temp path discipline / incremental-first / DuckDB-first`
 
 ---
 
