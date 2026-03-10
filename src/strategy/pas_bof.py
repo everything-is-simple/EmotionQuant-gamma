@@ -19,6 +19,7 @@ class BofParams:
 
 class BofDetector(PatternDetector):
     name = "bof"
+    required_window = 21
 
     def __init__(self, config: Settings):
         self.params = BofParams(
@@ -68,6 +69,9 @@ class BofDetector(PatternDetector):
             return None, trace
 
         data = df.sort_values("date").reset_index(drop=True)
+        # BOF 用“前 20 根 + 当日”结构：
+        # - lookback 只负责找 lower_bound
+        # - today 负责判断假跌破后的回收质量
         lookback = data.iloc[-21:-1]
         if len(lookback) < 20:
             trace["skip_reason"] = "INSUFFICIENT_HISTORY"
@@ -135,6 +139,7 @@ class BofDetector(PatternDetector):
             trace["skip_reason"] = "LOW_VOLUME"
             return None, trace
 
+        # 强度仍只服务于 PAS / DTT 排序解释，不直接携带止损/目标等执行语义。
         body_ratio = abs(today_close - today_open) / (today_high - today_low)
         strength = float(np.clip(0.4 * close_pos + 0.3 * min(volume_ratio / 2, 1) + 0.3 * body_ratio, 0, 1))
         trace.update(

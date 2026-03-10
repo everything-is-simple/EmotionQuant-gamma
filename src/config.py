@@ -92,7 +92,7 @@ class Settings(BaseSettings):
     mss_soft_gate_candidate_top_n: int = Field(default=30, alias="MSS_SOFT_GATE_CANDIDATE_TOP_N")
     # v0.01-plus 当前先只在 MSS 控仓位变体下启用市场级风控覆盖，其它链路维持原口径。
     mss_risk_overlay_variant: str = Field(
-        default="v0_01_dtt_bof_plus_irs_mss_score",
+        default="v0_01_dtt_pattern_plus_irs_mss_score",
         alias="MSS_RISK_OVERLAY_VARIANT",
     )
     mss_bullish_max_positions_mult: float = Field(
@@ -135,12 +135,15 @@ class Settings(BaseSettings):
     # TuShare amount 单位为千元；v0.01 基线默认流动性阈值为 5,000 万元 = 50,000（千元）。
     min_amount: float = Field(default=50_000, alias="MIN_AMOUNT")
     dtt_variant: str = Field(
-        default="v0_01_dtt_bof_plus_irs_score",
+        default="v0_01_dtt_pattern_plus_irs_score",
         alias="DTT_VARIANT",
     )
     dtt_score_fill: float = Field(default=50.0, alias="DTT_SCORE_FILL")
     dtt_top_n: int = Field(default=50, alias="DTT_TOP_N")
-    dtt_bof_weight: float = Field(default=0.50, alias="DTT_BOF_WEIGHT")
+    dtt_pattern_weight: float = Field(
+        default=0.50,
+        alias="DTT_PATTERN_WEIGHT",
+    )
     dtt_irs_weight: float = Field(default=0.30, alias="DTT_IRS_WEIGHT")
     dtt_mss_weight: float = Field(default=0.20, alias="DTT_MSS_WEIGHT")
 
@@ -283,5 +286,3 @@ class Settings(BaseSettings):
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     return Settings()
-
-

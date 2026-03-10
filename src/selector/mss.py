@@ -34,10 +34,20 @@ def _signal_from_score(
 
 
 def _compute_mss_raw_components(row: pd.Series) -> dict[str, float]:
+    """
+    MSS 六因子原始值计算：
+    1. market_coefficient: 上涨家数占比（市场广度）
+    2. profit_effect: 赚钱效应（涨停 + 新高 + 强势上涨）
+    3. loss_effect: 亏钱效应（炸板 + 跌停 + 强势下跌 + 新低）
+    4. continuity: 连续性（连板 + 连续新高）
+    5. extreme: 极端情绪（恐慌尾盘 + 挤压尾盘）
+    6. volatility: 波动率（涨跌幅标准差 + 成交额波动）
+    """
     total_stocks = row.get("total_stocks", 0) or 0
     limit_up_count = row.get("limit_up_count", 0) or 0
     new_high_count = row.get("new_100d_high_count", 0) or 0
 
+    # 市场广度：上涨家数 / 总股票数
     market_coefficient_raw = safe_ratio(row.get("rise_count", 0), total_stocks, default=0.0)
 
     limit_up_ratio = safe_ratio(limit_up_count, total_stocks, default=0.0)
@@ -126,6 +136,17 @@ def _normalize_mss_components(raw: dict[str, float], baseline: dict[str, float] 
 
 
 def _aggregate_mss_score(components: dict[str, float]) -> float:
+    """
+    MSS 总分聚合公式（v0.01 口径）：
+    - 市场广度 17%
+    - 赚钱效应 34%
+    - 亏钱效应反向 34%（100 - loss_effect）
+    - 连续性 5%
+    - 极端情绪 5%
+    - 波动率反向 5%（100 - volatility）
+    
+    最终 clip 到 [0, 100]
+    """
     return float(
         np.clip(
             0.17 * components["market_coefficient"]
@@ -147,6 +168,8 @@ def materialize_mss_trace_snapshot(
     bearish_threshold: float = 35.0,
 ) -> dict[str, float | str | date]:
     """把市场快照展开成 trace 友好的原始值、标准化值和总分。"""
+    # 这个函数专门给 trace / debug / report 用：
+    # 一次性把 raw、标准化值和聚合分数都展开，避免下游自己重算。
     raw = _compute_mss_raw_components(row)
     components = _normalize_mss_components(raw, baseline=baseline)
     score = _aggregate_mss_score(components)
@@ -178,6 +201,8 @@ def _compute_mss_components(
     float,
     float,
 ]:
+    # 这个函数专门给 trace / debug / report 用：
+    # 一次性把 raw、标准化值和聚合分数都展开，避免下游自己重算。
     raw = _compute_mss_raw_components(row)
     components = _normalize_mss_components(raw, baseline=baseline)
     score = _aggregate_mss_score(components)
@@ -293,37 +318,16 @@ def compute_mss(
 
     records = []
     for _, row in df.iterrows():
-        (
-            score_date,
-            score,
-            signal,
-            market_coefficient,
-            profit_effect,
-            loss_effect,
-            continuity,
-            extreme,
-            volatility,
-        ) = _compute_mss_components(
+        # MSS 仍然是“市场日评分器”：每个交易日只产出一条 MarketScore，不参与个股横截面筛选。
+        # 这里直接把 raw + normalized 一起持久化到 l3_mss_daily，避免 Broker 为了 trace 再回头重算。
+        snapshot = materialize_mss_trace_snapshot(
             row,
             baseline=baseline,
             bullish_threshold=bullish_threshold,
             bearish_threshold=bearish_threshold,
         )
-        records.append(
-            {
-                "date": score_date,
-                "score": score,
-                "signal": signal,
-                "market_coefficient": market_coefficient,
-                "profit_effect": profit_effect,
-                "loss_effect": loss_effect,
-                "continuity": continuity,
-                "extreme": extreme,
-                "volatility": volatility,
-            }
-        )
+        records.append(snapshot)
     return store.bulk_upsert("l3_mss_daily", pd.DataFrame(records))
-
 
 
 

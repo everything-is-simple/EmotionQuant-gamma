@@ -31,15 +31,26 @@ def _compute_irs_components(
     benchmark_pct: float,
     baseline: dict[str, float] | None = None,
 ) -> dict[str, float]:
+    """
+    IRS 双因子计算核心：
+    - RS (Relative Strength): 行业相对大盘的超额收益
+    - CF (Capital Flow): 资金流向强度（市场份额 + 10日动量）
+    
+    最终得分 = 0.55 * RS + 0.45 * CF
+    """
     base = baseline or IRS_BASELINE
     industry_pct = float(industry_row.get("pct_chg", 0.0) or 0.0)
+    # RS 原始值：行业涨跌幅 - 基准涨跌幅
     rs_raw = industry_pct - benchmark_pct
     market_total_amount = float(industry_row.get("market_total_amount", 0.0) or 0.0)
     amount = float(industry_row.get("amount", 0.0) or 0.0)
+    # 资金流向份额：行业成交额 / 全市场成交额
     flow_share = safe_ratio(amount, market_total_amount, 0.0)
+    # 资金流向动量：10日成交额变化率
     flow_delta = float(industry_row.get("amount_delta_10d", 0.0) or 0.0)
     cf_raw = flow_share + flow_delta
 
+    # Z-score 标准化到 0-100 区间
     rs_score = zscore_single(rs_raw, base["rs_score_mean"], base["rs_score_std"])
     cf_score = zscore_single(cf_raw, base["cf_score_mean"], base["cf_score_std"])
     total_score = 0.55 * rs_score + 0.45 * cf_score
@@ -127,6 +138,13 @@ def compute_irs(
 ) -> int:
     """
     批量计算 IRS 并写入 l3_irs_daily。
+    
+    核心约束：
+    1. 支持局部重建（按日期分区清理）
+    2. 未知行业单独记录 trace，不参与排名
+    3. 当日行业数不足 min_industries_per_day 时跳过排名
+    4. 基准缺失时用 0 填充，标记 BENCHMARK_FILL
+    5. 日内排名必须唯一（即使分数并列）
     """
     trace_run_id = _build_irs_trace_run_id(start, end)
     store.conn.execute(
@@ -169,6 +187,7 @@ def compute_irs(
 
     industry_df = industry_df.copy()
     industry_df["industry"] = industry_df["industry"].fillna("未知").astype(str)
+    # 未知行业不进入正式排名，但仍保留 trace，避免后续无法解释样本损失。
     unknown_df = industry_df[industry_df["industry"] == "未知"].copy()
     industry_df = industry_df[industry_df["industry"] != "未知"].copy()
     if industry_df.empty:
@@ -246,6 +265,7 @@ def compute_irs(
             )
         )
     for day, day_df in industry_df.groupby("date"):
+        # IRS 先在“行业日”层完成唯一排名，再由 ranker 把结果 attach 到 signal 层。
         day_value = day.date() if isinstance(day, pd.Timestamp) else day
         benchmark_filled = day_value not in benchmark_map
         benchmark_pct = benchmark_map.get(day_value, 0.0)
@@ -278,6 +298,7 @@ def compute_irs(
                 )
             continue
         # 部分日期可能因原始缺失导致分数非有限值；按 0 兜底，保证日内排序稳定可执行。
+        # 缺值统一按 0 兜底，保证排序表稳定可执行；解释原因留在 trace 里，不在这里抛异常。
         day_scores_df["score"] = pd.to_numeric(day_scores_df["score"], errors="coerce").fillna(0.0)
         # v0.01 验收要求“当日行业排名无重复”，即使分数并列也要给出稳定唯一顺序。
         day_scores_df = day_scores_df.sort_values(["score", "industry"], ascending=[False, True]).reset_index(drop=True)

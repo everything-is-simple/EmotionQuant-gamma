@@ -7,7 +7,7 @@ from src.config import Settings
 def test_build_selector_ablation_scenarios_returns_fixed_dtt_matrix() -> None:
     cfg = Settings(
         PIPELINE_MODE="dtt",
-        DTT_VARIANT="v0_01_dtt_bof_plus_irs_score",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_score",
         ENABLE_MSS_GATE=False,
         ENABLE_IRS_FILTER=False,
         MSS_VARIANT="zscore_weighted6",
@@ -21,16 +21,16 @@ def test_build_selector_ablation_scenarios_returns_fixed_dtt_matrix() -> None:
 
     assert [item.label for item in scenarios] == [
         "legacy_bof_baseline",
-        "v0_01_dtt_bof_only",
-        "v0_01_dtt_bof_plus_irs_score",
-        "v0_01_dtt_bof_plus_irs_mss_score",
+        "v0_01_dtt_pattern_only",
+        "v0_01_dtt_pattern_plus_irs_score",
+        "v0_01_dtt_pattern_plus_irs_mss_score",
     ]
     assert [item.pipeline_mode for item in scenarios] == ["legacy", "dtt", "dtt", "dtt"]
     assert [item.dtt_variant for item in scenarios] == [
         "legacy_bof_baseline",
-        "v0_01_dtt_bof_only",
-        "v0_01_dtt_bof_plus_irs_score",
-        "v0_01_dtt_bof_plus_irs_mss_score",
+        "v0_01_dtt_pattern_only",
+        "v0_01_dtt_pattern_plus_irs_score",
+        "v0_01_dtt_pattern_plus_irs_mss_score",
     ]
     assert [(item.enable_mss_gate, item.enable_irs_filter) for item in scenarios] == [
         (True, True),

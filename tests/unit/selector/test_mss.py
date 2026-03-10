@@ -4,9 +4,11 @@ from datetime import date
 
 import pandas as pd
 
+from src.data.store import Store
 from src.selector.mss import (
     build_mss_raw_frame,
     calibrate_mss_baseline,
+    compute_mss,
     compute_mss_raw_components,
     compute_mss_single,
     materialize_mss_trace_snapshot,
@@ -251,3 +253,71 @@ def test_materialize_mss_trace_snapshot_exposes_raw_and_normalized_components() 
     assert snapshot["market_coefficient"] >= 0.0
     assert snapshot["profit_effect"] >= 0.0
     assert snapshot["signal"] == "BULLISH"
+
+
+def test_compute_mss_persists_raw_and_normalized_components_to_l3(tmp_path) -> None:
+    db = tmp_path / "mss_l3_trace.duckdb"
+    store = Store(db)
+    snapshot_date = date(2026, 1, 2)
+    baseline = {
+        "market_coefficient_mean": 0.0,
+        "market_coefficient_std": 1.0,
+        "profit_effect_mean": 0.0,
+        "profit_effect_std": 1.0,
+        "loss_effect_mean": 0.0,
+        "loss_effect_std": 1.0,
+        "continuity_mean": 0.0,
+        "continuity_std": 1.0,
+        "extreme_mean": 0.0,
+        "extreme_std": 1.0,
+        "volatility_mean": 0.0,
+        "volatility_std": 1.0,
+    }
+    store.bulk_upsert(
+        "l2_market_snapshot",
+        pd.DataFrame(
+            [
+                {
+                    "date": snapshot_date,
+                    "total_stocks": 100,
+                    "rise_count": 60,
+                    "fall_count": 40,
+                    "strong_up_count": 10,
+                    "strong_down_count": 3,
+                    "limit_up_count": 5,
+                    "limit_down_count": 2,
+                    "touched_limit_up_count": 1,
+                    "new_100d_high_count": 8,
+                    "new_100d_low_count": 4,
+                    "continuous_limit_up_2d": 2,
+                    "continuous_limit_up_3d_plus": 1,
+                    "continuous_new_high_2d_plus": 3,
+                    "high_open_low_close_count": 2,
+                    "low_open_high_close_count": 1,
+                    "pct_chg_std": 0.02,
+                    "amount_volatility": 100000.0,
+                }
+            ]
+        ),
+    )
+
+    written = compute_mss(store, snapshot_date, snapshot_date, baseline=baseline, bullish_threshold=50.0, bearish_threshold=35.0)
+    row = store.read_df(
+        """
+        SELECT market_coefficient_raw, profit_effect_raw, loss_effect_raw,
+               market_coefficient, profit_effect, loss_effect, signal
+        FROM l3_mss_daily
+        WHERE date = ?
+        """,
+        (snapshot_date,),
+    )
+
+    assert written == 1
+    assert row.iloc[0]["market_coefficient_raw"] == 0.6
+    assert row.iloc[0]["profit_effect_raw"] > 0.0
+    assert row.iloc[0]["loss_effect_raw"] > 0.0
+    assert row.iloc[0]["market_coefficient"] >= 0.0
+    assert row.iloc[0]["profit_effect"] >= 0.0
+    assert row.iloc[0]["loss_effect"] >= 0.0
+    assert row.iloc[0]["signal"] == "BULLISH"
+    store.close()

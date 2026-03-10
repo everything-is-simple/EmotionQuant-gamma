@@ -33,9 +33,9 @@ def test_dtt_ranker_orders_by_final_score_and_marks_selected(tmp_path) -> None:
 
     cfg = Settings(
         PIPELINE_MODE="dtt",
-        DTT_VARIANT="v0_01_dtt_bof_plus_irs_score",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_score",
         DTT_TOP_N=1,
-        DTT_BOF_WEIGHT=0.5,
+        DTT_PATTERN_WEIGHT=0.5,
         DTT_IRS_WEIGHT=0.3,
         DTT_MSS_WEIGHT=0.2,
         DTT_SCORE_FILL=50.0,
@@ -53,7 +53,7 @@ def test_dtt_ranker_orders_by_final_score_and_marks_selected(tmp_path) -> None:
             strength=0.60,
             pattern="bof",
             reason_code="PAS_BOF",
-            bof_strength=0.60,
+            pattern_strength=0.60,
         ),
         Signal(
             signal_id="000002_2026-01-08_bof",
@@ -63,7 +63,7 @@ def test_dtt_ranker_orders_by_final_score_and_marks_selected(tmp_path) -> None:
             strength=0.90,
             pattern="bof",
             reason_code="PAS_BOF",
-            bof_strength=0.90,
+            pattern_strength=0.90,
         ),
     ]
 
@@ -74,10 +74,12 @@ def test_dtt_ranker_orders_by_final_score_and_marks_selected(tmp_path) -> None:
         "000001_2026-01-08_bof",
         "000002_2026-01-08_bof",
     ]
+    assert rank_frame["pattern_strength"].tolist() == [0.6, 0.9]
     assert rank_frame["selected"].tolist() == [True, False]
     assert len(ranked_signals) == 1
     assert ranked_signals[0].code == "000001"
     assert ranked_signals[0].final_rank == 1
+    assert ranked_signals[0].pattern_strength == 0.6
     store.close()
 
 
@@ -97,7 +99,7 @@ class _StubDetector:
             strength=strength,
             pattern="bof",
             reason_code="PAS_BOF",
-            bof_strength=strength,
+            pattern_strength=strength,
         )
 
 
@@ -118,9 +120,9 @@ def test_generate_signals_dtt_only_writes_top_n_formal_signal(tmp_path, monkeypa
 
     cfg = Settings(
         PIPELINE_MODE="dtt",
-        DTT_VARIANT="v0_01_dtt_bof_plus_irs_score",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_score",
         DTT_TOP_N=1,
-        DTT_BOF_WEIGHT=0.5,
+        DTT_PATTERN_WEIGHT=0.5,
         DTT_IRS_WEIGHT=0.5,
         DTT_MSS_WEIGHT=0.0,
         DTT_SCORE_FILL=50.0,
@@ -176,7 +178,7 @@ def test_generate_signals_dtt_only_writes_top_n_formal_signal(tmp_path, monkeypa
     formal = store.read_df("SELECT code, pattern FROM l3_signals ORDER BY code ASC")
     ranked = store.read_df(
         """
-        SELECT code, final_rank, selected
+        SELECT code, pattern_strength, final_rank, selected
         FROM l3_signal_rank_exp
         WHERE run_id = ?
         ORDER BY final_rank ASC
@@ -185,6 +187,7 @@ def test_generate_signals_dtt_only_writes_top_n_formal_signal(tmp_path, monkeypa
     )
     assert formal["code"].tolist() == ["000001"]
     assert ranked["code"].tolist() == ["000001", "000002"]
+    assert ranked["pattern_strength"].tolist() == [0.6, 0.9]
     assert ranked["selected"].tolist() == [True, False]
     assert loader_calls == [["000001"], ["000002"]]
     store.close()
@@ -210,18 +213,18 @@ def test_dtt_irs_mss_variant_keeps_mss_in_sidecar_but_not_in_final_score(tmp_pat
 
     cfg_irs_only = Settings(
         PIPELINE_MODE="dtt",
-        DTT_VARIANT="v0_01_dtt_bof_plus_irs_score",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_score",
         DTT_TOP_N=10,
-        DTT_BOF_WEIGHT=0.5,
+        DTT_PATTERN_WEIGHT=0.5,
         DTT_IRS_WEIGHT=0.3,
         DTT_MSS_WEIGHT=0.2,
         DTT_SCORE_FILL=50.0,
     )
     cfg_irs_mss = Settings(
         PIPELINE_MODE="dtt",
-        DTT_VARIANT="v0_01_dtt_bof_plus_irs_mss_score",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_mss_score",
         DTT_TOP_N=10,
-        DTT_BOF_WEIGHT=0.5,
+        DTT_PATTERN_WEIGHT=0.5,
         DTT_IRS_WEIGHT=0.3,
         DTT_MSS_WEIGHT=0.2,
         DTT_SCORE_FILL=50.0,
@@ -238,7 +241,7 @@ def test_dtt_irs_mss_variant_keeps_mss_in_sidecar_but_not_in_final_score(tmp_pat
             strength=0.60,
             pattern="bof",
             reason_code="PAS_BOF",
-            bof_strength=0.60,
+            pattern_strength=0.60,
         ),
     ]
 
@@ -297,7 +300,7 @@ def test_pas_trigger_trace_persists_triggered_and_not_triggered_candidates(tmp_p
     calc_date = date(2026, 1, 8)
     cfg = Settings(
         PIPELINE_MODE="dtt",
-        DTT_VARIANT="v0_01_dtt_bof_only",
+        DTT_VARIANT="v0_01_dtt_pattern_only",
         DTT_TOP_N=10,
         PAS_MIN_HISTORY_DAYS=21,
         PAS_EVAL_BATCH_SIZE=2,
@@ -321,7 +324,7 @@ def test_pas_trigger_trace_persists_triggered_and_not_triggered_candidates(tmp_p
                     strength=0.7,
                     pattern="bof",
                     reason_code="PAS_BOF",
-                    bof_strength=0.7,
+                    pattern_strength=0.7,
                 )
                 return signal, {
                     "signal_id": signal_id,
@@ -403,7 +406,7 @@ def test_irs_trace_marks_missing_industry_scores_as_fill(tmp_path) -> None:
 
     cfg = Settings(
         PIPELINE_MODE="dtt",
-        DTT_VARIANT="v0_01_dtt_bof_plus_irs_score",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_score",
         DTT_TOP_N=10,
         DTT_SCORE_FILL=50.0,
     )
@@ -420,7 +423,7 @@ def test_irs_trace_marks_missing_industry_scores_as_fill(tmp_path) -> None:
             strength=0.60,
             pattern="bof",
             reason_code="PAS_BOF",
-            bof_strength=0.60,
+            pattern_strength=0.60,
         ),
         Signal(
             signal_id="000002_2026-01-08_bof",
@@ -430,7 +433,7 @@ def test_irs_trace_marks_missing_industry_scores_as_fill(tmp_path) -> None:
             strength=0.55,
             pattern="bof",
             reason_code="PAS_BOF",
-            bof_strength=0.55,
+            pattern_strength=0.55,
         ),
     ]
 
@@ -459,7 +462,7 @@ def test_pas_trace_persists_quality_and_reference_sidecar_for_selected_pattern(t
     calc_date = date(2026, 1, 8)
     cfg = Settings(
         PIPELINE_MODE="dtt",
-        DTT_VARIANT="v0_01_dtt_bof_only",
+        DTT_VARIANT="v0_01_dtt_pattern_only",
         DTT_TOP_N=10,
         PAS_PATTERNS="bpb",
         PAS_PATTERN_PRIORITY="bpb,pb,tst,cpb,bof",
@@ -559,7 +562,7 @@ def test_pas_trace_bof_sidecar_keeps_reference_and_quality_queryable(tmp_path, m
     calc_date = date(2026, 1, 8)
     cfg = Settings(
         PIPELINE_MODE="dtt",
-        DTT_VARIANT="v0_01_dtt_bof_only",
+        DTT_VARIANT="v0_01_dtt_pattern_only",
         DTT_TOP_N=10,
         PAS_PATTERNS="bof",
         PAS_MIN_HISTORY_DAYS=30,

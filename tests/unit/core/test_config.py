@@ -35,9 +35,18 @@ def test_default_pipeline_mode_uses_dtt_mainline() -> None:
     cfg = Settings()
     assert cfg.use_dtt_pipeline is True
     assert cfg.pipeline_mode_normalized == "dtt"
-    assert cfg.dtt_variant == "v0_01_dtt_bof_plus_irs_score"
+    assert cfg.dtt_variant == "v0_01_dtt_pattern_plus_irs_score"
     assert cfg.dtt_top_n == 50
     assert cfg.preselect_score_mode == "amount_plus_volume_ratio"
+
+
+def test_dtt_pattern_variant_and_weight_use_canonical_names() -> None:
+    cfg = Settings(
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_score",
+        DTT_PATTERN_WEIGHT=0.45,
+    )
+    assert cfg.dtt_variant_normalized == "v0_01_dtt_pattern_plus_irs_score"
+    assert cfg.dtt_pattern_weight == 0.45
 
 
 def test_pas_priority_and_single_pattern_override() -> None:

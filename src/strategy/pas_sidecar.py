@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 
@@ -30,6 +30,8 @@ def _payload_float(payload: dict[str, object], key: str, default: float) -> floa
 
 
 def build_registry_run_label(patterns: list[str], combination_mode: str, quality_enabled: bool) -> str:
+    # registry_run_label 用来稳定标识“这次 PAS 到底是哪个组合在跑”，
+    # 供 ablation / report / trace 直接做横向对比。
     normalized = [pattern.strip().lower() for pattern in patterns if pattern.strip()]
     if normalized == DEFAULT_PRIORITY:
         label = "YTC5_ANY" if combination_mode.upper() == "ANY" else f"YTC5_{combination_mode.upper()}"
@@ -54,6 +56,20 @@ def required_volume_mult(pattern: str, config: Settings) -> float:
 
 
 def compute_reference_layer(pattern: str, payload: dict[str, object]) -> dict[str, object]:
+    """
+    参考层计算（Phase 1 核心）：
+    
+    为每个形态计算：
+    - entry_ref: 入场参考价（当日收盘）
+    - stop_ref: 止损参考价（形态关键支撑 * 0.99）
+    - target_ref: 目标参考价（结构高点或 1.5R）
+    - risk_reward_ref: 风险回报比
+    - failure_handling_tag: 失败处理标签（量能/支撑/延续）
+    
+    防御性设计：
+    - 优先使用正式字段，缺失时退回等价观测
+    - 避免因个别字段缺失导致整个 sidecar 失败
+    """
     entry_ref = _payload_float(payload, "today_close", _payload_float(payload, "today_high", 0.0))
     lower_bound = _payload_float(payload, "lower_bound", _payload_float(payload, "today_low", entry_ref))
     today_low = _payload_float(payload, "today_low", entry_ref)
@@ -66,6 +82,8 @@ def compute_reference_layer(pattern: str, payload: dict[str, object]) -> dict[st
     structure_high = _payload_float(payload, "structure_high", entry_ref)
     neckline_ref = _payload_float(payload, "neckline_ref", entry_ref)
 
+    # 参考层统一输出 entry / stop / target，但它仍是解释层，
+    # 不是 Broker 当前版本的硬执行输入。
     if pattern == "bof":
         stop_ref = min(today_low, lower_bound) * 0.99
     elif pattern in {"bpb", "pb"}:
@@ -88,6 +106,7 @@ def compute_reference_layer(pattern: str, payload: dict[str, object]) -> dict[st
         target_ref = max(neckline_ref + (neckline_ref - support_band_low), entry_ref + 1.5 * risk)
 
     risk_reward_ref = float((target_ref - entry_ref) / risk)
+    # failure_handling_tag 不是“今天失败了”，而是给后续报告一个最可能的失效管理标签。
     volume_ratio = _payload_float(payload, "volume_ratio", 0.0)
     required_mult = _payload_float(payload, "required_mult", 0.0)
     today_close = entry_ref
@@ -116,6 +135,21 @@ def compute_pattern_quality(
     reference: dict[str, object],
     config: Settings,
 ) -> dict[str, object]:
+    """
+    形态质量评分（Phase 1 核心）：
+    
+    四维度评分：
+    1. structure_clarity (35%): 形态结构清晰度（各形态专属公式）
+    2. volume_confirmation (25%): 量能确认强度
+    3. position_advantage (20%): 风险回报比优势
+    4. failure_risk (20%): 失败风险扣分（历史缓冲/量能边际/RR/结构宽度）
+    
+    最终得分 = 加权平均，范围 [0, 100]
+    
+    输出：
+    - pattern_quality_score: 总分
+    - quality_breakdown_json: 分项明细（JSON 字符串）
+    """
     volume_ratio = _payload_float(payload, "volume_ratio", 0.0)
     required_mult = required_volume_mult(pattern, config)
     current_close = _payload_float(payload, "today_close", 0.0)
@@ -162,6 +196,7 @@ def compute_pattern_quality(
     position_advantage = 100.0 * clip((risk_reward_ref - 1.0) / 1.0)
 
     deductions: list[dict[str, object]] = []
+    # quality 里把常见“边缘触发”风险显式扣出来，避免高 strength 但低可交易性的票被误读。
     required_window = int(payload.get("required_window") or 0)
     if int(payload.get("history_days") or 0) < required_window + 5:
         deductions.append({"tag": "LOW_HISTORY_BUFFER", "penalty": 30})

@@ -19,18 +19,18 @@ class DttVariantSpec:
 
 
 DTT_VARIANTS: dict[str, DttVariantSpec] = {
-    "v0_01_dtt_bof_only": DttVariantSpec(
-        label="v0_01_dtt_bof_only",
+    "v0_01_dtt_pattern_only": DttVariantSpec(
+        label="v0_01_dtt_pattern_only",
         uses_irs=False,
         carries_mss_overlay=False,
     ),
-    "v0_01_dtt_bof_plus_irs_score": DttVariantSpec(
-        label="v0_01_dtt_bof_plus_irs_score",
+    "v0_01_dtt_pattern_plus_irs_score": DttVariantSpec(
+        label="v0_01_dtt_pattern_plus_irs_score",
         uses_irs=True,
         carries_mss_overlay=False,
     ),
-    "v0_01_dtt_bof_plus_irs_mss_score": DttVariantSpec(
-        label="v0_01_dtt_bof_plus_irs_mss_score",
+    "v0_01_dtt_pattern_plus_irs_mss_score": DttVariantSpec(
+        label="v0_01_dtt_pattern_plus_irs_mss_score",
         uses_irs=True,
         carries_mss_overlay=True,
     ),
@@ -46,6 +46,8 @@ def resolve_dtt_variant(label: str) -> DttVariantSpec:
 
 
 def _load_irs_snapshot_map(store: Store, asof_date: date) -> dict[str, dict[str, float | int]]:
+    # IRS 在 DTT 中只提供“行业当日排名快照”。
+    # Strategy 不回看行业内部因子，只消费 ranking 结果，保持 PAS -> IRS 的职责边界。
     rows = store.read_df(
         """
         SELECT industry, score, rank
@@ -83,17 +85,19 @@ def _load_mss_score(store: Store, asof_date: date) -> float | None:
 def _compute_final_score(
     cfg: Settings,
     variant: DttVariantSpec,
-    bof_strength: float,
+    pattern_strength: float,
     irs_score: float,
 ) -> float:
-    bof_score = bof_strength * 100.0 if bof_strength <= 1.0 else bof_strength
-    total_weight = cfg.dtt_bof_weight
-    score = cfg.dtt_bof_weight * bof_score
+    # 当前 DTT formal 只把 PAS 强度和 IRS 后置增强汇总进 final_score。
+    # MSS 仍然留在执行层，只写 sidecar，不反向改写排序真相源。
+    pattern_score = pattern_strength * 100.0 if pattern_strength <= 1.0 else pattern_strength
+    total_weight = cfg.dtt_pattern_weight
+    score = cfg.dtt_pattern_weight * pattern_score
     if variant.uses_irs:
         score += cfg.dtt_irs_weight * irs_score
         total_weight += cfg.dtt_irs_weight
     if total_weight <= 0:
-        return bof_score
+        return pattern_score
     return score / total_weight
 
 
@@ -114,7 +118,7 @@ def build_dtt_score_frame(
                 "code",
                 "industry",
                 "variant",
-                "bof_strength",
+                "pattern_strength",
                 "irs_score",
                 "mss_score",
                 "final_score",
@@ -134,8 +138,12 @@ def build_dtt_score_frame(
     for signal in signals:
         candidate = candidate_map.get(signal.code)
         industry = candidate.industry if candidate is not None else "未知"
-        bof_strength = float(signal.bof_strength if signal.bof_strength is not None else signal.strength)
+        pattern_strength = signal.resolved_pattern_strength()
         snapshot = irs_snapshot_map.get(industry)
+        # IRS attach 层只回答三个问题：
+        # - 这个 signal 是否使用 IRS
+        # - 若使用，映射到什么 signal_irs_score
+        # - 若没用上，是禁用、未知行业还是当日缺快照
         if not variant.uses_irs:
             irs_score = fill_score
             irs_status = "DISABLED"
@@ -151,7 +159,7 @@ def build_dtt_score_frame(
         mss_score = float(market_score if market_score is not None else fill_score)
         if not variant.carries_mss_overlay:
             mss_score = fill_score
-        final_score = _compute_final_score(config, variant, bof_strength, irs_score)
+        final_score = _compute_final_score(config, variant, pattern_strength, irs_score)
         rows.append(
             {
                 "run_id": run_id,
@@ -160,7 +168,7 @@ def build_dtt_score_frame(
                 "code": signal.code,
                 "industry": industry,
                 "variant": variant.label,
-                "bof_strength": bof_strength,
+                "pattern_strength": pattern_strength,
                 "irs_score": irs_score,
                 "mss_score": mss_score,
                 "final_score": final_score,
@@ -202,7 +210,7 @@ def finalize_dtt_rank_frame(score_frame: pd.DataFrame, top_n: int) -> pd.DataFra
                 "code",
                 "industry",
                 "variant",
-                "bof_strength",
+                "pattern_strength",
                 "irs_score",
                 "mss_score",
                 "final_score",
@@ -211,6 +219,7 @@ def finalize_dtt_rank_frame(score_frame: pd.DataFrame, top_n: int) -> pd.DataFra
             ]
         )
 
+    # 排序键固定成 final_score desc + signal_id asc，保证重跑时 rank 稳定。
     ranked = score_frame.sort_values(
         ["final_score", "signal_id"], ascending=[False, True]
     ).reset_index(drop=True)
@@ -247,7 +256,7 @@ def materialize_ranked_signals(signals: list[Signal], rank_frame: pd.DataFrame) 
         ranked_signals.append(
             signal.model_copy(
                 update={
-                    "bof_strength": float(row["bof_strength"]),
+                    "pattern_strength": float(row["pattern_strength"]),
                     "irs_score": float(row["irs_score"]),
                     "mss_score": float(row["mss_score"]),
                     "final_score": float(row["final_score"]),

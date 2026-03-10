@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
@@ -17,6 +17,16 @@ class BpbParams:
 
 
 class BpbDetector(PatternDetector):
+    """
+    BPB (Breakout-Pullback-Breakout) 形态检测器（Phase 1 核心）：
+    
+    形态定义：
+    1. 前期突破（20日窗口）：有效突破 + 放量确认
+    2. 回踩整理（5日窗口）：回踩不破突破位，深度 25-80%
+    3. 二次突破（当日）：收盘突破回踩高点 + 放量 + 不过度延伸
+    
+    窗口要求：26 日（20日基准 + 5日回踩 + 当日）
+    """
     name = "bpb"
     required_window = 26
 
@@ -34,6 +44,8 @@ class BpbDetector(PatternDetector):
             return fail_trace(trace, "MISSING_REQUIRED_COLUMNS")
 
         today = data.iloc[-1]
+        # BPB 拆成三段结构：突破腿 -> 回踩段 -> 当日确认。
+        # 这样 trace 既能回答“有没有前置 breakout”，也能回答“回踩是否过深”。
         setup_window = data.iloc[-26:-6]
         pullback_window = data.iloc[-6:-1]
         if len(setup_window) < 20 or len(pullback_window) < 5:
@@ -52,6 +64,7 @@ class BpbDetector(PatternDetector):
         breakout_peak = float(pullback_window["adj_high"].max())
         pullback_low = float(pullback_window["adj_low"].min())
         volume_ratio = safe_ratio(today_volume, volume_ma20)
+        # 先确认“此前真的发生过一次有效 breakout”，否则今天的上冲不算 BPB 的二次确认。
         breakout_leg_exists = bool(
             (
                 (pullback_window["adj_close"] > breakout_ref)
@@ -107,6 +120,7 @@ class BpbDetector(PatternDetector):
         if not not_overextended:
             return fail_trace(trace, "OVEREXTENDED_CONFIRM")
 
+        # strength 仍只表达“这次 BPB 触发有多干净”，不直接转成执行规则。
         strength = clip(
             0.40 * confirm_strength + 0.25 * min(volume_ratio / 2.0, 1.0) + 0.20 * depth_quality + 0.15 * body_ratio
         )

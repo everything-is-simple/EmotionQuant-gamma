@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
@@ -18,6 +18,16 @@ class TstParams:
 
 
 class TstDetector(PatternDetector):
+    """
+    TST (Test Support) 支撑测试形态检测器（Phase 1 核心）：
+    
+    形态定义：
+    1. 支撑结构（55日窗口）：历史低点形成支撑位
+    2. 测试接近（5日窗口）：回踩距离支撑位 <= 3%
+    3. 反弹确认（当日）：收盘守住支撑 + 突破测试高点 + 拒绝下影线 + 放量
+    
+    窗口要求：61 日（55日结构 + 5日测试 + 当日）
+    """
     name = "tst"
     required_window = 61
 
@@ -43,6 +53,7 @@ class TstDetector(PatternDetector):
             return fail_trace(trace, "MISSING_REQUIRED_COLUMNS")
 
         today = data.iloc[-1]
+        # TST 先找更长窗口里的支撑带，再看最近几天是不是“回踩测试”，最后看今天的拒绝确认。
         structure_window = data.iloc[-61:-6]
         test_window = data.iloc[-6:-1]
         if len(structure_window) < 55 or len(test_window) < 5:
@@ -65,6 +76,7 @@ class TstDetector(PatternDetector):
         lower_shadow_ratio = (min(today_open, today_close) - today_low) / max(today_high - today_low, EPS)
         volume_ratio = safe_ratio(today_volume, volume_ma20)
 
+        # TST 的核心不是跌不跌，而是“是否真的回到关键支撑附近，并出现拒绝下影线”。
         near_support = test_distance <= self.params.distance_max
         support_hold = today_close >= support_level
         bounce_confirm = today_close > test_high_ref or (today_close > today_open and today_close > support_level * 1.01)
@@ -104,6 +116,7 @@ class TstDetector(PatternDetector):
         if not volume_confirm:
             return fail_trace(trace, "LOW_VOLUME")
 
+        # 强度更偏结构质量而不是突破幅度，因为 TST 本质上是“支撑确认”而非 breakout。
         strength = clip(
             0.35 * support_closeness
             + 0.30 * bounce_strength

@@ -97,12 +97,17 @@ class Signal(ContractBase):
     pattern: str
     reason_code: str
     # 兼容迁移期运行时扩展字段：正式 l3_signals 仍只落旧字段，DTT 额外真相源写 sidecar。
-    bof_strength: float | None = None
+    pattern_strength: float | None = None
     irs_score: float | None = None
     mss_score: float | None = None
     final_score: float | None = None
     final_rank: int | None = None
     variant: str | None = None
+
+    def resolved_pattern_strength(self) -> float:
+        if self.pattern_strength is not None:
+            return float(self.pattern_strength)
+        return float(self.strength)
 
     def to_formal_signal_row(self) -> dict[str, object]:
         """只导出正式 l3_signals 兼容字段，避免迁移期扩展字段污染 frozen schema。"""

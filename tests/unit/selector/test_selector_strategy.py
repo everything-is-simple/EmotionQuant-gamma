@@ -1368,7 +1368,7 @@ def test_selector_dtt_writes_candidate_trace_for_selected_truncated_and_rejected
         SELECT
             code,
             selected,
-            selected_for_bof,
+            selected_for_pas,
             candidate_rank,
             candidate_reason,
             coverage_flag,
@@ -1391,7 +1391,7 @@ def test_selector_dtt_writes_candidate_trace_for_selected_truncated_and_rejected
     assert "filter_reason" not in candidates[0].model_dump()
     assert trace["code"].tolist() == ["000001", "000002", "000003"]
     assert trace["selected"].tolist() == [True, False, False]
-    assert trace["selected_for_bof"].tolist() == [True, False, False]
+    assert trace["selected_for_pas"].tolist() == [True, False, False]
     assert trace["candidate_rank"].tolist()[:2] == [1, 2]
     assert pd.isna(trace.iloc[2]["candidate_rank"])
     assert trace.iloc[0]["candidate_reason"] == "PRESELECT_TOP_N"
@@ -1401,4 +1401,3 @@ def test_selector_dtt_writes_candidate_trace_for_selected_truncated_and_rejected
     assert trace.iloc[0]["preselect_score"] == trace.iloc[0]["final_score"]
     assert trace.iloc[2]["reject_reason"] == "LOW_LIQUIDITY"
     store.close()
-

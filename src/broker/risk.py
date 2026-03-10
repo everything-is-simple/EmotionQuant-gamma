@@ -8,7 +8,6 @@ import pandas as pd
 from src.config import Settings
 from src.contracts import Order, Signal, build_order_id
 from src.data.store import Store
-from src.selector.mss import compute_mss_raw_components
 
 
 @dataclass
@@ -127,31 +126,39 @@ class RiskManager:
             return None
         return float(value)
 
-    def _load_mss_trace_components(self, signal_date: date) -> dict[str, float | None]:
-        snapshot = self.store.read_df(
-            """
-            SELECT *
-            FROM l2_market_snapshot
-            WHERE date = ?
-            LIMIT 1
-            """,
-            (signal_date,),
-        )
-        if snapshot.empty:
-            return {f"{factor}_raw": None for factor in (
-                "market_coefficient",
-                "profit_effect",
-                "loss_effect",
-                "continuity",
-                "extreme",
-                "volatility",
-            )}
+    @staticmethod
+    def _empty_mss_components() -> dict[str, float | None]:
         return {
-            key: float(value)
-            for key, value in compute_mss_raw_components(snapshot.iloc[0]).items()
+            "market_coefficient_raw": None,
+            "profit_effect_raw": None,
+            "loss_effect_raw": None,
+            "continuity_raw": None,
+            "extreme_raw": None,
+            "volatility_raw": None,
+            "market_coefficient": None,
+            "profit_effect": None,
+            "loss_effect": None,
+            "continuity": None,
+            "extreme": None,
+            "volatility": None,
         }
 
     def _load_mss_overlay(self, signal_date: date) -> MssRiskOverlay:
+        """
+        加载 MSS 风控覆盖层（Phase 0 核心）：
+        
+        三种状态：
+        - DISABLED: 配置关闭，使用基线参数
+        - MISSING: 当日无 MSS 快照，用 fill_score 兜底
+        - NORMAL: 正常读取 MSS 分数与信号
+        
+        根据市场信号调整：
+        - BULLISH: 放大仓位容量与单笔风险
+        - BEARISH: 压缩仓位容量与单笔风险
+        - NEUTRAL: 保持基线参数
+        
+        覆盖层只影响执行风险，不改写排序层分数
+        """
         cached = self._mss_overlay_cache.get(signal_date)
         if cached is not None:
             return cached
@@ -178,6 +185,12 @@ class RiskManager:
             SELECT
                 score,
                 signal,
+                market_coefficient_raw,
+                profit_effect_raw,
+                loss_effect_raw,
+                continuity_raw,
+                extreme_raw,
+                volatility_raw,
                 market_coefficient,
                 profit_effect,
                 loss_effect,
@@ -190,26 +203,20 @@ class RiskManager:
             """,
             (signal_date,),
         )
-        raw_components = self._load_mss_trace_components(signal_date)
-        normalized_components = {
-            "market_coefficient": None,
-            "profit_effect": None,
-            "loss_effect": None,
-            "continuity": None,
-            "extreme": None,
-            "volatility": None,
-        }
+        mss_components = self._empty_mss_components()
         if row.empty:
+            # 当日缺 MSS 快照时，不阻断交易流；回落到 fill_score + NEUTRAL，由 coverage_flag 记录原因。
             overlay_state = "MISSING"
             signal_label = "NEUTRAL"
             score = float(self.config.dtt_score_fill)
             coverage_flag = "SNAPSHOT_MISSING"
         else:
             overlay_state = "NORMAL"
-            raw_signal = row.iloc[0]["signal"]
+            row_data = row.iloc[0]
+            raw_signal = row_data["signal"]
             raw_signal_label = str(raw_signal or "").strip().upper()
             signal_label = self._resolve_mss_signal_label(raw_signal)
-            raw_score = row.iloc[0]["score"]
+            raw_score = row_data["score"]
             score = float(raw_score if raw_score is not None else self.config.dtt_score_fill)
             coverage_flag = "NORMAL"
             if raw_score is None or pd.isna(raw_score):
@@ -217,13 +224,20 @@ class RiskManager:
                 coverage_flag = "SCORE_FILL"
             if raw_signal_label not in {"BULLISH", "NEUTRAL", "BEARISH"} and coverage_flag == "NORMAL":
                 coverage_flag = "SIGNAL_NORMALIZED"
-            normalized_components = {
-                "market_coefficient": self._safe_optional_float(row.iloc[0]["market_coefficient"]),
-                "profit_effect": self._safe_optional_float(row.iloc[0]["profit_effect"]),
-                "loss_effect": self._safe_optional_float(row.iloc[0]["loss_effect"]),
-                "continuity": self._safe_optional_float(row.iloc[0]["continuity"]),
-                "extreme": self._safe_optional_float(row.iloc[0]["extreme"]),
-                "volatility": self._safe_optional_float(row.iloc[0]["volatility"]),
+            # Broker 只消费 MSS 的最终产物；raw / normalized 都从 l3_mss_daily 读取，不再回头重算。
+            mss_components = {
+                "market_coefficient_raw": self._safe_optional_float(row_data["market_coefficient_raw"]),
+                "profit_effect_raw": self._safe_optional_float(row_data["profit_effect_raw"]),
+                "loss_effect_raw": self._safe_optional_float(row_data["loss_effect_raw"]),
+                "continuity_raw": self._safe_optional_float(row_data["continuity_raw"]),
+                "extreme_raw": self._safe_optional_float(row_data["extreme_raw"]),
+                "volatility_raw": self._safe_optional_float(row_data["volatility_raw"]),
+                "market_coefficient": self._safe_optional_float(row_data["market_coefficient"]),
+                "profit_effect": self._safe_optional_float(row_data["profit_effect"]),
+                "loss_effect": self._safe_optional_float(row_data["loss_effect"]),
+                "continuity": self._safe_optional_float(row_data["continuity"]),
+                "extreme": self._safe_optional_float(row_data["extreme"]),
+                "volatility": self._safe_optional_float(row_data["volatility"]),
             }
 
         max_positions_mult, risk_per_trade_mult, max_position_mult = self._resolve_mss_multipliers(
@@ -242,18 +256,18 @@ class RiskManager:
             max_position_pct=float(self.config.max_position_pct) * max(max_position_mult, 0.0),
             overlay_enabled=True,
             coverage_flag=coverage_flag,
-            market_coefficient_raw=raw_components["market_coefficient_raw"],
-            profit_effect_raw=raw_components["profit_effect_raw"],
-            loss_effect_raw=raw_components["loss_effect_raw"],
-            continuity_raw=raw_components["continuity_raw"],
-            extreme_raw=raw_components["extreme_raw"],
-            volatility_raw=raw_components["volatility_raw"],
-            market_coefficient=normalized_components["market_coefficient"],
-            profit_effect=normalized_components["profit_effect"],
-            loss_effect=normalized_components["loss_effect"],
-            continuity=normalized_components["continuity"],
-            extreme=normalized_components["extreme"],
-            volatility=normalized_components["volatility"],
+            market_coefficient_raw=mss_components["market_coefficient_raw"],
+            profit_effect_raw=mss_components["profit_effect_raw"],
+            loss_effect_raw=mss_components["loss_effect_raw"],
+            continuity_raw=mss_components["continuity_raw"],
+            extreme_raw=mss_components["extreme_raw"],
+            volatility_raw=mss_components["volatility_raw"],
+            market_coefficient=mss_components["market_coefficient"],
+            profit_effect=mss_components["profit_effect"],
+            loss_effect=mss_components["loss_effect"],
+            continuity=mss_components["continuity"],
+            extreme=mss_components["extreme"],
+            volatility=mss_components["volatility"],
         )
         self._mss_overlay_cache[signal_date] = overlay
         return overlay
@@ -264,6 +278,9 @@ class RiskManager:
         state: BrokerRiskState,
         overlay: MssRiskOverlay,
     ) -> int:
+        # 头寸大小同时受两层约束：
+        # - 风险预算：risk_per_trade_pct
+        # - 单票容量：max_position_pct
         nav = state.cash + state.portfolio_market_value
         risk_budget = nav * overlay.risk_per_trade_pct
         max_notional = nav * overlay.max_position_pct
@@ -276,6 +293,19 @@ class RiskManager:
         return max(quantity, 0)
 
     def assess_signal(self, signal: Signal, state: BrokerRiskState) -> RiskDecision:
+        """
+        信号风控评估（Phase 0 核心）：
+        
+        拒绝原因：
+        - NO_NEXT_TRADE_DAY: 无下一交易日
+        - ALREADY_HOLDING: 已持仓（避免重复开仓）
+        - MAX_POSITIONS_REACHED: 达到最大持仓数（受 MSS 动态调整）
+        - NO_EST_PRICE: 无估价数据
+        - SIZE_BELOW_MIN_LOT: 仓位不足一手
+        - INSUFFICIENT_CASH: 现金不足
+        
+        通过时返回 Order + 预占现金
+        """
         overlay = self._load_mss_overlay(signal.signal_date)
         execute_date = self._next_trade_date(signal.signal_date)
         if execute_date is None:
@@ -329,6 +359,7 @@ class RiskManager:
                 overlay=overlay,
             )
 
+        # 目标仓位先按风控预算算出来，再按真实现金缩到买得起的一手整数倍。
         quantity = self._max_affordable_quantity(float(est_price), state.cash, target_quantity)
         if quantity < 100:
             return RiskDecision(

@@ -96,6 +96,8 @@ class Broker:
         decision,
         state: BrokerRiskState,
     ) -> None:
+        # MSS overlay trace 是 Broker 侧的“执行解释真相源”：
+        # 同一笔 signal 在评估时看到了什么市场状态、有效容量是多少、最终为何接收/拒绝。
         overlay = decision.overlay
         if overlay is None:
             return
@@ -150,6 +152,21 @@ class Broker:
         )
 
     def process_signals(self, signals: list[Signal]) -> list[Order]:
+        """
+        信号批量处理（Phase 0 核心）：
+        
+        流程：
+        1. 按 final_score 降序排序（DTT 主线）或 strength（legacy）
+        2. 逐个信号调用 RiskManager.assess_signal
+        3. 通过的信号生成 Order，预占现金与持仓名额
+        4. 拒绝的信号记录 REJECTED 订单与 lifecycle trace
+        5. 所有订单（通过+拒绝）写入 l4_orders
+        6. MSS overlay trace 写入 mss_risk_overlay_trace_exp
+        
+        关键约束：
+        - 同日信号按分数顺序消费现金与仓位，避免"重复花钱"
+        - 拒绝订单也入库，便于统计机会参与率
+        """
         orders: list[Order] = []
         rejected: list[Order] = []
         state = BrokerRiskState(
@@ -164,6 +181,8 @@ class Broker:
             reverse=True,
         )
         for signal in sorted_signals:
+            # 每条 signal 都基于“当前批次内已经预占过的现金/仓位”来评估，
+            # 这样才能真实复现同日竞争带来的顺序效应。
             state_before = BrokerRiskState(
                 cash=float(state.cash),
                 portfolio_market_value=float(state.portfolio_market_value),
@@ -288,9 +307,19 @@ class Broker:
     def generate_exit_orders(self, signal_date: date) -> list[Order]:
         """
         最小退出机制（Gate 修复项）：
+        
+        触发条件：
+        - STOP_LOSS: 当日收盘价 <= 入场价 * (1 - stop_loss_pct)
+        - TRAILING_STOP: 当日收盘价 <= 历史最高价 * (1 - trailing_stop_pct)
+        
+        执行语义：
         - 用当日收盘价检查止损/回撤
         - 触发后挂 T+1 开盘 SELL 订单
         - 不改 v0.01 BOF 触发器，仅用于释放仓位占用
+        
+        约束：
+        - 同一股票已有挂单 SELL 时跳过（避免重复挂单）
+        - 每日更新持仓 current_price 与 max_price
         """
         execute_date = self.store.next_trade_date(signal_date)
         if execute_date is None or not self.portfolio:
@@ -310,6 +339,9 @@ class Broker:
             pos.max_price = max(pos.max_price, close_price)
             self.portfolio[code] = pos
 
+            # 退出逻辑仍然只看 Broker 自己维护的持仓状态：
+            # - entry_price 给 stop loss 用
+            # - max_price 给 trailing stop 用
             stop_loss_price = pos.entry_price * (1 - self.config.stop_loss_pct)
             trailing_price = pos.max_price * (1 - self.config.trailing_stop_pct)
 
@@ -378,6 +410,22 @@ class Broker:
             self.portfolio[trade.code] = pos
 
     def execute_pending_orders(self, trade_date: date) -> list[Trade]:
+        """
+        挂单撮合执行（Phase 0 核心）：
+        
+        流程：
+        1. 遍历所有 PENDING 订单
+        2. 非当日订单保留，等待后续交易日
+        3. 当日订单调用 Matcher.execute 撮合
+        4. 撮合失败标记 REJECTED，记录 lifecycle trace
+        5. 撮合成功前二次现金校验（防开盘跳空超预算）
+        6. 通过后标记 FILLED，更新持仓与现金
+        7. 所有成交写入 l4_trades
+        
+        关键约束：
+        - BUY 订单成交前必须二次现金校验
+        - 撮合拒绝原因包括：停牌、涨跌停、无行情
+        """
         trades: list[Trade] = []
         updated_pending: list[Order] = []
         for order in self.pending_orders:
@@ -390,6 +438,7 @@ class Broker:
                 continue
 
             bar = self._get_market_bar(order.code, trade_date)
+            # 撮合只依赖 execute_date 当天的市场条，严格保持 T+1 Open 语义。
             trade, reject_reason = self.matcher.execute(order, bar or {}, trade_date)
             if trade is None:
                 rejected = self._mark_order_status(order, "REJECTED", reject_reason)

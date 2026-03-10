@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
@@ -17,6 +17,16 @@ class PbParams:
 
 
 class PbDetector(PatternDetector):
+    """
+    PB (Pullback) 趋势回踩形态检测器（Phase 1 核心）：
+    
+    形态定义：
+    1. 趋势确立（41日双窗口）：近期高点 > 远期高点，近期低点 > 远期低点
+    2. 回踩整理（5日窗口）：回踩深度 20-50%，守住中期低点
+    3. 反弹确认（当日）：收盘突破回踩高点 + 放量 + 不过度延伸
+    
+    窗口要求：41 日（20日远期 + 15日近期 + 5日回踩 + 当日）
+    """
     name = "pb"
     required_window = 41
 
@@ -34,6 +44,7 @@ class PbDetector(PatternDetector):
             return fail_trace(trace, "MISSING_REQUIRED_COLUMNS")
 
         today = data.iloc[-1]
+        # PB 先看趋势是否已经抬升，再看回踩是否健康，最后才看今天的反弹确认。
         trend_window_a = data.iloc[-41:-21]
         trend_window_b = data.iloc[-21:-6]
         pullback_window = data.iloc[-6:-1]
@@ -56,6 +67,7 @@ class PbDetector(PatternDetector):
         rebound_ref = float(pullback_window["adj_high"].max())
         volume_ratio = safe_ratio(today_volume, volume_ma20)
 
+        # PB 不是单纯“跌了又弹”，而是已经存在一段向上的结构抬升。
         trend_established = float(trend_window_b["adj_high"].max()) > float(trend_window_a["adj_high"].max()) and mid_floor > trend_floor
         pullback_depth = (trend_peak - pullback_low) / max(trend_peak - trend_floor, EPS)
         pullback_depth_valid = 0.20 <= pullback_depth <= 0.50
@@ -96,6 +108,7 @@ class PbDetector(PatternDetector):
         if not volume_confirm:
             return fail_trace(trace, "LOW_VOLUME")
 
+        # 强度拆成“反弹质量 + 回踩质量 + 趋势质量 + 量能确认”，便于后续 ablation 解释。
         strength = clip(
             0.35 * rebound_strength + 0.25 * depth_quality + 0.20 * trend_quality + 0.20 * min(volume_ratio / 2.0, 1.0)
         )

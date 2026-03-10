@@ -70,12 +70,12 @@ def test_mss_overlay_trace_helper_exposes_disabled_missing_and_normal_states(tmp
         reason_code="PAS_BOF",
         final_score=90.0,
         mss_score=20.0,
-        variant="v0_01_dtt_bof_plus_irs_mss_score",
+        variant="v0_01_dtt_pattern_plus_irs_mss_score",
     )
 
     cfg_disabled = Settings(
         PIPELINE_MODE="dtt",
-        DTT_VARIANT="v0_01_dtt_bof_plus_irs_score",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_score",
         BACKTEST_INITIAL_CASH=1_000_000,
         RISK_PER_TRADE_PCT=0.2,
         MAX_POSITION_PCT=0.5,
@@ -83,7 +83,7 @@ def test_mss_overlay_trace_helper_exposes_disabled_missing_and_normal_states(tmp
     )
     cfg_enabled = Settings(
         PIPELINE_MODE="dtt",
-        DTT_VARIANT="v0_01_dtt_bof_plus_irs_mss_score",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_mss_score",
         BACKTEST_INITIAL_CASH=1_000_000,
         RISK_PER_TRADE_PCT=0.2,
         MAX_POSITION_PCT=0.5,
@@ -92,7 +92,32 @@ def test_mss_overlay_trace_helper_exposes_disabled_missing_and_normal_states(tmp
 
     Broker(store, cfg_disabled, run_id="mss_disabled").process_signals([signal])
     Broker(store, cfg_enabled, run_id="mss_missing").process_signals([signal])
-    store.bulk_upsert("l3_mss_daily", pd.DataFrame([{"date": signal_date, "score": 20.0, "signal": "BEARISH"}]))
+    # 删除快照后再跑 NORMAL 分支，确保 Broker 只依赖 l3_mss_daily，不回头重算 MSS 内部细节。
+    store.conn.execute("DELETE FROM l2_market_snapshot WHERE date = ?", (signal_date,))
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "score": 20.0,
+                    "signal": "BEARISH",
+                    "market_coefficient_raw": 0.60,
+                    "profit_effect_raw": 0.20,
+                    "loss_effect_raw": 0.10,
+                    "continuity_raw": 0.05,
+                    "extreme_raw": 0.01,
+                    "volatility_raw": 0.02,
+                    "market_coefficient": 40.0,
+                    "profit_effect": 30.0,
+                    "loss_effect": 70.0,
+                    "continuity": 45.0,
+                    "extreme": 35.0,
+                    "volatility": 55.0,
+                }
+            ]
+        ),
+    )
     Broker(store, cfg_enabled, run_id="mss_normal").process_signals([signal])
 
     disabled = store.get_mss_risk_overlay_trace("mss_disabled", signal.signal_id)
@@ -109,6 +134,7 @@ def test_mss_overlay_trace_helper_exposes_disabled_missing_and_normal_states(tmp
     assert normal["overlay_state"] == "NORMAL"
     assert normal["coverage_flag"] == "NORMAL"
     assert normal["market_signal"] == "BEARISH"
+    assert normal["market_coefficient_raw"] == 0.60
     store.close()
 
 

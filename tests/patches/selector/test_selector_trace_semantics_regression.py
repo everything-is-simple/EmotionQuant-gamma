@@ -145,3 +145,35 @@ def test_selector_trace_keeps_reject_reason_on_rejected_rows_only(tmp_path) -> N
     assert rejected["reject_reason"] == "LOW_LIQUIDITY"
     assert float(selected["preselect_score"]) == float(selected["final_score"])
     store.close()
+
+
+def test_selector_trace_helper_maps_legacy_selected_for_bof_to_selected_for_pas(tmp_path) -> None:
+    db = tmp_path / "selector_trace_legacy_flag_patch.duckdb"
+    store = Store(db)
+    calc_date = date(2026, 1, 10)
+
+    # 模拟旧库：历史 run 只有 selected_for_bof，新代码通过 helper 仍应读成 selected_for_pas。
+    store.conn.execute("ALTER TABLE selector_candidate_trace_exp ADD COLUMN selected_for_bof BOOLEAN")
+    store.conn.execute(
+        """
+        INSERT INTO selector_candidate_trace_exp (
+            run_id,
+            signal_date,
+            code,
+            pipeline_mode,
+            preselect_score_mode,
+            industry,
+            selected,
+            selected_for_pas,
+            selected_for_bof
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        ("legacy_selector_trace", calc_date, "000001", "dtt", "amount_only", "银行", True, None, True),
+    )
+
+    trace = store.get_selector_candidate_trace("legacy_selector_trace", calc_date, "000001")
+
+    assert trace is not None
+    assert trace["selected_for_pas"] is True
+    store.close()

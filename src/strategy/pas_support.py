@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from datetime import date
 
@@ -22,10 +22,12 @@ def safe_ratio(numerator: float, denominator: float) -> float:
 
 
 def normalize_history(df: pd.DataFrame) -> pd.DataFrame:
+    # detector 一律基于升序时间序列工作，避免每个形态都自己重复处理排序细节。
     return df.sort_values("date").reset_index(drop=True)
 
 
 def init_trace(code: str, asof_date: date, pattern: str, history_days: int) -> dict[str, object]:
+    # 所有 detector 的 trace 先从统一骨架起步，再追加各自形态观测值。
     return {
         "signal_id": build_signal_id(code, asof_date, pattern),
         "pattern": pattern,
@@ -40,12 +42,15 @@ def init_trace(code: str, asof_date: date, pattern: str, history_days: int) -> d
 
 
 def fail_trace(trace: dict[str, object], reason: str) -> tuple[Signal | None, dict[str, object]]:
+    # fail_trace 不抛异常，直接把失败原因落进 trace；
+    # 这样 Strategy 可以把“没触发”和“触发成功”都统一写进真相源。
     trace["skip_reason"] = reason
     trace["detect_reason"] = reason
     return None, trace
 
 
 def build_signal(code: str, asof_date: date, pattern: str, strength: float) -> Signal:
+    # formal Signal 仍保持最小字段集，形态特有解释信息通过 trace / sidecar 落地。
     return Signal(
         signal_id=build_signal_id(code, asof_date, pattern),
         code=code,

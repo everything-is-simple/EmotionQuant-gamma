@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -62,10 +63,11 @@ class Store:
             ("_meta_runs", "mode", "VARCHAR"),
             ("_meta_runs", "variant", "VARCHAR"),
             ("_meta_runs", "artifact_root", "VARCHAR"),
+            ("l3_signal_rank_exp", "pattern_strength", "DOUBLE"),
             ("selector_candidate_trace_exp", "candidate_reason", "VARCHAR"),
             ("selector_candidate_trace_exp", "coverage_flag", "VARCHAR"),
             ("selector_candidate_trace_exp", "source_snapshot_date", "DATE"),
-            ("selector_candidate_trace_exp", "selected_for_bof", "BOOLEAN"),
+            ("selector_candidate_trace_exp", "selected_for_pas", "BOOLEAN"),
             ("pas_trigger_trace_exp", "candidate_rank", "INTEGER"),
             ("pas_trigger_trace_exp", "selected_pattern", "VARCHAR"),
             ("pas_trigger_trace_exp", "detected", "BOOLEAN"),
@@ -82,6 +84,15 @@ class Store:
             ("pas_trigger_trace_exp", "pattern_group", "VARCHAR"),
             ("pas_trigger_trace_exp", "registry_run_label", "VARCHAR"),
             ("pas_trigger_trace_exp", "reference_status", "VARCHAR"),
+            ("pas_trigger_trace_exp", "trace_schema_version", "INTEGER"),
+            ("pas_trigger_trace_exp", "trace_payload_json", "VARCHAR"),
+            ("pas_trigger_trace_exp", "pattern_context_json", "VARCHAR"),
+            ("l3_mss_daily", "market_coefficient_raw", "DOUBLE"),
+            ("l3_mss_daily", "profit_effect_raw", "DOUBLE"),
+            ("l3_mss_daily", "loss_effect_raw", "DOUBLE"),
+            ("l3_mss_daily", "continuity_raw", "DOUBLE"),
+            ("l3_mss_daily", "extreme_raw", "DOUBLE"),
+            ("l3_mss_daily", "volatility_raw", "DOUBLE"),
             ("irs_industry_trace_exp", "trace_scope", "VARCHAR DEFAULT 'SIGNAL_ATTACH'"),
             ("irs_industry_trace_exp", "industry_code", "VARCHAR"),
             ("irs_industry_trace_exp", "source_classification", "VARCHAR"),
@@ -114,6 +125,8 @@ class Store:
             ("mss_risk_overlay_trace_exp", "extreme", "DOUBLE"),
             ("mss_risk_overlay_trace_exp", "volatility", "DOUBLE"),
         ]
+        # optional column 只允许补非主键、非执行语义列；
+        # 一旦涉及 formal schema 或主流程字段变化，就应该走显式 migration，而不是这里静默补列。
         for table, col, typ in optional_columns:
             try:
                 self.conn.execute(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {col} {typ}")
@@ -256,6 +269,12 @@ class Store:
                 date               DATE NOT NULL PRIMARY KEY,
                 score              DOUBLE,
                 signal             VARCHAR,
+                market_coefficient_raw DOUBLE,
+                profit_effect_raw      DOUBLE,
+                loss_effect_raw        DOUBLE,
+                continuity_raw         DOUBLE,
+                extreme_raw            DOUBLE,
+                volatility_raw         DOUBLE,
                 market_coefficient DOUBLE,
                 profit_effect      DOUBLE,
                 loss_effect        DOUBLE,
@@ -295,7 +314,7 @@ class Store:
                 code         VARCHAR NOT NULL,
                 industry     VARCHAR,
                 variant      VARCHAR NOT NULL,
-                bof_strength DOUBLE NOT NULL,
+                pattern_strength DOUBLE NOT NULL,
                 irs_score    DOUBLE NOT NULL,
                 mss_score    DOUBLE NOT NULL,
                 final_score  DOUBLE NOT NULL,
@@ -319,6 +338,7 @@ class Store:
             """,
             """
             CREATE TABLE IF NOT EXISTS selector_candidate_trace_exp (
+                -- Selector 的真相源：解释“为什么入选 / 为什么被漏斗挡住”。
                 run_id               VARCHAR NOT NULL,
                 signal_date          DATE    NOT NULL,
                 code                 VARCHAR NOT NULL,
@@ -338,13 +358,14 @@ class Store:
                 candidate_rank       INTEGER,
                 candidate_top_n      INTEGER,
                 selected             BOOLEAN NOT NULL,
-                selected_for_bof     BOOLEAN,
+                selected_for_pas     BOOLEAN,
                 created_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (run_id, signal_date, code)
             )
             """,
             """
             CREATE TABLE IF NOT EXISTS pas_trigger_trace_exp (
+                -- PAS 的真相源：保留 detector 触发/未触发、组合仲裁和 sidecar 解释层。
                 run_id                VARCHAR NOT NULL,
                 signal_date           DATE    NOT NULL,
                 code                  VARCHAR NOT NULL,
@@ -389,12 +410,16 @@ class Store:
                 pattern_group         VARCHAR,
                 registry_run_label    VARCHAR,
                 reference_status      VARCHAR,
+                trace_schema_version  INTEGER,
+                trace_payload_json    VARCHAR,
+                pattern_context_json  VARCHAR,
                 created_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (run_id, signal_date, code, detector)
             )
             """,
             """
             CREATE TABLE IF NOT EXISTS irs_industry_trace_exp (
+                -- IRS 真相源拆成两层：行业日排名本身，以及 signal attach 后的解释记录。
                 run_id            VARCHAR NOT NULL,
                 signal_id         VARCHAR NOT NULL,
                 signal_date       DATE    NOT NULL,
@@ -429,6 +454,7 @@ class Store:
             """,
             """
             CREATE TABLE IF NOT EXISTS mss_risk_overlay_trace_exp (
+                -- MSS 在当前主线主要服务 Broker，这张表记录的是执行层看到的 overlay 结果。
                 run_id                         VARCHAR NOT NULL,
                 signal_id                      VARCHAR NOT NULL,
                 signal_date                    DATE    NOT NULL,
@@ -528,6 +554,7 @@ class Store:
             """,
             """
             CREATE TABLE IF NOT EXISTS broker_order_lifecycle_trace_exp (
+                -- Broker 生命周期真相源：回答“何时接受、何时拒绝、何时成交、何时过期”。
                 run_id       VARCHAR NOT NULL,
                 order_id     VARCHAR NOT NULL,
                 event_stage  VARCHAR NOT NULL,
@@ -675,6 +702,7 @@ class Store:
         if df.empty:
             return 0
         # 幂等核心：所有重跑覆盖写都走 upsert，禁止同主键重复追加。
+        # 对 trace / sidecar 来说，这意味着“同一 run_id + 主键”永远只保留一份真相源记录。
         tmp_name = "_tmp_df_upsert"
         self.conn.register(tmp_name, df)
         try:
@@ -775,7 +803,16 @@ class Store:
         )
         if row.empty:
             return None
-        return dict(row.iloc[0].to_dict())
+        record = dict(row.iloc[0].to_dict())
+        selected_for_pas = record.get("selected_for_pas")
+        legacy_selected_for_bof = record.get("selected_for_bof")
+        if (
+            ("selected_for_pas" not in record or pd.isna(selected_for_pas))
+            and legacy_selected_for_bof is not None
+            and not pd.isna(legacy_selected_for_bof)
+        ):
+            record["selected_for_pas"] = bool(legacy_selected_for_bof)
+        return record
 
     def get_pas_trigger_trace(
         self,
@@ -795,7 +832,19 @@ class Store:
         )
         if row.empty:
             return None
-        return dict(row.iloc[0].to_dict())
+        record = dict(row.iloc[0].to_dict())
+        for raw_key, parsed_key in (
+            ("trace_payload_json", "trace_payload"),
+            ("pattern_context_json", "pattern_context"),
+        ):
+            raw_value = record.get(raw_key)
+            if not isinstance(raw_value, str) or not raw_value.strip():
+                continue
+            try:
+                record[parsed_key] = json.loads(raw_value)
+            except json.JSONDecodeError:
+                continue
+        return record
 
     def get_irs_industry_trace(self, run_id: str, signal_id: str) -> dict[str, Any] | None:
         row = self.read_df(
@@ -890,5 +939,3 @@ class Store:
 
     def close(self) -> None:
         self.conn.close()
-
-

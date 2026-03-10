@@ -18,6 +18,9 @@ ALL_DETECTORS = {
 
 
 def get_active_detectors(config: Settings) -> list[PatternDetector]:
+    # registry 是当前主线唯一的 detector 激活入口：
+    # - pattern 名字是否合法，只在这里统一校验
+    # - registry 关闭时，只允许单形态运行，避免调用方绕过配置直接拼多形态
     patterns = config.pas_effective_patterns
     unsupported = [name for name in patterns if name not in ALL_DETECTORS]
     if unsupported:

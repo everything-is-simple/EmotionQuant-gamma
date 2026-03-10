@@ -161,7 +161,8 @@ def _persist_selector_candidate_trace(
     trace["candidate_rank"] = trace["code"].astype(str).map(rank_map)
     trace["candidate_top_n"] = int(max(1, int(cfg.candidate_top_n)))
     trace["selected"] = trace["code"].astype(str).isin(top_codes)
-    trace["selected_for_bof"] = trace["selected"]
+    # 当前主线是 Selector -> PAS；这里记录的是“是否进入 PAS 层”，不再绑死到 BOF 命名。
+    trace["selected_for_pas"] = trace["selected"]
     trace["candidate_reason"] = np.where(trace["selected"], "PRESELECT_TOP_N", None)
     trace["coverage_flag"] = np.where(
         trace["industry"].fillna("未知").astype(str) == "未知",
@@ -196,7 +197,7 @@ def _persist_selector_candidate_trace(
                 "candidate_rank",
                 "candidate_top_n",
                 "selected",
-                "selected_for_bof",
+                "selected_for_pas",
             ],
         ].reset_index(drop=True),
     )

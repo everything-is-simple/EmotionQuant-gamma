@@ -286,7 +286,7 @@ def test_broker_mss_overlay_reduces_position_size_under_bearish_regime(tmp_path)
     exec_date = date(2026, 3, 4)
     cfg = Settings(
         PIPELINE_MODE="dtt",
-        DTT_VARIANT="v0_01_dtt_bof_plus_irs_mss_score",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_mss_score",
         BACKTEST_INITIAL_CASH=1_000_000,
         RISK_PER_TRADE_PCT=0.20,
         MAX_POSITION_PCT=0.50,
@@ -334,7 +334,7 @@ def test_broker_mss_overlay_reduces_position_size_under_bearish_regime(tmp_path)
         pattern="bof",
         reason_code="PAS_BOF",
         final_score=90.0,
-        variant="v0_01_dtt_bof_plus_irs_mss_score",
+        variant="v0_01_dtt_pattern_plus_irs_mss_score",
     )
     state = BrokerRiskState(cash=1_000_000, portfolio_market_value=0.0, holdings=set())
 
@@ -366,7 +366,7 @@ def test_broker_mss_overlay_reduces_effective_max_positions_under_bearish_regime
     exec_date = date(2026, 3, 4)
     cfg = Settings(
         PIPELINE_MODE="dtt",
-        DTT_VARIANT="v0_01_dtt_bof_plus_irs_mss_score",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_mss_score",
         BACKTEST_INITIAL_CASH=1_000_000,
         RISK_PER_TRADE_PCT=0.01,
         MAX_POSITION_PCT=0.10,
@@ -411,7 +411,7 @@ def test_broker_mss_overlay_reduces_effective_max_positions_under_bearish_regime
         pattern="bof",
         reason_code="PAS_BOF",
         final_score=90.0,
-        variant="v0_01_dtt_bof_plus_irs_mss_score",
+        variant="v0_01_dtt_pattern_plus_irs_mss_score",
     )
     state = BrokerRiskState(
         cash=1_000_000,
@@ -947,12 +947,12 @@ def test_broker_writes_mss_overlay_trace_for_disabled_missing_and_normal(tmp_pat
         reason_code="PAS_BOF",
         final_score=90.0,
         mss_score=20.0,
-        variant="v0_01_dtt_bof_plus_irs_mss_score",
+        variant="v0_01_dtt_pattern_plus_irs_mss_score",
     )
 
     cfg_disabled = Settings(
         PIPELINE_MODE="dtt",
-        DTT_VARIANT="v0_01_dtt_bof_plus_irs_score",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_score",
         BACKTEST_INITIAL_CASH=1_000_000,
         RISK_PER_TRADE_PCT=0.2,
         MAX_POSITION_PCT=0.5,
@@ -960,7 +960,7 @@ def test_broker_writes_mss_overlay_trace_for_disabled_missing_and_normal(tmp_pat
     )
     cfg_enabled = Settings(
         PIPELINE_MODE="dtt",
-        DTT_VARIANT="v0_01_dtt_bof_plus_irs_mss_score",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_mss_score",
         BACKTEST_INITIAL_CASH=1_000_000,
         RISK_PER_TRADE_PCT=0.2,
         MAX_POSITION_PCT=0.5,
@@ -978,6 +978,12 @@ def test_broker_writes_mss_overlay_trace_for_disabled_missing_and_normal(tmp_pat
                     "date": signal_date,
                     "score": 20.0,
                     "signal": "BEARISH",
+                    "market_coefficient_raw": 0.60,
+                    "profit_effect_raw": 0.20,
+                    "loss_effect_raw": 0.10,
+                    "continuity_raw": 0.05,
+                    "extreme_raw": 0.01,
+                    "volatility_raw": 0.02,
                     "market_coefficient": 40.0,
                     "profit_effect": 30.0,
                     "loss_effect": 70.0,
@@ -1079,11 +1085,11 @@ def test_broker_writes_mss_overlay_trace_for_score_fill_and_signal_normalized(tm
         reason_code="PAS_BOF",
         final_score=90.0,
         mss_score=50.0,
-        variant="v0_01_dtt_bof_plus_irs_mss_score",
+        variant="v0_01_dtt_pattern_plus_irs_mss_score",
     )
     cfg = Settings(
         PIPELINE_MODE="dtt",
-        DTT_VARIANT="v0_01_dtt_bof_plus_irs_mss_score",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_mss_score",
         BACKTEST_INITIAL_CASH=1_000_000,
         RISK_PER_TRADE_PCT=0.2,
         MAX_POSITION_PCT=0.5,

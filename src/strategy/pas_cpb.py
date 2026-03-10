@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
@@ -19,6 +19,16 @@ class CpbParams:
 
 
 class CpbDetector(PatternDetector):
+    """
+    CPB (Complex Base) 复杂底部形态检测器（Phase 1 核心）：
+    
+    形态定义：
+    1. 底部结构（20日窗口）：多次测试支撑带（≥2次），支撑带宽度 ≤3%
+    2. 压缩整理：整体波动幅度 ≤12%
+    3. 颈线突破（当日）：收盘突破结构高点 + 放量确认
+    
+    窗口要求：41 日（20日基准 + 当日，预留缓冲）
+    """
     name = "cpb"
     required_window = 41
 
@@ -40,6 +50,7 @@ class CpbDetector(PatternDetector):
             return fail_trace(trace, "MISSING_REQUIRED_COLUMNS")
 
         today = data.iloc[-1]
+        # CPB 更看重“底部结构是否反复测试且逐步压缩”，因此先抽 base_window 再看今天是否颈线突破。
         base_window = data.iloc[-21:-1]
         if len(base_window) < 20:
             return fail_trace(trace, "INSUFFICIENT_HISTORY")
@@ -63,6 +74,7 @@ class CpbDetector(PatternDetector):
             EPS,
         )
         volume_ratio = safe_ratio(today_volume, volume_ma20)
+        # 复杂底部不能只靠一次低点；至少要有多次 retest，且支撑带不能过宽。
         retest_enough = retest_count >= self.params.retest_min
         support_band_valid = support_band_high / max(support_band_low, EPS) <= 1.03
         compression_valid = compression_width <= 0.12
@@ -103,6 +115,7 @@ class CpbDetector(PatternDetector):
         if not volume_confirm:
             return fail_trace(trace, "LOW_VOLUME")
 
+        # strength 同时考虑“突破力度 + retest 质量 + 压缩程度 + 量能确认”。
         strength = clip(
             0.35 * neckline_strength
             + 0.25 * retest_quality

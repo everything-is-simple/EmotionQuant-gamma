@@ -52,7 +52,7 @@ def resolve_mode_variant(config: Settings) -> tuple[str, str]:
     mode = config.pipeline_mode_normalized
     if mode == "legacy":
         return mode, "legacy_bof_baseline"
-    return mode, sanitize_label(config.dtt_variant)
+    return mode, sanitize_label(config.dtt_variant_normalized)
 
 
 def build_run_id(

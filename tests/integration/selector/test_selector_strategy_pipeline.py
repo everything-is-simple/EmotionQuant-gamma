@@ -116,7 +116,7 @@ def test_select_candidates_to_generate_signals_pipeline(tmp_path) -> None:
 
     cfg = Settings(
         PIPELINE_MODE="dtt",
-        DTT_VARIANT="v0_01_dtt_bof_plus_irs_score",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_score",
         DTT_TOP_N=10,
         ENABLE_MSS_GATE=False,
         ENABLE_IRS_FILTER=False,
