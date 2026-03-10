@@ -75,6 +75,36 @@
    - 出场条件
 3. 若执行时发现 `08` 与本卡摘要不一致，以 `08` 为算法权威文件，本卡应先同步摘要后再开工
 
+### 2.3 开工前 schema 演进确认
+
+`Phase 3` 开工前，必须先过一遍 schema 演进路径，避免状态层代码写到一半才发现 formal 表或 trace 表无列可落。
+
+至少确认下面 4 件事：
+
+1. `l3_mss_daily`
+   - 已明确是否补：
+     - `phase`
+     - `phase_trend`
+     - `phase_days`
+     - `position_advice`
+     - `risk_regime`
+     - `trend_quality`
+   - 正式 DDL 与旧库兼容路径必须同步设计
+2. `mss_risk_overlay_trace_exp`
+   - 已明确补齐状态层字段与 fallback / reason 记录位
+   - 至少能稳定追溯：
+     - `SNAPSHOT_MISSING`
+     - `TREND_COLD_START`
+     - `OVERLAY_DISABLED`
+     - `OVERLAY_MISSING`
+     - `BROKER_CAPACITY_REJECT`
+3. `contracts.py / MarketScore`
+   - 已显式确认：新状态字段默认不进入 formal `MarketScore`
+   - 新字段先落 `l3_mss_daily / trace / overlay`
+4. `store.py`
+   - 正式 DDL 先改
+   - `_ensure_optional_columns` 只作为旧库兼容桥，不替代正式 schema 设计
+
 ---
 
 ## 3. 任务
@@ -129,8 +159,10 @@
 
 1. `risk.py` 必须从“按 `signal` 选倍率”过渡到“按 `risk_regime` 选倍率”
 2. `MarketScore.signal` 保留兼容字段，但不能继续充当长期正式消费面
-3. 若 `risk_regime` 尚未正式落库，允许由 `phase + phase_trend + score` 现场解析
+3. 若 `risk_regime` 尚未正式落库，允许由 `phase + phase_trend` 现场解析
 4. 不允许把 `risk_regime` 再重新等同为 `signal`
+5. `score` 可以作为上游推出 `phase` 的背景输入，但不能在兼容期现场解析 `risk_regime` 时再次作为独立判定输入
+6. 若 `08-mss-minimal-tradable-design-20260309.md` 的局部兼容描述与此处冲突，以该文件 `8.8 risk_regime` 的正式映射规则为准
 
 **至少覆盖**
 
