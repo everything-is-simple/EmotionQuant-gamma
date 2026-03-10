@@ -138,26 +138,243 @@ def _stock_daily_with_info(store: Store, start: date, end: date) -> pd.DataFrame
 
 def clean_industry_daily(store: Store, start: date, end: date) -> int:
     _clear_date_range(store, "l2_industry_daily", start, end)
-    df = _stock_daily_with_info(store, start, end)
-    if df.empty:
-        return 0
-
-    df["date"] = pd.to_datetime(df["date"]).dt.normalize()
-    df = df[~df["is_halt"]].copy()
-    df["industry"] = df["industry"].fillna("未知")
-    df["ret"] = np.where(df["pre_close"] > 0, (df["close"] - df["pre_close"]) / df["pre_close"], np.nan)
-    grouped = (
-        df.groupby(["industry", "date"], as_index=False)
-        .agg(
-            pct_chg=("ret", "mean"),
-            amount=("amount", "sum"),
-            stock_count=("ts_code", "nunique"),
-            rise_count=("ret", lambda s: int((s > 0).sum())),
-            fall_count=("ret", lambda s: int((s < 0).sum())),
+    # P2-A 第一批输入扩展只保留行业级中间态：
+    # 先在 DuckDB 聚合到 industry/day，再补 20 日均额与 5/20 日收益，
+    # 避免把整段个股明细和行业宽表都长期留在 pandas 内存里。
+    lookback_start = start - timedelta(days=60)
+    grouped = store.read_df(
+        """
+        WITH stock_base AS (
+            SELECT
+                COALESCE((
+                    SELECT m.industry_name
+                    FROM l1_sw_industry_member m
+                    WHERE m.ts_code = d.ts_code
+                      AND m.in_date <= d.date
+                      AND (m.out_date IS NULL OR m.out_date >= d.date)
+                    ORDER BY m.in_date DESC, m.industry_code ASC
+                    LIMIT 1
+                ), '未知') AS industry,
+                d.date,
+                CASE
+                    WHEN d.pre_close > 0 THEN (d.close - d.pre_close) / d.pre_close
+                    ELSE NULL
+                END AS ret,
+                d.amount,
+                d.ts_code
+            FROM l1_stock_daily d
+            INNER JOIN l1_trade_calendar cal
+                ON cal.date = d.date AND cal.is_trade_day = TRUE
+            WHERE d.date BETWEEN ? AND ?
+              AND COALESCE(d.is_halt, FALSE) = FALSE
+        ),
+        daily AS (
+            SELECT
+                industry,
+                date,
+                AVG(ret) AS pct_chg,
+                SUM(amount) AS amount,
+                COUNT(DISTINCT ts_code) AS stock_count,
+                SUM(CASE WHEN ret > 0 THEN 1 ELSE 0 END) AS rise_count,
+                SUM(CASE WHEN ret < 0 THEN 1 ELSE 0 END) AS fall_count
+            FROM stock_base
+            GROUP BY industry, date
+        ),
+        enriched AS (
+            SELECT
+                industry,
+                date,
+                pct_chg,
+                amount,
+                stock_count,
+                rise_count,
+                fall_count,
+                ROW_NUMBER() OVER (
+                    PARTITION BY industry
+                    ORDER BY date
+                ) AS rn,
+                AVG(amount) OVER (
+                    PARTITION BY industry
+                    ORDER BY date
+                    ROWS BETWEEN 19 PRECEDING AND CURRENT ROW
+                ) AS amount_ma20_raw,
+                EXP(SUM(LN(1.0 + COALESCE(pct_chg, 0.0))) OVER (
+                    PARTITION BY industry
+                    ORDER BY date
+                    ROWS BETWEEN 4 PRECEDING AND CURRENT ROW
+                )) - 1.0 AS return_5d_raw,
+                EXP(SUM(LN(1.0 + COALESCE(pct_chg, 0.0))) OVER (
+                    PARTITION BY industry
+                    ORDER BY date
+                    ROWS BETWEEN 19 PRECEDING AND CURRENT ROW
+                )) - 1.0 AS return_20d_raw
+            FROM daily
         )
-        .sort_values(["industry", "date"])
+        SELECT
+            industry,
+            date,
+            pct_chg,
+            amount,
+            stock_count,
+            rise_count,
+            fall_count,
+            CASE WHEN rn >= 20 THEN amount_ma20_raw ELSE NULL END AS amount_ma20,
+            CASE WHEN rn >= 5 THEN return_5d_raw ELSE NULL END AS return_5d,
+            CASE WHEN rn >= 20 THEN return_20d_raw ELSE NULL END AS return_20d
+        FROM enriched
+        WHERE date BETWEEN ? AND ?
+        ORDER BY industry, date
+        """,
+        (lookback_start, end, start, end),
     )
+    if grouped.empty:
+        return 0
     return store.bulk_upsert("l2_industry_daily", grouped)
+
+
+def clean_industry_structure_daily(store: Store, start: date, end: date) -> int:
+    _clear_date_range(store, "l2_industry_structure_daily", start, end)
+    lookback_start = start - timedelta(days=220)
+    follow_end = store.next_trade_date(end) or end
+    grouped = store.read_df(
+        """
+        WITH stock_base AS (
+            SELECT
+                COALESCE((
+                    SELECT m.industry_name
+                    FROM l1_sw_industry_member m
+                    WHERE m.ts_code = d.ts_code
+                      AND m.in_date <= d.date
+                      AND (m.out_date IS NULL OR m.out_date >= d.date)
+                    ORDER BY m.in_date DESC, m.industry_code ASC
+                    LIMIT 1
+                ), '未知') AS industry,
+                d.ts_code,
+                d.date,
+                d.close,
+                d.pre_close,
+                d.amount,
+                d.up_limit,
+                CASE
+                    WHEN d.pre_close > 0 THEN (d.close - d.pre_close) / d.pre_close
+                    ELSE NULL
+                END AS ret,
+                CASE
+                    WHEN COALESCE((
+                        SELECT i.is_st
+                        FROM l1_stock_info i
+                        WHERE i.ts_code = d.ts_code AND i.effective_from <= d.date
+                        ORDER BY i.effective_from DESC
+                        LIMIT 1
+                    ), FALSE) THEN 0.025
+                    WHEN (
+                        SELECT i.market
+                        FROM l1_stock_info i
+                        WHERE i.ts_code = d.ts_code AND i.effective_from <= d.date
+                        ORDER BY i.effective_from DESC
+                        LIMIT 1
+                    ) IN ('创业板', '科创板') THEN 0.10
+                    WHEN (
+                        SELECT i.market
+                        FROM l1_stock_info i
+                        WHERE i.ts_code = d.ts_code AND i.effective_from <= d.date
+                        ORDER BY i.effective_from DESC
+                        LIMIT 1
+                    ) = '北交所' THEN 0.15
+                    ELSE 0.05
+                END AS strong_up_threshold
+            FROM l1_stock_daily d
+            INNER JOIN l1_trade_calendar cal
+                ON cal.date = d.date AND cal.is_trade_day = TRUE
+            WHERE d.date BETWEEN ? AND ?
+              AND COALESCE(d.is_halt, FALSE) = FALSE
+        ),
+        flagged AS (
+            SELECT
+                industry,
+                ts_code,
+                date,
+                close,
+                amount,
+                ret,
+                strong_up_threshold,
+                (ret >= strong_up_threshold) AS strong_up,
+                (
+                    MAX(close) OVER (
+                        PARTITION BY ts_code
+                        ORDER BY date
+                        ROWS BETWEEN 100 PRECEDING AND 1 PRECEDING
+                    )
+                ) AS prev_high_100,
+                (up_limit IS NOT NULL AND close >= up_limit * 0.998) AS limit_up,
+                LEAD(ret) OVER (PARTITION BY ts_code ORDER BY date) AS next_ret
+            FROM stock_base
+        ),
+        scored AS (
+            SELECT
+                industry,
+                date,
+                amount,
+                strong_up,
+                (prev_high_100 IS NOT NULL AND close >= prev_high_100) AS new_100d_high,
+                limit_up,
+                next_ret,
+                (
+                    strong_up
+                    OR (prev_high_100 IS NOT NULL AND close >= prev_high_100)
+                    OR limit_up
+                ) AS leader_flag,
+                CASE
+                    WHEN (
+                        strong_up
+                        OR (prev_high_100 IS NOT NULL AND close >= prev_high_100)
+                        OR limit_up
+                    ) THEN LEAST(
+                        1.0,
+                        GREATEST(
+                            0.0,
+                            0.50 * LEAST(COALESCE(ret, 0.0) / NULLIF(strong_up_threshold, 0.0), 1.0)
+                            + 0.30 * CASE WHEN prev_high_100 IS NOT NULL AND close >= prev_high_100 THEN 1.0 ELSE 0.0 END
+                            + 0.20 * CASE WHEN limit_up THEN 1.0 ELSE 0.0 END
+                        )
+                    )
+                    ELSE 0.0
+                END AS leader_score
+            FROM flagged
+        )
+        SELECT
+            industry,
+            date,
+            SUM(CASE WHEN strong_up THEN 1 ELSE 0 END) AS strong_up_count,
+            SUM(CASE WHEN new_100d_high THEN 1 ELSE 0 END) AS new_high_count,
+            SUM(CASE WHEN leader_flag THEN 1 ELSE 0 END) AS leader_count,
+            COALESCE(AVG(CASE WHEN leader_flag THEN leader_score END), 0.0) AS leader_strength,
+            COALESCE(AVG(CASE WHEN leader_flag THEN 1.0 ELSE 0.0 END), 0.0) AS strong_stock_ratio,
+            COALESCE(
+                SUM(CASE WHEN leader_flag THEN amount ELSE 0.0 END) / NULLIF(SUM(amount), 0.0),
+                0.0
+            ) AS strong_stock_amount_share,
+            COALESCE(
+                AVG(
+                    CASE
+                        WHEN leader_flag AND next_ret IS NOT NULL THEN CASE WHEN next_ret > 0 THEN 1.0 ELSE 0.0 END
+                    END
+                ),
+                0.0
+            ) AS leader_follow_through,
+            -- P2-B 当前保持层级纪律：L2 不反向读取 PAS/L3。
+            -- 因此先显式落受控占位值，后续若引入 BOF 密度，只能通过独立预聚合结果接入。
+            0.0 AS bof_hit_density_5d
+        FROM scored
+        WHERE date BETWEEN ? AND ?
+        GROUP BY industry, date
+        ORDER BY industry, date
+        """,
+        (lookback_start, follow_end, start, end),
+    )
+    if grouped.empty:
+        return 0
+    return store.bulk_upsert("l2_industry_structure_daily", grouped)
 
 
 def _streak_lengths(flag: pd.Series) -> pd.Series:

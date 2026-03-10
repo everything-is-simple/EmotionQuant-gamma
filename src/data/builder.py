@@ -4,7 +4,7 @@ from collections.abc import Iterable
 from datetime import date
 
 from src.config import Settings
-from src.data.cleaner import clean_industry_daily, clean_market_snapshot, clean_stock_adj_daily
+from src.data.cleaner import clean_industry_daily, clean_industry_structure_daily, clean_market_snapshot, clean_stock_adj_daily
 from src.data.store import Store
 from src.logging_utils import logger
 from src.selector.irs import compute_irs
@@ -47,6 +47,7 @@ def build_l2(store: Store, config: Settings, start: date | None, end: date | Non
     if force:
         store.conn.execute("DELETE FROM l2_stock_adj_daily")
         store.conn.execute("DELETE FROM l2_industry_daily")
+        store.conn.execute("DELETE FROM l2_industry_structure_daily")
         store.conn.execute("DELETE FROM l2_market_snapshot")
 
     window = _resolve_window(store, "l2_stock_adj_daily", config, start, end, force)
@@ -56,8 +57,9 @@ def build_l2(store: Store, config: Settings, start: date | None, end: date | Non
     begin, finish = window
     n1 = clean_stock_adj_daily(store, begin, finish)
     n2 = clean_industry_daily(store, begin, finish)
-    n3 = clean_market_snapshot(store, begin, finish)
-    return n1 + n2 + n3
+    n3 = clean_industry_structure_daily(store, begin, finish)
+    n4 = clean_market_snapshot(store, begin, finish)
+    return n1 + n2 + n3 + n4
 
 
 def build_l3(store: Store, config: Settings, start: date | None, end: date | None, force: bool) -> int:

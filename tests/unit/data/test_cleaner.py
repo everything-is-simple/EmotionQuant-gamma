@@ -4,7 +4,7 @@ from datetime import date, timedelta
 
 import pandas as pd
 
-from src.data.cleaner import clean_industry_daily, clean_market_snapshot, clean_stock_adj_daily
+from src.data.cleaner import clean_industry_daily, clean_industry_structure_daily, clean_market_snapshot, clean_stock_adj_daily
 from src.data.store import Store
 
 
@@ -74,15 +74,21 @@ def test_cleaners_generate_l2_tables(tmp_path) -> None:
     end = base + timedelta(days=79)
     assert clean_stock_adj_daily(store, start, end) > 0
     assert clean_industry_daily(store, start, end) > 0
+    assert clean_industry_structure_daily(store, start, end) > 0
     assert clean_market_snapshot(store, start, end) > 0
 
     l2_stock = store.read_df("SELECT * FROM l2_stock_adj_daily ORDER BY date")
     l2_industry = store.read_df("SELECT * FROM l2_industry_daily ORDER BY date")
+    l2_structure = store.read_df("SELECT * FROM l2_industry_structure_daily ORDER BY date")
     l2_market = store.read_df("SELECT * FROM l2_market_snapshot ORDER BY date")
     assert not l2_stock.empty
     assert not l2_industry.empty
+    assert not l2_structure.empty
     assert not l2_market.empty
     assert l2_stock.iloc[-1]["ma20"] is not None
+    assert l2_industry.iloc[-1]["amount_ma20"] is not None
+    assert l2_industry.iloc[-1]["return_5d"] > 0
+    assert l2_industry.iloc[-1]["return_20d"] > 0
     store.close()
 
 
@@ -243,6 +249,187 @@ def test_clean_industry_daily_without_sw_mapping_falls_back_to_unknown(tmp_path)
     industry = store.read_df("SELECT industry FROM l2_industry_daily")
     assert industry["industry"].tolist() == ["未知"]
     store.close()
+
+
+def test_clean_industry_daily_enriches_amount_ma20_and_returns(tmp_path) -> None:
+    db = tmp_path / "industry_enrichment.duckdb"
+    store = Store(db)
+    try:
+        base = date(2026, 1, 1)
+        _seed_trade_calendar(store, base, 30)
+        store.bulk_upsert(
+            "l1_stock_info",
+            pd.DataFrame(
+                [
+                    {
+                        "ts_code": "000001.SZ",
+                        "name": "平安银行",
+                        "industry": "银行",
+                        "market": "主板",
+                        "list_status": "L",
+                        "is_st": False,
+                        "list_date": date(2000, 1, 1),
+                        "effective_from": date(2000, 1, 1),
+                    }
+                ]
+            ),
+        )
+        rows = []
+        price = 10.0
+        for i in range(30):
+            day = base + timedelta(days=i)
+            close_p = price * 1.01
+            rows.append(
+                {
+                    "ts_code": "000001.SZ",
+                    "date": day,
+                    "open": price,
+                    "high": close_p,
+                    "low": price * 0.99,
+                    "close": close_p,
+                    "pre_close": price,
+                    "volume": 1000 + i,
+                    "amount": float(10000 + i * 100),
+                    "pct_chg": 0.01,
+                    "adj_factor": 1.0,
+                    "is_halt": False,
+                    "up_limit": close_p * 1.1,
+                    "down_limit": close_p * 0.9,
+                    "total_mv": 1_000_000.0,
+                    "circ_mv": 900_000.0,
+                }
+            )
+            price = close_p
+        store.bulk_upsert("l1_stock_daily", pd.DataFrame(rows))
+
+        assert clean_industry_daily(store, base, base + timedelta(days=29)) == 30
+        enriched = store.read_df(
+            """
+            SELECT amount_ma20, return_5d, return_20d
+            FROM l2_industry_daily
+            WHERE industry = '未知' AND date = ?
+            """,
+            (base + timedelta(days=29),),
+        )
+        assert len(enriched) == 1
+        row = enriched.iloc[0]
+        expected_amount_ma20 = sum(10000 + i * 100 for i in range(10, 30)) / 20.0
+        assert abs(float(row["amount_ma20"]) - expected_amount_ma20) < 1e-6
+        assert abs(float(row["return_5d"]) - ((1.01**5) - 1.0)) < 1e-6
+        assert abs(float(row["return_20d"]) - ((1.01**20) - 1.0)) < 1e-6
+    finally:
+        store.close()
+
+
+def test_clean_industry_structure_daily_builds_minimal_structure_fields(tmp_path) -> None:
+    db = tmp_path / "industry_structure.duckdb"
+    store = Store(db)
+    try:
+        base = date(2026, 1, 1)
+        _seed_trade_calendar(store, base, 102)
+        store.bulk_upsert(
+            "l1_stock_info",
+            pd.DataFrame(
+                [
+                    {
+                        "ts_code": "000001.SZ",
+                        "name": "龙头股",
+                        "industry": "银行",
+                        "market": "主板",
+                        "list_status": "L",
+                        "is_st": False,
+                        "list_date": date(2000, 1, 1),
+                        "effective_from": date(2000, 1, 1),
+                    },
+                    {
+                        "ts_code": "000002.SZ",
+                        "name": "跟随股",
+                        "industry": "银行",
+                        "market": "主板",
+                        "list_status": "L",
+                        "is_st": False,
+                        "list_date": date(2000, 1, 1),
+                        "effective_from": date(2000, 1, 1),
+                    },
+                ]
+            ),
+        )
+        rows = []
+        leader_price = 10.0
+        laggard_price = 10.0
+        for i in range(102):
+            day = base + timedelta(days=i)
+            if i < 100:
+                leader_close = leader_price
+                laggard_close = laggard_price
+            elif i == 100:
+                leader_close = 11.0
+                laggard_close = 9.9
+            else:
+                leader_close = 11.22
+                laggard_close = 9.9
+            rows.extend(
+                [
+                    {
+                        "ts_code": "000001.SZ",
+                        "date": day,
+                        "open": leader_price,
+                        "high": leader_close,
+                        "low": min(leader_price, leader_close) * 0.99,
+                        "close": leader_close,
+                        "pre_close": leader_price,
+                        "volume": 1000,
+                        "amount": 20000.0,
+                        "pct_chg": 0.0 if leader_price <= 0 else (leader_close - leader_price) / leader_price,
+                        "adj_factor": 1.0,
+                        "is_halt": False,
+                        "up_limit": leader_price * 1.1,
+                        "down_limit": leader_price * 0.9,
+                        "total_mv": 1_000_000.0,
+                        "circ_mv": 900_000.0,
+                    },
+                    {
+                        "ts_code": "000002.SZ",
+                        "date": day,
+                        "open": laggard_price,
+                        "high": max(laggard_price, laggard_close),
+                        "low": min(laggard_price, laggard_close) * 0.99,
+                        "close": laggard_close,
+                        "pre_close": laggard_price,
+                        "volume": 1000,
+                        "amount": 10000.0,
+                        "pct_chg": 0.0 if laggard_price <= 0 else (laggard_close - laggard_price) / laggard_price,
+                        "adj_factor": 1.0,
+                        "is_halt": False,
+                        "up_limit": laggard_price * 1.1,
+                        "down_limit": laggard_price * 0.9,
+                        "total_mv": 1_000_000.0,
+                        "circ_mv": 900_000.0,
+                    },
+                ]
+            )
+            leader_price = leader_close
+            laggard_price = laggard_close
+        store.bulk_upsert("l1_stock_daily", pd.DataFrame(rows))
+
+        target_day = base + timedelta(days=100)
+        assert clean_industry_structure_daily(store, target_day, target_day) == 1
+        out = store.read_df(
+            "SELECT * FROM l2_industry_structure_daily WHERE industry = '未知' AND date = ?",
+            (target_day,),
+        )
+        assert len(out) == 1
+        row = out.iloc[0]
+        assert int(row["strong_up_count"]) == 1
+        assert int(row["new_high_count"]) == 1
+        assert int(row["leader_count"]) == 1
+        assert abs(float(row["leader_strength"]) - 1.0) < 1e-6
+        assert abs(float(row["strong_stock_ratio"]) - 0.5) < 1e-6
+        assert abs(float(row["strong_stock_amount_share"]) - (2.0 / 3.0)) < 1e-6
+        assert abs(float(row["leader_follow_through"]) - 1.0) < 1e-6
+        assert float(row["bof_hit_density_5d"]) == 0.0
+    finally:
+        store.close()
 
 
 def test_clean_stock_adj_daily_clears_stale_rows_in_target_range(tmp_path) -> None:

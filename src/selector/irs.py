@@ -13,12 +13,44 @@ IRS_TRACE_SCOPE_INDUSTRY_DAILY = "INDUSTRY_DAILY"
 IRS_TRACE_SCOPE_SIGNAL_ATTACH = "SIGNAL_ATTACH"
 IRS_TRACE_SOURCE_CLASSIFICATION = "SW2021"
 IRS_TRACE_BENCHMARK_CODE = "000001.SH"
-IRS_TRACE_VARIANT = "IRS_DAILY"
 IRS_TRACE_FILL_SCORE = 50.0
 
+IRS_FACTOR_WEIGHT_RS = 0.30
+IRS_FACTOR_WEIGHT_RV = 0.25
+IRS_FACTOR_WEIGHT_RT = 0.15
+IRS_FACTOR_WEIGHT_BD = 0.15
+IRS_FACTOR_WEIGHT_GN = 0.15
+IRS_RT_LOOKBACK_DAYS = 5
+IRS_TOP_RANK_THRESHOLD = 3
+IRS_HISTORY_LOOKBACK_DAYS = 25
+IRS_FACTOR_MODE_LITE = "lite"
+IRS_FACTOR_MODE_RSRV = "rsrv"
+IRS_FACTOR_MODE_FULL = "rsrvrtbdgn"
 
-def _build_irs_trace_run_id(start: date, end: date) -> str:
-    return f"IRS_DAILY::{start.isoformat()}::{end.isoformat()}"
+
+def normalize_irs_factor_mode(value: str | None) -> str:
+    raw = str(value or IRS_FACTOR_MODE_FULL).strip().lower().replace("-", "").replace("_", "")
+    if raw in {"lite", "legacy", "irslite"}:
+        return IRS_FACTOR_MODE_LITE
+    if raw in {"rsrv", "irsrsrv"}:
+        return IRS_FACTOR_MODE_RSRV
+    if raw in {"full", "rsrvrtbdgn", "irsrsrvrtbdgn"}:
+        return IRS_FACTOR_MODE_FULL
+    raise ValueError(f"Unsupported IRS factor mode: {value}")
+
+
+def _trace_variant_for_factor_mode(factor_mode: str) -> str:
+    normalized = normalize_irs_factor_mode(factor_mode)
+    if normalized == IRS_FACTOR_MODE_LITE:
+        return "IRS_DAILY_LITE"
+    if normalized == IRS_FACTOR_MODE_RSRV:
+        return "IRS_DAILY_RSRV"
+    return "IRS_DAILY_RSRVRTBDGN"
+
+
+def _build_irs_trace_run_id(start: date, end: date, factor_mode: str) -> str:
+    normalized = normalize_irs_factor_mode(factor_mode)
+    return f"IRS_DAILY::{normalized}::{start.isoformat()}::{end.isoformat()}"
 
 
 def _build_irs_trace_signal_id(trade_date: date, industry: str) -> str:
@@ -26,60 +58,317 @@ def _build_irs_trace_signal_id(trade_date: date, industry: str) -> str:
     return f"IRS_DAILY::{trade_date.isoformat()}::{normalized_industry}"
 
 
-def _compute_irs_components(
-    industry_row: pd.Series,
-    benchmark_pct: float,
-    baseline: dict[str, float] | None = None,
-) -> dict[str, float]:
-    """
-    IRS 双因子计算核心：
-    - RS (Relative Strength): 行业相对大盘的超额收益
-    - CF (Capital Flow): 资金流向强度（市场份额 + 10日动量）
-    
-    最终得分 = 0.55 * RS + 0.45 * CF
-    """
-    base = baseline or IRS_BASELINE
-    industry_pct = float(industry_row.get("pct_chg", 0.0) or 0.0)
-    # RS 原始值：行业涨跌幅 - 基准涨跌幅
-    rs_raw = industry_pct - benchmark_pct
-    market_total_amount = float(industry_row.get("market_total_amount", 0.0) or 0.0)
-    amount = float(industry_row.get("amount", 0.0) or 0.0)
-    # 资金流向份额：行业成交额 / 全市场成交额
-    flow_share = safe_ratio(amount, market_total_amount, 0.0)
-    # 资金流向动量：10日成交额变化率
-    flow_delta = float(industry_row.get("amount_delta_10d", 0.0) or 0.0)
-    cf_raw = flow_share + flow_delta
+def _clip01(value: float) -> float:
+    return float(np.clip(value, 0.0, 1.0))
 
-    # Z-score 标准化到 0-100 区间
-    rs_score = zscore_single(rs_raw, base["rs_score_mean"], base["rs_score_std"])
-    cf_score = zscore_single(cf_raw, base["cf_score_mean"], base["cf_score_std"])
-    total_score = 0.55 * rs_score + 0.45 * cf_score
+
+def _safe_float(value: object, default: float = 0.0) -> float:
+    cast = pd.to_numeric(value, errors="coerce")
+    if pd.isna(cast):
+        return float(default)
+    return float(cast)
+
+
+def _zscore_or_fill(value: float | None, mean: float, std: float) -> float:
+    if value is None or not np.isfinite(float(value)):
+        return IRS_TRACE_FILL_SCORE
+    return zscore_single(float(value), mean, std)
+
+
+def _rolling_compound_return(series: pd.Series, window: int) -> pd.Series:
+    clipped = pd.to_numeric(series, errors="coerce").fillna(0.0).clip(lower=-0.99)
+    return np.exp(np.log1p(clipped).rolling(window, min_periods=window).sum()) - 1.0
+
+
+def _lookback_trade_start(store: Store, start: date, days: int) -> date:
+    current = start
+    for _ in range(max(0, days)):
+        prev = store.prev_trade_date(current)
+        if prev is None:
+            return current
+        current = prev
+    return current
+
+
+def _load_benchmark_snapshot_map(store: Store, start: date, end: date) -> dict[date, dict[str, float | bool]]:
+    benchmark_df = store.read_df(
+        """
+        SELECT date, pct_chg
+        FROM l1_index_daily
+        WHERE ts_code = ? AND date BETWEEN ? AND ?
+        ORDER BY date ASC
+        """,
+        (IRS_TRACE_BENCHMARK_CODE, start, end),
+    )
+    if benchmark_df.empty:
+        return {}
+    benchmark_df = benchmark_df.copy()
+    benchmark_df["date"] = pd.to_datetime(benchmark_df["date"]).dt.date
+    benchmark_df["pct_chg"] = pd.to_numeric(benchmark_df["pct_chg"], errors="coerce")
+    benchmark_df["return_5d"] = _rolling_compound_return(benchmark_df["pct_chg"], 5)
+    benchmark_df["return_20d"] = _rolling_compound_return(benchmark_df["pct_chg"], 20)
+    snapshot_map: dict[date, dict[str, float | bool]] = {}
+    for _, row in benchmark_df.iterrows():
+        snapshot_map[row["date"]] = {
+            "pct_chg": _safe_float(row["pct_chg"], 0.0),
+            "return_5d": _safe_float(row["return_5d"], 0.0),
+            "return_20d": _safe_float(row["return_20d"], 0.0),
+            "filled": bool(pd.isna(row["pct_chg"]) or pd.isna(row["return_5d"]) or pd.isna(row["return_20d"])),
+        }
+    return snapshot_map
+
+
+def _rank_stability_raw(rank_history: list[int], industry_count_today: int) -> float:
+    if len(rank_history) < IRS_RT_LOOKBACK_DAYS:
+        return 0.5
+    denominator = max(industry_count_today / 3.0, 1.0)
+    return 1.0 - _clip01(float(np.std(rank_history, ddof=0)) / denominator)
+
+
+def _count_consecutive_top_ranks(rank_window: list[int], top_rank_threshold: int) -> int:
+    streak = 0
+    for rank in reversed(rank_window):
+        if int(rank) <= top_rank_threshold:
+            streak += 1
+        else:
+            break
+    return streak
+
+
+def _resolve_rotation_status(
+    rank: int,
+    top_rank_streak_5d: int,
+    rotation_slope: float,
+    momentum_consistency: float,
+    top_rank_threshold: int,
+) -> str:
+    if rank <= top_rank_threshold and top_rank_streak_5d in {1, 2} and rotation_slope >= 2.0:
+        return "START"
+    if rank <= top_rank_threshold and top_rank_streak_5d >= 3 and momentum_consistency >= 0.50:
+        return "CONTINUE"
+    if rank <= max(5, top_rank_threshold + 2) and rotation_slope < 0.0 and momentum_consistency < 0.50:
+        return "EXHAUST"
+    if rank > max(5, top_rank_threshold + 2) and rotation_slope <= -2.0:
+        return "FALLBACK"
+    return "NEUTRAL"
+
+
+def _compute_rs_components(
+    industry_row: pd.Series,
+    benchmark_snapshot: dict[str, float | bool],
+    rank_history: list[int],
+    industry_count_today: int,
+    baseline: dict[str, float],
+) -> dict[str, float]:
+    rs_1d_raw = _safe_float(industry_row.get("pct_chg"), 0.0) - float(benchmark_snapshot["pct_chg"])
+    rs_5d_raw = (
+        _safe_float(industry_row.get("return_5d"), 0.0) - float(benchmark_snapshot["return_5d"])
+        if pd.notna(pd.to_numeric(industry_row.get("return_5d"), errors="coerce"))
+        else None
+    )
+    rs_20d_raw = (
+        _safe_float(industry_row.get("return_20d"), 0.0) - float(benchmark_snapshot["return_20d"])
+        if pd.notna(pd.to_numeric(industry_row.get("return_20d"), errors="coerce"))
+        else None
+    )
+    rank_stability = _rank_stability_raw(rank_history, industry_count_today)
+    rs_score = (
+        0.35 * _zscore_or_fill(rs_1d_raw, baseline["rs_score_mean"], baseline["rs_score_std"])
+        + 0.35 * _zscore_or_fill(rs_5d_raw, baseline["rs_score_mean"], baseline["rs_score_std"])
+        + 0.20 * _zscore_or_fill(rs_20d_raw, baseline["rs_score_mean"], baseline["rs_score_std"])
+        + 0.10 * (100.0 * rank_stability)
+    )
     return {
-        "industry_pct": industry_pct,
-        "market_total_amount": market_total_amount,
-        "amount": amount,
-        "amount_delta_10d": flow_delta,
-        "rs_raw": rs_raw,
-        "cf_raw": cf_raw,
-        "rs_score": rs_score,
-        "cf_score": cf_score,
-        "total_score": total_score,
+        "rs_1d_raw": float(rs_1d_raw),
+        "rs_5d_raw": IRS_TRACE_FILL_SCORE if rs_5d_raw is None else float(rs_5d_raw),
+        "rs_20d_raw": IRS_TRACE_FILL_SCORE if rs_20d_raw is None else float(rs_20d_raw),
+        "rank_stability_raw": float(rank_stability),
+        "rs_score": float(rs_score),
     }
+
+
+def _compute_rv_components(industry_row: pd.Series, baseline: dict[str, float]) -> dict[str, float]:
+    amount = _safe_float(industry_row.get("amount"), 0.0)
+    market_total_amount = _safe_float(industry_row.get("market_total_amount"), 0.0)
+    amount_ma20 = pd.to_numeric(industry_row.get("amount_ma20"), errors="coerce")
+    amount_10d_ago = pd.to_numeric(industry_row.get("amount_10d_ago"), errors="coerce")
+    strong_amount_share = pd.to_numeric(industry_row.get("strong_stock_amount_share"), errors="coerce")
+    flow_share = safe_ratio(amount, market_total_amount, np.nan)
+    amount_vs_self_20d = safe_ratio(amount, float(amount_ma20), np.nan) if pd.notna(amount_ma20) else np.nan
+    amount_delta_10d = safe_ratio(amount, float(amount_10d_ago), np.nan) - 1.0 if pd.notna(amount_10d_ago) else np.nan
+    strong_amount_component = 100.0 * _clip01(float(strong_amount_share)) if pd.notna(strong_amount_share) else IRS_TRACE_FILL_SCORE
+    rv_score = (
+        0.35 * _zscore_or_fill(amount_vs_self_20d, baseline["cf_score_mean"], baseline["cf_score_std"])
+        + 0.25 * _zscore_or_fill(flow_share, baseline["cf_score_mean"], baseline["cf_score_std"])
+        + 0.20 * _zscore_or_fill(amount_delta_10d, baseline["cf_score_mean"], baseline["cf_score_std"])
+        + 0.20 * strong_amount_component
+    )
+    legacy_cf_raw = 0.0
+    if np.isfinite(flow_share):
+        legacy_cf_raw += float(flow_share)
+    if np.isfinite(amount_delta_10d):
+        legacy_cf_raw += float(amount_delta_10d)
+    return {
+        "amount": amount,
+        "market_total_amount": market_total_amount,
+        "amount_delta_10d": IRS_TRACE_FILL_SCORE if not np.isfinite(amount_delta_10d) else float(amount_delta_10d),
+        "flow_share": IRS_TRACE_FILL_SCORE if not np.isfinite(flow_share) else float(flow_share),
+        "amount_vs_self_20d": IRS_TRACE_FILL_SCORE if not np.isfinite(amount_vs_self_20d) else float(amount_vs_self_20d),
+        "strong_amount_share": IRS_TRACE_FILL_SCORE if pd.isna(strong_amount_share) else float(_clip01(float(strong_amount_share))),
+        "cf_raw": float(legacy_cf_raw),
+        "rv_score": float(rv_score),
+    }
+
+
+def _compute_legacy_cf_components(flow_share: float, amount_delta_10d: float, baseline: dict[str, float]) -> dict[str, float]:
+    cf_raw = 0.0
+    if np.isfinite(flow_share):
+        cf_raw += float(flow_share)
+    if np.isfinite(amount_delta_10d):
+        cf_raw += float(amount_delta_10d)
+    cf_score = _zscore_or_fill(cf_raw, baseline["cf_score_mean"], baseline["cf_score_std"])
+    return {"cf_raw": float(cf_raw), "cf_score": float(cf_score)}
+
+
+def _compute_bd_components(industry_row: pd.Series) -> dict[str, float]:
+    if not bool(industry_row.get("structure_available", False)):
+        return {"bd_score": IRS_TRACE_FILL_SCORE}
+    stock_count = max(int(_safe_float(industry_row.get("stock_count"), 0.0)), 1)
+    up_ratio = _clip01(_safe_float(industry_row.get("rise_count"), 0.0) / stock_count)
+    net_breadth = (_safe_float(industry_row.get("rise_count"), 0.0) - _safe_float(industry_row.get("fall_count"), 0.0)) / stock_count
+    strong_up_ratio = _clip01(_safe_float(industry_row.get("strong_up_count"), 0.0) / stock_count)
+    new_high_ratio = _clip01(_safe_float(industry_row.get("new_high_count"), 0.0) / stock_count)
+    bof_density = _clip01(_safe_float(industry_row.get("bof_hit_density_5d"), 0.0) * 5.0)
+    bd_score = 100.0 * _clip01(
+        0.30 * up_ratio
+        + 0.25 * ((max(-1.0, min(1.0, net_breadth)) + 1.0) / 2.0)
+        + 0.20 * strong_up_ratio
+        + 0.15 * new_high_ratio
+        + 0.10 * bof_density
+    )
+    return {"bd_score": float(bd_score)}
+
+
+def _compute_gn_components(industry_row: pd.Series) -> dict[str, float]:
+    if not bool(industry_row.get("structure_available", False)):
+        return {"gn_score": IRS_TRACE_FILL_SCORE}
+    stock_count = max(int(_safe_float(industry_row.get("stock_count"), 0.0)), 1)
+    leader_count_ratio = _clip01(_safe_float(industry_row.get("leader_count"), 0.0) / stock_count)
+    leader_strength = _clip01(_safe_float(industry_row.get("leader_strength"), 0.0))
+    leader_follow = _clip01(_safe_float(industry_row.get("leader_follow_through"), 0.0))
+    strong_stock_ratio = _clip01(_safe_float(industry_row.get("strong_stock_ratio"), 0.0))
+    gn_score = 100.0 * _clip01(
+        0.35 * leader_strength
+        + 0.25 * leader_count_ratio
+        + 0.20 * leader_follow
+        + 0.20 * strong_stock_ratio
+    )
+    return {"gn_score": float(gn_score)}
+
+
+def _compute_rt_components(
+    provisional_rank: int,
+    provisional_score: float,
+    rank_history: list[int],
+    score_history: list[float],
+    top_rank_threshold: int,
+    rt_lookback_days: int,
+) -> dict[str, float | str]:
+    if len(rank_history) < rt_lookback_days - 1 or len(score_history) < rt_lookback_days - 1:
+        return {
+            "rt_score": IRS_TRACE_FILL_SCORE,
+            "rotation_status": "NEUTRAL",
+            "rotation_slope": 0.0,
+            "top_rank_streak_5d": 0,
+            "momentum_consistency": 0.5,
+        }
+    rank_window = rank_history[-(rt_lookback_days - 1) :] + [int(provisional_rank)]
+    score_window = score_history[-(rt_lookback_days - 1) :] + [float(provisional_score)]
+    top_rank_streak_5d = _count_consecutive_top_ranks(rank_window, top_rank_threshold)
+    rotation_slope = (score_window[-1] - score_window[0]) / max(rt_lookback_days - 1, 1)
+    diffs = np.diff(np.asarray(score_window, dtype=float))
+    momentum_consistency = float((diffs > 0).sum()) / max(len(diffs), 1)
+    rotation_status = _resolve_rotation_status(
+        provisional_rank,
+        top_rank_streak_5d,
+        float(rotation_slope),
+        momentum_consistency,
+        top_rank_threshold,
+    )
+    rt_core = 100.0 * _clip01(
+        0.40 * (top_rank_streak_5d / 5.0)
+        + 0.35 * _clip01((rotation_slope + 4.0) / 8.0)
+        + 0.25 * momentum_consistency
+    )
+    status_bonus = 5.0 if rotation_status in {"START", "CONTINUE"} else -5.0 if rotation_status in {"EXHAUST", "FALLBACK"} else 0.0
+    return {
+        "rt_score": float(np.clip(rt_core + status_bonus, 0.0, 100.0)),
+        "rotation_status": rotation_status,
+        "rotation_slope": float(rotation_slope),
+        "top_rank_streak_5d": int(top_rank_streak_5d),
+        "momentum_consistency": float(momentum_consistency),
+    }
+
+
+def _pre_rt_score_for_mode(
+    rs_score: float,
+    cf_score: float,
+    rv_score: float,
+    bd_score: float,
+    gn_score: float,
+    factor_mode: str,
+) -> float:
+    normalized = normalize_irs_factor_mode(factor_mode)
+    if normalized == IRS_FACTOR_MODE_LITE:
+        return 0.55 * rs_score + 0.45 * cf_score
+    if normalized == IRS_FACTOR_MODE_RSRV:
+        score = IRS_FACTOR_WEIGHT_RS * rs_score + IRS_FACTOR_WEIGHT_RV * rv_score
+        return score / (IRS_FACTOR_WEIGHT_RS + IRS_FACTOR_WEIGHT_RV)
+    score = (
+        IRS_FACTOR_WEIGHT_RS * rs_score
+        + IRS_FACTOR_WEIGHT_RV * rv_score
+        + IRS_FACTOR_WEIGHT_BD * bd_score
+        + IRS_FACTOR_WEIGHT_GN * gn_score
+    )
+    return score / (IRS_FACTOR_WEIGHT_RS + IRS_FACTOR_WEIGHT_RV + IRS_FACTOR_WEIGHT_BD + IRS_FACTOR_WEIGHT_GN)
+
+
+def _total_score_for_mode(
+    rs_score: float,
+    cf_score: float,
+    rv_score: float,
+    rt_score: float,
+    bd_score: float,
+    gn_score: float,
+    factor_mode: str,
+) -> float:
+    normalized = normalize_irs_factor_mode(factor_mode)
+    if normalized == IRS_FACTOR_MODE_LITE:
+        return 0.55 * rs_score + 0.45 * cf_score
+    if normalized == IRS_FACTOR_MODE_RSRV:
+        score = IRS_FACTOR_WEIGHT_RS * rs_score + IRS_FACTOR_WEIGHT_RV * rv_score
+        return score / (IRS_FACTOR_WEIGHT_RS + IRS_FACTOR_WEIGHT_RV)
+    return (
+        IRS_FACTOR_WEIGHT_RS * rs_score
+        + IRS_FACTOR_WEIGHT_RV * rv_score
+        + IRS_FACTOR_WEIGHT_RT * rt_score
+        + IRS_FACTOR_WEIGHT_BD * bd_score
+        + IRS_FACTOR_WEIGHT_GN * gn_score
+    )
 
 
 def _build_industry_trace_row(
     trace_run_id: str,
     trade_date: date,
     industry_row: pd.Series,
-    components: dict[str, float],
+    components: dict[str, object],
     coverage_flag: str,
+    variant_label: str,
     industry_score: float | None = None,
     industry_rank: int | None = None,
     benchmark_pct: float = 0.0,
 ) -> dict[str, object]:
-    resolved_score = float(
-        industry_score if industry_score is not None else pd.to_numeric(components["total_score"], errors="coerce")
-    )
+    resolved_score = float(industry_score if industry_score is not None else pd.to_numeric(components.get("total_score"), errors="coerce"))
     if not np.isfinite(resolved_score):
         resolved_score = 0.0
     return {
@@ -88,7 +377,7 @@ def _build_industry_trace_row(
         "signal_date": trade_date,
         "code": "",
         "industry": str(industry_row.get("industry", "")),
-        "variant": IRS_TRACE_VARIANT,
+        "variant": variant_label,
         "uses_irs": True,
         "daily_score": resolved_score,
         "daily_rank": industry_rank,
@@ -100,14 +389,30 @@ def _build_industry_trace_row(
         "source_classification": IRS_TRACE_SOURCE_CLASSIFICATION,
         "benchmark_code": IRS_TRACE_BENCHMARK_CODE,
         "benchmark_pct": float(benchmark_pct),
-        "industry_pct_chg": float(components["industry_pct"]),
-        "amount": float(components["amount"]),
-        "market_total_amount": float(components["market_total_amount"]),
-        "amount_delta_10d": float(components["amount_delta_10d"]),
-        "rs_raw": float(components["rs_raw"]),
-        "cf_raw": float(components["cf_raw"]),
-        "rs_score": float(components["rs_score"]),
-        "cf_score": float(components["cf_score"]),
+        "industry_pct_chg": _safe_float(components.get("industry_pct"), 0.0),
+        "amount": _safe_float(components.get("amount"), 0.0),
+        "market_total_amount": _safe_float(components.get("market_total_amount"), 0.0),
+        "amount_delta_10d": _safe_float(components.get("amount_delta_10d"), IRS_TRACE_FILL_SCORE),
+        "rs_raw": _safe_float(components.get("rs_1d_raw"), 0.0),
+        "cf_raw": _safe_float(components.get("cf_raw"), 0.0),
+        "rs_score": _safe_float(components.get("rs_score"), IRS_TRACE_FILL_SCORE),
+        "cf_score": _safe_float(components.get("cf_score"), IRS_TRACE_FILL_SCORE),
+        "rv_score": _safe_float(components.get("rv_score"), IRS_TRACE_FILL_SCORE),
+        "rt_score": _safe_float(components.get("rt_score"), IRS_TRACE_FILL_SCORE),
+        "bd_score": _safe_float(components.get("bd_score"), IRS_TRACE_FILL_SCORE),
+        "gn_score": _safe_float(components.get("gn_score"), IRS_TRACE_FILL_SCORE),
+        "rotation_status": str(components.get("rotation_status", "NEUTRAL")),
+        "rotation_slope": _safe_float(components.get("rotation_slope"), 0.0),
+        "industry_count_today": int(_safe_float(components.get("industry_count_today"), 0.0)),
+        "rs_1d_raw": _safe_float(components.get("rs_1d_raw"), IRS_TRACE_FILL_SCORE),
+        "rs_5d_raw": _safe_float(components.get("rs_5d_raw"), IRS_TRACE_FILL_SCORE),
+        "rs_20d_raw": _safe_float(components.get("rs_20d_raw"), IRS_TRACE_FILL_SCORE),
+        "rank_stability_raw": _safe_float(components.get("rank_stability_raw"), 0.5),
+        "flow_share": _safe_float(components.get("flow_share"), IRS_TRACE_FILL_SCORE),
+        "amount_vs_self_20d": _safe_float(components.get("amount_vs_self_20d"), IRS_TRACE_FILL_SCORE),
+        "strong_amount_share": _safe_float(components.get("strong_amount_share"), IRS_TRACE_FILL_SCORE),
+        "top_rank_streak_5d": int(_safe_float(components.get("top_rank_streak_5d"), 0.0)),
+        "momentum_consistency": _safe_float(components.get("momentum_consistency"), 0.5),
         "industry_score": resolved_score,
         "industry_rank": industry_rank,
         "coverage_flag": coverage_flag,
@@ -118,15 +423,36 @@ def compute_irs_single(
     industry_row: pd.Series,
     benchmark_pct: float,
     baseline: dict[str, float] | None = None,
+    factor_mode: str = IRS_FACTOR_MODE_FULL,
 ) -> tuple[float, float, float]:
-    """
-    IRS 单行业评分纯函数：
-    - rs_score: 行业相对强度
-    - cf_score: 资金流向强度
-    - total_score: 综合得分
-    """
-    components = _compute_irs_components(industry_row, benchmark_pct, baseline=baseline)
-    return components["rs_score"], components["cf_score"], components["total_score"]
+    base = baseline or IRS_BASELINE
+    normalized_factor_mode = normalize_irs_factor_mode(factor_mode)
+    seeded = industry_row.copy()
+    seeded["market_total_amount"] = _safe_float(industry_row.get("market_total_amount"), _safe_float(industry_row.get("amount"), 0.0))
+    seeded["stock_count"] = max(int(_safe_float(industry_row.get("stock_count"), 1.0)), 1)
+    seeded["structure_available"] = bool(industry_row.get("structure_available", False))
+    rs = _compute_rs_components(
+        seeded,
+        {"pct_chg": float(benchmark_pct), "return_5d": 0.0, "return_20d": 0.0, "filled": False},
+        [],
+        int(seeded["stock_count"]),
+        base,
+    )
+    rv = _compute_rv_components(seeded, base)
+    legacy_cf = _compute_legacy_cf_components(rv["flow_share"], rv["amount_delta_10d"], base)
+    bd = _compute_bd_components(seeded)
+    gn = _compute_gn_components(seeded)
+    total_score = _total_score_for_mode(
+        rs["rs_score"],
+        legacy_cf["cf_score"],
+        rv["rv_score"],
+        IRS_TRACE_FILL_SCORE,
+        bd["bd_score"],
+        gn["gn_score"],
+        normalized_factor_mode,
+    )
+    secondary_score = legacy_cf["cf_score"] if normalized_factor_mode == IRS_FACTOR_MODE_LITE else rv["rv_score"]
+    return rs["rs_score"], float(secondary_score), float(total_score)
 
 
 def compute_irs(
@@ -135,18 +461,15 @@ def compute_irs(
     end: date,
     baseline: dict[str, float] | None = None,
     min_industries_per_day: int = 1,
+    rt_lookback_days: int = IRS_RT_LOOKBACK_DAYS,
+    top_rank_threshold: int = IRS_TOP_RANK_THRESHOLD,
+    factor_mode: str = IRS_FACTOR_MODE_FULL,
 ) -> int:
-    """
-    批量计算 IRS 并写入 l3_irs_daily。
-    
-    核心约束：
-    1. 支持局部重建（按日期分区清理）
-    2. 未知行业单独记录 trace，不参与排名
-    3. 当日行业数不足 min_industries_per_day 时跳过排名
-    4. 基准缺失时用 0 填充，标记 BENCHMARK_FILL
-    5. 日内排名必须唯一（即使分数并列）
-    """
-    trace_run_id = _build_irs_trace_run_id(start, end)
+    normalized_factor_mode = normalize_irs_factor_mode(factor_mode)
+    trace_variant = _trace_variant_for_factor_mode(normalized_factor_mode)
+    trace_run_id = _build_irs_trace_run_id(start, end, normalized_factor_mode)
+    base = baseline or IRS_BASELINE
+    history_start = _lookback_trade_start(store, start, IRS_HISTORY_LOOKBACK_DAYS)
     store.conn.execute(
         """
         DELETE FROM irs_industry_trace_exp
@@ -154,171 +477,266 @@ def compute_irs(
         """,
         [trace_run_id, IRS_TRACE_SCOPE_SIGNAL_ATTACH, IRS_TRACE_SCOPE_INDUSTRY_DAILY],
     )
-    # IRS 支持按日期局部重建；先清分区，避免行业集合变小时残留旧 rank。
     store.conn.execute("DELETE FROM l3_irs_daily WHERE date BETWEEN ? AND ?", [start, end])
     industry_df = store.read_df(
         """
-        SELECT * FROM l2_industry_daily
-        WHERE date BETWEEN ? AND ?
-        ORDER BY industry, date
+        SELECT
+            d.*,
+            s.strong_up_count,
+            s.new_high_count,
+            s.leader_count,
+            s.leader_strength,
+            s.strong_stock_ratio,
+            s.strong_stock_amount_share,
+            s.leader_follow_through,
+            s.bof_hit_density_5d
+        FROM l2_industry_daily d
+        LEFT JOIN l2_industry_structure_daily s
+            ON s.industry = d.industry AND s.date = d.date
+        WHERE d.date BETWEEN ? AND ?
+        ORDER BY d.date ASC, d.industry ASC
         """,
-        (start, end),
+        (history_start, end),
     )
     if industry_df.empty:
         return 0
-
-    benchmark_df = store.read_df(
-        """
-        SELECT date, pct_chg
-        FROM l1_index_daily
-        WHERE ts_code = '000001.SH' AND date BETWEEN ? AND ?
-        """,
-        (start, end),
-    )
-    if benchmark_df.empty:
-        benchmark_map = {}
-    else:
-        benchmark_map = {
-            (row["date"].date() if isinstance(row["date"], pd.Timestamp) else row["date"]): float(
-                row["pct_chg"] or 0.0
-            )
-            for _, row in benchmark_df.iterrows()
-        }
 
     industry_df = industry_df.copy()
+    industry_df["date"] = pd.to_datetime(industry_df["date"]).dt.date
     industry_df["industry"] = industry_df["industry"].fillna("未知").astype(str)
-    # 未知行业不进入正式排名，但仍保留 trace，避免后续无法解释样本损失。
-    unknown_df = industry_df[industry_df["industry"] == "未知"].copy()
-    industry_df = industry_df[industry_df["industry"] != "未知"].copy()
-    if industry_df.empty:
-        trace_rows: list[dict[str, object]] = []
-        for _, row in unknown_df.iterrows():
-            trade_date = row["date"].date() if isinstance(row["date"], pd.Timestamp) else row["date"]
-            benchmark_pct = benchmark_map.get(trade_date, 0.0)
-            trace_rows.append(
-                _build_industry_trace_row(
-                    trace_run_id=trace_run_id,
-                    trade_date=trade_date,
-                    industry_row=row,
-                    components={
-                        "industry_pct": float(row.get("pct_chg", 0.0) or 0.0),
-                        "amount": float(row.get("amount", 0.0) or 0.0),
-                        "market_total_amount": 0.0,
-                        "amount_delta_10d": 0.0,
-                        "rs_raw": float(row.get("pct_chg", 0.0) or 0.0) - benchmark_pct,
-                        "cf_raw": 0.0,
-                        "rs_score": zscore_single(
-                            float(row.get("pct_chg", 0.0) or 0.0) - benchmark_pct,
-                            (baseline or IRS_BASELINE)["rs_score_mean"],
-                            (baseline or IRS_BASELINE)["rs_score_std"],
-                        ),
-                        "cf_score": 50.0,
-                        "total_score": 0.0,
-                    },
-                    coverage_flag="UNKNOWN_DROPPED",
-                    benchmark_pct=benchmark_pct,
-                )
-            )
-        if trace_rows:
-            store.bulk_upsert("irs_industry_trace_exp", pd.DataFrame(trace_rows))
-        return 0
     industry_df["market_total_amount"] = industry_df.groupby("date")["amount"].transform("sum")
-    # 资金流向动量：10 日成交额变化，窗口不足时置 0，避免噪声放大。
-    industry_df["amount_delta_10d"] = (
-        industry_df.groupby("industry")["amount"]
-        .transform(lambda s: (s / s.shift(10) - 1.0).replace([np.inf, -np.inf], np.nan))
-        .fillna(0.0)
-    )
-    market_total_map = {
-        (day.date() if isinstance(day, pd.Timestamp) else day): float(total or 0.0)
-        for day, total in industry_df.groupby("date")["amount"].sum().items()
-    }
+    industry_df["amount_10d_ago"] = industry_df.groupby("industry")["amount"].shift(10)
+    industry_df["structure_available"] = industry_df["strong_up_count"].notna()
+    benchmark_map = _load_benchmark_snapshot_map(store, history_start, end)
+    market_total_map = {day: float(total or 0.0) for day, total in industry_df.groupby("date")["amount"].sum().items()}
 
-    output_rows: list[dict] = []
+    output_rows: list[dict[str, object]] = []
     trace_rows: list[dict[str, object]] = []
-    for _, row in unknown_df.iterrows():
-        trade_date = row["date"].date() if isinstance(row["date"], pd.Timestamp) else row["date"]
-        benchmark_pct = benchmark_map.get(trade_date, 0.0)
-        components = {
-            "industry_pct": float(row.get("pct_chg", 0.0) or 0.0),
-            "amount": float(row.get("amount", 0.0) or 0.0),
-            "market_total_amount": market_total_map.get(trade_date, 0.0),
-            "amount_delta_10d": 0.0,
-            "rs_raw": float(row.get("pct_chg", 0.0) or 0.0) - benchmark_pct,
-            "cf_raw": 0.0,
-            "rs_score": zscore_single(
-                float(row.get("pct_chg", 0.0) or 0.0) - benchmark_pct,
-                (baseline or IRS_BASELINE)["rs_score_mean"],
-                (baseline or IRS_BASELINE)["rs_score_std"],
-            ),
-            "cf_score": 50.0,
-            "total_score": 0.0,
-        }
-        trace_rows.append(
-            _build_industry_trace_row(
-                trace_run_id=trace_run_id,
-                trade_date=trade_date,
-                industry_row=row,
-                components=components,
-                coverage_flag="UNKNOWN_DROPPED",
-                benchmark_pct=benchmark_pct,
-            )
-        )
-    for day, day_df in industry_df.groupby("date"):
-        # IRS 先在“行业日”层完成唯一排名，再由 ranker 把结果 attach 到 signal 层。
-        day_value = day.date() if isinstance(day, pd.Timestamp) else day
-        benchmark_filled = day_value not in benchmark_map
-        benchmark_pct = benchmark_map.get(day_value, 0.0)
-        day_scores = []
-        day_trace_inputs: list[tuple[pd.Series, dict[str, float]]] = []
-        for _, row in day_df.iterrows():
-            components = _compute_irs_components(row, benchmark_pct, baseline=baseline)
-            day_scores.append(
-                {
-                    "date": day_value,
-                    "industry": row["industry"],
-                    "score": components["total_score"],
-                    "rs_score": components["rs_score"],
-                    "cf_score": components["cf_score"],
-                }
-            )
-            day_trace_inputs.append((row, components))
-        day_scores_df = pd.DataFrame(day_scores)
-        if len(day_scores_df) < max(1, min_industries_per_day):
-            for row, components in day_trace_inputs:
+    rank_history_by_industry: dict[str, list[int]] = {}
+    score_history_by_industry: dict[str, list[float]] = {}
+
+    for day, day_df in industry_df.groupby("date", sort=True):
+        benchmark_snapshot = benchmark_map.get(day, {"pct_chg": 0.0, "return_5d": 0.0, "return_20d": 0.0, "filled": True})
+        benchmark_pct = float(benchmark_snapshot["pct_chg"])
+        coverage_flag = "BENCHMARK_FILL" if bool(benchmark_snapshot["filled"]) else "NORMAL"
+        day_df = day_df.copy()
+        unknown_df = day_df[day_df["industry"] == "未知"].copy()
+        known_df = day_df[day_df["industry"] != "未知"].copy()
+
+        if start <= day <= end:
+            for _, row in unknown_df.iterrows():
                 trace_rows.append(
                     _build_industry_trace_row(
-                        trace_run_id=trace_run_id,
-                        trade_date=day_value,
-                        industry_row=row,
-                        components=components,
-                        coverage_flag="MIN_INDUSTRIES_SKIP",
+                        trace_run_id,
+                        day,
+                        row,
+                        {
+                            "industry_pct": _safe_float(row.get("pct_chg"), 0.0),
+                            "amount": _safe_float(row.get("amount"), 0.0),
+                            "market_total_amount": market_total_map.get(day, 0.0),
+                            "amount_delta_10d": IRS_TRACE_FILL_SCORE,
+                            "rs_1d_raw": _safe_float(row.get("pct_chg"), 0.0) - benchmark_pct,
+                            "rs_5d_raw": IRS_TRACE_FILL_SCORE,
+                            "rs_20d_raw": IRS_TRACE_FILL_SCORE,
+                            "rank_stability_raw": 0.5,
+                            "rs_score": _zscore_or_fill(_safe_float(row.get("pct_chg"), 0.0) - benchmark_pct, base["rs_score_mean"], base["rs_score_std"]),
+                            "cf_raw": 0.0,
+                            "cf_score": IRS_TRACE_FILL_SCORE,
+                            "rv_score": IRS_TRACE_FILL_SCORE,
+                            "rt_score": IRS_TRACE_FILL_SCORE,
+                            "bd_score": IRS_TRACE_FILL_SCORE,
+                            "gn_score": IRS_TRACE_FILL_SCORE,
+                            "rotation_status": "NEUTRAL",
+                            "rotation_slope": 0.0,
+                            "industry_count_today": len(known_df),
+                            "flow_share": IRS_TRACE_FILL_SCORE,
+                            "amount_vs_self_20d": IRS_TRACE_FILL_SCORE,
+                            "strong_amount_share": IRS_TRACE_FILL_SCORE,
+                            "top_rank_streak_5d": 0,
+                            "momentum_consistency": 0.5,
+                            "total_score": 0.0,
+                        },
+                        "UNKNOWN_DROPPED",
+                        trace_variant,
                         benchmark_pct=benchmark_pct,
                     )
                 )
+        if known_df.empty:
             continue
-        # 部分日期可能因原始缺失导致分数非有限值；按 0 兜底，保证日内排序稳定可执行。
-        # 缺值统一按 0 兜底，保证排序表稳定可执行；解释原因留在 trace 里，不在这里抛异常。
-        day_scores_df["score"] = pd.to_numeric(day_scores_df["score"], errors="coerce").fillna(0.0)
-        # v0.01 验收要求“当日行业排名无重复”，即使分数并列也要给出稳定唯一顺序。
-        day_scores_df = day_scores_df.sort_values(["score", "industry"], ascending=[False, True]).reset_index(drop=True)
-        day_scores_df["rank"] = np.arange(1, len(day_scores_df) + 1, dtype=int)
-        output_rows.extend(day_scores_df.to_dict(orient="records"))
-        score_lookup = {
-            str(row["industry"]): (float(row["score"]), int(row["rank"])) for _, row in day_scores_df.iterrows()
-        }
-        coverage_flag = "BENCHMARK_FILL" if benchmark_filled else "NORMAL"
-        for row, components in day_trace_inputs:
-            score_value, rank_value = score_lookup[str(row["industry"])]
+
+        industry_count_today = len(known_df)
+        day_components: list[dict[str, object]] = []
+        for _, row in known_df.iterrows():
+            industry = str(row["industry"])
+            rs = _compute_rs_components(row, benchmark_snapshot, rank_history_by_industry.get(industry, []), industry_count_today, base)
+            rv = _compute_rv_components(row, base)
+            legacy_cf = _compute_legacy_cf_components(rv["flow_share"], rv["amount_delta_10d"], base)
+            bd = _compute_bd_components(row)
+            gn = _compute_gn_components(row)
+            day_components.append(
+                {
+                    "industry": industry,
+                    "industry_row": row,
+                    "rank_history": list(rank_history_by_industry.get(industry, [])),
+                    "score_history": list(score_history_by_industry.get(industry, [])),
+                    "provisional_score": _pre_rt_score_for_mode(
+                        rs["rs_score"],
+                        legacy_cf["cf_score"],
+                        rv["rv_score"],
+                        bd["bd_score"],
+                        gn["gn_score"],
+                        normalized_factor_mode,
+                    ),
+                    **rs,
+                    **rv,
+                    **legacy_cf,
+                    **bd,
+                    **gn,
+                }
+            )
+
+        provisional_df = pd.DataFrame(
+            [{"industry": item["industry"], "score": float(item["provisional_score"])} for item in day_components]
+        ).sort_values(["score", "industry"], ascending=[False, True]).reset_index(drop=True)
+        provisional_df["rank"] = np.arange(1, len(provisional_df) + 1, dtype=int)
+        provisional_rank_map = {str(row["industry"]): int(row["rank"]) for _, row in provisional_df.iterrows()}
+
+        day_results: list[dict[str, object]] = []
+        for item in day_components:
+            rt = _compute_rt_components(
+                provisional_rank_map[item["industry"]],
+                float(item["provisional_score"]),
+                item["rank_history"],
+                item["score_history"],
+                top_rank_threshold,
+                rt_lookback_days,
+            )
+            total_score = _total_score_for_mode(
+                float(item["rs_score"]),
+                float(item["cf_score"]),
+                float(item["rv_score"]),
+                float(rt["rt_score"]),
+                float(item["bd_score"]),
+                float(item["gn_score"]),
+                normalized_factor_mode,
+            )
+            day_results.append({**item, **rt, "score": float(total_score), "industry_count_today": industry_count_today})
+
+        if len(day_results) < max(1, min_industries_per_day):
+            if start <= day <= end:
+                for item in day_results:
+                    trace_rows.append(
+                        _build_industry_trace_row(
+                            trace_run_id,
+                            day,
+                            item["industry_row"],
+                            {
+                                "industry_pct": _safe_float(item["industry_row"].get("pct_chg"), 0.0),
+                                "amount": _safe_float(item["amount"], 0.0),
+                                "market_total_amount": _safe_float(item["market_total_amount"], 0.0),
+                                "amount_delta_10d": _safe_float(item["amount_delta_10d"], IRS_TRACE_FILL_SCORE),
+                                "rs_1d_raw": _safe_float(item["rs_1d_raw"], 0.0),
+                                "rs_5d_raw": _safe_float(item["rs_5d_raw"], IRS_TRACE_FILL_SCORE),
+                                "rs_20d_raw": _safe_float(item["rs_20d_raw"], IRS_TRACE_FILL_SCORE),
+                                "rank_stability_raw": _safe_float(item["rank_stability_raw"], 0.5),
+                                "rs_score": _safe_float(item["rs_score"], IRS_TRACE_FILL_SCORE),
+                                "cf_raw": _safe_float(item["cf_raw"], 0.0),
+                                "cf_score": _safe_float(item["cf_score"], IRS_TRACE_FILL_SCORE),
+                                "rv_score": _safe_float(item["rv_score"], IRS_TRACE_FILL_SCORE),
+                                "rt_score": _safe_float(item["rt_score"], IRS_TRACE_FILL_SCORE),
+                                "bd_score": _safe_float(item["bd_score"], IRS_TRACE_FILL_SCORE),
+                                "gn_score": _safe_float(item["gn_score"], IRS_TRACE_FILL_SCORE),
+                                "rotation_status": str(item["rotation_status"]),
+                                "rotation_slope": _safe_float(item["rotation_slope"], 0.0),
+                                "industry_count_today": industry_count_today,
+                                "flow_share": _safe_float(item["flow_share"], IRS_TRACE_FILL_SCORE),
+                                "amount_vs_self_20d": _safe_float(item["amount_vs_self_20d"], IRS_TRACE_FILL_SCORE),
+                                "strong_amount_share": _safe_float(item["strong_amount_share"], IRS_TRACE_FILL_SCORE),
+                                "top_rank_streak_5d": int(_safe_float(item["top_rank_streak_5d"], 0.0)),
+                                "momentum_consistency": _safe_float(item["momentum_consistency"], 0.5),
+                                "total_score": _safe_float(item["score"], 0.0),
+                            },
+                            "MIN_INDUSTRIES_SKIP",
+                            trace_variant,
+                            benchmark_pct=benchmark_pct,
+                        )
+                    )
+            continue
+
+        ranked_df = pd.DataFrame(
+            [{"industry": item["industry"], "score": float(item["score"])} for item in day_results]
+        ).sort_values(["score", "industry"], ascending=[False, True]).reset_index(drop=True)
+        ranked_df["rank"] = np.arange(1, len(ranked_df) + 1, dtype=int)
+        rank_map = {str(row["industry"]): int(row["rank"]) for _, row in ranked_df.iterrows()}
+        score_map = {str(row["industry"]): float(row["score"]) for _, row in ranked_df.iterrows()}
+
+        for item in day_results:
+            industry = item["industry"]
+            rank_history = rank_history_by_industry.setdefault(industry, [])
+            score_history = score_history_by_industry.setdefault(industry, [])
+            rank_history.append(rank_map[industry])
+            score_history.append(score_map[industry])
+            if len(rank_history) > rt_lookback_days:
+                del rank_history[0]
+            if len(score_history) > rt_lookback_days:
+                del score_history[0]
+
+        if day < start:
+            continue
+
+        for item in day_results:
+            industry = item["industry"]
+            output_rows.append(
+                {
+                    "date": day,
+                    "industry": industry,
+                    "score": score_map[industry],
+                    "rank": rank_map[industry],
+                    "rs_score": float(item["rs_score"]),
+                    "cf_score": float(item["cf_score"]),
+                    "rv_score": float(item["rv_score"]),
+                    "rt_score": float(item["rt_score"]),
+                    "bd_score": float(item["bd_score"]),
+                    "gn_score": float(item["gn_score"]),
+                    "rotation_status": str(item["rotation_status"]),
+                    "rotation_slope": float(item["rotation_slope"]),
+                }
+            )
             trace_rows.append(
                 _build_industry_trace_row(
-                    trace_run_id=trace_run_id,
-                    trade_date=day_value,
-                    industry_row=row,
-                    components=components,
-                    coverage_flag=coverage_flag,
-                    industry_score=score_value,
-                    industry_rank=rank_value,
+                    trace_run_id,
+                    day,
+                    item["industry_row"],
+                    {
+                        "industry_pct": _safe_float(item["industry_row"].get("pct_chg"), 0.0),
+                        "amount": _safe_float(item["amount"], 0.0),
+                        "market_total_amount": _safe_float(item["market_total_amount"], 0.0),
+                        "amount_delta_10d": _safe_float(item["amount_delta_10d"], IRS_TRACE_FILL_SCORE),
+                        "rs_1d_raw": _safe_float(item["rs_1d_raw"], 0.0),
+                        "rs_5d_raw": _safe_float(item["rs_5d_raw"], IRS_TRACE_FILL_SCORE),
+                        "rs_20d_raw": _safe_float(item["rs_20d_raw"], IRS_TRACE_FILL_SCORE),
+                        "rank_stability_raw": _safe_float(item["rank_stability_raw"], 0.5),
+                        "rs_score": _safe_float(item["rs_score"], IRS_TRACE_FILL_SCORE),
+                        "cf_raw": _safe_float(item["cf_raw"], 0.0),
+                        "cf_score": _safe_float(item["cf_score"], IRS_TRACE_FILL_SCORE),
+                        "rv_score": _safe_float(item["rv_score"], IRS_TRACE_FILL_SCORE),
+                        "rt_score": _safe_float(item["rt_score"], IRS_TRACE_FILL_SCORE),
+                        "bd_score": _safe_float(item["bd_score"], IRS_TRACE_FILL_SCORE),
+                        "gn_score": _safe_float(item["gn_score"], IRS_TRACE_FILL_SCORE),
+                        "rotation_status": str(item["rotation_status"]),
+                        "rotation_slope": _safe_float(item["rotation_slope"], 0.0),
+                        "industry_count_today": industry_count_today,
+                        "flow_share": _safe_float(item["flow_share"], IRS_TRACE_FILL_SCORE),
+                        "amount_vs_self_20d": _safe_float(item["amount_vs_self_20d"], IRS_TRACE_FILL_SCORE),
+                        "strong_amount_share": _safe_float(item["strong_amount_share"], IRS_TRACE_FILL_SCORE),
+                        "top_rank_streak_5d": int(_safe_float(item["top_rank_streak_5d"], 0.0)),
+                        "momentum_consistency": _safe_float(item["momentum_consistency"], 0.5),
+                        "total_score": score_map[industry],
+                    },
+                    coverage_flag,
+                    trace_variant,
+                    industry_score=score_map[industry],
+                    industry_rank=rank_map[industry],
                     benchmark_pct=benchmark_pct,
                 )
             )
