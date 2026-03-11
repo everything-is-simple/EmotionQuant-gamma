@@ -54,9 +54,15 @@
 
 当前实验固定允许：
 
-1. 比较 `BOF / PB / CPB / BOF+PB / PB+CPB / YTC5_ANY`。
+1. 首轮只比较 `BOF / BPB / PB / TST / CPB / YTC5_ANY`。
 2. 使用最简 Broker或受控最小执行口径。
 3. 在同一窗口中比较 entry edge、trade count、EV、PF、MDD、participation。
+
+这里的：
+
+1. `BOF / BPB / PB / TST / CPB` 属于 `PAS pattern type`。
+2. `YTC5_ANY` 属于 `pattern_set(all five) + PAS_COMBINATION=ANY` 的实验场景。
+3. 本轮不把 `BOF+PB / PB+CPB` 这类组合场景混入首轮 taxonomy 证明。
 
 当前实验固定不允许：
 

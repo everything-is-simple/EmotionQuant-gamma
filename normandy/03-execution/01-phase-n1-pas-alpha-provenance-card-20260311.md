@@ -40,8 +40,8 @@
 
 `N1` 当前只做三件事：
 
-1. 用最简 Broker 跑长窗口 `PAS` 组合矩阵。
-2. 比较不同 `PAS` 组合的 raw entry edge。
+1. 用最简 Broker 跑长窗口 `PAS` 单形态 + 总集合首轮矩阵。
+2. 比较不同 `PAS` 单形态的 raw entry edge。
 3. 确认第二战场下一步该优先追哪组 shape。
 
 一句话说：
@@ -55,13 +55,19 @@
 `N1` 当前固定比较：
 
 1. `BOF`
-2. `PB`
-3. `CPB`
-4. `BOF+PB`
-5. `PB+CPB`
+2. `BPB`
+3. `PB`
+4. `TST`
+5. `CPB`
 6. `YTC5_ANY`
 
 若需要扩展，必须先完成本轮 evidence，再开下一张卡。
+
+这里固定区分：
+
+1. `BOF / BPB / PB / TST / CPB` 是 `PAS pattern type`。
+2. `YTC5_ANY` 是 `pattern_set(all five) + PAS_COMBINATION=ANY` 的首轮总集合场景。
+3. `BOF+PB / PB+CPB` 不属于本卡首轮矩阵，若要比较必须另开新卡。
 
 ---
 
@@ -83,7 +89,7 @@
 
 目标：
 
-1. 在统一长窗口上重放 `BOF / PB / CPB / BOF+PB / PB+CPB / YTC5_ANY`。
+1. 在统一长窗口上重放 `BOF / BPB / PB / TST / CPB / YTC5_ANY`。
 2. 输出统一 `matrix summary`。
 
 ### N1-B Provenance Digest
@@ -122,7 +128,7 @@
 
 `N1` 只有在以下条件同时满足时才允许出场：
 
-1. 至少有一组 `PAS` 组合在统一长窗口里被证明比 `BOF` 更像 raw alpha 来源。
+1. 至少有一组 `PAS` 单形态或 `YTC5_ANY` 在统一长窗口里被证明比 `BOF` 更像 raw alpha 来源。
 2. 已明确下一步进入 `N2 / Exit decomposition` 的候选 shape 集合。
 3. 已写出正式 record，并把结论同步到第二战场入口。
 
@@ -143,4 +149,4 @@
 
 `N1` 当前一句话任务固定为：
 
-`以最简执行口径重跑 PAS 长窗口矩阵，先证明 BOF、PB、CPB 及其组合里谁更像真实 raw alpha 来源。`
+`以最简执行口径重跑 PAS 五单形态 + YTC5_ANY 长窗口矩阵，先证明谁更像真实 raw alpha 来源。`

@@ -16,6 +16,28 @@ PRESELECT_SCORE_MODES = {
     "amount_only",
     "volume_ratio_only",
 }
+SELECTOR_TRACE_COLUMNS = [
+    "run_id",
+    "signal_date",
+    "code",
+    "pipeline_mode",
+    "preselect_score_mode",
+    "industry",
+    "amount",
+    "volume_ratio",
+    "filters_passed",
+    "reject_reason",
+    "candidate_reason",
+    "coverage_flag",
+    "source_snapshot_date",
+    "liquidity_tag",
+    "preselect_score",
+    "final_score",
+    "candidate_rank",
+    "candidate_top_n",
+    "selected",
+    "selected_for_pas",
+]
 
 
 def _industry_priority_map(store: Store, calc_date: date) -> dict[str, float]:
@@ -176,34 +198,13 @@ def _persist_selector_candidate_trace(
     trace["source_snapshot_date"] = calc_date
     trace["final_score"] = pd.to_numeric(trace.get("score"), errors="coerce")
     trace["reject_reason"] = trace["reject_reason"].replace("", None)
+    # trace 行来自 annotate/merge 的不同分支，不能假设每个分支都已经补齐同一列集；
+    # 缺失列统一补成 NA，避免长窗回放在 selector trace 写入时因单列缺口中断。
+    trace = trace.reindex(columns=SELECTOR_TRACE_COLUMNS, fill_value=pd.NA)
 
     store.bulk_upsert(
         "selector_candidate_trace_exp",
-        trace.loc[
-            :,
-            [
-                "run_id",
-                "signal_date",
-                "code",
-                "pipeline_mode",
-                "preselect_score_mode",
-                "industry",
-                "amount",
-                "volume_ratio",
-                "filters_passed",
-                "reject_reason",
-                "candidate_reason",
-                "coverage_flag",
-                "source_snapshot_date",
-                "liquidity_tag",
-                "preselect_score",
-                "final_score",
-                "candidate_rank",
-                "candidate_top_n",
-                "selected",
-                "selected_for_pas",
-            ],
-        ].reset_index(drop=True),
+        trace.reset_index(drop=True),
     )
 
 
