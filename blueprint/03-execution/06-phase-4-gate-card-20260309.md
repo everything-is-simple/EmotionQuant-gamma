@@ -39,6 +39,21 @@
 2. 不删除 `legacy` 回退路径
 3. 不用局部证据冒充系统级闭环
 
+**当前开工口径**
+
+`Phase 4` 当前应写成：
+
+`card ready, execution not ready`
+
+原因不是卡片正文不完整，而是依赖的 `Phase 3` 交付物尚未完成。`Phase 4` 不允许靠“先跑旧脚本”绕过这些前置条件。
+
+正式开工前至少先具备：
+
+1. `risk_regime` 已正式落库，或冻结了正式落库路径并完成兼容验证
+2. `Broker / Risk` 已稳定消费 `risk_regime`
+3. `scripts/backtest/run_v001_plus_mss_regime_sensitivity.py` 已建立并产出 evidence
+4. `Phase 3` records 已明确写回 `risk_regime` 消费切换、fallback 语义与资源纪律结论
+
 ### 2.1 Gate 标准必须先冻结
 
 `Phase 4` 开工前，下面 3 件事必须已经写死，不能等结果出来再反推标准：
@@ -153,6 +168,7 @@
 - [ ] rank decomposition
 - [ ] regime sensitivity
 - [ ] 已明确区分“旧脚本重跑的系统级意义”和“新增 MSS regime 脚本的创建归属”
+- [ ] 已确认 `Phase 3` 产出齐全；不以缺失 `risk_regime` 落库 / Broker 消费切换 / regime sensitivity evidence 的状态直接进入 `P4-B`
 
 ### 3.3 Task P4-C Mainline Decision
 

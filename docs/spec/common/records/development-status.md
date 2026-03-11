@@ -2,7 +2,7 @@
 
 **状态**: Active（v0.01 Frozen + v0.01-plus 主线替代切换）  
 **最后更新**: 2026-03-11
-**当前阶段**: Mainline MVP Strengthening（`v0.01` 已冻结为历史尝试；`v0.01-plus` 已升格为当前主开发线；`Phase 0 / Phase 1 / Phase 1.5 / Phase 2` 已完成，当前进入 `Phase 3 / MSS`）
+**当前阶段**: Mainline MVP Strengthening（`v0.01` 已冻结为历史尝试；`v0.01-plus` 已升格为当前主开发线；`Phase 0 / Phase 1 / Phase 1.5 / Phase 2` 已完成，当前进入 `Phase 3 / MSS`；`Phase 4` 卡片已准备好，但执行仍受 `Phase 3` 交付物阻塞）
 
 > 本文件只维护状态、看板、风险与版本记录，不承担当前主线设计正文。新版设计权威层统一查看 `blueprint/`，边界声明见 `docs/design-migration-boundary.md`。
 
@@ -44,7 +44,7 @@
 | v0.01-plus 版本决策 | ✅ 已完成 | 定义为当前主开发线，用于替代 legacy top-down；`v0.01` 保持 Frozen 历史基线 |
 | v0.01-plus 文档骨架 | ✅ 已完成 | `README / roadmap / spec / gate / data-contract` 已建立 |
 | 主线切换口径 | ✅ 已完成 | `v0.01-plus` 目录、状态记录与设计草案已按“主线替代版”重写 |
-| 代码实现 | 进行中 | `Phase 0 / Phase 1 / Phase 1.5 / Phase 2` 已完成；当前进入 `Phase 3 / MSS`，`IRS baseline` 保留为后续治理项，但不再阻塞 `Phase 2` 出场 |
+| 代码实现 | 进行中 | `Phase 0 / Phase 1 / Phase 1.5 / Phase 2` 已完成；当前进入 `Phase 3 / MSS`，`IRS baseline` 保留为后续治理项，但不再阻塞 `Phase 2` 出场；`Phase 4` 当前口径固定为 `card ready, execution not ready` |
 
 ---
 
@@ -68,6 +68,9 @@
 | Phase 1 PAS 最小可交易形态层 | 补齐五形态 registry、quality/reference sidecar 与 PAS 专项 evidence | `blueprint/03-execution/03-phase-1-pas-card-20260309.md`, `src/strategy/`, `scripts/backtest/`, `docs/spec/v0.01-plus/` | completed |
 | v0.01-plus 主线开工 Gate | 固化主线切换矩阵、run 命名、sidecar 与脚本入口 | `blueprint/02-implementation-spec/`, `blueprint/03-execution/`, `docs/spec/v0.01-plus/governance/`, `src/`, `scripts/backtest/` | in_progress |
 | Phase 1.5 稳定化收口 | 拆分 `L3` 进度锚、收口 trace/run 策略、冻结 quality 解释层定位、定性 `l3_signals` 角色并完成 `MSS overlay` 显式激活验证 | `blueprint/03-execution/03.5-phase-1.5-stabilization-card-20260310.md`, `src/data/builder.py`, `src/backtest/ablation.py`, `src/backtest/pas_ablation.py`, `src/data/store.py`, `tests/`, `docs/spec/v0.01-plus/` | completed |
+| Phase 2 IRS 最小可交易排序层 | 五层 `IRS` 排序链已完成出场，`IRS baseline` 保留为后续治理项 | `blueprint/03-execution/04-phase-2-irs-card-20260309.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-2-exit-20260311.md` | completed |
+| Phase 3 MSS 最小可交易风控层 | 当前允许立即进场，但第一组补丁必须先覆盖 `schema / test / script` 前置修订 | `blueprint/03-execution/05-phase-3-mss-card-20260309.md`, `src/selector/mss.py`, `src/broker/risk.py`, `src/data/store.py`, `tests/unit/selector/test_mss.py`, `tests/unit/broker/test_broker.py`, `scripts/backtest/run_v001_plus_mss_regime_sensitivity.py` | in_progress |
+| Phase 4 全链回归与 Gate 收口 | 卡片正文已冻结完成，但执行必须等待 `Phase 3` 交付物 | `blueprint/03-execution/06-phase-4-gate-card-20260309.md`, `docs/spec/common/records/development-status.md`, `docs/spec/v0.01-plus/records/` | blocked |
 
 ---
 
@@ -93,7 +96,7 @@
 
 | 任务 | 负责人 | 开始日期 | 状态 | 阻塞 |
 |---|---|---|---|---|
-| v0.01-plus 主线开工准备（Gate / run 命名 / sidecar / script） | wangweiyun | 2026-03-07 | DOING | `Phase 0 / Phase 1 / Phase 1.5 / Phase 2` 已完成；下一步转入 `Phase 3 / MSS`，并继续处理 EG5 七维评审与默认路径切换前的最终收口 |
+| v0.01-plus 主线开工准备（Gate / run 命名 / sidecar / script） | wangweiyun | 2026-03-07 | DOING | `Phase 3` 可以立即进场，但第一组补丁必须先覆盖 `src/selector/mss.py`, `src/broker/risk.py`, `src/data/store.py`, `tests/unit/selector/test_mss.py`, `tests/unit/broker/test_broker.py`, `scripts/backtest/run_v001_plus_mss_regime_sensitivity.py`；`Phase 4` 卡片已准备好，但执行仍受 `risk_regime` 落库、Broker 消费切换与 regime sensitivity evidence 阻塞 |
 
 ### 4.3 文档治理期（2026-03-07）
 
@@ -117,6 +120,7 @@
 | 2026-03-10 | `Phase 1 / PAS` 五形态、quality/reference 与专项 evidence 收口 | completed | `docs/spec/v0.01-plus/evidence/pas_ablation_dtt_v0_01_dtt_bof_plus_irs_score_pas_registry_matrix_w20260105_20260224_t021051__pas_ablation.json`, `docs/spec/v0.01-plus/records/v0.01-plus-pas-ablation-20260310.md`, `scripts/backtest/run_v001_plus_pas_ablation.py`, `src/strategy/pas_bpb.py`, `src/strategy/pas_pb.py`, `src/strategy/pas_tst.py`, `src/strategy/pas_cpb.py`, `src/strategy/pas_sidecar.py`, `src/strategy/registry.py`, `src/strategy/strategy.py`, `tests/unit/strategy/test_pas_detectors.py`, `tests/unit/strategy/test_pas_sidecar.py`, `tests/unit/backtest/test_pas_ablation.py` |
 | 2026-03-10 | `Phase 1.5` 稳定化收口：`L3` 双进度锚、run-scoped trace 清理、quality freeze、settings cache hygiene、`MSS overlay` 激活证据、`l3_signals` 角色定性 | completed | `docs/spec/v0.01-plus/evidence/mss_overlay_activation_dtt_v0_01_dtt_pattern_plus_irs_mss_score_t20260310__mss_overlay_activation.json`, `docs/spec/v0.01-plus/records/v0.01-plus-mss-overlay-activation-20260310.md`, `blueprint/03-execution/03.5-phase-1.5-stabilization-card-20260310.md`, `src/data/builder.py`, `src/backtest/ablation.py`, `src/backtest/pas_ablation.py`, `src/data/store.py`, `tests/conftest.py`, `tests/patches/data/test_builder_window_semantics_regression.py`, `tests/patches/strategy/test_strategy_trace_semantics_regression.py`, `tests/unit/backtest/test_ablation.py`, `tests/unit/broker/test_broker.py` |
 | 2026-03-11 | `Phase 2 / IRS` 长窗口 evidence 与出场记录收口 | completed | `docs/spec/v0.01-plus/evidence/irs_ablation_dtt_v0_01_dtt_pattern_plus_irs_score_all_w20250901_20260224_t165938__irs_ablation.json`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-2-exit-20260311.md`, `blueprint/03-execution/04-phase-2-irs-card-20260309.md`, `blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md` |
+| 2026-03-11 | `Phase 3 / Phase 4` 进场口径与资源风险回写 | completed | `blueprint/03-execution/05-phase-3-mss-card-20260309.md`, `blueprint/03-execution/06-phase-4-gate-card-20260309.md`, `docs/spec/common/records/development-status.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-2-exit-20260311.md` |
 
 ### 4.4 旧实现期（2026-03-02 ~ 2026-03-06）阶段摘要
 
@@ -199,6 +203,8 @@
 | 2026-03-10 | 治理决策 | `Phase 1.5` 已完成：允许进入 `Phase 2 / IRS` | `L3` 双进度锚、run-scoped trace 清理、quality freeze、settings cache hygiene、`MSS overlay` 显式激活验证与 `l3_signals` 角色定性均已完成 | closed |
 | 2026-03-11 | 治理决策 | `IRS baseline` 从技术债升级为 `Phase 2` 出场门槛之一 | `Phase 2` 当前先证明排序链接通与稳定性；未经 baseline 处置，不宣布 `IRS absolute score calibration completed`；下一步先补长窗口 evidence 再裁决是否出场 | closed |
 | 2026-03-11 | 治理决策 | `Phase 2 / IRS` 已完成出场，但明确不宣称 `IRS absolute score calibration completed` | 长窗口 evidence 已证明五层 `IRS` 稳定改写行业 rank，且变化已开始穿透执行层；后续进入 `Phase 3 / MSS`，`IRS baseline` 保留为后续治理项 | closed |
+| 2026-03-11 | 实现风险 | 主链资源热点当前已受控，但未消失；`clean_stock_adj_daily` / `clean_market_snapshot` / `compute_irs` / `Store.read_df` 仍是持续观察点 | 继续维持 `DuckDB-first / incremental-first / batch / temp path` 纪律；不把当前系统表述成“没有遗漏的一次读取过多路径” | open |
+| 2026-03-11 | 治理决策 | `Phase 3` 当前口径收口为“可以进场，但第一组补丁必须先覆盖 schema/test/script”；`Phase 4` 当前口径收口为 `card ready, execution not ready` | `Phase 3` 开工第一组补丁至少同时覆盖 `src/selector/mss.py`, `src/broker/risk.py`, `src/data/store.py`, `tests/unit/selector/test_mss.py`, `tests/unit/broker/test_broker.py`, `scripts/backtest/run_v001_plus_mss_regime_sensitivity.py`；`Phase 4` 继续等待 `risk_regime` 落库、Broker 消费切换与 regime sensitivity evidence | closed |
 
 ---
 
@@ -230,6 +236,7 @@
 | 2026-03-10 | v1.21 | 完成 `Phase 1.5`：补齐 `MSS overlay` 激活证据并正式收口，下一步进入 `Phase 2 / IRS` |
 | 2026-03-11 | v1.22 | 将 `IRS baseline` 正式提升为 `Phase 2` 出场门槛之一，并写入执行卡与状态记录 |
 | 2026-03-11 | v1.23 | `Phase 2 / IRS` 长窗口 evidence 与出场记录收口；当前主线推进到 `Phase 3 / MSS` |
+| 2026-03-11 | v1.24 | 收口 `Phase 3 / Phase 4` 进场口径：明确 `Phase 3` opening patch set、`Phase 4` 为 `card ready, execution not ready`，并将主链资源热点改写为“可控但非无风险” |
 
 
 

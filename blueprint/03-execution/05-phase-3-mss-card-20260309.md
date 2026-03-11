@@ -105,6 +105,43 @@
    - 正式 DDL 先改
    - `_ensure_optional_columns` 只作为旧库兼容桥，不替代正式 schema 设计
 
+### 2.4 开工口径
+
+`Phase 3` 当前的正式口径不是：
+
+`代码前置已就绪，只差在 mss.py 加几列状态、在 risk.py 改一处映射函数`
+
+更准确的写法是：
+
+`Phase 3` 已满足进场条件，但执行准备从第一组 opening patch set 才正式开始。
+
+这组 opening patch set 至少同时覆盖：
+
+1. `src/selector/mss.py`
+2. `src/broker/risk.py`
+3. `src/data/store.py`
+4. `tests/unit/selector/test_mss.py`
+5. `tests/unit/broker/test_broker.py`
+6. `scripts/backtest/run_v001_plus_mss_regime_sensitivity.py`
+
+少任何一项，都只能算 `Phase 3 card ready`，不能算 `Phase 3 execution ready`。
+
+### 2.5 资源口径
+
+`Phase 3` 不应把当前系统表述成：
+
+`已没有一次读取过多路径`
+
+更准确的资源口径是：
+
+1. 当前主链资源热点是“已受控”，不是“已消失”
+2. 持续关注点包括：
+   - `clean_stock_adj_daily`
+   - `clean_market_snapshot`
+   - `compute_irs`
+   - `Store.read_df`
+3. `MSS` 自身体量很小，但不意味着全链资源风险归零
+
 ---
 
 ## 3. 任务
@@ -150,10 +187,12 @@
 
 1. `src/selector/mss.py`
 2. `src/broker/risk.py`
+3. `src/data/store.py`
 
 **测试落点**
 
-1. `tests/unit/broker/test_broker.py`
+1. `tests/unit/selector/test_mss.py`
+2. `tests/unit/broker/test_broker.py`
 
 **执行约束**
 
