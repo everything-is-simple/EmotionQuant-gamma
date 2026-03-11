@@ -1,0 +1,185 @@
+{
+  "generated_at": "2026-03-11T19:43:36Z",
+  "matrix_summary_run_id": "normandy_pas_alpha_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t165527",
+  "matrix_path": "G:\\EmotionQuant-gamma\\normandy\\03-execution\\evidence\\normandy_pas_alpha_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t165527__pas_alpha_matrix.json",
+  "start": "2023-01-03",
+  "end": "2026-02-24",
+  "dtt_variant": "v0_01_dtt_pattern_only",
+  "candidate_rule": {
+    "expected_value_must_beat_bof": true,
+    "profit_factor_floor": "max(1.0, BOF)",
+    "min_trade_count": 20,
+    "min_participation_rate": 0.05,
+    "relative_participation_floor_vs_bof": 0.5
+  },
+  "scorecard": [
+    {
+      "label": "BOF",
+      "patterns": [
+        "bof"
+      ],
+      "pattern_families": [
+        "BOF"
+      ],
+      "trade_count": 277,
+      "expected_value": 0.01608650155535747,
+      "profit_factor": 2.6120732101489508,
+      "max_drawdown": 0.13267002776878056,
+      "participation_rate": 0.8052325581395349,
+      "expected_value_delta_vs_bof": 0.0,
+      "profit_factor_delta_vs_bof": 0.0,
+      "max_drawdown_delta_vs_bof": 0.0,
+      "participation_delta_vs_bof": 0.0,
+      "entry_edge_wins_vs_bof": false,
+      "sample_density_ok": true,
+      "n2_candidate": false
+    },
+    {
+      "label": "YTC5_ANY",
+      "patterns": [
+        "bpb",
+        "pb",
+        "tst",
+        "cpb",
+        "bof"
+      ],
+      "pattern_families": [
+        "BPB",
+        "PB",
+        "TST",
+        "CPB",
+        "BOF"
+      ],
+      "trade_count": 608,
+      "expected_value": -0.0045981476788217596,
+      "profit_factor": 2.2143777502480217,
+      "max_drawdown": 0.5453518972116161,
+      "participation_rate": 0.10646121519873927,
+      "expected_value_delta_vs_bof": -0.02068464923417923,
+      "profit_factor_delta_vs_bof": -0.397695459900929,
+      "max_drawdown_delta_vs_bof": 0.4126818694428356,
+      "participation_delta_vs_bof": -0.6987713429407956,
+      "entry_edge_wins_vs_bof": false,
+      "sample_density_ok": true,
+      "n2_candidate": false
+    },
+    {
+      "label": "PB",
+      "patterns": [
+        "pb"
+      ],
+      "pattern_families": [
+        "PB"
+      ],
+      "trade_count": 409,
+      "expected_value": -0.007116399571309551,
+      "profit_factor": 2.204181454603743,
+      "max_drawdown": 0.41511544746969514,
+      "participation_rate": 0.39670223084384093,
+      "expected_value_delta_vs_bof": -0.023202901126667022,
+      "profit_factor_delta_vs_bof": -0.40789175554520796,
+      "max_drawdown_delta_vs_bof": 0.2824454197009146,
+      "participation_delta_vs_bof": -0.40853032729569394,
+      "entry_edge_wins_vs_bof": false,
+      "sample_density_ok": true,
+      "n2_candidate": false
+    },
+    {
+      "label": "TST",
+      "patterns": [
+        "tst"
+      ],
+      "pattern_families": [
+        "TST"
+      ],
+      "trade_count": 378,
+      "expected_value": -0.009242872544414839,
+      "profit_factor": 2.0978060481109204,
+      "max_drawdown": 0.38643190154210455,
+      "participation_rate": 0.4380069524913094,
+      "expected_value_delta_vs_bof": -0.02532937409977231,
+      "profit_factor_delta_vs_bof": -0.5142671620380304,
+      "max_drawdown_delta_vs_bof": 0.253761873773324,
+      "participation_delta_vs_bof": -0.3672256056482255,
+      "entry_edge_wins_vs_bof": false,
+      "sample_density_ok": true,
+      "n2_candidate": false
+    },
+    {
+      "label": "CPB",
+      "patterns": [
+        "cpb"
+      ],
+      "pattern_families": [
+        "CPB"
+      ],
+      "trade_count": 477,
+      "expected_value": -0.011595639312685445,
+      "profit_factor": 2.1514622674836965,
+      "max_drawdown": 0.5232177028107562,
+      "participation_rate": 0.12997275204359673,
+      "expected_value_delta_vs_bof": -0.027682140868042916,
+      "profit_factor_delta_vs_bof": -0.46061094266525426,
+      "max_drawdown_delta_vs_bof": 0.39054767504197563,
+      "participation_delta_vs_bof": -0.6752598060959382,
+      "entry_edge_wins_vs_bof": false,
+      "sample_density_ok": true,
+      "n2_candidate": false
+    },
+    {
+      "label": "BPB",
+      "patterns": [
+        "bpb"
+      ],
+      "pattern_families": [
+        "BPB"
+      ],
+      "trade_count": 27,
+      "expected_value": -0.09379018160858608,
+      "profit_factor": 0.14112560990840295,
+      "max_drawdown": 0.21349602344207,
+      "participation_rate": 1.0,
+      "expected_value_delta_vs_bof": -0.10987668316394356,
+      "profit_factor_delta_vs_bof": -2.4709476002405477,
+      "max_drawdown_delta_vs_bof": 0.08082599567328944,
+      "participation_delta_vs_bof": 0.19476744186046513,
+      "entry_edge_wins_vs_bof": false,
+      "sample_density_ok": true,
+      "n2_candidate": false
+    }
+  ],
+  "provenance_leader": "YTC5_ANY",
+  "likely_raw_alpha_family_votes": [
+    {
+      "family": "BOF",
+      "vote_count": 1
+    },
+    {
+      "family": "BPB",
+      "vote_count": 1
+    },
+    {
+      "family": "CPB",
+      "vote_count": 1
+    },
+    {
+      "family": "PB",
+      "vote_count": 1
+    },
+    {
+      "family": "TST",
+      "vote_count": 1
+    }
+  ],
+  "n2_candidates": [],
+  "control_labels": [
+    "BOF",
+    "YTC5_ANY",
+    "PB",
+    "TST",
+    "CPB",
+    "BPB"
+  ],
+  "conclusion": "当前没有非 BOF shape 同时满足 entry edge 与样本密度门槛；YTC5_ANY 先保留为观测领先者，BOF 继续作为 N2 前的固定对照。",
+  "summary_run_id": "normandy_pas_alpha_digest_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t194336"
+}
