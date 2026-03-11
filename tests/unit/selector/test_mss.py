@@ -18,7 +18,7 @@ from src.selector.mss import (
     resolve_mss_state,
     score_mss_raw_frame,
 )
-from src.selector.mss_experiments import MssVariantSpec, score_mss_variant
+from src.selector.mss_experiments import MssVariantSpec, compute_mss_variant, score_mss_variant
 
 
 def test_mss_calibration_pipeline_builds_non_placeholder_baseline() -> None:
@@ -370,4 +370,65 @@ def test_compute_mss_persists_raw_and_normalized_components_to_l3(tmp_path) -> N
     assert row.iloc[0]["position_advice"] == expected_state["position_advice"]
     assert row.iloc[0]["risk_regime"] == expected_state["risk_regime"]
     assert row.iloc[0]["trend_quality"] == expected_state["trend_quality"]
+    store.close()
+
+
+def test_compute_mss_variant_persists_state_layer_to_l3(tmp_path) -> None:
+    db = tmp_path / "mss_variant_l3_trace.duckdb"
+    store = Store(db)
+    snapshot_date = date(2026, 1, 2)
+    store.bulk_upsert(
+        "l2_market_snapshot",
+        pd.DataFrame(
+            [
+                {
+                    "date": snapshot_date,
+                    "total_stocks": 100,
+                    "rise_count": 60,
+                    "fall_count": 40,
+                    "strong_up_count": 10,
+                    "strong_down_count": 3,
+                    "limit_up_count": 5,
+                    "limit_down_count": 2,
+                    "touched_limit_up_count": 1,
+                    "new_100d_high_count": 8,
+                    "new_100d_low_count": 4,
+                    "continuous_limit_up_2d": 2,
+                    "continuous_limit_up_3d_plus": 1,
+                    "continuous_new_high_2d_plus": 3,
+                    "high_open_low_close_count": 2,
+                    "low_open_high_close_count": 1,
+                    "pct_chg_std": 0.02,
+                    "amount_volatility": 100000.0,
+                }
+            ]
+        ),
+    )
+
+    written = compute_mss_variant(store, snapshot_date, snapshot_date, variant_label="zscore_weighted6")
+    row = store.read_df(
+        """
+        SELECT market_coefficient_raw, profit_effect_raw, loss_effect_raw,
+               market_coefficient, profit_effect, loss_effect, signal,
+               phase, phase_trend, phase_days, position_advice, risk_regime, trend_quality, score
+        FROM l3_mss_daily
+        WHERE date = ?
+        """,
+        (snapshot_date,),
+    )
+
+    assert written == 1
+    assert row.iloc[0]["market_coefficient_raw"] is not None
+    assert row.iloc[0]["profit_effect_raw"] is not None
+    assert row.iloc[0]["loss_effect_raw"] is not None
+    assert row.iloc[0]["phase"] is not None
+    assert row.iloc[0]["phase_trend"] is not None
+    assert row.iloc[0]["phase_days"] == 1
+    assert row.iloc[0]["position_advice"] is not None
+    assert row.iloc[0]["risk_regime"] is not None
+    assert row.iloc[0]["trend_quality"] is not None
+    expected_state = resolve_mss_state([float(row.iloc[0]["score"])])
+    assert row.iloc[0]["phase"] == expected_state["phase"]
+    assert row.iloc[0]["phase_trend"] == expected_state["phase_trend"]
+    assert row.iloc[0]["risk_regime"] == expected_state["risk_regime"]
     store.close()

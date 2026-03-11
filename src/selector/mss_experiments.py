@@ -8,7 +8,12 @@ import pandas as pd
 
 from src.data.store import Store
 from src.selector.baseline import MSS_BASELINE
-from src.selector.mss import MSS_FACTOR_NAMES, build_mss_raw_frame, calibrate_mss_baseline
+from src.selector.mss import (
+    MSS_FACTOR_NAMES,
+    build_mss_raw_frame,
+    calibrate_mss_baseline,
+    resolve_mss_state,
+)
 from src.selector.normalize import zscore_single
 
 
@@ -209,7 +214,69 @@ def compute_mss_variant(
     )
     if scored.empty:
         return 0
-    return store.bulk_upsert("l3_mss_daily", scored)
+
+    # build_l3 的正式入口走的是 compute_mss_variant，而 Broker 在 Phase 3 之后
+    # 必须直接从 l3_mss_daily 读取 raw 因子和状态层字段。
+    # 因此这里不能只写 score/signal/normalized components，必须把：
+    # 1. raw 因子
+    # 2. phase / phase_trend / phase_days / position_advice / risk_regime / trend_quality
+    # 一次性回写到正式表，避免“单测纯函数有状态、真实 build_l3 却全是 NULL”。
+    prior_df = store.read_df(
+        """
+        SELECT date, score, phase, phase_days
+        FROM l3_mss_daily
+        WHERE date < ?
+        ORDER BY date DESC
+        LIMIT 20
+        """,
+        (start,),
+    )
+    score_history: list[float] = []
+    prev_phase: str | None = None
+    prev_phase_days: int | None = None
+    if not prior_df.empty:
+        for _, prior_row in prior_df.sort_values("date").iterrows():
+            prior_score = prior_row["score"]
+            if prior_score is None or pd.isna(prior_score):
+                continue
+            score_history.append(float(prior_score))
+            score_history = score_history[-20:]
+            prior_phase_value = prior_row["phase"]
+            prior_phase_days_value = prior_row["phase_days"]
+            if prior_phase_value is not None and not pd.isna(prior_phase_value):
+                prev_phase = str(prior_phase_value)
+            if prior_phase_days_value is not None and not pd.isna(prior_phase_days_value):
+                prev_phase_days = int(prior_phase_days_value)
+            else:
+                prior_state = resolve_mss_state(
+                    score_history,
+                    prev_phase=prev_phase,
+                    prev_phase_days=prev_phase_days,
+                )
+                prev_phase = str(prior_state["phase"])
+                prev_phase_days = int(prior_state["phase_days"])
+
+    state_rows: list[dict[str, str | int | date]] = []
+    for row in scored.sort_values("date").itertuples(index=False):
+        score = float(row.score)
+        state = resolve_mss_state(
+            [*score_history, score],
+            prev_phase=prev_phase,
+            prev_phase_days=prev_phase_days,
+        )
+        state_rows.append({"date": row.date, **state})
+        score_history.append(score)
+        score_history = score_history[-20:]
+        prev_phase = str(state["phase"])
+        prev_phase_days = int(state["phase_days"])
+
+    enriched = (
+        raw_df.merge(scored, on="date", how="inner")
+        .merge(pd.DataFrame(state_rows), on="date", how="inner")
+        .sort_values("date")
+        .reset_index(drop=True)
+    )
+    return store.bulk_upsert("l3_mss_daily", enriched)
 
 
 def score_mss_variants(

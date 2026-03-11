@@ -1,0 +1,192 @@
+{
+  "summary_run_id": "mss_regime_sensitivity_dtt_v0_01_dtt_pattern_plus_irs_score_w20260105_20260224_t015946",
+  "run_id": "mss_regime_sensitivity_dtt_v0_01_dtt_pattern_plus_irs_score_w20260105_20260224_t015946",
+  "db_path": "G:\\EmotionQuant-temp\\backtest\\mss-regime-sensitivity-20260311-real.duckdb",
+  "start": "2026-01-05",
+  "end": "2026-02-24",
+  "patterns": [
+    "bof"
+  ],
+  "overall_metrics": {
+    "trade_days": 30,
+    "trade_count": 16,
+    "win_rate": 0.625,
+    "avg_win": 0.027206377213108528,
+    "avg_loss": 0.05476132461121396,
+    "expected_value": -0.003531510971012404,
+    "profit_factor": 0.49681736894175194,
+    "max_drawdown": 0.017079150258912882,
+    "reject_rate": 0.0,
+    "missing_rate": 0.0,
+    "exposure_rate": 0.7666666666666667,
+    "opportunity_count": 16.0,
+    "filled_count": 16.0,
+    "skip_cash_count": 0.0,
+    "skip_maxpos_count": 0.0,
+    "participation_rate": 1.0
+  },
+  "trace_counts": {
+    "overlay_trace_rows": 16,
+    "buy_entry_rows": 16,
+    "paired_trade_rows": 16
+  },
+  "regime_trace_summary": [
+    {
+      "risk_regime": "RISK_NEUTRAL",
+      "signal_count": 16,
+      "accepted_count": 16,
+      "rejected_count": 0,
+      "avg_market_score": 50.0,
+      "avg_effective_max_positions": 10.0,
+      "avg_effective_risk_per_trade_pct": 0.008,
+      "avg_effective_max_position_pct": 0.1,
+      "overlay_reasons": [
+        "OVERLAY_DISABLED"
+      ]
+    }
+  ],
+  "regime_trade_summary": [
+    {
+      "risk_regime": "RISK_NEUTRAL",
+      "trade_count": 16,
+      "win_rate": 0.625,
+      "avg_win": 0.027206377213108528,
+      "avg_loss": 0.05476132461121396,
+      "expected_value": -0.003531510971012404,
+      "profit_factor": 0.49681736894175194,
+      "max_drawdown": 26.439729541134252,
+      "avg_pnl": -174.71308000000016,
+      "avg_pnl_pct": -0.0035315109710124014
+    }
+  ],
+  "overlay_reason_summary": [
+    {
+      "overlay_reason": "OVERLAY_DISABLED",
+      "signal_count": 16,
+      "accepted_count": 16,
+      "rejected_count": 0
+    }
+  ],
+  "decision_bucket_summary": [
+    {
+      "decision_bucket": "ACCEPTED",
+      "signal_count": 16,
+      "accepted_count": 16,
+      "rejected_count": 0
+    }
+  ],
+  "sample_dates_with_regimes": [
+    {
+      "signal_date": "2026-01-12",
+      "signal_id": "300502_2026-01-12_bof",
+      "risk_regime": "RISK_NEUTRAL",
+      "overlay_reason": "OVERLAY_DISABLED",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-01-19",
+      "signal_id": "600010_2026-01-19_bof",
+      "risk_regime": "RISK_NEUTRAL",
+      "overlay_reason": "OVERLAY_DISABLED",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-01-19",
+      "signal_id": "600340_2026-01-19_bof",
+      "risk_regime": "RISK_NEUTRAL",
+      "overlay_reason": "OVERLAY_DISABLED",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-01-28",
+      "signal_id": "002594_2026-01-28_bof",
+      "risk_regime": "RISK_NEUTRAL",
+      "overlay_reason": "OVERLAY_DISABLED",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-01-29",
+      "signal_id": "300755_2026-01-29_bof",
+      "risk_regime": "RISK_NEUTRAL",
+      "overlay_reason": "OVERLAY_DISABLED",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-01-29",
+      "signal_id": "600436_2026-01-29_bof",
+      "risk_regime": "RISK_NEUTRAL",
+      "overlay_reason": "OVERLAY_DISABLED",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-01-29",
+      "signal_id": "601668_2026-01-29_bof",
+      "risk_regime": "RISK_NEUTRAL",
+      "overlay_reason": "OVERLAY_DISABLED",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-01-30",
+      "signal_id": "300014_2026-01-30_bof",
+      "risk_regime": "RISK_NEUTRAL",
+      "overlay_reason": "OVERLAY_DISABLED",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-02-03",
+      "signal_id": "002227_2026-02-03_bof",
+      "risk_regime": "RISK_NEUTRAL",
+      "overlay_reason": "OVERLAY_DISABLED",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-02-03",
+      "signal_id": "002517_2026-02-03_bof",
+      "risk_regime": "RISK_NEUTRAL",
+      "overlay_reason": "OVERLAY_DISABLED",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-02-04",
+      "signal_id": "002175_2026-02-04_bof",
+      "risk_regime": "RISK_NEUTRAL",
+      "overlay_reason": "OVERLAY_DISABLED",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-02-04",
+      "signal_id": "002547_2026-02-04_bof",
+      "risk_regime": "RISK_NEUTRAL",
+      "overlay_reason": "OVERLAY_DISABLED",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-02-04",
+      "signal_id": "300308_2026-02-04_bof",
+      "risk_regime": "RISK_NEUTRAL",
+      "overlay_reason": "OVERLAY_DISABLED",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-02-05",
+      "signal_id": "002384_2026-02-05_bof",
+      "risk_regime": "RISK_NEUTRAL",
+      "overlay_reason": "OVERLAY_DISABLED",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-02-06",
+      "signal_id": "002709_2026-02-06_bof",
+      "risk_regime": "RISK_NEUTRAL",
+      "overlay_reason": "OVERLAY_DISABLED",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-02-13",
+      "signal_id": "002759_2026-02-13_bof",
+      "risk_regime": "RISK_NEUTRAL",
+      "overlay_reason": "OVERLAY_DISABLED",
+      "decision_status": "ACCEPTED"
+    }
+  ]
+}
