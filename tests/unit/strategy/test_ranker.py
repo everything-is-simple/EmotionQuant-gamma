@@ -9,7 +9,13 @@ from src.config import Settings
 from src.contracts import Signal, StockCandidate
 from src.data.store import Store
 from src.strategy import strategy as strategy_module
-from src.strategy.ranker import build_dtt_rank_frame, materialize_ranked_signals
+from src.strategy.ranker import (
+    MSS_CARRYOVER_BUFFER_VARIANT,
+    apply_dtt_variant_runtime,
+    build_dtt_rank_frame,
+    materialize_ranked_signals,
+    resolve_dtt_variant,
+)
 
 
 def test_dtt_ranker_orders_by_final_score_and_marks_selected(tmp_path) -> None:
@@ -252,6 +258,24 @@ def test_dtt_irs_mss_variant_keeps_mss_in_sidecar_but_not_in_final_score(tmp_pat
     assert rank_irs_only.iloc[0]["mss_score"] == 50.0
     assert rank_irs_mss.iloc[0]["mss_score"] == 20.0
     store.close()
+
+
+def test_carryover_buffer_candidate_variant_reuses_mss_overlay_score_and_runtime_override() -> None:
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT=MSS_CARRYOVER_BUFFER_VARIANT,
+        MSS_MAX_POSITIONS_MODE="hard_cap",
+        MSS_MAX_POSITIONS_BUFFER_SLOTS=0,
+    )
+
+    runtime_cfg = apply_dtt_variant_runtime(cfg, MSS_CARRYOVER_BUFFER_VARIANT)
+    variant = resolve_dtt_variant(MSS_CARRYOVER_BUFFER_VARIANT)
+
+    assert variant.carries_mss_overlay is True
+    assert runtime_cfg.dtt_variant_normalized == MSS_CARRYOVER_BUFFER_VARIANT
+    assert runtime_cfg.mss_risk_overlay_enabled is True
+    assert runtime_cfg.mss_max_positions_mode_normalized == "carryover_buffer"
+    assert runtime_cfg.mss_max_positions_buffer_slots == 1
 
 
 def test_generate_signals_dtt_requires_run_id(tmp_path, monkeypatch) -> None:

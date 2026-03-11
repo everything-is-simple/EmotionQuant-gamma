@@ -196,7 +196,7 @@
 
 ## 7. 下一步
 
-从 `2026-03-11` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3` 与 `Phase 4` 都已完成当前轮次收口，`Phase 4.1` 已启动且 `P4.1-A / P4.1-B / P4.1-C` 已完成。
+从 `2026-03-11` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3` 与 `Phase 4` 都已完成当前轮次收口，`Phase 4.1` 已启动且 `P4.1-A / P4.1-B / P4.1-C / P4.1-D` 已完成。
 
 其中：
 
@@ -207,9 +207,9 @@
 
 后续顺序固定为：
 
-1. `Phase 4.1 / P4.1-D / Gate re-entry bundle`
-2. 若 `Phase 4.1` 出场，再重新进入 `Phase 4 Gate replay`
+1. `Phase 4 Gate replay`（只允许携带 `carryover_buffer(1)` 这条单一候选返回）
+2. 若 replay 后仍不达标，再决定 `Phase 4.1` 是否继续保留或关闭
 
 也就是：
 
-`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 已收口；Phase 4.1 已启动且 P4.1-A / P4.1-B / P4.1-C 已完成，当前唯一整改候选已冻结为 carryover_buffer(1)，下一步进入 P4.1-D，重跑 Gate re-entry bundle。`
+`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 已收口；Phase 4.1 已启动且 P4.1-A / P4.1-B / P4.1-C / P4.1-D 已完成，当前唯一整改候选 carryover_buffer(1) 已完成 Gate re-entry bundle，结论是允许重新进入 Phase 4 Gate replay，但当前仍不是 GO。`

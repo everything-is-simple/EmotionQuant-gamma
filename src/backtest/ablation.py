@@ -12,6 +12,11 @@ from src.config import Settings
 from src.data.builder import build_layers
 from src.data.store import Store
 from src.run_metadata import finish_run, start_run
+from src.strategy.ranker import (
+    MSS_OVERLAY_DTT_VARIANT,
+    apply_dtt_variant_runtime,
+    resolve_dtt_variant,
+)
 
 
 @dataclass(frozen=True)
@@ -64,6 +69,14 @@ class AblationRunResult:
 
 
 def build_selector_ablation_scenarios(config: Settings) -> list[AblationScenario]:
+    requested_variant = config.dtt_variant_normalized
+    mss_variant = (
+        requested_variant
+        if resolve_dtt_variant(requested_variant).carries_mss_overlay
+        else MSS_OVERLAY_DTT_VARIANT
+    )
+    # Phase 4.1-D 允许把“最后一个 MSS 场景”切到 carryover_buffer 候选，
+    # 但其余 legacy / pattern / irs 场景保持固定，避免矩阵本身再发散成新 sweep。
     # 主线矩阵固定为 1 组 legacy 对照 + 3 组 DTT，不再沿用 week2 的阈值扫参模型。
     return [
         AblationScenario(
@@ -103,9 +116,9 @@ def build_selector_ablation_scenarios(config: Settings) -> list[AblationScenario
             irs_top_n=config.irs_top_n,
         ),
         AblationScenario(
-            label="v0_01_dtt_pattern_plus_irs_mss_score",
+            label=mss_variant,
             pipeline_mode="dtt",
-            dtt_variant="v0_01_dtt_pattern_plus_irs_mss_score",
+            dtt_variant=mss_variant,
             enable_mss_gate=False,
             enable_irs_filter=False,
             mss_variant=config.mss_variant,
@@ -241,7 +254,6 @@ def run_selector_ablation(
         cfg = config.model_copy(deep=True)
         cfg.pipeline_mode = scenario.pipeline_mode
         cfg.enable_dtt_mode = scenario.pipeline_mode == "dtt"
-        cfg.dtt_variant = scenario.dtt_variant
         cfg.enable_mss_gate = scenario.enable_mss_gate
         cfg.enable_irs_filter = scenario.enable_irs_filter
         cfg.mss_variant = scenario.mss_variant
@@ -249,6 +261,12 @@ def run_selector_ablation(
         cfg.mss_bullish_threshold = scenario.mss_bullish_threshold
         cfg.mss_bearish_threshold = scenario.mss_bearish_threshold
         cfg.irs_top_n = scenario.irs_top_n
+        if cfg.use_dtt_pipeline:
+            # DTT label 现在也可能携带 Broker shrink 语义别名，
+            # 必须在这里统一重放，避免 matrix / replay / attribution 各走各的 env 口径。
+            cfg = apply_dtt_variant_runtime(cfg, scenario.dtt_variant)
+        else:
+            cfg.dtt_variant = scenario.dtt_variant
 
         meta_store = Store(db_file)
         run = start_run(

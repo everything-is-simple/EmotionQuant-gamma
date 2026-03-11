@@ -1,0 +1,208 @@
+{
+  "summary_run_id": "trade_attribution_dtt_v0_01_dtt_pattern_plus_irs_mss_score_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20260105_20260224_t100909",
+  "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "start": "2026-01-05",
+  "end": "2026-02-24",
+  "execute_dates": [
+    "2026-01-30",
+    "2026-02-02",
+    "2026-02-04",
+    "2026-02-06",
+    "2026-02-09",
+    "2026-02-24"
+  ],
+  "patterns": [
+    "bof"
+  ],
+  "variants": [
+    "v0_01_dtt_pattern_plus_irs_mss_score",
+    "v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1"
+  ],
+  "scenarios": [
+    {
+      "label": "top50_pos10",
+      "dtt_top_n": 50,
+      "max_positions": 10
+    }
+  ],
+  "results": [
+    {
+      "label": "top50_pos10",
+      "dtt_top_n": 50,
+      "max_positions": 10,
+      "working_db_path": "G:\\EmotionQuant-temp\\backtest\\trade_attr_top50_pos10_top50_pos10.duckdb",
+      "variants": {
+        "v0_01_dtt_pattern_plus_irs_mss_score": {
+          "run_id": "trade_attribution_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t100921"
+        },
+        "v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1": {
+          "run_id": "trade_attribution_dtt_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20260105_20260224_t101018"
+        }
+      },
+      "dates": [
+        {
+          "execute_date": "2026-01-30",
+          "trade_set_swaps": [
+            {
+              "code": "600436",
+              "signal_id": "600436_2026-01-29_bof",
+              "left_quantity": null,
+              "right_quantity": 200,
+              "left_entry_pnl": null,
+              "right_entry_pnl": 411.59288000000254,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": 0.012544549158903375
+            }
+          ],
+          "quantity_changes": [],
+          "maxpos_reject_swaps": [
+            {
+              "code": "600436",
+              "signal_id": "600436_2026-01-29_bof",
+              "left_rejected": true,
+              "right_rejected": true
+            }
+          ],
+          "left_changed_entry_pnl_total": 0.0,
+          "right_changed_entry_pnl_total": 411.59288000000254,
+          "pnl_direction": "v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1 更好"
+        },
+        {
+          "execute_date": "2026-02-02",
+          "trade_set_swaps": [
+            {
+              "code": "300014",
+              "signal_id": "300014_2026-01-30_bof",
+              "left_quantity": null,
+              "right_quantity": 600,
+              "left_entry_pnl": null,
+              "right_entry_pnl": -2664.8277600000015,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": -0.06798283284611523
+            }
+          ],
+          "quantity_changes": [],
+          "maxpos_reject_swaps": [
+            {
+              "code": "300014",
+              "signal_id": "300014_2026-01-30_bof",
+              "left_rejected": true,
+              "right_rejected": true
+            }
+          ],
+          "left_changed_entry_pnl_total": 0.0,
+          "right_changed_entry_pnl_total": -2664.8277600000015,
+          "pnl_direction": "v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1 更差"
+        },
+        {
+          "execute_date": "2026-02-04",
+          "trade_set_swaps": [
+            {
+              "code": "002517",
+              "signal_id": "002517_2026-02-03_bof",
+              "left_quantity": 1600,
+              "right_quantity": null,
+              "left_entry_pnl": 371.5763199999993,
+              "right_entry_pnl": null,
+              "left_entry_pnl_pct": 0.010178031938153292,
+              "right_entry_pnl_pct": null
+            }
+          ],
+          "quantity_changes": [],
+          "maxpos_reject_swaps": [
+            {
+              "code": "002517",
+              "signal_id": "002517_2026-02-03_bof",
+              "left_rejected": true,
+              "right_rejected": true
+            }
+          ],
+          "left_changed_entry_pnl_total": 371.5763199999993,
+          "right_changed_entry_pnl_total": 0.0,
+          "pnl_direction": "v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1 更差"
+        },
+        {
+          "execute_date": "2026-02-06",
+          "trade_set_swaps": [
+            {
+              "code": "002384",
+              "signal_id": "002384_2026-02-05_bof",
+              "left_quantity": null,
+              "right_quantity": 500,
+              "left_entry_pnl": null,
+              "right_entry_pnl": 3971.5849999999964,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": 0.11209244775155848
+            }
+          ],
+          "quantity_changes": [],
+          "maxpos_reject_swaps": [
+            {
+              "code": "002384",
+              "signal_id": "002384_2026-02-05_bof",
+              "left_rejected": true,
+              "right_rejected": true
+            }
+          ],
+          "left_changed_entry_pnl_total": 0.0,
+          "right_changed_entry_pnl_total": 3971.5849999999964,
+          "pnl_direction": "v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1 更好"
+        },
+        {
+          "execute_date": "2026-02-09",
+          "trade_set_swaps": [
+            {
+              "code": "002709",
+              "signal_id": "002709_2026-02-06_bof",
+              "left_quantity": null,
+              "right_quantity": 900,
+              "left_entry_pnl": null,
+              "right_entry_pnl": 1079.3516399999962,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": 0.02847733855807462
+            }
+          ],
+          "quantity_changes": [],
+          "maxpos_reject_swaps": [
+            {
+              "code": "002709",
+              "signal_id": "002709_2026-02-06_bof",
+              "left_rejected": true,
+              "right_rejected": true
+            }
+          ],
+          "left_changed_entry_pnl_total": 0.0,
+          "right_changed_entry_pnl_total": 1079.3516399999962,
+          "pnl_direction": "v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1 更好"
+        },
+        {
+          "execute_date": "2026-02-24",
+          "trade_set_swaps": [
+            {
+              "code": "002759",
+              "signal_id": "002759_2026-02-13_bof",
+              "left_quantity": null,
+              "right_quantity": 1000,
+              "left_entry_pnl": null,
+              "right_entry_pnl": 167.32719999999688,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": 0.004398466274646882
+            }
+          ],
+          "quantity_changes": [],
+          "maxpos_reject_swaps": [
+            {
+              "code": "002759",
+              "signal_id": "002759_2026-02-13_bof",
+              "left_rejected": true,
+              "right_rejected": true
+            }
+          ],
+          "left_changed_entry_pnl_total": 0.0,
+          "right_changed_entry_pnl_total": 167.32719999999688,
+          "pnl_direction": "v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1 更好"
+        }
+      ]
+    }
+  ]
+}

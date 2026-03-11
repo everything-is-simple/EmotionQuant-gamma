@@ -27,6 +27,7 @@ from src.data.builder import build_layers
 from src.data.store import Store
 from src.report.reporter import _pair_trades
 from src.run_metadata import build_artifact_name, build_run_id, finish_run, start_run
+from src.strategy.ranker import apply_dtt_variant_runtime
 
 DEFAULT_VARIANTS = [
     "v0_01_dtt_pattern_only",
@@ -128,12 +129,13 @@ def _build_variant_config(base: Settings, variant: str, dtt_top_n: int, max_posi
     cfg = base.model_copy(deep=True)
     cfg.pipeline_mode = "dtt"
     cfg.enable_dtt_mode = True
-    cfg.dtt_variant = variant
     cfg.enable_mss_gate = False
     cfg.enable_irs_filter = False
     cfg.dtt_top_n = int(dtt_top_n)
     cfg.max_positions = int(max_positions)
-    return cfg
+    # trade attribution 需要比较“同排序、不同 shrink 语义”的成交替换，
+    # 因此这里不能只改 label，必须让 carryover_buffer runtime override 真正生效。
+    return apply_dtt_variant_runtime(cfg, variant)
 
 
 def _read_buy_trades(store: Store, start: date, end: date) -> pd.DataFrame:

@@ -7,6 +7,7 @@ import pandas as pd
 from src.backtest.ablation import build_selector_ablation_scenarios, clear_runtime_tables
 from src.config import Settings
 from src.data.store import Store
+from src.strategy.ranker import MSS_CARRYOVER_BUFFER_VARIANT
 
 
 def test_build_selector_ablation_scenarios_returns_fixed_dtt_matrix() -> None:
@@ -43,6 +44,25 @@ def test_build_selector_ablation_scenarios_returns_fixed_dtt_matrix() -> None:
         (False, False),
         (False, False),
     ]
+
+
+def test_build_selector_ablation_scenarios_switches_mss_slot_to_candidate_alias() -> None:
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT=MSS_CARRYOVER_BUFFER_VARIANT,
+        ENABLE_MSS_GATE=False,
+        ENABLE_IRS_FILTER=False,
+        MSS_VARIANT="zscore_weighted6",
+        MSS_GATE_MODE="bearish_only",
+        MSS_BULLISH_THRESHOLD=65.0,
+        MSS_BEARISH_THRESHOLD=35.0,
+        IRS_TOP_N=10,
+    )
+
+    scenarios = build_selector_ablation_scenarios(cfg)
+
+    assert scenarios[-1].label == MSS_CARRYOVER_BUFFER_VARIANT
+    assert scenarios[-1].dtt_variant == MSS_CARRYOVER_BUFFER_VARIANT
 
 
 def test_clear_runtime_tables_only_removes_current_run_scoped_trace_rows(tmp_path) -> None:

@@ -12,6 +12,7 @@ if str(REPO_ROOT) not in sys.path:
 from src.backtest.ablation import run_selector_ablation, write_ablation_evidence
 from src.config import get_settings
 from src.run_metadata import build_artifact_name, build_run_id, resolve_mode_variant
+from src.strategy.ranker import apply_dtt_variant_runtime
 
 
 def _parse_date(text: str) -> date:
@@ -24,6 +25,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--end", required=True, help="Backtest end date (YYYY-MM-DD)")
     parser.add_argument("--patterns", default="bof", help="Comma-separated patterns")
     parser.add_argument("--cash", type=float, default=None, help="Initial cash override")
+    parser.add_argument(
+        "--dtt-variant",
+        default=None,
+        help="Optional DTT variant override for the MSS-carrying matrix slot",
+    )
     parser.add_argument("--db-path", default=None, help="Execution DuckDB path override")
     parser.add_argument(
         "--skip-rebuild-l3",
@@ -46,6 +52,10 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     args = build_parser().parse_args()
     cfg = get_settings().model_copy(deep=True)
+    if args.dtt_variant:
+        # 允许 Phase 4.1-D 用单一候选别名替换矩阵里的 MSS 槽位，
+        # 同时把对应的 Broker shrink 语义一并写回 runtime config。
+        cfg = apply_dtt_variant_runtime(cfg, args.dtt_variant.strip().lower())
     start = _parse_date(args.start)
     end = _parse_date(args.end)
     patterns = [item.strip().lower() for item in args.patterns.split(",") if item.strip()]

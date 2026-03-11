@@ -25,11 +25,13 @@ from src.config import Settings, get_settings
 from src.data.builder import build_layers
 from src.data.store import Store
 from src.run_metadata import build_artifact_name, build_run_id, finish_run, start_run
+from src.strategy.ranker import MSS_CARRYOVER_BUFFER_VARIANT, apply_dtt_variant_runtime
 
 DTT_VARIANTS = [
     "v0_01_dtt_pattern_only",
     "v0_01_dtt_pattern_plus_irs_score",
     "v0_01_dtt_pattern_plus_irs_mss_score",
+    MSS_CARRYOVER_BUFFER_VARIANT,
 ]
 
 EPSILON = 1e-9
@@ -100,10 +102,11 @@ def _build_variant_config(base: Settings, variant: str) -> Settings:
     cfg = base.model_copy(deep=True)
     cfg.pipeline_mode = "dtt"
     cfg.enable_dtt_mode = True
-    cfg.dtt_variant = variant
     cfg.enable_mss_gate = False
     cfg.enable_irs_filter = False
-    return cfg
+    # rank decomposition 也必须吃到 variant 别名携带的 Broker runtime override，
+    # 否则 carryover_buffer(1) 和 hard_cap 会被错误地看成同一个 replay 对象。
+    return apply_dtt_variant_runtime(cfg, variant)
 
 
 def _parse_variants(text: str) -> list[str]:

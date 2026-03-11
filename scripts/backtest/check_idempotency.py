@@ -24,6 +24,7 @@ from src.config import get_settings
 from src.data.builder import build_layers
 from src.data.store import Store
 from src.run_metadata import build_artifact_name, finish_run, start_run
+from src.strategy.ranker import apply_dtt_variant_runtime
 
 
 def _parse_date(text: str) -> date:
@@ -139,7 +140,9 @@ def main() -> int:
     cfg.pipeline_mode = args.pipeline_mode.strip().lower()
     cfg.enable_dtt_mode = cfg.pipeline_mode != "legacy"
     if cfg.use_dtt_pipeline:
-        cfg.dtt_variant = args.dtt_variant.strip().lower()
+        # Phase 4.1-D 需要保证幂等重放和 matrix replay 使用同一套 runtime override，
+        # 不能只切 dtt_variant 字符串而漏掉 carryover_buffer 这类 Broker 侧别名语义。
+        cfg = apply_dtt_variant_runtime(cfg, args.dtt_variant.strip().lower())
     if args.min_amount is not None:
         cfg.min_amount = args.min_amount
 
