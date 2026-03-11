@@ -7,6 +7,7 @@ EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
 - `v0.01` 历史基线：[`docs/design-v2/01-system/system-baseline.md`](docs/design-v2/01-system/system-baseline.md)
 - `v0.01-plus` 当前主开发线：[`docs/spec/v0.01-plus/README.md`](docs/spec/v0.01-plus/README.md)
 - 当前主开发线设计权威层：[`blueprint/README.md`](blueprint/README.md)
+- 第二战场 / 诺曼底登陆：[`normandy/README.md`](normandy/README.md)
 - 当前治理状态：[`docs/spec/common/records/development-status.md`](docs/spec/common/records/development-status.md)
 
 当前主线执行链路：
@@ -16,6 +17,7 @@ EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
 说明：
 - `v0.01` 已冻结为历史尝试，仅作对照、回退与回归验证。
 - `v0.01-plus` 是当前主开发线。
+- `normandy/` 是独立实验空间，用于证明 `PAS raw alpha` 与拆解 `exit damage`，不改写当前主线 SoT。
 - `backtrader` 仅负责交易日历推进与数据喂入；风控、撮合、仓位和状态机由自研 `Broker` 内核实现。
 
 ## 快速开始
@@ -60,6 +62,7 @@ python main.py run
 ```text
 EmotionQuant-gamma/
 ├── blueprint/              # 新版设计权威层（full design / implementation spec / execution）
+├── normandy/               # 第二战场（alpha provenance / exit decomposition）
 ├── src/                    # 实现代码（6 模块）
 ├── tests/                  # 自动化测试（unit/integration/patches）
 ├── scripts/                # 工具脚本（data/backtest/report/ops/setup）
