@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 
 import pandas as pd
@@ -20,6 +20,7 @@ class BrokerRiskState:
     cash: float
     portfolio_market_value: float
     holdings: set[str]
+    batch_start_holdings_count: int | None = None
 
 
 @dataclass
@@ -44,7 +45,10 @@ class MssRiskOverlay:
     max_positions_mult: float
     risk_per_trade_mult: float
     max_position_mult: float
+    target_max_positions: int
     max_positions: int
+    max_positions_mode: str
+    max_positions_buffer_slots: int
     risk_per_trade_pct: float
     max_position_pct: float
     overlay_enabled: bool
@@ -102,13 +106,45 @@ class RiskManager:
             qty -= 100
         return 0
 
-    def _clamp_effective_max_positions(self, multiplier: float) -> int:
+    def _clamp_target_max_positions(self, multiplier: float) -> int:
         base = int(self.config.max_positions)
         if base <= 0:
             return 0
         scaled = int(base * max(multiplier, 0.0))
         # 熊市只允许缩容，不默认把系统一刀切到 0 仓，避免把“控仓位”退化回“硬停手”。
         return max(1, scaled)
+
+    @staticmethod
+    def _resolve_batch_start_holdings(state: BrokerRiskState) -> int:
+        if state.batch_start_holdings_count is not None:
+            return int(state.batch_start_holdings_count)
+        return len(state.holdings)
+
+    def _resolve_effective_max_positions(self, overlay: MssRiskOverlay, state: BrokerRiskState) -> int:
+        target = int(overlay.target_max_positions)
+        base = int(self.config.max_positions)
+        buffer_slots = max(int(overlay.max_positions_buffer_slots), 0)
+        if (
+            overlay.max_positions_mode != "carryover_buffer"
+            or buffer_slots <= 0
+            or not overlay.overlay_enabled
+            or target >= base
+        ):
+            return target
+
+        batch_start_holdings = self._resolve_batch_start_holdings(state)
+        if batch_start_holdings < target:
+            return target
+
+        # 候选语义只在“日初已经满/超载”的场景释放有限 fresh slot；
+        # buffer 是按日固定，不会随着同日信号逐条放大。
+        return min(base, batch_start_holdings + buffer_slots)
+
+    def _resolve_effective_overlay(self, overlay: MssRiskOverlay, state: BrokerRiskState) -> MssRiskOverlay:
+        effective_max_positions = self._resolve_effective_max_positions(overlay, state)
+        if effective_max_positions == overlay.max_positions:
+            return overlay
+        return replace(overlay, max_positions=effective_max_positions)
 
     def _resolve_mss_signal_label(self, raw_value: object | None) -> str:
         label = str(raw_value or "").strip().upper()
@@ -236,7 +272,10 @@ class RiskManager:
                 max_positions_mult=1.0,
                 risk_per_trade_mult=1.0,
                 max_position_mult=1.0,
+                target_max_positions=int(self.config.max_positions),
                 max_positions=int(self.config.max_positions),
+                max_positions_mode="hard_cap",
+                max_positions_buffer_slots=0,
                 risk_per_trade_pct=float(self.config.risk_per_trade_pct),
                 max_position_pct=float(self.config.max_position_pct),
                 overlay_enabled=False,
@@ -364,6 +403,7 @@ class RiskManager:
         max_positions_mult, risk_per_trade_mult, max_position_mult = self._resolve_mss_multipliers(
             risk_regime
         )
+        target_max_positions = self._clamp_target_max_positions(max_positions_mult)
         overlay = MssRiskOverlay(
             state=overlay_state,
             signal=signal_label,
@@ -374,7 +414,10 @@ class RiskManager:
             max_positions_mult=float(max_positions_mult),
             risk_per_trade_mult=float(risk_per_trade_mult),
             max_position_mult=float(max_position_mult),
-            max_positions=self._clamp_effective_max_positions(max_positions_mult),
+            target_max_positions=target_max_positions,
+            max_positions=target_max_positions,
+            max_positions_mode=self.config.mss_max_positions_mode_normalized,
+            max_positions_buffer_slots=max(int(self.config.mss_max_positions_buffer_slots), 0),
             # MSS 在 v0.01-plus 当前阶段只压缩执行风险，不反向改写排序层分数。
             risk_per_trade_pct=float(self.config.risk_per_trade_pct) * max(risk_per_trade_mult, 0.0),
             max_position_pct=float(self.config.max_position_pct) * max(max_position_mult, 0.0),
@@ -435,7 +478,8 @@ class RiskManager:
         
         通过时返回 Order + 预占现金
         """
-        overlay = self._load_mss_overlay(signal.signal_date)
+        base_overlay = self._load_mss_overlay(signal.signal_date)
+        overlay = self._resolve_effective_overlay(base_overlay, state)
         execute_date = self._next_trade_date(signal.signal_date)
         if execute_date is None:
             return RiskDecision(
@@ -454,6 +498,8 @@ class RiskManager:
                 overlay=overlay,
             )
 
+        # max_positions 是按“日初持仓 + 当批预占结果”做同日竞争的。
+        # P4.1-C 的 carryover_buffer 候选只允许在 shrink 已经把日初持仓压满时，额外保留有限 fresh slot。
         if len(state.holdings) >= overlay.max_positions:
             return RiskDecision(
                 order=None,

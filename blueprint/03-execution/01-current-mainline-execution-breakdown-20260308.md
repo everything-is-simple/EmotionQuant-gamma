@@ -196,7 +196,7 @@
 
 ## 7. 下一步
 
-从 `2026-03-11` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3` 与 `Phase 4` 都已完成当前轮次收口，`Phase 4.1` 已启动且 `P4.1-A` 已完成。
+从 `2026-03-11` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3` 与 `Phase 4` 都已完成当前轮次收口，`Phase 4.1` 已启动且 `P4.1-A / P4.1-B / P4.1-C` 已完成。
 
 其中：
 
@@ -207,9 +207,9 @@
 
 后续顺序固定为：
 
-1. `Phase 4.1 / P4.1-C / remediation candidate freeze`
+1. `Phase 4.1 / P4.1-D / Gate re-entry bundle`
 2. 若 `Phase 4.1` 出场，再重新进入 `Phase 4 Gate replay`
 
 也就是：
 
-`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 已收口；Phase 4.1 已启动且 P4.1-A / P4.1-B 已完成，下一步不是重开 Gate，而是进入 P4.1-C，冻结一条只动 MSS -> Broker 的整改候选。`
+`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 已收口；Phase 4.1 已启动且 P4.1-A / P4.1-B / P4.1-C 已完成，当前唯一整改候选已冻结为 carryover_buffer(1)，下一步进入 P4.1-D，重跑 Gate re-entry bundle。`

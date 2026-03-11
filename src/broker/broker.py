@@ -157,7 +157,10 @@ class Broker:
                         "max_positions_mult": float(overlay.max_positions_mult),
                         "risk_per_trade_mult": float(overlay.risk_per_trade_mult),
                         "max_position_mult": float(overlay.max_position_mult),
+                        "target_max_positions": int(overlay.target_max_positions),
                         "effective_max_positions": int(overlay.max_positions),
+                        "max_positions_mode": overlay.max_positions_mode,
+                        "max_positions_buffer_slots": int(overlay.max_positions_buffer_slots),
                         "effective_risk_per_trade_pct": float(overlay.risk_per_trade_pct),
                         "effective_max_position_pct": float(overlay.max_position_pct),
                         "holdings_before": int(len(state.holdings)),
@@ -194,6 +197,7 @@ class Broker:
             cash=self.cash,
             portfolio_market_value=self._portfolio_market_value(),
             holdings=set(self.portfolio.keys()),
+            batch_start_holdings_count=len(self.portfolio),
         )
         # DTT 主线优先按 final_score 排序；legacy 对照链则退回 strength。
         sorted_signals = sorted(
@@ -208,6 +212,7 @@ class Broker:
                 cash=float(state.cash),
                 portfolio_market_value=float(state.portfolio_market_value),
                 holdings=set(state.holdings),
+                batch_start_holdings_count=state.batch_start_holdings_count,
             )
             decision = self.risk.assess_signal(signal, state)
             self._record_mss_overlay_trace(signal, decision, state_before)

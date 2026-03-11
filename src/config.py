@@ -118,6 +118,18 @@ class Settings(BaseSettings):
         default=0.4,
         alias="MSS_BEARISH_MAX_POSITIONS_MULT",
     )
+    # P4.1-C 只允许动 max_positions shrink / carryover 语义：
+    # - hard_cap: 现行正式口径，直接按缩容后的 hard cap 拒单
+    # - carryover_buffer: 当日开盘前已满/超载时，为新信号保留有限 fresh slot
+    #   用于验证“缩容 + carryover 锁死整天”的整改候选
+    mss_max_positions_mode: str = Field(
+        default="hard_cap",
+        alias="MSS_MAX_POSITIONS_MODE",
+    )
+    mss_max_positions_buffer_slots: int = Field(
+        default=0,
+        alias="MSS_MAX_POSITIONS_BUFFER_SLOTS",
+    )
     mss_bullish_risk_per_trade_mult: float = Field(
         default=1.0,
         alias="MSS_BULLISH_RISK_PER_TRADE_MULT",
@@ -240,6 +252,13 @@ class Settings(BaseSettings):
             self.use_dtt_pipeline
             and self.dtt_variant_normalized == self.mss_risk_overlay_variant.strip().lower()
         )
+
+    @property
+    def mss_max_positions_mode_normalized(self) -> str:
+        label = self.mss_max_positions_mode.strip().lower()
+        if label in {"hard_cap", "carryover_buffer"}:
+            return label
+        return "hard_cap"
 
     @property
     def db_path(self) -> Path:

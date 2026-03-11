@@ -167,6 +167,9 @@ class Store:
             ("mss_risk_overlay_trace_exp", "regime_source", "VARCHAR"),
             ("mss_risk_overlay_trace_exp", "overlay_reason", "VARCHAR"),
             ("mss_risk_overlay_trace_exp", "decision_bucket", "VARCHAR"),
+            ("mss_risk_overlay_trace_exp", "target_max_positions", "INTEGER"),
+            ("mss_risk_overlay_trace_exp", "max_positions_mode", "VARCHAR"),
+            ("mss_risk_overlay_trace_exp", "max_positions_buffer_slots", "INTEGER"),
         ]
         # optional column 只允许补非主键、非执行语义列；
         # 一旦涉及 formal schema 或主流程字段变化，就应该走显式 migration，而不是这里静默补列。
@@ -593,7 +596,10 @@ class Store:
                 max_positions_mult             DOUBLE NOT NULL,
                 risk_per_trade_mult            DOUBLE NOT NULL,
                 max_position_mult              DOUBLE NOT NULL,
+                target_max_positions           INTEGER,
                 effective_max_positions        INTEGER NOT NULL,
+                max_positions_mode             VARCHAR,
+                max_positions_buffer_slots     INTEGER,
                 effective_risk_per_trade_pct   DOUBLE NOT NULL,
                 effective_max_position_pct     DOUBLE NOT NULL,
                 holdings_before                INTEGER NOT NULL,
