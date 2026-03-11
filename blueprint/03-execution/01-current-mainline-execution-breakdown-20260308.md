@@ -207,9 +207,9 @@
 
 后续顺序固定为：
 
-1. `Phase 4.1 / P4.1-B / path dependency attribution`
+1. `Phase 4.1 / P4.1-C / remediation candidate freeze`
 2. 若 `Phase 4.1` 出场，再重新进入 `Phase 4 Gate replay`
 
 也就是：
 
-`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 已收口；Phase 4.1 已启动且 P4.1-A 已完成，下一步不是重开 Gate，而是进入 P4.1-B，继续拆 MSS -> Broker 执行层的路径反噬。`
+`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 已收口；Phase 4.1 已启动且 P4.1-A / P4.1-B 已完成，下一步不是重开 Gate，而是进入 P4.1-C，冻结一条只动 MSS -> Broker 的整改候选。`
