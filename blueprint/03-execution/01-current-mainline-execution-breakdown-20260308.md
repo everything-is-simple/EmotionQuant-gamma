@@ -196,7 +196,7 @@
 
 ## 7. 下一步
 
-从 `2026-03-11` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3` 与 `Phase 4` 都已完成当前轮次收口，`Phase 4.1` 已启动且 `P4.1-A / P4.1-B / P4.1-C / P4.1-D` 已完成，随后已带着 `carryover_buffer(1)` 完成一次 direct `Phase 4 Gate replay`。
+从 `2026-03-11` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3` 与 `Phase 4` 都已完成当前轮次收口，`Phase 4.1` 已启动且 `P4.1-A / P4.1-B / P4.1-C / P4.1-D / P4.1-E` 已完成，其中 `carryover_buffer(1)` 已完成一次 direct `Phase 4 Gate replay`，随后治理裁决允许再冻结最后一条 `size_only_overlay` 候选。
 
 其中：
 
@@ -207,9 +207,10 @@
 
 后续顺序固定为：
 
-1. 先做治理裁决：是否继续 `Phase 4.1` 冻结下一条 `MSS / Broker` 候选
-2. 若不继续，则保持 `legacy_bof_baseline` 为正式默认 / rollback target
+1. 带着 `v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay` 做最后一次 direct `Phase 4 Gate replay`
+2. 若 replay 仍然 `NO-GO`，则正式结束 `Phase 4.1`
+3. 在此之前，不再冻结新的 `MSS / Broker` 候选
 
 也就是：
 
-`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 已收口；Phase 4.1 已启动且 P4.1-A / P4.1-B / P4.1-C / P4.1-D 已完成，当前唯一整改候选 carryover_buffer(1) 已完成 direct Phase 4 Gate replay，但结论仍然是 NO-GO persists，正式默认路径继续保持 legacy_bof_baseline。`
+`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 已收口；Phase 4.1 已启动且 P4.1-A / P4.1-B / P4.1-C / P4.1-D / P4.1-E 已完成，当前最后一条整改候选已固定为 size_only_overlay；下一步只允许做最终 direct Phase 4 Gate replay，若失败则关闭 Phase 4.1，正式默认路径继续保持 legacy_bof_baseline。`

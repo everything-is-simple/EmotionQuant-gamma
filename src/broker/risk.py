@@ -124,6 +124,10 @@ class RiskManager:
         target = int(overlay.target_max_positions)
         base = int(self.config.max_positions)
         buffer_slots = max(int(overlay.max_positions_buffer_slots), 0)
+        if overlay.max_positions_mode == "no_maxpos_shrink":
+            # P4.1-E 候选显式保留 regime 判断，但不再把 slot shrink 落到 Broker；
+            # 这样 trace 里仍保留 shrink target，而真正执行只由 sizing 杠杆负责收缩。
+            return base
         if (
             overlay.max_positions_mode != "carryover_buffer"
             or buffer_slots <= 0
@@ -499,7 +503,9 @@ class RiskManager:
             )
 
         # max_positions 是按“日初持仓 + 当批预占结果”做同日竞争的。
-        # P4.1-C 的 carryover_buffer 候选只允许在 shrink 已经把日初持仓压满时，额外保留有限 fresh slot。
+        # - hard_cap: 直接消费 shrink 后的 hard cap
+        # - carryover_buffer: shrink 已把日初持仓压满时，额外保留有限 fresh slot
+        # - no_maxpos_shrink: 保留 shrink target 只做 trace，不再把 slot shrink 落到 Broker
         if len(state.holdings) >= overlay.max_positions:
             return RiskDecision(
                 order=None,

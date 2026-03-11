@@ -11,6 +11,7 @@ from src.data.store import Store
 from src.strategy import strategy as strategy_module
 from src.strategy.ranker import (
     MSS_CARRYOVER_BUFFER_VARIANT,
+    MSS_SIZE_ONLY_VARIANT,
     apply_dtt_variant_runtime,
     build_dtt_rank_frame,
     materialize_ranked_signals,
@@ -276,6 +277,24 @@ def test_carryover_buffer_candidate_variant_reuses_mss_overlay_score_and_runtime
     assert runtime_cfg.mss_risk_overlay_enabled is True
     assert runtime_cfg.mss_max_positions_mode_normalized == "carryover_buffer"
     assert runtime_cfg.mss_max_positions_buffer_slots == 1
+
+
+def test_size_only_candidate_variant_keeps_overlay_but_disables_slot_shrink() -> None:
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT=MSS_SIZE_ONLY_VARIANT,
+        MSS_MAX_POSITIONS_MODE="hard_cap",
+        MSS_MAX_POSITIONS_BUFFER_SLOTS=3,
+    )
+
+    runtime_cfg = apply_dtt_variant_runtime(cfg, MSS_SIZE_ONLY_VARIANT)
+    variant = resolve_dtt_variant(MSS_SIZE_ONLY_VARIANT)
+
+    assert variant.carries_mss_overlay is True
+    assert runtime_cfg.dtt_variant_normalized == MSS_SIZE_ONLY_VARIANT
+    assert runtime_cfg.mss_risk_overlay_enabled is True
+    assert runtime_cfg.mss_max_positions_mode_normalized == "no_maxpos_shrink"
+    assert runtime_cfg.mss_max_positions_buffer_slots == 0
 
 
 def test_generate_signals_dtt_requires_run_id(tmp_path, monkeypatch) -> None:

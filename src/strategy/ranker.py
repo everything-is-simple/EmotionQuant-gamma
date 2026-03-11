@@ -20,6 +20,7 @@ class DttVariantSpec:
 
 MSS_OVERLAY_DTT_VARIANT = "v0_01_dtt_pattern_plus_irs_mss_score"
 MSS_CARRYOVER_BUFFER_VARIANT = "v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1"
+MSS_SIZE_ONLY_VARIANT = "v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay"
 
 
 DTT_VARIANTS: dict[str, DttVariantSpec] = {
@@ -43,6 +44,11 @@ DTT_VARIANTS: dict[str, DttVariantSpec] = {
         uses_irs=True,
         carries_mss_overlay=True,
     ),
+    MSS_SIZE_ONLY_VARIANT: DttVariantSpec(
+        label=MSS_SIZE_ONLY_VARIANT,
+        uses_irs=True,
+        carries_mss_overlay=True,
+    ),
 }
 
 
@@ -58,8 +64,8 @@ def apply_dtt_variant_runtime(cfg: Settings, label: str) -> Settings:
     normalized = label.strip().lower()
     variant = resolve_dtt_variant(normalized)
     cfg.dtt_variant = variant.label
-    # Phase 4.1-D 需要把“相同排序 variant，不同 Broker shrink 语义”固定成可重跑对象；
-    # 这里显式写死 runtime override，避免脚本层继续靠临时 env 拼 carryover_buffer 口径。
+    # Phase 4.1 需要把“相同排序 variant，不同 Broker slot 语义”固定成可重跑对象；
+    # 这里显式写死 runtime override，避免脚本层继续靠临时 env 拼 carryover/size-only 口径。
     if variant.carries_mss_overlay:
         cfg.mss_risk_overlay_variant = variant.label
     else:
@@ -67,6 +73,9 @@ def apply_dtt_variant_runtime(cfg: Settings, label: str) -> Settings:
     if variant.label == MSS_CARRYOVER_BUFFER_VARIANT:
         cfg.mss_max_positions_mode = "carryover_buffer"
         cfg.mss_max_positions_buffer_slots = 1
+    elif variant.label == MSS_SIZE_ONLY_VARIANT:
+        cfg.mss_max_positions_mode = "no_maxpos_shrink"
+        cfg.mss_max_positions_buffer_slots = 0
     else:
         cfg.mss_max_positions_mode = "hard_cap"
         cfg.mss_max_positions_buffer_slots = 0

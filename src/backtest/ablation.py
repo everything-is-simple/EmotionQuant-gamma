@@ -75,8 +75,9 @@ def build_selector_ablation_scenarios(config: Settings) -> list[AblationScenario
         if resolve_dtt_variant(requested_variant).carries_mss_overlay
         else MSS_OVERLAY_DTT_VARIANT
     )
-    # Phase 4.1-D 允许把“最后一个 MSS 场景”切到 carryover_buffer 候选，
-    # 但其余 legacy / pattern / irs 场景保持固定，避免矩阵本身再发散成新 sweep。
+    # Phase 4.1 允许把“最后一个 MSS 场景”切到当前唯一整改候选，
+    # 无论是 carryover_buffer 还是 size_only_overlay，其余 legacy / pattern / irs 场景都保持固定，
+    # 避免矩阵本身再发散成新 sweep。
     # 主线矩阵固定为 1 组 legacy 对照 + 3 组 DTT，不再沿用 week2 的阈值扫参模型。
     return [
         AblationScenario(

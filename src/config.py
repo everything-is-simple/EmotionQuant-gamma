@@ -118,10 +118,11 @@ class Settings(BaseSettings):
         default=0.4,
         alias="MSS_BEARISH_MAX_POSITIONS_MULT",
     )
-    # P4.1-C 只允许动 max_positions shrink / carryover 语义：
+    # P4.1 当前只允许动 max_positions 语义，不重开 PAS / IRS：
     # - hard_cap: 现行正式口径，直接按缩容后的 hard cap 拒单
     # - carryover_buffer: 当日开盘前已满/超载时，为新信号保留有限 fresh slot
-    #   用于验证“缩容 + carryover 锁死整天”的整改候选
+    # - no_maxpos_shrink: 保留 regime 判断，但 Broker 不消费 slot shrink，
+    #   只继续消费 sizing 杠杆，用于 P4.1-E 的 size_only_overlay 候选
     mss_max_positions_mode: str = Field(
         default="hard_cap",
         alias="MSS_MAX_POSITIONS_MODE",
@@ -256,7 +257,7 @@ class Settings(BaseSettings):
     @property
     def mss_max_positions_mode_normalized(self) -> str:
         label = self.mss_max_positions_mode.strip().lower()
-        if label in {"hard_cap", "carryover_buffer"}:
+        if label in {"hard_cap", "carryover_buffer", "no_maxpos_shrink"}:
             return label
         return "hard_cap"
 

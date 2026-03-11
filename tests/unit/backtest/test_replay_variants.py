@@ -6,7 +6,7 @@ from src.backtest.replay_variants import (
     is_legacy_replay_variant,
 )
 from src.config import Settings
-from src.strategy.ranker import MSS_CARRYOVER_BUFFER_VARIANT
+from src.strategy.ranker import MSS_CARRYOVER_BUFFER_VARIANT, MSS_SIZE_ONLY_VARIANT
 
 
 def test_apply_replay_variant_runtime_restores_legacy_pipeline_semantics() -> None:
@@ -42,3 +42,20 @@ def test_apply_replay_variant_runtime_keeps_dtt_alias_runtime_override() -> None
     assert runtime_cfg.dtt_variant_normalized == MSS_CARRYOVER_BUFFER_VARIANT
     assert runtime_cfg.mss_max_positions_mode_normalized == "carryover_buffer"
     assert runtime_cfg.mss_max_positions_buffer_slots == 1
+
+
+def test_apply_replay_variant_runtime_supports_size_only_candidate_alias() -> None:
+    cfg = Settings(
+        PIPELINE_MODE="legacy",
+        DTT_VARIANT=LEGACY_BASELINE_VARIANT,
+        MSS_MAX_POSITIONS_MODE="hard_cap",
+        MSS_MAX_POSITIONS_BUFFER_SLOTS=0,
+    )
+
+    runtime_cfg = apply_replay_variant_runtime(cfg, MSS_SIZE_ONLY_VARIANT)
+
+    assert runtime_cfg.pipeline_mode == "dtt"
+    assert runtime_cfg.enable_dtt_mode is True
+    assert runtime_cfg.dtt_variant_normalized == MSS_SIZE_ONLY_VARIANT
+    assert runtime_cfg.mss_max_positions_mode_normalized == "no_maxpos_shrink"
+    assert runtime_cfg.mss_max_positions_buffer_slots == 0

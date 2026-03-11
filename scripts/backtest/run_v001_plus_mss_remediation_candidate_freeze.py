@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-# Phase 4.1-C / MSS remediation candidate freeze:
+# Phase 4.1 / MSS remediation candidate freeze:
 # 1. 仓库根目录只放代码、文档、配置与最终 evidence；正式执行库固定走 DATA_PATH，
 #    working copy / artifact cache 固定走 TEMP_PATH，避免把运行副本写回仓库。
 # 2. 这个脚本不负责抓数；若窗口缺数据，先看 RAW_DB_PATH / 本地旧库，
 #    再按 TUSHARE_PRIMARY_* -> TUSHARE_FALLBACK_* 的双 key 顺序补数。
 # 3. 当前只冻结一条 MSS -> Broker 候选：
-#    不动 PAS / IRS，不动 risk_per_trade / max_position_pct，只改 max_positions shrink / carryover 语义。
+#    不动 PAS / IRS，只改 Broker 对 max_positions shrink 的消费语义；
+#    sizing 杠杆是否保留，由候选 mode 明确表达，不允许脚本外临时拼接。
 
 import argparse
 import json
@@ -29,6 +30,12 @@ from src.data.builder import build_layers
 from src.data.store import Store
 from src.report.reporter import _pair_trades
 from src.run_metadata import build_artifact_name, build_run_id, finish_run, start_run
+from src.strategy.ranker import (
+    MSS_CARRYOVER_BUFFER_VARIANT,
+    MSS_OVERLAY_DTT_VARIANT,
+    MSS_SIZE_ONLY_VARIANT,
+    apply_dtt_variant_runtime,
+)
 
 CAPACITY_REJECT_REASONS = {
     "MAX_POSITIONS_REACHED",
@@ -90,11 +97,16 @@ def _safe_float(value: object | None) -> float | None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Run MSS remediation candidate freeze for Phase 4.1-C")
+    parser = argparse.ArgumentParser(description="Run MSS remediation candidate freeze for Phase 4.1")
     parser.add_argument("--start", required=True, help="Backtest start date (YYYY-MM-DD)")
     parser.add_argument("--end", required=True, help="Backtest end date (YYYY-MM-DD)")
     parser.add_argument("--patterns", default=None, help="Comma-separated patterns; default uses current config")
     parser.add_argument("--cash", type=float, default=None, help="Initial cash override")
+    parser.add_argument(
+        "--candidate-variant",
+        default=MSS_CARRYOVER_BUFFER_VARIANT,
+        help="Candidate DTT variant alias; use size_only_overlay when freezing the no_maxpos_shrink candidate",
+    )
     parser.add_argument(
         "--candidate-mode",
         default="carryover_buffer",
@@ -129,14 +141,32 @@ def _parse_patterns(raw: str | None, cfg: Settings) -> list[str]:
 
 def _build_scenario_config(base: Settings, spec: ScenarioSpec) -> Settings:
     cfg = base.model_copy(deep=True)
-    cfg.pipeline_mode = "dtt"
-    cfg.enable_dtt_mode = True
-    cfg.enable_mss_gate = False
-    cfg.enable_irs_filter = False
-    cfg.dtt_variant = spec.dtt_variant
+    cfg = apply_dtt_variant_runtime(cfg, spec.dtt_variant)
     cfg.mss_max_positions_mode = spec.max_positions_mode
     cfg.mss_max_positions_buffer_slots = int(spec.max_positions_buffer_slots)
     return cfg
+
+
+def _candidate_scenario_label(mode: str) -> str:
+    if mode.strip().lower() == "no_maxpos_shrink":
+        return "candidate_full_overlay_size_only"
+    return "candidate_full_overlay_carryover_buffer"
+
+
+def _candidate_scenario_description(mode: str) -> str:
+    normalized = mode.strip().lower()
+    if normalized == "no_maxpos_shrink":
+        return (
+            "候选：保留 MSS regime 判断与 sizing 杠杆，但 Broker 不再消费 max_positions shrink，"
+            "用于验证 size_only_overlay 是否能消除 slot scarcity 主因。"
+        )
+    return "候选：只在 shrink + carryover 已经压满时保留有限 fresh slot；不动 sizing 与 PAS/IRS。"
+
+
+def _candidate_buffer_slots(mode: str, raw_slots: int) -> int:
+    if mode.strip().lower() != "carryover_buffer":
+        return 0
+    return max(int(raw_slots), 0)
 
 
 def _scenario_multiplier_snapshot(cfg: Settings) -> dict[str, dict[str, float]]:
@@ -913,8 +943,9 @@ def _build_candidate_comparison(current: ScenarioArtifacts, candidate: ScenarioA
     candidate_mdd = _safe_float(candidate.summary.get("max_drawdown"))
 
     conclusion = (
-        "候选只动 max_positions shrink / carryover 语义；若 relieved_maxpos_reject_count > 0 且 EV/PF 改善，"
-        "则说明当前 NO-GO 主因可以先沿这个方向进入 Gate replay。"
+        f"候选相对 {current.label} 只动 Broker 对 max_positions shrink 的消费语义；"
+        "若 relieved_maxpos_reject_count > 0 且 EV/PF 改善，则说明当前 NO-GO 主因可以继续沿 "
+        "MSS/Broker 槽位层整改，而不必先动 PAS/IRS。"
     )
     if (
         current_ev is not None
@@ -927,10 +958,19 @@ def _build_candidate_comparison(current: ScenarioArtifacts, candidate: ScenarioA
         and candidate_pf >= current_pf
         and candidate_mdd <= current_mdd
     ):
-        conclusion = (
-            "候选相对当前 hard_cap 路径已同时改善 EV/PF/MDD，"
-            "且 trade/reject 变化集中在 max_positions 释放出来的 fresh slot。"
-        )
+        if (
+            int(buy_trade_impact.get("trade_set_changed_count") or 0) > 0
+            or int(capacity_reject_impact.get("reject_set_changed_count") or 0) > 0
+        ):
+            conclusion = (
+                f"候选相对 {current.label} 已同时改善 EV/PF/MDD，"
+                "且变化主要落在 max_positions 释放后的 trade/reject 路径。"
+            )
+        else:
+            conclusion = (
+                f"候选相对 {current.label} 已同时改善 EV/PF/MDD，"
+                "且 trade_set 未变，改善主要来自 sizing-only overlay 的数量路径。"
+            )
 
     return {
         "buy_trade_impact": buy_trade_impact,
@@ -976,16 +1016,16 @@ def main() -> int:
         ScenarioSpec(
             label="current_full_overlay_hard_cap",
             description="当前正式 NO-GO 路径，保留 hard_cap 语义作为候选比较基线。",
-            dtt_variant="v0_01_dtt_pattern_plus_irs_mss_score",
+            dtt_variant=MSS_OVERLAY_DTT_VARIANT,
             max_positions_mode="hard_cap",
             max_positions_buffer_slots=0,
         ),
         ScenarioSpec(
-            label="candidate_full_overlay_carryover_buffer",
-            description="候选：只在 shrink + carryover 已经压满时保留有限 fresh slot；不动 sizing 与 PAS/IRS。",
-            dtt_variant="v0_01_dtt_pattern_plus_irs_mss_score",
+            label=_candidate_scenario_label(args.candidate_mode),
+            description=_candidate_scenario_description(args.candidate_mode),
+            dtt_variant=args.candidate_variant.strip().lower(),
             max_positions_mode=args.candidate_mode,
-            max_positions_buffer_slots=max(int(args.candidate_buffer_slots), 0),
+            max_positions_buffer_slots=_candidate_buffer_slots(args.candidate_mode, args.candidate_buffer_slots),
         ),
     ]
 
@@ -1003,13 +1043,13 @@ def main() -> int:
         )
 
     current = artifacts["current_full_overlay_hard_cap"]
-    candidate = artifacts["candidate_full_overlay_carryover_buffer"]
+    candidate = artifacts[_candidate_scenario_label(args.candidate_mode)]
     baseline = artifacts["baseline_no_overlay"]
 
     summary_run_id = build_run_id(
         scope="mss_remediation_candidate_freeze",
         mode="dtt",
-        variant="v0_01_dtt_pattern_plus_irs_mss_score",
+        variant=args.candidate_variant.strip().lower(),
         start=start,
         end=end,
     )
@@ -1034,8 +1074,9 @@ def main() -> int:
         "end": end.isoformat(),
         "patterns": patterns,
         "candidate": {
+            "dtt_variant": args.candidate_variant.strip().lower(),
             "max_positions_mode": args.candidate_mode,
-            "max_positions_buffer_slots": max(int(args.candidate_buffer_slots), 0),
+            "max_positions_buffer_slots": _candidate_buffer_slots(args.candidate_mode, args.candidate_buffer_slots),
         },
         "scenarios": [
             baseline.summary,

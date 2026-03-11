@@ -787,6 +787,171 @@ def test_broker_carryover_buffer_reserves_only_one_fresh_slot_per_day(tmp_path) 
     store.close()
 
 
+def test_broker_no_maxpos_shrink_keeps_base_slot_cap_but_preserves_sizing_overlay(tmp_path) -> None:
+    db = tmp_path / "test_mss_overlay_no_maxpos_shrink.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay",
+        MSS_RISK_OVERLAY_VARIANT="v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay",
+        BACKTEST_INITIAL_CASH=1_000_000,
+        RISK_PER_TRADE_PCT=0.20,
+        MAX_POSITION_PCT=0.50,
+        STOP_LOSS_PCT=0.05,
+        MAX_POSITIONS=10,
+        MSS_MAX_POSITIONS_MODE="no_maxpos_shrink",
+        MSS_MAX_POSITIONS_BUFFER_SLOTS=0,
+        MSS_BULLISH_MAX_POSITIONS_MULT=1.0,
+        MSS_NEUTRAL_MAX_POSITIONS_MULT=1.0,
+        MSS_BEARISH_MAX_POSITIONS_MULT=0.4,
+        MSS_BULLISH_RISK_PER_TRADE_MULT=1.0,
+        MSS_NEUTRAL_RISK_PER_TRADE_MULT=1.0,
+        MSS_BEARISH_RISK_PER_TRADE_MULT=0.4,
+        MSS_BULLISH_MAX_POSITION_MULT=1.0,
+        MSS_NEUTRAL_MAX_POSITION_MULT=1.0,
+        MSS_BEARISH_MAX_POSITION_MULT=0.4,
+    )
+    broker = Broker(store, cfg, run_id="no_maxpos_shrink")
+
+    _seed_trade_calendar(store, signal_date, exec_date)
+    _seed_adj_daily(
+        store,
+        [
+            {
+                "code": "000020",
+                "date": signal_date,
+                "adj_open": 10.0,
+                "adj_high": 10.2,
+                "adj_low": 9.8,
+                "adj_close": 10.0,
+                "volume": 10000,
+                "amount": 1e8,
+                "pct_chg": 0.0,
+                "ma5": 10.0,
+                "ma10": 10.0,
+                "ma20": 10.0,
+                "ma60": 10.0,
+                "volume_ma5": 10000,
+                "volume_ma20": 10000,
+                "volume_ratio": 1.0,
+            },
+            {
+                "code": "000021",
+                "date": signal_date,
+                "adj_open": 10.0,
+                "adj_high": 10.2,
+                "adj_low": 9.8,
+                "adj_close": 10.0,
+                "volume": 10000,
+                "amount": 1e8,
+                "pct_chg": 0.0,
+                "ma5": 10.0,
+                "ma10": 10.0,
+                "ma20": 10.0,
+                "ma60": 10.0,
+                "volume_ma5": 10000,
+                "volume_ma20": 10000,
+                "volume_ratio": 1.0,
+            },
+        ],
+    )
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "score": 80.0,
+                    "signal": "BULLISH",
+                    "phase": "CLIMAX",
+                    "phase_trend": "UP",
+                    "phase_days": 1,
+                    "position_advice": "20%-40%",
+                    "risk_regime": "RISK_OFF",
+                    "trend_quality": "NORMAL",
+                }
+            ]
+        ),
+    )
+
+    for code in ["600001", "600002", "600003", "600004", "600005"]:
+        broker.portfolio[code] = Position(
+            code=code,
+            entry_date=date(2026, 3, 1),
+            entry_price=10.0,
+            quantity=100,
+            current_price=10.0,
+            max_price=10.0,
+            pattern="bof",
+            is_paper=False,
+        )
+
+    first = Signal(
+        signal_id=build_signal_id("000020", signal_date, "bof_first"),
+        code="000020",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.9,
+        pattern="bof",
+        reason_code="PAS_BOF",
+        final_score=95.0,
+        variant="v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay",
+    )
+    second = Signal(
+        signal_id=build_signal_id("000021", signal_date, "bof_second"),
+        code="000021",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.8,
+        pattern="bof",
+        reason_code="PAS_BOF",
+        final_score=90.0,
+        variant="v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay",
+    )
+
+    accepted = broker.process_signals([second, first])
+    assert len(accepted) == 2
+    assert accepted[0].quantity == 20100
+    assert accepted[1].quantity == 16000
+
+    orders = store.read_df(
+        """
+        SELECT code, status, reject_reason
+        FROM l4_orders
+        ORDER BY code ASC
+        """
+    )
+    assert orders["status"].tolist() == ["PENDING", "PENDING"]
+    assert orders["reject_reason"].isna().all()
+
+    trace = store.read_df(
+        """
+        SELECT code, target_max_positions, effective_max_positions, max_positions_mode,
+               max_positions_buffer_slots, holdings_before, decision_status,
+               effective_risk_per_trade_pct, effective_max_position_pct
+        FROM mss_risk_overlay_trace_exp
+        WHERE run_id = ?
+        ORDER BY code ASC
+        """,
+        ("no_maxpos_shrink",),
+    )
+
+    # P4.1-E 锁定的 size_only_overlay 语义：
+    # shrink target 仍然记录为 4，但 Broker 实际 slot cap 回到 base=10；
+    # 同时 sizing 仍按 RISK_OFF 倍率收缩，而不是把 overlay 整体关闭。
+    assert trace["target_max_positions"].tolist() == [4, 4]
+    assert trace["effective_max_positions"].tolist() == [10, 10]
+    assert trace["max_positions_mode"].tolist() == ["no_maxpos_shrink", "no_maxpos_shrink"]
+    assert trace["max_positions_buffer_slots"].tolist() == [0, 0]
+    assert trace["holdings_before"].tolist() == [5, 6]
+    assert trace["decision_status"].tolist() == ["ACCEPTED", "ACCEPTED"]
+    assert trace["effective_risk_per_trade_pct"].tolist() == pytest.approx([0.08, 0.08])
+    assert trace["effective_max_position_pct"].tolist() == pytest.approx([0.2, 0.2])
+    store.close()
+
+
 @pytest.mark.parametrize(
     ("settings_overrides", "bullish_qty", "bearish_qty"),
     [
