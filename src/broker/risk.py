@@ -8,6 +8,11 @@ import pandas as pd
 from src.config import Settings
 from src.contracts import Order, Signal, build_order_id
 from src.data.store import Store
+from src.selector.mss import (
+    resolve_mss_phase,
+    resolve_mss_position_advice,
+    resolve_mss_risk_regime,
+)
 
 
 @dataclass
@@ -28,9 +33,14 @@ class RiskDecision:
 
 @dataclass(frozen=True)
 class MssRiskOverlay:
+    # signal 保留兼容三态；risk_regime 才是 Phase 3 后 Broker 的正式消费面。
+    # 两者允许出现“高分但 risk_off”的分离，例如 CLIMAX 市场。
     state: str
     signal: str
     score: float
+    risk_regime: str
+    regime_source: str
+    overlay_reason: str
     max_positions_mult: float
     risk_per_trade_mult: float
     max_position_mult: float
@@ -39,6 +49,11 @@ class MssRiskOverlay:
     max_position_pct: float
     overlay_enabled: bool
     coverage_flag: str
+    phase: str | None = None
+    phase_trend: str | None = None
+    phase_days: int | None = None
+    position_advice: str | None = None
+    trend_quality: str | None = None
     market_coefficient_raw: float | None = None
     profit_effect_raw: float | None = None
     loss_effect_raw: float | None = None
@@ -101,14 +116,53 @@ class RiskManager:
             return label
         return "NEUTRAL"
 
-    def _resolve_mss_multipliers(self, signal_label: str) -> tuple[float, float, float]:
-        if signal_label == "BULLISH":
+    @staticmethod
+    def _resolve_risk_regime_label(raw_value: object | None) -> str | None:
+        label = str(raw_value or "").strip().upper()
+        if label in {"RISK_ON", "RISK_NEUTRAL", "RISK_OFF"}:
+            return label
+        return None
+
+    @staticmethod
+    def _resolve_phase_label(raw_value: object | None) -> str | None:
+        label = str(raw_value or "").strip().upper()
+        if label in {
+            "EMERGENCE",
+            "FERMENTATION",
+            "ACCELERATION",
+            "DIVERGENCE",
+            "CLIMAX",
+            "DIFFUSION",
+            "RECESSION",
+            "UNKNOWN",
+        }:
+            return label
+        return None
+
+    @staticmethod
+    def _resolve_phase_trend_label(raw_value: object | None) -> str | None:
+        label = str(raw_value or "").strip().upper()
+        if label in {"UP", "SIDEWAYS", "DOWN"}:
+            return label
+        return None
+
+    @staticmethod
+    def _resolve_trend_quality_label(raw_value: object | None) -> str | None:
+        label = str(raw_value or "").strip().upper()
+        if label in {"NORMAL", "COLD_START"}:
+            return label
+        return None
+
+    def _resolve_mss_multipliers(self, risk_regime: str) -> tuple[float, float, float]:
+        # 配置键暂时仍沿用 MSS_BULLISH/NEUTRAL/BEARISH_*，
+        # 但解释语义已经切到 RISK_ON / RISK_NEUTRAL / RISK_OFF。
+        if risk_regime == "RISK_ON":
             return (
                 self.config.mss_bullish_max_positions_mult,
                 self.config.mss_bullish_risk_per_trade_mult,
                 self.config.mss_bullish_max_position_mult,
             )
-        if signal_label == "BEARISH":
+        if risk_regime == "RISK_OFF":
             return (
                 self.config.mss_bearish_max_positions_mult,
                 self.config.mss_bearish_risk_per_trade_mult,
@@ -125,6 +179,12 @@ class RiskManager:
         if value is None or pd.isna(value):
             return None
         return float(value)
+
+    @staticmethod
+    def _safe_optional_int(value: object | None) -> int | None:
+        if value is None or pd.isna(value):
+            return None
+        return int(value)
 
     @staticmethod
     def _empty_mss_components() -> dict[str, float | None]:
@@ -152,11 +212,11 @@ class RiskManager:
         - MISSING: 当日无 MSS 快照，用 fill_score 兜底
         - NORMAL: 正常读取 MSS 分数与信号
         
-        根据市场信号调整：
-        - BULLISH: 放大仓位容量与单笔风险
-        - BEARISH: 压缩仓位容量与单笔风险
-        - NEUTRAL: 保持基线参数
-        
+        当前正式语义是：
+        - 兼容字段 signal 继续保留给 trace / 展示
+        - 真正驱动倍率的是 risk_regime
+        - risk_regime 缺失时，允许按 phase + phase_trend 受控回退
+
         覆盖层只影响执行风险，不改写排序层分数
         """
         cached = self._mss_overlay_cache.get(signal_date)
@@ -164,10 +224,15 @@ class RiskManager:
             return cached
 
         if not self.config.mss_risk_overlay_enabled:
+            # overlay 关闭不是“今天市场中性”，而是“今天不应用 MSS 缩放”。
+            # 因此这里回到基础配置，不乘 neutral 倍率。
             overlay = MssRiskOverlay(
                 state="DISABLED",
                 signal="NEUTRAL",
                 score=float(self.config.dtt_score_fill),
+                risk_regime="RISK_NEUTRAL",
+                regime_source="DISABLED",
+                overlay_reason="OVERLAY_DISABLED",
                 max_positions_mult=1.0,
                 risk_per_trade_mult=1.0,
                 max_position_mult=1.0,
@@ -185,6 +250,12 @@ class RiskManager:
             SELECT
                 score,
                 signal,
+                phase,
+                phase_trend,
+                phase_days,
+                position_advice,
+                risk_regime,
+                trend_quality,
                 market_coefficient_raw,
                 profit_effect_raw,
                 loss_effect_raw,
@@ -210,6 +281,14 @@ class RiskManager:
             signal_label = "NEUTRAL"
             score = float(self.config.dtt_score_fill)
             coverage_flag = "SNAPSHOT_MISSING"
+            phase = None
+            phase_trend = None
+            phase_days = None
+            position_advice = None
+            trend_quality = None
+            risk_regime = "RISK_NEUTRAL"
+            regime_source = "DEFAULT_NEUTRAL"
+            overlay_reason = "SNAPSHOT_MISSING"
         else:
             overlay_state = "NORMAL"
             row_data = row.iloc[0]
@@ -219,11 +298,53 @@ class RiskManager:
             raw_score = row_data["score"]
             score = float(raw_score if raw_score is not None else self.config.dtt_score_fill)
             coverage_flag = "NORMAL"
+            overlay_reason = "NORMAL"
             if raw_score is None or pd.isna(raw_score):
                 score = float(self.config.dtt_score_fill)
                 coverage_flag = "SCORE_FILL"
+                overlay_reason = "FACTOR_FILL_NEUTRAL"
             if raw_signal_label not in {"BULLISH", "NEUTRAL", "BEARISH"} and coverage_flag == "NORMAL":
                 coverage_flag = "SIGNAL_NORMALIZED"
+            phase = self._resolve_phase_label(row_data["phase"])
+            phase_trend = self._resolve_phase_trend_label(row_data["phase_trend"])
+            phase_days = self._safe_optional_int(row_data["phase_days"])
+            position_advice = (
+                str(row_data["position_advice"])
+                if row_data["position_advice"] is not None and not pd.isna(row_data["position_advice"])
+                else None
+            )
+            trend_quality = self._resolve_trend_quality_label(row_data["trend_quality"])
+            risk_regime = self._resolve_risk_regime_label(row_data["risk_regime"])
+            if risk_regime is not None:
+                # 新 schema 已正式落 risk_regime 时，Broker 直接消费存量结果，不重新解释。
+                regime_source = "STORED"
+            else:
+                regime_source = "DEFAULT_NEUTRAL"
+                if phase is not None and phase_trend is not None:
+                    # 第一优先 fallback：已有状态层字段，但旧库/旧 run 还没有 risk_regime。
+                    risk_regime = resolve_mss_risk_regime(phase, phase_trend)
+                    regime_source = "PHASE_STATE"
+                elif phase_trend is not None:
+                    # 第二优先 fallback：只剩 phase_trend 时，允许用当天 score 补出 phase，
+                    # 但这里仍然禁止把 risk_regime 直接等同为 signal。
+                    derived_phase = resolve_mss_phase(score, phase_trend)
+                    if derived_phase != "UNKNOWN":
+                        phase = derived_phase
+                        position_advice = position_advice or resolve_mss_position_advice(phase)
+                        risk_regime = resolve_mss_risk_regime(phase, phase_trend)
+                        regime_source = "PHASE_TREND_SCORE"
+                if risk_regime is None:
+                    # 最后的兜底只能退回 neutral，避免在状态缺失时做激进推断。
+                    risk_regime = "RISK_NEUTRAL"
+                    if coverage_flag == "NORMAL":
+                        coverage_flag = "OVERLAY_MISSING"
+                    overlay_reason = "OVERLAY_MISSING"
+            if phase is not None and position_advice is None:
+                position_advice = resolve_mss_position_advice(phase)
+            if trend_quality == "COLD_START" and overlay_reason == "NORMAL":
+                # cold start 是状态层自己的信息，不等于数据缺失；
+                # 单独记原因，后续 evidence 才能区分“真实 regime 变化”和“历史不足”。
+                overlay_reason = "TREND_COLD_START"
             # Broker 只消费 MSS 的最终产物；raw / normalized 都从 l3_mss_daily 读取，不再回头重算。
             mss_components = {
                 "market_coefficient_raw": self._safe_optional_float(row_data["market_coefficient_raw"]),
@@ -241,12 +362,15 @@ class RiskManager:
             }
 
         max_positions_mult, risk_per_trade_mult, max_position_mult = self._resolve_mss_multipliers(
-            signal_label
+            risk_regime
         )
         overlay = MssRiskOverlay(
             state=overlay_state,
             signal=signal_label,
             score=score,
+            risk_regime=risk_regime,
+            regime_source=regime_source,
+            overlay_reason=overlay_reason,
             max_positions_mult=float(max_positions_mult),
             risk_per_trade_mult=float(risk_per_trade_mult),
             max_position_mult=float(max_position_mult),
@@ -256,6 +380,11 @@ class RiskManager:
             max_position_pct=float(self.config.max_position_pct) * max(max_position_mult, 0.0),
             overlay_enabled=True,
             coverage_flag=coverage_flag,
+            phase=phase,
+            phase_trend=phase_trend,
+            phase_days=phase_days,
+            position_advice=position_advice,
+            trend_quality=trend_quality,
             market_coefficient_raw=mss_components["market_coefficient_raw"],
             profit_effect_raw=mss_components["profit_effect_raw"],
             loss_effect_raw=mss_components["loss_effect_raw"],

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Literal
+from typing import Literal, Sequence
 
 import numpy as np
 import pandas as pd
@@ -10,6 +10,21 @@ from src.contracts import MarketScore
 from src.data.store import Store
 from src.selector.baseline import MSS_BASELINE
 from src.selector.normalize import safe_ratio, zscore_single
+
+MssSignalType = Literal["BULLISH", "NEUTRAL", "BEARISH"]
+MssPhaseTrendType = Literal["UP", "SIDEWAYS", "DOWN"]
+MssPhaseType = Literal[
+    "EMERGENCE",
+    "FERMENTATION",
+    "ACCELERATION",
+    "DIVERGENCE",
+    "CLIMAX",
+    "DIFFUSION",
+    "RECESSION",
+    "UNKNOWN",
+]
+MssRiskRegimeType = Literal["RISK_ON", "RISK_NEUTRAL", "RISK_OFF"]
+MssTrendQualityType = Literal["NORMAL", "COLD_START"]
 
 MSS_FACTOR_NAMES = [
     "market_coefficient",
@@ -20,12 +35,23 @@ MSS_FACTOR_NAMES = [
     "volatility",
 ]
 
+MSS_POSITION_ADVICE = {
+    "EMERGENCE": "80%-100%",
+    "FERMENTATION": "60%-80%",
+    "ACCELERATION": "50%-70%",
+    "DIVERGENCE": "40%-60%",
+    "CLIMAX": "20%-40%",
+    "DIFFUSION": "30%-50%",
+    "RECESSION": "0%-20%",
+    "UNKNOWN": "0%-20%",
+}
+
 
 def _signal_from_score(
     score: float,
     bullish_threshold: float = 65.0,
     bearish_threshold: float = 35.0,
-) -> Literal["BULLISH", "NEUTRAL", "BEARISH"]:
+) -> MssSignalType:
     if score >= bullish_threshold:
         return "BULLISH"
     if score <= bearish_threshold:
@@ -98,6 +124,139 @@ def compute_mss_raw_components(row: pd.Series) -> dict[str, float]:
     return _compute_mss_raw_components(row)
 
 
+def _normalize_score_history(score_history: Sequence[float] | None) -> list[float]:
+    # 状态层只接受“可比较的历史分数”，把空值/非法值尽早滤掉，
+    # 避免 cold start、趋势窗和 phase_days 在脏历史上产生假状态。
+    normalized: list[float] = []
+    for value in score_history or []:
+        if value is None or pd.isna(value):
+            continue
+        numeric = float(value)
+        if np.isfinite(numeric):
+            normalized.append(numeric)
+    return normalized
+
+
+def resolve_mss_phase_trend(
+    score_history: Sequence[float] | None,
+) -> tuple[MssPhaseTrendType, MssTrendQualityType]:
+    scores = _normalize_score_history(score_history)
+    if len(scores) >= 8:
+        # 正常路径优先用 8 日趋势窗：这是 blueprint 固定的主口径，
+        # 目的是让 trend 判断依赖 MSS 自身历史，而不是上游信号或 Broker 状态。
+        short_window = pd.Series(scores[-8:], dtype=float)
+        ema_short = float(short_window.ewm(span=3, adjust=False).mean().iloc[-1])
+        ema_long = float(short_window.ewm(span=8, adjust=False).mean().iloc[-1])
+        slope_5d = (scores[-1] - scores[-5]) / 4.0
+        trend_band = max(0.8, 0.15 * float(np.std(scores[-20:], ddof=0)))
+        if ema_short > ema_long and slope_5d >= trend_band:
+            return "UP", "NORMAL"
+        if ema_short < ema_long and slope_5d <= -trend_band:
+            return "DOWN", "NORMAL"
+        return "SIDEWAYS", "NORMAL"
+
+    recent = scores[-3:]
+    if len(recent) >= 3:
+        # 历史不足 8 日时进入 cold start：
+        # 只保留最保守的“三日严格单调”判断，避免在刚起步的窗口里过拟合趋势方向。
+        if recent[0] < recent[1] < recent[2]:
+            return "UP", "COLD_START"
+        if recent[0] > recent[1] > recent[2]:
+            return "DOWN", "COLD_START"
+    return "SIDEWAYS", "COLD_START"
+
+
+def resolve_mss_phase(score: float, phase_trend: str) -> MssPhaseType:
+    if pd.isna(score) or not np.isfinite(float(score)):
+        return "UNKNOWN"
+    normalized_trend = str(phase_trend or "").strip().upper()
+    if normalized_trend not in {"UP", "SIDEWAYS", "DOWN"}:
+        return "UNKNOWN"
+
+    current_score = float(score)
+    if current_score >= 75.0:
+        # 高分优先落 CLIMAX：Phase 3 明确要求“高位风险”优先于“看起来很强”。
+        return "CLIMAX"
+    if normalized_trend == "UP":
+        if current_score < 30.0:
+            return "EMERGENCE"
+        if current_score < 45.0:
+            return "FERMENTATION"
+        if current_score < 60.0:
+            return "ACCELERATION"
+        return "DIVERGENCE"
+    if normalized_trend == "SIDEWAYS":
+        return "DIVERGENCE" if current_score >= 60.0 else "RECESSION"
+    if normalized_trend == "DOWN":
+        return "DIFFUSION" if current_score >= 60.0 else "RECESSION"
+    return "UNKNOWN"
+
+
+def resolve_mss_phase_days(
+    phase: str,
+    prev_phase: str | None = None,
+    prev_phase_days: int | None = None,
+) -> int:
+    # phase_days 只看“上一交易日是否仍在同一 phase”，不看自然日；
+    # 这样缺一天数据时不会偷偷把状态延续下去。
+    if (
+        str(prev_phase or "").strip().upper() == str(phase or "").strip().upper()
+        and prev_phase_days is not None
+        and int(prev_phase_days) > 0
+    ):
+        return int(prev_phase_days) + 1
+    return 1
+
+
+def resolve_mss_position_advice(phase: str) -> str:
+    return MSS_POSITION_ADVICE.get(str(phase or "").strip().upper(), "0%-20%")
+
+
+def resolve_mss_risk_regime(phase: str, phase_trend: str) -> MssRiskRegimeType:
+    normalized_phase = str(phase or "").strip().upper()
+    normalized_trend = str(phase_trend or "").strip().upper()
+    if normalized_phase in {"EMERGENCE", "FERMENTATION", "ACCELERATION"} and normalized_trend == "UP":
+        return "RISK_ON"
+    if normalized_phase in {"DIVERGENCE", "DIFFUSION"}:
+        return "RISK_NEUTRAL"
+    if normalized_phase == "ACCELERATION" and normalized_trend != "UP":
+        return "RISK_NEUTRAL"
+    return "RISK_OFF"
+
+
+def resolve_mss_state(
+    score_history: Sequence[float] | None,
+    prev_phase: str | None = None,
+    prev_phase_days: int | None = None,
+) -> dict[str, str | int]:
+    scores = _normalize_score_history(score_history)
+    if not scores:
+        # 无历史时不做乐观推断：按 UNKNOWN + RISK_OFF 返回，
+        # 让 Broker 在缺状态时默认保守，而不是把空白解释成 risk_on。
+        return {
+            "phase_trend": "SIDEWAYS",
+            "phase": "UNKNOWN",
+            "phase_days": 1,
+            "position_advice": resolve_mss_position_advice("UNKNOWN"),
+            "risk_regime": "RISK_OFF",
+            "trend_quality": "COLD_START",
+        }
+
+    phase_trend, trend_quality = resolve_mss_phase_trend(scores)
+    phase = resolve_mss_phase(scores[-1], phase_trend)
+    phase_days = resolve_mss_phase_days(phase, prev_phase=prev_phase, prev_phase_days=prev_phase_days)
+    position_advice = resolve_mss_position_advice(phase)
+    risk_regime = resolve_mss_risk_regime(phase, phase_trend)
+    return {
+        "phase_trend": phase_trend,
+        "phase": phase,
+        "phase_days": phase_days,
+        "position_advice": position_advice,
+        "risk_regime": risk_regime,
+        "trend_quality": trend_quality,
+    }
+
+
 def _normalize_mss_components(raw: dict[str, float], baseline: dict[str, float] | None = None) -> dict[str, float]:
     base = baseline or MSS_BASELINE
     # v0.01 主链仍以 z-score 为正式口径；percentile 对照只放在实验模块中。
@@ -166,6 +325,9 @@ def materialize_mss_trace_snapshot(
     baseline: dict[str, float] | None = None,
     bullish_threshold: float = 65.0,
     bearish_threshold: float = 35.0,
+    score_history: Sequence[float] | None = None,
+    prev_phase: str | None = None,
+    prev_phase_days: int | None = None,
 ) -> dict[str, float | str | date]:
     """把市场快照展开成 trace 友好的原始值、标准化值和总分。"""
     # 这个函数专门给 trace / debug / report 用：
@@ -176,12 +338,19 @@ def materialize_mss_trace_snapshot(
     d = row["date"]
     if isinstance(d, pd.Timestamp):
         d = d.date()
+    history = _normalize_score_history(score_history)
+    if not history or not np.isclose(history[-1], score):
+        # 当前日 score 必须显式进入状态窗；
+        # 这样落库的 phase/risk_regime 永远对应“今天的正式市场分”，不会错位到上一日。
+        history.append(score)
+    state = resolve_mss_state(history, prev_phase=prev_phase, prev_phase_days=prev_phase_days)
     return {
         "date": d,
         "score": score,
         "signal": _signal_from_score(score, bullish_threshold=bullish_threshold, bearish_threshold=bearish_threshold),
         **raw,
         **components,
+        **state,
     }
 
 
@@ -318,19 +487,56 @@ def compute_mss(
     if df.empty:
         return 0
 
+    score_history: list[float] = []
+    prev_phase: str | None = None
+    prev_phase_days: int | None = None
+    prior_df = store.read_df(
+        """
+        SELECT date, score
+        FROM l3_mss_daily
+        WHERE date < ?
+        ORDER BY date DESC
+        LIMIT 20
+        """,
+        (start,),
+    )
+    if not prior_df.empty:
+        # 启动窗口前最多回看 20 个交易日的 MSS 历史，只为恢复状态层上下文；
+        # 不把旧 phase 直接当真相源复写，而是重新按当前规则推导出 prev_phase/prev_phase_days。
+        for _, prior_row in prior_df.sort_values("date").iterrows():
+            prior_score = prior_row["score"]
+            if prior_score is None or pd.isna(prior_score):
+                continue
+            score_history.append(float(prior_score))
+            score_history = score_history[-20:]
+            prior_state = resolve_mss_state(
+                score_history,
+                prev_phase=prev_phase,
+                prev_phase_days=prev_phase_days,
+            )
+            prev_phase = str(prior_state["phase"])
+            prev_phase_days = int(prior_state["phase_days"])
+
     records = []
     for _, row in df.iterrows():
         # MSS 仍然是“市场日评分器”：每个交易日只产出一条 MarketScore，不参与个股横截面筛选。
         # 这里直接把 raw + normalized 一起持久化到 l3_mss_daily，避免 Broker 为了 trace 再回头重算。
         # 日级记录量本身很小，所以这里优先选“结果清晰、trace 完整”，不刻意把代码压成难读向量化。
+        # Phase 3 新增状态层也在这里一次性落库，保证 l3_mss_daily 自己就能回答：
+        # “今天是什么分数、处在哪个阶段、Broker 应该按哪个 regime 执行”。
         snapshot = materialize_mss_trace_snapshot(
             row,
             baseline=baseline,
             bullish_threshold=bullish_threshold,
             bearish_threshold=bearish_threshold,
+            score_history=score_history,
+            prev_phase=prev_phase,
+            prev_phase_days=prev_phase_days,
         )
         records.append(snapshot)
+        score_history.append(float(snapshot["score"]))
+        score_history = score_history[-20:]
+        prev_phase = str(snapshot["phase"])
+        prev_phase_days = int(snapshot["phase_days"])
     return store.bulk_upsert("l3_mss_daily", pd.DataFrame(records))
-
-
 

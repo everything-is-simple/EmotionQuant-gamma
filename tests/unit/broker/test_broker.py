@@ -340,22 +340,55 @@ def test_broker_mss_overlay_reduces_position_size_under_bearish_regime(tmp_path)
 
     store.bulk_upsert(
         "l3_mss_daily",
-        pd.DataFrame([{"date": signal_date, "score": 80.0, "signal": "BULLISH"}]),
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "score": 55.0,
+                    "signal": "NEUTRAL",
+                    "phase": "ACCELERATION",
+                    "phase_trend": "UP",
+                    "phase_days": 2,
+                    "position_advice": "50%-70%",
+                    "risk_regime": "RISK_ON",
+                    "trend_quality": "NORMAL",
+                }
+            ]
+        ),
     )
     bullish = risk.assess_signal(signal, state)
     assert bullish.order is not None
 
     store.bulk_upsert(
         "l3_mss_daily",
-        pd.DataFrame([{"date": signal_date, "score": 20.0, "signal": "BEARISH"}]),
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "score": 80.0,
+                    "signal": "BULLISH",
+                    "phase": "CLIMAX",
+                    "phase_trend": "UP",
+                    "phase_days": 1,
+                    "position_advice": "20%-40%",
+                    "risk_regime": "RISK_OFF",
+                    "trend_quality": "NORMAL",
+                }
+            ]
+        ),
     )
     risk._mss_overlay_cache.clear()
     bearish = risk.assess_signal(signal, state)
     assert bearish.order is not None
 
+    # 这里故意制造“signal 看起来更强，但 regime 更保守”的场景，
+    # 锁定 Broker 真正按 risk_regime 缩仓，而不是继续按 signal 选倍率。
     assert bullish.order.quantity == 50000
     assert bearish.order.quantity == 20000
     assert bearish.order.quantity < bullish.order.quantity
+    assert bullish.overlay is not None and bullish.overlay.risk_regime == "RISK_ON"
+    assert bearish.overlay is not None and bearish.overlay.risk_regime == "RISK_OFF"
+    assert bearish.overlay.signal == "BULLISH"
     store.close()
 
 
@@ -421,20 +454,133 @@ def test_broker_mss_overlay_reduces_effective_max_positions_under_bearish_regime
 
     store.bulk_upsert(
         "l3_mss_daily",
-        pd.DataFrame([{"date": signal_date, "score": 80.0, "signal": "BULLISH"}]),
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "score": 55.0,
+                    "signal": "NEUTRAL",
+                    "phase": "ACCELERATION",
+                    "phase_trend": "UP",
+                    "phase_days": 2,
+                    "position_advice": "50%-70%",
+                    "risk_regime": "RISK_ON",
+                    "trend_quality": "NORMAL",
+                }
+            ]
+        ),
     )
     bullish = risk.assess_signal(signal, state)
     assert bullish.order is not None
 
     store.bulk_upsert(
         "l3_mss_daily",
-        pd.DataFrame([{"date": signal_date, "score": 20.0, "signal": "BEARISH"}]),
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "score": 80.0,
+                    "signal": "BULLISH",
+                    "phase": "CLIMAX",
+                    "phase_trend": "UP",
+                    "phase_days": 1,
+                    "position_advice": "20%-40%",
+                    "risk_regime": "RISK_OFF",
+                    "trend_quality": "NORMAL",
+                }
+            ]
+        ),
     )
     risk._mss_overlay_cache.clear()
     bearish = risk.assess_signal(signal, state)
 
     assert bearish.order is None
     assert bearish.reject_reason == "MAX_POSITIONS_REACHED"
+    assert bearish.overlay is not None and bearish.overlay.risk_regime == "RISK_OFF"
+    store.close()
+
+
+def test_broker_mss_overlay_derives_risk_regime_from_phase_when_row_is_legacy(tmp_path) -> None:
+    db = tmp_path / "test_mss_overlay_phase_fallback.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_mss_score",
+        BACKTEST_INITIAL_CASH=1_000_000,
+        RISK_PER_TRADE_PCT=0.20,
+        MAX_POSITION_PCT=0.50,
+        STOP_LOSS_PCT=0.05,
+        MAX_POSITIONS=10,
+    )
+    risk = Broker(store, cfg).risk
+
+    _seed_trade_calendar(store, signal_date, exec_date)
+    _seed_adj_daily(
+        store,
+        [
+            {
+                "code": "000001",
+                "date": signal_date,
+                "adj_open": 10.0,
+                "adj_high": 10.2,
+                "adj_low": 9.8,
+                "adj_close": 10.0,
+                "volume": 10000,
+                "amount": 1e8,
+                "pct_chg": 0.0,
+                "ma5": 10.0,
+                "ma10": 10.0,
+                "ma20": 10.0,
+                "ma60": 10.0,
+                "volume_ma5": 10000,
+                "volume_ma20": 10000,
+                "volume_ratio": 1.0,
+            }
+        ],
+    )
+    signal = Signal(
+        signal_id=build_signal_id("000001", signal_date, "bof"),
+        code="000001",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.8,
+        pattern="bof",
+        reason_code="PAS_BOF",
+        final_score=90.0,
+        variant="v0_01_dtt_pattern_plus_irs_mss_score",
+    )
+    state = BrokerRiskState(cash=1_000_000, portfolio_market_value=0.0, holdings=set())
+
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "score": 80.0,
+                    "signal": "BULLISH",
+                    "phase": "CLIMAX",
+                    "phase_trend": "UP",
+                    "phase_days": 1,
+                    "position_advice": "20%-40%",
+                    "trend_quality": "NORMAL",
+                }
+            ]
+        ),
+    )
+
+    decision = risk.assess_signal(signal, state)
+
+    # 旧库行没有 risk_regime 时，Broker 允许按 phase + phase_trend 回退解析，
+    # 但结果仍必须是 CLIMAX -> RISK_OFF，而不是被 BULLISH signal 误导。
+    assert decision.order is not None
+    assert decision.overlay is not None
+    assert decision.overlay.risk_regime == "RISK_OFF"
+    assert decision.overlay.regime_source == "PHASE_STATE"
+    assert decision.overlay.signal == "BULLISH"
+    assert decision.order.quantity == 20000
     store.close()
 
 
@@ -978,6 +1124,12 @@ def test_broker_writes_mss_overlay_trace_for_disabled_missing_and_normal(tmp_pat
                     "date": signal_date,
                     "score": 20.0,
                     "signal": "BEARISH",
+                    "phase": "RECESSION",
+                    "phase_trend": "DOWN",
+                    "phase_days": 2,
+                    "position_advice": "0%-20%",
+                    "risk_regime": "RISK_OFF",
+                    "trend_quality": "NORMAL",
                     "market_coefficient_raw": 0.60,
                     "profit_effect_raw": 0.20,
                     "loss_effect_raw": 0.10,
@@ -998,8 +1150,8 @@ def test_broker_writes_mss_overlay_trace_for_disabled_missing_and_normal(tmp_pat
 
     trace = store.read_df(
         """
-        SELECT run_id, overlay_enabled, overlay_state, coverage_flag, market_signal, ranker_mss_score,
-               market_coefficient_raw, market_coefficient
+        SELECT run_id, overlay_enabled, overlay_state, coverage_flag, overlay_reason, market_signal,
+               risk_regime, ranker_mss_score, market_coefficient_raw, market_coefficient, decision_bucket
         FROM mss_risk_overlay_trace_exp
         WHERE signal_id = ?
         ORDER BY run_id ASC
@@ -1010,10 +1162,13 @@ def test_broker_writes_mss_overlay_trace_for_disabled_missing_and_normal(tmp_pat
     assert trace["overlay_enabled"].tolist() == [False, True, True]
     assert trace["overlay_state"].tolist() == ["DISABLED", "MISSING", "NORMAL"]
     assert trace["coverage_flag"].tolist() == ["OVERLAY_DISABLED", "SNAPSHOT_MISSING", "NORMAL"]
+    assert trace["overlay_reason"].tolist() == ["OVERLAY_DISABLED", "SNAPSHOT_MISSING", "NORMAL"]
     assert trace.iloc[2]["market_signal"] == "BEARISH"
+    assert trace["risk_regime"].tolist() == ["RISK_NEUTRAL", "RISK_NEUTRAL", "RISK_OFF"]
     assert trace.iloc[2]["ranker_mss_score"] == 20.0
     assert pd.notna(trace.iloc[2]["market_coefficient_raw"])
     assert trace.iloc[2]["market_coefficient"] == 40.0
+    assert trace["decision_bucket"].tolist() == ["ACCEPTED", "ACCEPTED", "ACCEPTED"]
     store.close()
 
 
@@ -1098,19 +1253,47 @@ def test_broker_writes_mss_overlay_trace_for_score_fill_and_signal_normalized(tm
 
     store.bulk_upsert(
         "l3_mss_daily",
-        pd.DataFrame([{"date": signal_date, "score": None, "signal": "BEARISH"}]),
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "score": None,
+                    "signal": "BEARISH",
+                    "phase": "RECESSION",
+                    "phase_trend": "DOWN",
+                    "phase_days": 1,
+                    "position_advice": "0%-20%",
+                    "risk_regime": "RISK_OFF",
+                    "trend_quality": "NORMAL",
+                }
+            ]
+        ),
     )
     Broker(store, cfg, run_id="mss_score_fill").process_signals([signal])
 
     store.bulk_upsert(
         "l3_mss_daily",
-        pd.DataFrame([{"date": signal_date, "score": 80.0, "signal": "INVALID"}]),
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "score": 80.0,
+                    "signal": "INVALID",
+                    "phase": "CLIMAX",
+                    "phase_trend": "UP",
+                    "phase_days": 1,
+                    "position_advice": "20%-40%",
+                    "risk_regime": "RISK_OFF",
+                    "trend_quality": "NORMAL",
+                }
+            ]
+        ),
     )
     Broker(store, cfg, run_id="mss_signal_normalized").process_signals([signal])
 
     trace = store.read_df(
         """
-        SELECT run_id, coverage_flag, market_signal, market_score
+        SELECT run_id, coverage_flag, overlay_reason, market_signal, market_score, risk_regime
         FROM mss_risk_overlay_trace_exp
         WHERE signal_id = ?
         ORDER BY run_id ASC
@@ -1120,8 +1303,204 @@ def test_broker_writes_mss_overlay_trace_for_score_fill_and_signal_normalized(tm
 
     assert trace["run_id"].tolist() == ["mss_score_fill", "mss_signal_normalized"]
     assert trace["coverage_flag"].tolist() == ["SCORE_FILL", "SIGNAL_NORMALIZED"]
+    assert trace["overlay_reason"].tolist() == ["FACTOR_FILL_NEUTRAL", "NORMAL"]
     assert trace.iloc[0]["market_score"] == 50.0
     assert trace.iloc[1]["market_signal"] == "NEUTRAL"
+    assert trace["risk_regime"].tolist() == ["RISK_OFF", "RISK_OFF"]
+    store.close()
+
+
+def test_broker_overlay_trace_marks_cold_start_and_overlay_missing_reasons(tmp_path) -> None:
+    db = tmp_path / "test_mss_trace_phase3_reasons.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+
+    _seed_trade_calendar(store, signal_date, exec_date)
+    _seed_adj_daily(
+        store,
+        [
+            {
+                "code": "000001",
+                "date": signal_date,
+                "adj_open": 10.0,
+                "adj_high": 10.2,
+                "adj_low": 9.8,
+                "adj_close": 10.0,
+                "volume": 10000,
+                "amount": 1e8,
+                "pct_chg": 0.0,
+                "ma5": 10.0,
+                "ma10": 10.0,
+                "ma20": 10.0,
+                "ma60": 10.0,
+                "volume_ma5": 10000,
+                "volume_ma20": 10000,
+                "volume_ratio": 1.0,
+            }
+        ],
+    )
+    signal = Signal(
+        signal_id=build_signal_id("000001", signal_date, "bof"),
+        code="000001",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.8,
+        pattern="bof",
+        reason_code="PAS_BOF",
+        final_score=90.0,
+        variant="v0_01_dtt_pattern_plus_irs_mss_score",
+    )
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_mss_score",
+        BACKTEST_INITIAL_CASH=1_000_000,
+        RISK_PER_TRADE_PCT=0.2,
+        MAX_POSITION_PCT=0.5,
+        STOP_LOSS_PCT=0.05,
+    )
+
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "score": 55.0,
+                    "signal": "NEUTRAL",
+                    "phase": "ACCELERATION",
+                    "phase_trend": "UP",
+                    "phase_days": 1,
+                    "position_advice": "50%-70%",
+                    "trend_quality": "COLD_START",
+                }
+            ]
+        ),
+    )
+    Broker(store, cfg, run_id="mss_cold_start").process_signals([signal])
+
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "score": 55.0,
+                    "signal": "NEUTRAL",
+                    "phase": None,
+                    "phase_trend": None,
+                    "phase_days": None,
+                    "position_advice": None,
+                    "risk_regime": None,
+                    "trend_quality": None,
+                }
+            ]
+        ),
+    )
+    Broker(store, cfg, run_id="mss_overlay_missing").process_signals([signal])
+
+    trace = store.read_df(
+        """
+        SELECT run_id, overlay_reason, risk_regime, regime_source
+        FROM mss_risk_overlay_trace_exp
+        WHERE signal_id = ?
+        ORDER BY run_id ASC
+        """,
+        (signal.signal_id,),
+    )
+
+    # cold start 与 overlay missing 都是 Phase 3 要单独追溯的原因位，
+    # 不能继续混在一个 generic fallback 标签里。
+    assert trace["run_id"].tolist() == ["mss_cold_start", "mss_overlay_missing"]
+    assert trace["overlay_reason"].tolist() == ["TREND_COLD_START", "OVERLAY_MISSING"]
+    assert trace.iloc[0]["risk_regime"] == "RISK_ON"
+    assert trace.iloc[0]["regime_source"] == "PHASE_STATE"
+    assert trace.iloc[1]["risk_regime"] == "RISK_NEUTRAL"
+    assert trace.iloc[1]["regime_source"] == "DEFAULT_NEUTRAL"
+    store.close()
+
+
+def test_broker_overlay_trace_marks_capacity_reject_bucket(tmp_path) -> None:
+    db = tmp_path / "test_mss_trace_capacity_reject.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+
+    _seed_trade_calendar(store, signal_date, exec_date)
+    signal = Signal(
+        signal_id=build_signal_id("000009", signal_date, "bof"),
+        code="000009",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.8,
+        pattern="bof",
+        reason_code="PAS_BOF",
+        final_score=90.0,
+        variant="v0_01_dtt_pattern_plus_irs_mss_score",
+    )
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_mss_score",
+        BACKTEST_INITIAL_CASH=1_000_000,
+        MAX_POSITIONS=3,
+    )
+    broker = Broker(store, cfg, run_id="mss_capacity_reject")
+    broker.portfolio["000001"] = Position(
+        code="000001",
+        entry_date=date(2026, 3, 1),
+        entry_price=10.0,
+        quantity=100,
+        current_price=10.0,
+        max_price=10.0,
+        pattern="bof",
+        is_paper=False,
+    )
+    broker.portfolio["000002"] = Position(
+        code="000002",
+        entry_date=date(2026, 3, 1),
+        entry_price=10.0,
+        quantity=100,
+        current_price=10.0,
+        max_price=10.0,
+        pattern="bof",
+        is_paper=False,
+    )
+
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "score": 80.0,
+                    "signal": "BULLISH",
+                    "phase": "CLIMAX",
+                    "phase_trend": "UP",
+                    "phase_days": 1,
+                    "position_advice": "20%-40%",
+                    "risk_regime": "RISK_OFF",
+                    "trend_quality": "NORMAL",
+                }
+            ]
+        ),
+    )
+
+    broker.process_signals([signal])
+
+    trace = store.read_df(
+        """
+        SELECT decision_bucket, decision_reason, risk_regime
+        FROM mss_risk_overlay_trace_exp
+        WHERE run_id = ? AND signal_id = ?
+        """,
+        ("mss_capacity_reject", signal.signal_id),
+    )
+
+    # MAX_POSITIONS_REACHED 在 Phase 3 里必须归并到高层容量拒绝桶，
+    # 方便后续 evidence 判断“拒绝来自真实 regime 缩容还是别的失败路径”。
+    assert trace.iloc[0]["decision_bucket"] == "BROKER_CAPACITY_REJECT"
+    assert trace.iloc[0]["decision_reason"] == "MAX_POSITIONS_REACHED"
+    assert trace.iloc[0]["risk_regime"] == "RISK_OFF"
     store.close()
 
 

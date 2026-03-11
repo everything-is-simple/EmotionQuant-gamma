@@ -102,6 +102,14 @@ class Store:
             ("l3_mss_daily", "continuity_raw", "DOUBLE"),
             ("l3_mss_daily", "extreme_raw", "DOUBLE"),
             ("l3_mss_daily", "volatility_raw", "DOUBLE"),
+            # Phase 3 / MSS 状态层：
+            # 正式 DDL 在 _all_ddls 里定义，这里只负责给历史库补桥接列。
+            ("l3_mss_daily", "phase", "VARCHAR"),
+            ("l3_mss_daily", "phase_trend", "VARCHAR"),
+            ("l3_mss_daily", "phase_days", "INTEGER"),
+            ("l3_mss_daily", "position_advice", "VARCHAR"),
+            ("l3_mss_daily", "risk_regime", "VARCHAR"),
+            ("l3_mss_daily", "trend_quality", "VARCHAR"),
             ("irs_industry_trace_exp", "trace_scope", "VARCHAR DEFAULT 'SIGNAL_ATTACH'"),
             ("irs_industry_trace_exp", "industry_code", "VARCHAR"),
             ("irs_industry_trace_exp", "source_classification", "VARCHAR"),
@@ -149,6 +157,16 @@ class Store:
             ("mss_risk_overlay_trace_exp", "continuity", "DOUBLE"),
             ("mss_risk_overlay_trace_exp", "extreme", "DOUBLE"),
             ("mss_risk_overlay_trace_exp", "volatility", "DOUBLE"),
+            # overlay trace 的状态层字段同样先有正式 DDL，再由这里兼容旧库。
+            ("mss_risk_overlay_trace_exp", "phase", "VARCHAR"),
+            ("mss_risk_overlay_trace_exp", "phase_trend", "VARCHAR"),
+            ("mss_risk_overlay_trace_exp", "phase_days", "INTEGER"),
+            ("mss_risk_overlay_trace_exp", "position_advice", "VARCHAR"),
+            ("mss_risk_overlay_trace_exp", "risk_regime", "VARCHAR"),
+            ("mss_risk_overlay_trace_exp", "trend_quality", "VARCHAR"),
+            ("mss_risk_overlay_trace_exp", "regime_source", "VARCHAR"),
+            ("mss_risk_overlay_trace_exp", "overlay_reason", "VARCHAR"),
+            ("mss_risk_overlay_trace_exp", "decision_bucket", "VARCHAR"),
         ]
         # optional column 只允许补非主键、非执行语义列；
         # 一旦涉及 formal schema 或主流程字段变化，就应该走显式 migration，而不是这里静默补列。
@@ -309,6 +327,9 @@ class Store:
             # L3
             """
             CREATE TABLE IF NOT EXISTS l3_mss_daily (
+                -- l3_mss_daily 是市场层正式真相源：
+                -- score/signal 是兼容结果，phase/risk_regime 是 Phase 3 新增状态层，
+                -- Broker 必须能只读这张表就拿到当天正式市场状态。
                 date               DATE NOT NULL PRIMARY KEY,
                 score              DOUBLE,
                 signal             VARCHAR,
@@ -323,7 +344,13 @@ class Store:
                 loss_effect        DOUBLE,
                 continuity         DOUBLE,
                 extreme            DOUBLE,
-                volatility         DOUBLE
+                volatility         DOUBLE,
+                phase              VARCHAR,
+                phase_trend        VARCHAR,
+                phase_days         INTEGER,
+                position_advice    VARCHAR,
+                risk_regime        VARCHAR,
+                trend_quality      VARCHAR
             )
             """,
             """
@@ -523,6 +550,10 @@ class Store:
             """
             CREATE TABLE IF NOT EXISTS mss_risk_overlay_trace_exp (
                 -- MSS 在当前主线主要服务 Broker，这张表记录的是执行层看到的 overlay 结果。
+                -- 这里必须同时保留：
+                -- 1. 兼容 signal / score
+                -- 2. Phase 3 正式状态层 phase / trend / regime
+                -- 3. fallback 与决策归因 overlay_reason / decision_bucket
                 run_id                         VARCHAR NOT NULL,
                 signal_id                      VARCHAR NOT NULL,
                 signal_date                    DATE    NOT NULL,
@@ -548,6 +579,14 @@ class Store:
                 continuity                     DOUBLE,
                 extreme                        DOUBLE,
                 volatility                     DOUBLE,
+                phase                          VARCHAR,
+                phase_trend                    VARCHAR,
+                phase_days                     INTEGER,
+                position_advice                VARCHAR,
+                risk_regime                    VARCHAR,
+                trend_quality                  VARCHAR,
+                regime_source                  VARCHAR,
+                overlay_reason                 VARCHAR,
                 base_max_positions             INTEGER NOT NULL,
                 base_risk_per_trade_pct        DOUBLE NOT NULL,
                 base_max_position_pct          DOUBLE NOT NULL,
@@ -561,6 +600,7 @@ class Store:
                 available_cash                 DOUBLE NOT NULL,
                 portfolio_market_value         DOUBLE NOT NULL,
                 decision_status                VARCHAR NOT NULL,
+                decision_bucket                VARCHAR,
                 decision_reason                VARCHAR,
                 reserved_cash                  DOUBLE NOT NULL,
                 created_at                     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

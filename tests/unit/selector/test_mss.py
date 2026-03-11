@@ -12,6 +12,10 @@ from src.selector.mss import (
     compute_mss_raw_components,
     compute_mss_single,
     materialize_mss_trace_snapshot,
+    resolve_mss_phase,
+    resolve_mss_position_advice,
+    resolve_mss_risk_regime,
+    resolve_mss_state,
     score_mss_raw_frame,
 )
 from src.selector.mss_experiments import MssVariantSpec, score_mss_variant
@@ -255,6 +259,43 @@ def test_materialize_mss_trace_snapshot_exposes_raw_and_normalized_components() 
     assert snapshot["signal"] == "BULLISH"
 
 
+def test_resolve_mss_state_detects_normal_uptrend_and_risk_on() -> None:
+    # 8 日以上历史走正常趋势窗，ACCELERATION + UP 必须进入 RISK_ON。
+    state = resolve_mss_state([20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 55.0])
+
+    assert state["phase_trend"] == "UP"
+    assert state["trend_quality"] == "NORMAL"
+    assert state["phase"] == "ACCELERATION"
+    assert state["phase_days"] == 1
+    assert state["position_advice"] == "50%-70%"
+    assert state["risk_regime"] == "RISK_ON"
+
+
+def test_resolve_mss_state_uses_cold_start_and_phase_days_increment_reset() -> None:
+    # 历史不足 8 日时，状态层必须走 cold start，并且只按上一交易日 phase 连续计数。
+    continued = resolve_mss_state([40.0, 45.0, 50.0], prev_phase="ACCELERATION", prev_phase_days=2)
+    reset = resolve_mss_state([50.0, 45.0, 40.0], prev_phase="ACCELERATION", prev_phase_days=2)
+
+    assert continued["phase_trend"] == "UP"
+    assert continued["trend_quality"] == "COLD_START"
+    assert continued["phase"] == "ACCELERATION"
+    assert continued["phase_days"] == 3
+    assert reset["phase_trend"] == "DOWN"
+    assert reset["trend_quality"] == "COLD_START"
+    assert reset["phase"] == "RECESSION"
+    assert reset["phase_days"] == 1
+
+
+def test_resolve_mss_phase_and_regime_distinguish_climax_diffusion_and_unknown() -> None:
+    # Phase 3 的关键约束：高分不一定 risk_on，CLIMAX 必须允许直接打到 RISK_OFF。
+    assert resolve_mss_phase(82.0, "UP") == "CLIMAX"
+    assert resolve_mss_risk_regime("CLIMAX", "UP") == "RISK_OFF"
+    assert resolve_mss_phase(65.0, "DOWN") == "DIFFUSION"
+    assert resolve_mss_position_advice("DIFFUSION") == "30%-50%"
+    assert resolve_mss_risk_regime("DIFFUSION", "DOWN") == "RISK_NEUTRAL"
+    assert resolve_mss_phase(float("nan"), "UP") == "UNKNOWN"
+
+
 def test_compute_mss_persists_raw_and_normalized_components_to_l3(tmp_path) -> None:
     db = tmp_path / "mss_l3_trace.duckdb"
     store = Store(db)
@@ -305,7 +346,8 @@ def test_compute_mss_persists_raw_and_normalized_components_to_l3(tmp_path) -> N
     row = store.read_df(
         """
         SELECT market_coefficient_raw, profit_effect_raw, loss_effect_raw,
-               market_coefficient, profit_effect, loss_effect, signal
+               market_coefficient, profit_effect, loss_effect, signal,
+               phase, phase_trend, phase_days, position_advice, risk_regime, trend_quality, score
         FROM l3_mss_daily
         WHERE date = ?
         """,
@@ -320,4 +362,12 @@ def test_compute_mss_persists_raw_and_normalized_components_to_l3(tmp_path) -> N
     assert row.iloc[0]["profit_effect"] >= 0.0
     assert row.iloc[0]["loss_effect"] >= 0.0
     assert row.iloc[0]["signal"] == "BULLISH"
+    # l3_mss_daily 现在不仅要保存市场分，还要成为 Broker 可直接消费的状态层真相源。
+    expected_state = resolve_mss_state([float(row.iloc[0]["score"])])
+    assert row.iloc[0]["phase"] == expected_state["phase"]
+    assert row.iloc[0]["phase_trend"] == expected_state["phase_trend"]
+    assert row.iloc[0]["phase_days"] == expected_state["phase_days"]
+    assert row.iloc[0]["position_advice"] == expected_state["position_advice"]
+    assert row.iloc[0]["risk_regime"] == expected_state["risk_regime"]
+    assert row.iloc[0]["trend_quality"] == expected_state["trend_quality"]
     store.close()

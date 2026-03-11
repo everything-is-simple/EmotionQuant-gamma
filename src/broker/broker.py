@@ -58,6 +58,16 @@ class Broker:
             return
         self.store.bulk_upsert("broker_order_lifecycle_trace_exp", pd.DataFrame(rows))
 
+    @staticmethod
+    def _resolve_decision_bucket(decision) -> str:
+        if decision.order is not None:
+            return "ACCEPTED"
+        # Phase 3 需要把“容量不足导致的拒绝”单独拎出来，
+        # 这样 evidence 才能区分是真 regime 缩容，还是撮合/数据路径失败。
+        if decision.reject_reason in {"MAX_POSITIONS_REACHED", "INSUFFICIENT_CASH", "SIZE_BELOW_MIN_LOT"}:
+            return "BROKER_CAPACITY_REJECT"
+        return str(decision.reject_reason or "UNKNOWN")
+
     def _record_lifecycle_event(
         self,
         order: Order,
@@ -114,11 +124,21 @@ class Broker:
                         "variant": signal.variant or self.config.dtt_variant,
                         "signal_mss_score": signal.mss_score,
                         "ranker_mss_score": signal.mss_score,
+                        # signal_mss_score/ranker_mss_score 继续只代表排序侧附着分；
+                        # 真正控制容量的是下面的 phase/risk_regime/overlay 字段。
                         "overlay_enabled": bool(overlay.overlay_enabled),
                         "overlay_state": overlay.state,
                         "coverage_flag": overlay.coverage_flag,
+                        "overlay_reason": overlay.overlay_reason,
                         "market_signal": overlay.signal,
                         "market_score": float(overlay.score),
+                        "phase": overlay.phase,
+                        "phase_trend": overlay.phase_trend,
+                        "phase_days": overlay.phase_days,
+                        "position_advice": overlay.position_advice,
+                        "risk_regime": overlay.risk_regime,
+                        "trend_quality": overlay.trend_quality,
+                        "regime_source": overlay.regime_source,
                         "market_coefficient_raw": overlay.market_coefficient_raw,
                         "profit_effect_raw": overlay.profit_effect_raw,
                         "loss_effect_raw": overlay.loss_effect_raw,
@@ -144,6 +164,7 @@ class Broker:
                         "available_cash": float(state.cash),
                         "portfolio_market_value": float(state.portfolio_market_value),
                         "decision_status": "ACCEPTED" if decision.order is not None else "REJECTED",
+                        "decision_bucket": self._resolve_decision_bucket(decision),
                         "decision_reason": decision.reject_reason,
                         "reserved_cash": float(decision.reserved_cash),
                     }
