@@ -101,6 +101,7 @@
 4. `Phase 2 = P2 IRS 最小可交易排序层`
 5. `Phase 3 = P3 MSS 最小可交易风控层`
 6. `Phase 4 = P4 全链回归与 Gate 收口`
+7. `Phase 4.1 = P4.1 MSS / Broker 整改`
 
 当前不允许跳步：
 
@@ -118,6 +119,7 @@
 | `Phase 2` | `03 + 07` | `03` 定 contract 边界，`07` 定 IRS 算法面 |
 | `Phase 3` | `04 + 08` | `04` 定 contract 边界，`08` 定 MSS 算法面 |
 | `Phase 4` | `01-08` | 只重跑、归因、给出主线结论，不再改写正文 |
+| `Phase 4.1` | `04 / 05 / 08 + Phase 4 records` | 只拆 `MSS / Broker` 执行层，不重开 `PAS / IRS` 正文，也不改写 `P3 exit / P4 NO-GO` |
 
 ### 4.2 当前 Phase Card 入口
 
@@ -130,12 +132,13 @@
 4. `blueprint/03-execution/04-phase-2-irs-card-20260309.md`
 5. `blueprint/03-execution/05-phase-3-mss-card-20260309.md`
 6. `blueprint/03-execution/06-phase-4-gate-card-20260309.md`
+7. `blueprint/03-execution/06.1-phase-4.1-mss-broker-remediation-card-20260311.md`
 
 ---
 
 ## 5. Phase 摘要
 
-### 5.1 当前 6 张卡
+### 5.1 当前 7 张卡
 
 1. `Phase 0`：
    - `blueprint/03-execution/02-phase-0-contract-trace-card-20260309.md`
@@ -149,6 +152,8 @@
    - `blueprint/03-execution/05-phase-3-mss-card-20260309.md`
 6. `Phase 4`：
    - `blueprint/03-execution/06-phase-4-gate-card-20260309.md`
+7. `Phase 4.1`：
+   - `blueprint/03-execution/06.1-phase-4.1-mss-broker-remediation-card-20260311.md`
 
 ### 5.2 使用规则
 
@@ -191,18 +196,20 @@
 
 ## 7. 下一步
 
-从 `2026-03-11` 起，`Phase 0`、`Phase 1`、`Phase 1.5` 与 `Phase 2` 都已完成出场，不再回到这些卡反复补散点。
+从 `2026-03-11` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3` 与 `Phase 4` 都已完成当前轮次收口。
 
-先进入：
+其中：
 
-1. `Phase 3`
-2. 以 `blueprint/03-execution/05-phase-3-mss-card-20260309.md` 为唯一开工卡
+1. `Phase 3 = Completed`
+2. `Phase 4 = Completed (NO-GO)`
+3. rollback target 保持：
+   - `legacy_bof_baseline`
 
 后续顺序固定为：
 
-1. `Phase 3 / MSS`
-2. `Phase 4 / Gate`
+1. `Phase 4.1 / MSS-Broker Remediation`
+2. 若 `Phase 4.1` 出场，再重新进入 `Phase 4 Gate replay`
 
 也就是：
 
-`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 已完成，下一步按 MSS -> Gate 顺序推进主线升级。`
+`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 已收口；下一步不是重开 Gate，而是先进入 Phase 4.1，专门整改 MSS -> Broker 执行层。`

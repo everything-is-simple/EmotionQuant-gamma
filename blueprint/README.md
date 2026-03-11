@@ -159,9 +159,11 @@
 2. `01-current-mainline-execution-breakdown-20260308.md`
 3. `02-phase-0-contract-trace-card-20260309.md`
 4. `03-phase-1-pas-card-20260309.md`
-5. `04-phase-2-irs-card-20260309.md`
-6. `05-phase-3-mss-card-20260309.md`
-7. `06-phase-4-gate-card-20260309.md`
+5. `03.5-phase-1.5-stabilization-card-20260310.md`
+6. `04-phase-2-irs-card-20260309.md`
+7. `05-phase-3-mss-card-20260309.md`
+8. `06-phase-4-gate-card-20260309.md`
+9. `06.1-phase-4.1-mss-broker-remediation-card-20260311.md`
 
 当前冻结后的使用顺序固定为：
 
