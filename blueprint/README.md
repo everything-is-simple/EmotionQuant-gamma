@@ -73,6 +73,7 @@
 - `01-full-design/91-cross-version-object-mapping-reference-20260308.md`
 - `01-full-design/92-mainline-design-atom-closure-record-20260308.md`
 - `02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
+- `03-execution/00-current-dev-data-baseline-20260311.md`
 - `03-execution/01-current-mainline-execution-breakdown-20260308.md`
 
 它们分别负责：
@@ -82,7 +83,8 @@
 3. `09`：当前主线 system operating baseline
 4. `90-92`：来源、映射、闭环记录附录
 5. `02-implementation-spec/`：当前唯一实现方案
-6. `03-execution/`：当前唯一执行拆解
+6. `03-execution/00-current-dev-data-baseline-20260311.md`：当前本地环境 / 数据库 / TuShare 双通道 / 开工顺序固定前提
+7. `03-execution/`：当前唯一执行拆解
 
 ## 4.1 设计来源声明
 
@@ -153,17 +155,21 @@
 
 当前 `03-execution/` 也已经落下第一份正文：
 
-1. `01-current-mainline-execution-breakdown-20260308.md`
-2. `02-phase-0-contract-trace-card-20260309.md`
-3. `03-phase-1-pas-card-20260309.md`
-4. `04-phase-2-irs-card-20260309.md`
-5. `05-phase-3-mss-card-20260309.md`
-6. `06-phase-4-gate-card-20260309.md`
+1. `00-current-dev-data-baseline-20260311.md`
+2. `01-current-mainline-execution-breakdown-20260308.md`
+3. `02-phase-0-contract-trace-card-20260309.md`
+4. `03-phase-1-pas-card-20260309.md`
+5. `04-phase-2-irs-card-20260309.md`
+6. `05-phase-3-mss-card-20260309.md`
+7. `06-phase-4-gate-card-20260309.md`
 
 当前冻结后的使用顺序固定为：
 
 1. 先看 `01-05`，确认跨模块 contract 边界
 2. 再看 `06-08`，确认算法正文
 3. 再看 `09`，确认端到端运行路径、系统级场景矩阵与证据口径
-4. 只有在做来源审计或历史回看时，才看 `90-92`
-5. 实现只允许从 `01-09` 裁出，不允许跳过正文直接拿附录下定义
+4. 再看 `02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
+5. 再看 `03-execution/00-current-dev-data-baseline-20260311.md`，确认当前执行库、旧库候选、三目录纪律、TuShare 双通道和当前 phase 顺序
+6. 再看当前 execution breakdown 与 phase card
+7. 只有在做来源审计或历史回看时，才看 `90-92`
+8. 实现只允许从 `01-09` 裁出，不允许跳过正文直接拿附录下定义

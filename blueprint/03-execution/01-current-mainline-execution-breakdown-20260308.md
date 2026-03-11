@@ -64,7 +64,34 @@
 
 ---
 
-## 3. 总执行顺序
+## 3. 固定执行前提
+
+除了 phase / card 顺序外，当前主线还固定继承一组非 phase 的执行前提：
+
+1. 三目录纪律固定为：
+   - `G:\EmotionQuant-gamma` 只放代码、文档、配置与脚本
+   - `G:\EmotionQuant_data` 只放正式数据库、日志与长期数据产物
+   - `G:\EmotionQuant-temp` 只放临时文件、工作副本、pytest / backtest / artifacts
+2. 当前默认执行库固定为：
+   - `G:\EmotionQuant_data\emotionquant.duckdb`
+3. 当前默认旧库候选固定为：
+   - `G:\EmotionQuant_data\duckdb\emotionquant.duckdb`
+4. 当前补数顺序固定为：
+   - 先复用本地旧库
+   - 再用 TuShare 补缺
+5. 当前 TuShare 固定按双通道角色执行：
+   - `TUSHARE_PRIMARY_*` = `10000` 积分网关主通道
+   - `TUSHARE_FALLBACK_*` = `5000` 积分官方兜底通道
+
+上面这些前提的完整口径，统一固定在：
+
+`blueprint/03-execution/00-current-dev-data-baseline-20260311.md`
+
+后续 phase card 默认继承这份前提，不再每张卡重复重写。
+
+---
+
+## 4. 总执行顺序
 
 当前顺序固定为：
 
@@ -81,7 +108,7 @@
 2. 不允许先跑大矩阵再补契约
 3. 不允许同时并行改 `PAS / IRS / MSS` 三条主线
 
-### 3.1 Phase 与 Full Design 绑定表
+### 4.1 Phase 与 Full Design 绑定表
 
 | Phase | 上游绑定 | 执行边界 |
 |---|---|---|
@@ -92,7 +119,10 @@
 | `Phase 3` | `04 + 08` | `04` 定 contract 边界，`08` 定 MSS 算法面 |
 | `Phase 4` | `01-08` | 只重跑、归因、给出主线结论，不再改写正文 |
 
-### 3.2 当前 Phase Card 入口
+### 4.2 当前 Phase Card 入口
+
+0. `非 phase 固定前提`
+   - `blueprint/03-execution/00-current-dev-data-baseline-20260311.md`
 
 1. `blueprint/03-execution/02-phase-0-contract-trace-card-20260309.md`
 2. `blueprint/03-execution/03-phase-1-pas-card-20260309.md`
@@ -103,9 +133,9 @@
 
 ---
 
-## 4. Phase 摘要
+## 5. Phase 摘要
 
-### 4.1 当前 6 张卡
+### 5.1 当前 6 张卡
 
 1. `Phase 0`：
    - `blueprint/03-execution/02-phase-0-contract-trace-card-20260309.md`
@@ -120,37 +150,38 @@
 6. `Phase 4`：
    - `blueprint/03-execution/06-phase-4-gate-card-20260309.md`
 
-### 4.2 使用规则
+### 5.2 使用规则
 
 1. 开工前先读对应 phase card。
-2. phase card 未出场，不进入下一张卡。
-3. 总拆解文负责顺序和边界，phase card 负责 live checklist。
+2. 开工前还必须先读 `00-current-dev-data-baseline-20260311.md`，确认当前执行库、旧库候选、TuShare 双通道和目录纪律。
+3. phase card 未出场，不进入下一张卡。
+4. 总拆解文负责顺序和边界，phase card 负责 live checklist。
 
 ---
 
-## 5. 每个 Phase 的统一交付模板
+## 6. 每个 Phase 的统一交付模板
 
 后续每推进一个 phase，都必须补齐下面 4 类内容：
 
-### 5.1 代码
+### 6.1 代码
 
 - [ ] 修改文件明确
 - [ ] 新增文件明确
 - [ ] 不改本 phase 非目标对象
 
-### 5.2 测试
+### 6.2 测试
 
 - [ ] 至少一组 unit test
 - [ ] 必要时补 integration test
 - [ ] 回归现有关键测试不破坏
 
-### 5.3 Artifact / Evidence
+### 6.3 Artifact / Evidence
 
 - [ ] sidecar / trace / script 输出明确
 - [ ] evidence json 落地
 - [ ] records markdown 落地
 
-### 5.4 治理同步
+### 6.4 治理同步
 
 - [ ] `development-status.md` 同步进度
 - [ ] `README / gate / roadmap` 如有必要同步
@@ -158,7 +189,7 @@
 
 ---
 
-## 6. 下一步
+## 7. 下一步
 
 从 `2026-03-11` 起，`Phase 0`、`Phase 1`、`Phase 1.5` 与 `Phase 2` 都已完成出场，不再回到这些卡反复补散点。
 
