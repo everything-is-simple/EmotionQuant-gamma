@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date
 
 import pandas as pd
+import pytest
 
 from src.broker.broker import Broker, Position
 from src.broker.risk import BrokerRiskState
@@ -497,6 +498,280 @@ def test_broker_mss_overlay_reduces_effective_max_positions_under_bearish_regime
     assert bearish.order is None
     assert bearish.reject_reason == "MAX_POSITIONS_REACHED"
     assert bearish.overlay is not None and bearish.overlay.risk_regime == "RISK_OFF"
+    store.close()
+
+
+def test_broker_overlay_only_max_positions_changes_capacity_without_resizing_quantity(tmp_path) -> None:
+    db = tmp_path / "test_mss_overlay_only_maxpos.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_mss_score",
+        BACKTEST_INITIAL_CASH=1_000_000,
+        RISK_PER_TRADE_PCT=0.20,
+        MAX_POSITION_PCT=0.50,
+        STOP_LOSS_PCT=0.05,
+        MAX_POSITIONS=3,
+        MSS_BULLISH_MAX_POSITIONS_MULT=1.0,
+        MSS_NEUTRAL_MAX_POSITIONS_MULT=0.7,
+        MSS_BEARISH_MAX_POSITIONS_MULT=0.4,
+        MSS_BULLISH_RISK_PER_TRADE_MULT=1.0,
+        MSS_NEUTRAL_RISK_PER_TRADE_MULT=1.0,
+        MSS_BEARISH_RISK_PER_TRADE_MULT=1.0,
+        MSS_BULLISH_MAX_POSITION_MULT=1.0,
+        MSS_NEUTRAL_MAX_POSITION_MULT=1.0,
+        MSS_BEARISH_MAX_POSITION_MULT=1.0,
+    )
+    risk = Broker(store, cfg).risk
+
+    _seed_trade_calendar(store, signal_date, exec_date)
+    _seed_adj_daily(
+        store,
+        [
+            {
+                "code": "000004",
+                "date": signal_date,
+                "adj_open": 10.0,
+                "adj_high": 10.2,
+                "adj_low": 9.8,
+                "adj_close": 10.0,
+                "volume": 10000,
+                "amount": 1e8,
+                "pct_chg": 0.0,
+                "ma5": 10.0,
+                "ma10": 10.0,
+                "ma20": 10.0,
+                "ma60": 10.0,
+                "volume_ma5": 10000,
+                "volume_ma20": 10000,
+                "volume_ratio": 1.0,
+            }
+        ],
+    )
+    signal = Signal(
+        signal_id=build_signal_id("000004", signal_date, "bof"),
+        code="000004",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.8,
+        pattern="bof",
+        reason_code="PAS_BOF",
+        final_score=90.0,
+        variant="v0_01_dtt_pattern_plus_irs_mss_score",
+    )
+    open_state = BrokerRiskState(cash=1_000_000, portfolio_market_value=0.0, holdings=set())
+    crowded_state = BrokerRiskState(cash=1_000_000, portfolio_market_value=0.0, holdings={"000099"})
+
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "score": 55.0,
+                    "signal": "NEUTRAL",
+                    "phase": "ACCELERATION",
+                    "phase_trend": "UP",
+                    "phase_days": 2,
+                    "position_advice": "50%-70%",
+                    "risk_regime": "RISK_ON",
+                    "trend_quality": "NORMAL",
+                }
+            ]
+        ),
+    )
+    bullish_open = risk.assess_signal(signal, open_state)
+    assert bullish_open.order is not None
+
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "score": 80.0,
+                    "signal": "BULLISH",
+                    "phase": "CLIMAX",
+                    "phase_trend": "UP",
+                    "phase_days": 1,
+                    "position_advice": "20%-40%",
+                    "risk_regime": "RISK_OFF",
+                    "trend_quality": "NORMAL",
+                }
+            ]
+        ),
+    )
+    risk._mss_overlay_cache.clear()
+    bearish_open = risk.assess_signal(signal, open_state)
+    assert bearish_open.order is not None
+
+    risk._mss_overlay_cache.clear()
+    bearish_crowded = risk.assess_signal(signal, crowded_state)
+
+    # 这个用例锁定“只有 max_positions 在动”的语义：
+    # 空仓情况下，仓位数量不能被 max_positions 连带压缩；
+    # 只有当持仓数触顶时，才应该体现为 MAX_POSITIONS_REACHED 拒绝。
+    assert bullish_open.overlay is not None
+    assert bearish_open.overlay is not None
+    assert bullish_open.overlay.max_positions == 3
+    assert bearish_open.overlay.max_positions == 1
+    assert bullish_open.order.quantity == 50000
+    assert bearish_open.order.quantity == bullish_open.order.quantity
+    assert bearish_crowded.order is None
+    assert bearish_crowded.reject_reason == "MAX_POSITIONS_REACHED"
+    assert bearish_crowded.overlay is not None
+    assert bearish_crowded.overlay.max_positions == 1
+    store.close()
+
+
+@pytest.mark.parametrize(
+    ("settings_overrides", "bullish_qty", "bearish_qty"),
+    [
+        (
+            {
+                "RISK_PER_TRADE_PCT": 0.04,
+                "MAX_POSITION_PCT": 1.0,
+                "MSS_BULLISH_RISK_PER_TRADE_MULT": 1.0,
+                "MSS_NEUTRAL_RISK_PER_TRADE_MULT": 1.0,
+                "MSS_BEARISH_RISK_PER_TRADE_MULT": 0.4,
+                "MSS_BULLISH_MAX_POSITION_MULT": 1.0,
+                "MSS_NEUTRAL_MAX_POSITION_MULT": 1.0,
+                "MSS_BEARISH_MAX_POSITION_MULT": 1.0,
+            },
+            80000,
+            32000,
+        ),
+        (
+            {
+                "RISK_PER_TRADE_PCT": 1.0,
+                "MAX_POSITION_PCT": 0.50,
+                "MSS_BULLISH_RISK_PER_TRADE_MULT": 1.0,
+                "MSS_NEUTRAL_RISK_PER_TRADE_MULT": 1.0,
+                "MSS_BEARISH_RISK_PER_TRADE_MULT": 1.0,
+                "MSS_BULLISH_MAX_POSITION_MULT": 1.0,
+                "MSS_NEUTRAL_MAX_POSITION_MULT": 1.0,
+                "MSS_BEARISH_MAX_POSITION_MULT": 0.4,
+            },
+            50000,
+            20000,
+        ),
+    ],
+    ids=["risk_per_trade_only", "max_position_pct_only"],
+)
+def test_broker_overlay_single_sizing_knob_resizes_quantity_without_changing_slots(
+    tmp_path,
+    settings_overrides: dict[str, float],
+    bullish_qty: int,
+    bearish_qty: int,
+) -> None:
+    db = tmp_path / "test_mss_overlay_only_size.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+    cfg = Settings(
+        PIPELINE_MODE="dtt",
+        DTT_VARIANT="v0_01_dtt_pattern_plus_irs_mss_score",
+        BACKTEST_INITIAL_CASH=1_000_000,
+        STOP_LOSS_PCT=0.05,
+        MAX_POSITIONS=10,
+        MSS_BULLISH_MAX_POSITIONS_MULT=1.0,
+        MSS_NEUTRAL_MAX_POSITIONS_MULT=1.0,
+        MSS_BEARISH_MAX_POSITIONS_MULT=1.0,
+        **settings_overrides,
+    )
+    risk = Broker(store, cfg).risk
+
+    _seed_trade_calendar(store, signal_date, exec_date)
+    _seed_adj_daily(
+        store,
+        [
+            {
+                "code": "000005",
+                "date": signal_date,
+                "adj_open": 10.0,
+                "adj_high": 10.2,
+                "adj_low": 9.8,
+                "adj_close": 10.0,
+                "volume": 10000,
+                "amount": 1e8,
+                "pct_chg": 0.0,
+                "ma5": 10.0,
+                "ma10": 10.0,
+                "ma20": 10.0,
+                "ma60": 10.0,
+                "volume_ma5": 10000,
+                "volume_ma20": 10000,
+                "volume_ratio": 1.0,
+            }
+        ],
+    )
+    signal = Signal(
+        signal_id=build_signal_id("000005", signal_date, "bof"),
+        code="000005",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.8,
+        pattern="bof",
+        reason_code="PAS_BOF",
+        final_score=90.0,
+        variant="v0_01_dtt_pattern_plus_irs_mss_score",
+    )
+    state = BrokerRiskState(cash=1_000_000, portfolio_market_value=0.0, holdings=set())
+
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "score": 55.0,
+                    "signal": "NEUTRAL",
+                    "phase": "ACCELERATION",
+                    "phase_trend": "UP",
+                    "phase_days": 2,
+                    "position_advice": "50%-70%",
+                    "risk_regime": "RISK_ON",
+                    "trend_quality": "NORMAL",
+                }
+            ]
+        ),
+    )
+    bullish = risk.assess_signal(signal, state)
+    assert bullish.order is not None
+
+    store.bulk_upsert(
+        "l3_mss_daily",
+        pd.DataFrame(
+            [
+                {
+                    "date": signal_date,
+                    "score": 80.0,
+                    "signal": "BULLISH",
+                    "phase": "CLIMAX",
+                    "phase_trend": "UP",
+                    "phase_days": 1,
+                    "position_advice": "20%-40%",
+                    "risk_regime": "RISK_OFF",
+                    "trend_quality": "NORMAL",
+                }
+            ]
+        ),
+    )
+    risk._mss_overlay_cache.clear()
+    bearish = risk.assess_signal(signal, state)
+    assert bearish.order is not None
+
+    # 这个用例锁定 sizing 旋钮的职责：它们只能改 quantity，
+    # 不能把 slot 上限偷偷联动成 MAX_POSITIONS 缩容。
+    assert bullish.overlay is not None
+    assert bearish.overlay is not None
+    assert bullish.overlay.max_positions == 10
+    assert bearish.overlay.max_positions == 10
+    assert bullish.order.quantity == bullish_qty
+    assert bearish.order.quantity == bearish_qty
+    assert bearish.order.quantity < bullish.order.quantity
     store.close()
 
 

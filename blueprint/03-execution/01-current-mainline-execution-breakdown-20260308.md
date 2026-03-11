@@ -196,7 +196,7 @@
 
 ## 7. 下一步
 
-从 `2026-03-11` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3` 与 `Phase 4` 都已完成当前轮次收口。
+从 `2026-03-11` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3` 与 `Phase 4` 都已完成当前轮次收口，`Phase 4.1` 已启动且 `P4.1-A` 已完成。
 
 其中：
 
@@ -207,9 +207,9 @@
 
 后续顺序固定为：
 
-1. `Phase 4.1 / MSS-Broker Remediation`
+1. `Phase 4.1 / P4.1-B / path dependency attribution`
 2. 若 `Phase 4.1` 出场，再重新进入 `Phase 4 Gate replay`
 
 也就是：
 
-`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 已收口；下一步不是重开 Gate，而是先进入 Phase 4.1，专门整改 MSS -> Broker 执行层。`
+`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 已收口；Phase 4.1 已启动且 P4.1-A 已完成，下一步不是重开 Gate，而是进入 P4.1-B，继续拆 MSS -> Broker 执行层的路径反噬。`

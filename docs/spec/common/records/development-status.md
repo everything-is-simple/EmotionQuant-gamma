@@ -2,7 +2,7 @@
 
 **状态**: Active（v0.01 Frozen + v0.01-plus 主线替代切换）  
 **最后更新**: 2026-03-11
-**当前阶段**: Mainline MVP Strengthening（`v0.01` 已冻结为历史尝试；`v0.01-plus` 已升格为当前主开发线；`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4` 已完成；`Phase 4 / Gate` 已正式写定 `NO-GO`，当前进入 `MSS / Broker` 整改期）
+**当前阶段**: Mainline MVP Strengthening（`v0.01` 已冻结为历史尝试；`v0.01-plus` 已升格为当前主开发线；`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4` 已完成；`Phase 4 / Gate` 已正式写定 `NO-GO`；`Phase 4.1 / MSS-Broker Remediation` 已启动，`P4.1-A` 已完成，当前进入 `P4.1-B / path dependency attribution`）
 
 > 本文件只维护状态、看板、风险与版本记录，不承担当前主线设计正文。新版设计权威层统一查看 `blueprint/`，边界声明见 `docs/design-migration-boundary.md`。
 
@@ -44,7 +44,7 @@
 | v0.01-plus 版本决策 | ✅ 已完成 | 定义为当前主开发线，用于替代 legacy top-down；`v0.01` 保持 Frozen 历史基线 |
 | v0.01-plus 文档骨架 | ✅ 已完成 | `README / roadmap / spec / gate / data-contract` 已建立 |
 | 主线切换口径 | ✅ 已完成 | `v0.01-plus` 目录、状态记录与设计草案已按“主线替代版”重写 |
-| 代码实现 | 进行中 | `Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4` 已完成；`Phase 4 / Gate` 已正式写定 `NO-GO`，`legacy_bof_baseline` 保持回退目标；当前转入 `MSS / Broker` 整改期 |
+| 代码实现 | 进行中 | `Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4` 已完成；`Phase 4 / Gate` 已正式写定 `NO-GO`，`legacy_bof_baseline` 保持回退目标；`Phase 4.1 / MSS-Broker Remediation` 已启动，`P4.1-A` 已完成并锁定 `max_positions` 为第一主嫌疑，当前进入 `P4.1-B / path dependency attribution` |
 
 ---
 
@@ -71,6 +71,7 @@
 | Phase 2 IRS 最小可交易排序层 | 五层 `IRS` 排序链已完成出场，`IRS baseline` 保留为后续治理项 | `blueprint/03-execution/04-phase-2-irs-card-20260309.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-2-exit-20260311.md` | completed |
 | Phase 3 MSS 最小可交易风控层 | `risk_regime` 正式落库、Broker 消费切换与 regime sensitivity evidence 已收口 | `blueprint/03-execution/05-phase-3-mss-card-20260309.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-3-exit-20260311.md`, `docs/spec/v0.01-plus/evidence/mss_regime_sensitivity_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t020505__mss_regime_sensitivity.json` | completed |
 | Phase 4 全链回归与 Gate 收口 | `legacy` 对照、`PAS + MSS` 首轮归因、重点执行日逐笔归因、`windowed sensitivity`、`idempotency` 与正式 `NO-GO / rollback` 已全部收口 | `blueprint/03-execution/06-phase-4-gate-card-20260309.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4-pas-mss-attribution-20260311.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4-legacy-matrix-and-trade-attribution-20260311.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4-gate-decision-20260311.md` | completed |
+| Phase 4.1 MSS-Broker 专项整改 | `P4.1-A` 已完成容量杠杆拆解并锁定 `max_positions` 为第一主嫌疑；下一步进入 `P4.1-B / path dependency attribution` | `blueprint/03-execution/06.1-phase-4.1-mss-broker-remediation-card-20260311.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4.1-capacity-decomposition-20260311.md`, `docs/spec/v0.01-plus/evidence/mss_capacity_decomposition_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t_phase4_1_a__mss_capacity_decomposition.json` | in_progress |
 
 ---
 
@@ -98,7 +99,7 @@
 
 | 任务 | 负责人 | 开始日期 | 状态 | 阻塞 |
 |---|---|---|---|---|
-| `Phase 4 / Gate` 全链回归与收口 | wangweiyun | 2026-03-11 | DONE | `NO-GO` 与 `rollback condition` 已正式写定；下一步转入 `MSS / Broker` 整改 |
+| `Phase 4.1 / MSS-Broker remediation` | wangweiyun | 2026-03-11 | IN_PROGRESS | `P4.1-A` 已完成并锁定 `max_positions` 为第一主嫌疑；下一步转入 `P4.1-B / path dependency attribution` |
 
 ### 4.3 文档治理期（2026-03-07）
 
@@ -127,6 +128,7 @@
 | 2026-03-11 | `Phase 4 / Gate` 首轮 `PAS + MSS` 归因 | completed | `docs/spec/v0.01-plus/evidence/pas_ablation_dtt_v0_01_dtt_pattern_plus_irs_mss_score_pas_registry_matrix_w20260105_20260224_t_phase4__pas_ablation.json`, `docs/spec/v0.01-plus/evidence/rank_decomposition_dtt_v0_01_dtt_pattern_plus_irs_score_to_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t_phase4_ytc5__rank_decomposition.json`, `docs/spec/v0.01-plus/evidence/mss_regime_sensitivity_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t_phase4_ytc5__mss_regime_sensitivity.json`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4-pas-mss-attribution-20260311.md`, `scripts/backtest/run_v001_plus_pas_ablation.py`, `scripts/backtest/run_v001_plus_rank_decomposition.py` |
 | 2026-03-11 | `Phase 4 / Gate` 旧基线矩阵与重点执行日逐笔归因 | completed | `docs/spec/v0.01-plus/evidence/matrix_summary_dtt_phase4_legacy_vs_mainline_bof_w20260105_20260224_t_legacy_gate__dtt_matrix.json`, `docs/spec/v0.01-plus/evidence/trade_attribution_dtt_v0_01_dtt_pattern_plus_irs_score_vs_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t_phase4_focus__trade_attribution.json`, `docs/spec/v0.01-plus/evidence/trade_attribution_focus_digest_dtt_v0_01_dtt_pattern_plus_irs_score_vs_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t_phase4_focus__trade_digest.json`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4-legacy-matrix-and-trade-attribution-20260311.md` |
 | 2026-03-11 | `Phase 4 / Gate` 正式 `NO-GO` 与 rollback condition | completed | `docs/spec/v0.01-plus/evidence/windowed_sensitivity_dtt_v0_01_dtt_pattern_plus_irs_score_vs_v0_01_dtt_pattern_plus_irs_mss_score_w20251222_20260224_t_phase4_gate__windowed_sensitivity.json`, `docs/spec/v0.01-plus/evidence/idempotency_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t_phase4_gate__idempotency_check.json`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4-gate-decision-20260311.md`, `scripts/backtest/check_idempotency.py`, `scripts/backtest/run_v001_plus_windowed_sensitivity.py` |
+| 2026-03-11 | `Phase 4.1 / P4.1-A` MSS capacity decomposition | completed | `docs/spec/v0.01-plus/evidence/mss_capacity_decomposition_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t_phase4_1_a__mss_capacity_decomposition.json`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4.1-capacity-decomposition-20260311.md`, `scripts/backtest/run_v001_plus_mss_capacity_decomposition.py`, `tests/unit/broker/test_broker.py` |
 
 ### 4.4 旧实现期（2026-03-02 ~ 2026-03-06）阶段摘要
 
@@ -217,6 +219,8 @@
 | 2026-03-11 | 实现风险 | `Phase 4` 首轮归因显示：`PB / CPB / YTC5_ANY` 在 `IRS+MSS` 下会被明显压缩，且 `YTC5_ANY` 的 `rank_changed_count = 0` 但 `trade_set_changed_count = 39`、`reject_set_changed_count = 43`；当前表现反转主要落在 `MSS -> Broker` 执行层，而不是 `IRS` 排序层 | 继续保留正式默认参数，不直接把 `YTC5_ANY` 提升为默认，也不直接改写 regime 映射；先补 `legacy` 对照、逐笔归因和更长窗口复核 | open |
 | 2026-03-11 | 治理决策 | `Phase 4 / Gate` 已正式写定 `NO-GO`；rollback target 固定为 `legacy_bof_baseline` | 当前不把 `v0.01-plus` 主链提升为正式默认运行路径；`legacy_bof_baseline` 保持可重跑；`v0.01-plus` 保留为整改路径 | closed |
 | 2026-03-11 | 实现风险 | `windowed sensitivity` 证明 `MSS` 不是所有场景都纯负面，但正式默认短窗主链相对 `legacy` 仍然失败；当前需要整改的重点仍是 `MSS -> Broker` 容量层，而不是 `IRS` 排序层 | 后续整改优先级固定为：先拆 `MSS / Broker` 容量来源与 `RISK_OFF -> RISK_ON` 路径反噬，再决定 `PAS` 默认是否调整 | open |
+| 2026-03-11 | 治理决策 | `Phase 4.1 / MSS-Broker Remediation` 已启动，`P4.1-A` 已完成 | `P4.1-A` 已证明当前 `NO-GO` 路径的第一主嫌疑是 `max_positions`；下一步固定进入 `P4.1-B / path dependency attribution`，先解释 slot scarcity 与路径反噬，再决定是否动参数 | closed |
+| 2026-03-11 | 实现风险 | `P4.1-A` 显示 `risk_per_trade / max_position_pct` 主要只改 quantity，不改 trade_set；如果在 `slot path` 未解释前先调 sizing，只会得到“回撤更小但主因未消除”的假改善 | 后续整改顺序固定为：先拆 `max_positions` 造成的持仓竞争与拒单路径，再复核 sizing 杠杆是否需要保留、弱化或重映射 | open |
 
 ---
 
@@ -253,6 +257,7 @@
 | 2026-03-11 | v1.26 | 完成 `Phase 4` 首轮 `PAS + MSS` 归因：确认 full chain 下的主要摩擦增量来自 `MSS -> Broker` 执行层，当前不翻默认参数 |
 | 2026-03-11 | v1.27 | 完成 `legacy_bof_baseline` 正式矩阵与 5 个重点执行日逐笔归因：确认当前主线默认路径已命中冻结 Gate 的 `NO-GO` 数值条件，但正式出场裁决仍待剩余 bundle 收口 |
 | 2026-03-11 | v1.28 | 完成 `windowed sensitivity / idempotency` 与正式 `Phase 4 / Gate` 收口：修正幂等脚本窗口口径后正式写定 `NO-GO`，并冻结 rollback target=`legacy_bof_baseline` |
+| 2026-03-11 | v1.29 | 启动 `Phase 4.1 / MSS-Broker Remediation` 并完成 `P4.1-A / capacity decomposition`：确认 `max_positions` 是当前 `NO-GO` 路径的第一主嫌疑，下一步进入 `P4.1-B / path dependency attribution` |
 
 
 
