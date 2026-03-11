@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+# Phase 4 / execution sensitivity:
+# - 默认 variant 使用当前 pattern_* 主线命名。
+# - 该脚本只比较“排序/风控差异是否进入执行约束”，不负责切默认参数。
+# - 工作副本路径必须落 TEMP_PATH；若源库缺窗口，补数顺序仍遵守旧库优先和双 TuShare 兜底规则。
+
 import argparse
 import json
 import subprocess
@@ -16,8 +21,8 @@ from src.config import get_settings
 from src.run_metadata import build_artifact_name, build_run_id, sanitize_label
 
 DEFAULT_VARIANTS = [
-    "v0_01_dtt_bof_only",
-    "v0_01_dtt_bof_plus_irs_score",
+    "v0_01_dtt_pattern_only",
+    "v0_01_dtt_pattern_plus_irs_score",
 ]
 
 DEFAULT_SCENARIOS = [
@@ -92,26 +97,26 @@ def _conclude_scenario(pair_payload: dict[str, object]) -> ScenarioConclusion:
     if trade_set_changed > 0 or quantity_changed > 0:
         return ScenarioConclusion(
             entered_execution_constraint=True,
-            summary="IRS 排序已经改变实际 BUY 成交集合或仓位数量，排序差异已进入执行约束。",
+            summary="右侧对比变体已经改变实际 BUY 成交集合或仓位数量，差异已进入执行约束。",
         )
     if reject_set_changed > 0:
         return ScenarioConclusion(
             entered_execution_constraint=True,
-            summary="IRS 排序已经改变 MAX_POSITIONS 拒单集合，排序差异已进入 Broker 风控边界。",
+            summary="右侧对比变体已经改变 MAX_POSITIONS 拒单集合，差异已进入 Broker 风控边界。",
         )
     if selected_changed > 0:
         return ScenarioConclusion(
             entered_execution_constraint=False,
-            summary="IRS 排序已改变 Strategy Top-N 入选，但还没有传导到实际 BUY 成交或 MAX_POSITIONS 拒单。",
+            summary="右侧对比变体已改变 Strategy Top-N 入选，但还没有传导到实际 BUY 成交或 MAX_POSITIONS 拒单。",
         )
     if rank_changed > 0:
         return ScenarioConclusion(
             entered_execution_constraint=False,
-            summary="IRS 排序只改变了名次，没有进入 Strategy Top-N 或 Broker 执行约束。",
+            summary="右侧对比变体只改变了名次，没有进入 Strategy Top-N 或 Broker 执行约束。",
         )
     return ScenarioConclusion(
         entered_execution_constraint=False,
-        summary="IRS 在该场景下没有形成可观测的排序或执行差异。",
+        summary="左右对比变体在该场景下没有形成可观测的排序或执行差异。",
     )
 
 

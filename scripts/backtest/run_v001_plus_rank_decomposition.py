@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+# Phase 4 / rank decomposition:
+# 1. 默认 variant 必须对齐当前 pattern_* 命名，不能再沿用旧 bof_* 口径。
+# 2. 正式执行库只从 DATA_PATH 读取，working copy/artefact cache 只放 TEMP_PATH。
+# 3. 这个脚本只做 Gate 归因，不负责抓数；若窗口缺数据，先按 RAW_DB_PATH/旧库优先，
+#    再按 TUSHARE_PRIMARY_* -> TUSHARE_FALLBACK_* 补齐后重跑。
+
 import argparse
 import json
 import math
@@ -21,9 +27,9 @@ from src.data.store import Store
 from src.run_metadata import build_artifact_name, build_run_id, finish_run, start_run
 
 DTT_VARIANTS = [
-    "v0_01_dtt_bof_only",
-    "v0_01_dtt_bof_plus_irs_score",
-    "v0_01_dtt_bof_plus_irs_mss_score",
+    "v0_01_dtt_pattern_only",
+    "v0_01_dtt_pattern_plus_irs_score",
+    "v0_01_dtt_pattern_plus_irs_mss_score",
 ]
 
 EPSILON = 1e-9
@@ -574,9 +580,9 @@ def _compare_buy_trade_pair(
         item["execute_date"] for item in per_execute_date if int(item["quantity_changed_count"]) > 0
     ]
     if trade_set_change_count > 0 or int(quantity_changed_mask.sum()) > 0:
-        conclusion = "BUY 成交集合或仓位数量发生变化，排序差异已进入执行约束。"
+        conclusion = "BUY 成交集合或仓位数量发生变化，左右变体差异已进入执行约束。"
     elif int(price_changed_mask.sum()) > 0:
-        conclusion = "BUY 成交集合未变，但成交价格存在差异。"
+        conclusion = "BUY 成交集合未变，但左右变体的成交价格存在差异。"
     else:
         conclusion = "BUY 成交集合与仓位数量都未变化。"
 
@@ -636,7 +642,7 @@ def _compare_maxpos_reject_pair(
 
     reject_set_changed_count = int((merged["_merge"] != "both").sum())
     if reject_set_changed_count > 0:
-        conclusion = "MAX_POSITIONS 拒单集合发生变化，Broker 风控边界已受排序差异影响。"
+        conclusion = "MAX_POSITIONS 拒单集合发生变化，左右变体差异已进入 Broker 风控边界。"
     else:
         conclusion = "MAX_POSITIONS 拒单集合未变化。"
 
@@ -741,7 +747,7 @@ def main() -> int:
     summary_run_id = build_run_id(
         scope="rank_decomposition",
         mode="dtt",
-        variant=cfg.dtt_variant,
+        variant=f"{variants[0]}_to_{variants[-1]}",
         start=start,
         end=end,
     )

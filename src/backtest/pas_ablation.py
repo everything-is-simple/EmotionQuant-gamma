@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+# PAS registry ablation:
+# - 这个模块只回答“固定 DTT 变体下，不同 PAS 组合如何改写交易集合与执行摩擦”。
+# - 它不负责切换正式默认主线；正式默认是否从 BOF-only 迁移，必须等 Phase 4 Gate 证据。
+
 import json
 import math
 from dataclasses import dataclass
@@ -569,6 +573,8 @@ def run_pas_ablation(
     artifact_root: str | Path | None = None,
 ) -> dict[str, object]:
     source_db = Path(db_path).expanduser().resolve()
+    # 正式执行库只读作源库；若传 working_db_path，则一律复制到 TEMP_PATH 工作副本上跑，
+    # 这样既不污染正式库，也不把临时 DuckDB 写进仓库根目录。
     db_file = prepare_working_db(source_db, working_db_path) if working_db_path is not None else source_db
     artifact_root_path = Path(artifact_root).expanduser().resolve() if artifact_root is not None else db_file.parent
     artifact_root_path.mkdir(parents=True, exist_ok=True)

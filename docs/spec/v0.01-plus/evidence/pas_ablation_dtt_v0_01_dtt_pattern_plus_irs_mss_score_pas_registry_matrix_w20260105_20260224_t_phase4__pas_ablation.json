@@ -1,0 +1,3126 @@
+{
+  "generated_at": "2026-03-11T03:40:17Z",
+  "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "db_path": "G:\\EmotionQuant-temp\\backtest\\pas-ablation-20260311-phase4-mss.duckdb",
+  "artifact_root": "G:\\EmotionQuant-temp\\artifacts",
+  "start": "2026-01-05",
+  "end": "2026-02-24",
+  "dtt_variant": "v0_01_dtt_pattern_plus_irs_mss_score",
+  "scenarios": [
+    {
+      "label": "BOF",
+      "patterns": [
+        "bof"
+      ],
+      "single_pattern_mode": "bof",
+      "quality_enabled": false,
+      "reference_enabled": true
+    },
+    {
+      "label": "BPB",
+      "patterns": [
+        "bpb"
+      ],
+      "single_pattern_mode": "bpb",
+      "quality_enabled": false,
+      "reference_enabled": true
+    },
+    {
+      "label": "PB",
+      "patterns": [
+        "pb"
+      ],
+      "single_pattern_mode": "pb",
+      "quality_enabled": false,
+      "reference_enabled": true
+    },
+    {
+      "label": "TST",
+      "patterns": [
+        "tst"
+      ],
+      "single_pattern_mode": "tst",
+      "quality_enabled": false,
+      "reference_enabled": true
+    },
+    {
+      "label": "CPB",
+      "patterns": [
+        "cpb"
+      ],
+      "single_pattern_mode": "cpb",
+      "quality_enabled": false,
+      "reference_enabled": true
+    },
+    {
+      "label": "YTC5_ANY",
+      "patterns": [
+        "bof",
+        "bpb",
+        "pb",
+        "tst",
+        "cpb"
+      ],
+      "single_pattern_mode": null,
+      "quality_enabled": false,
+      "reference_enabled": true
+    },
+    {
+      "label": "YTC5_ANY_PLUS_QUALITY",
+      "patterns": [
+        "bof",
+        "bpb",
+        "pb",
+        "tst",
+        "cpb"
+      ],
+      "single_pattern_mode": null,
+      "quality_enabled": true,
+      "reference_enabled": true
+    }
+  ],
+  "results": [
+    {
+      "label": "BOF",
+      "run_id": "pas_ablation_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t032140",
+      "patterns": [
+        "bof"
+      ],
+      "single_pattern_mode": "bof",
+      "quality_enabled": false,
+      "reference_enabled": true,
+      "trade_days": 30,
+      "trade_count": 9,
+      "win_rate": 0.5555555555555556,
+      "avg_win": 0.02203447182400587,
+      "avg_loss": 0.047765721165867164,
+      "expected_value": -0.008987836171493254,
+      "profit_factor": 0.46130302832633563,
+      "max_drawdown": 0.006034947787392601,
+      "reject_rate": 0.28,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.7666666666666667,
+      "opportunity_count": 16.0,
+      "filled_count": 9.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 7.0,
+      "participation_rate": 0.5625,
+      "signals_count": 16,
+      "ranked_signals_count": 16,
+      "trades_count": 18,
+      "selected_pattern_distribution": {
+        "bof": 16
+      },
+      "pattern_overlap_rate": 0.0,
+      "quality_trace_coverage": 0.0,
+      "reference_trace_coverage": 1.0,
+      "rank_diff_days_vs_bof": 0,
+      "execution_diff_days_vs_bof": 0,
+      "introduced_selected_signals_vs_bof": {
+        "count": 0,
+        "sample": []
+      },
+      "introduced_buy_trades_vs_bof": {
+        "count": 0,
+        "sample": []
+      },
+      "best_environment_bucket": {
+        "bucket": "BULLISH",
+        "expected_value": 0.013239362508435885,
+        "profit_factor": null,
+        "trade_count": 1
+      },
+      "environment_breakdown": {
+        "BULLISH": {
+          "trade_count": 1.0,
+          "win_rate": 1.0,
+          "avg_win": 0.013239362508435885,
+          "avg_loss": 0.0,
+          "profit_factor": null,
+          "expected_value": 0.013239362508435885,
+          "median_pnl_pct": 0.013239362508435885
+        },
+        "NEUTRAL": {
+          "trade_count": 8.0,
+          "win_rate": 0.5,
+          "avg_win": 0.024233249152898366,
+          "avg_loss": 0.047765721165867164,
+          "profit_factor": 0.5073355653680608,
+          "expected_value": -0.0117662360064844,
+          "median_pnl_pct": 0.0008201212557662034
+        }
+      },
+      "top_quality_signals": []
+    },
+    {
+      "label": "BPB",
+      "run_id": "pas_ablation_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t032529",
+      "patterns": [
+        "bpb"
+      ],
+      "single_pattern_mode": "bpb",
+      "quality_enabled": false,
+      "reference_enabled": true,
+      "trade_days": 30,
+      "trade_count": 0,
+      "win_rate": 0.0,
+      "avg_win": 0.0,
+      "avg_loss": 0.0,
+      "expected_value": 0.0,
+      "profit_factor": 0.0,
+      "max_drawdown": 0.0,
+      "reject_rate": 0.0,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.0,
+      "opportunity_count": 0.0,
+      "filled_count": 0.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 0.0,
+      "signals_count": 0,
+      "ranked_signals_count": 16,
+      "trades_count": 0,
+      "selected_pattern_distribution": {},
+      "pattern_overlap_rate": 0.0,
+      "quality_trace_coverage": 0.0,
+      "reference_trace_coverage": 0.0,
+      "rank_diff_days_vs_bof": 10,
+      "execution_diff_days_vs_bof": 5,
+      "introduced_selected_signals_vs_bof": {
+        "count": 0,
+        "sample": []
+      },
+      "introduced_buy_trades_vs_bof": {
+        "count": 0,
+        "sample": []
+      },
+      "best_environment_bucket": null,
+      "environment_breakdown": {},
+      "top_quality_signals": []
+    },
+    {
+      "label": "PB",
+      "run_id": "pas_ablation_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t032833",
+      "patterns": [
+        "pb"
+      ],
+      "single_pattern_mode": "pb",
+      "quality_enabled": false,
+      "reference_enabled": true,
+      "trade_days": 30,
+      "trade_count": 12,
+      "win_rate": 0.25,
+      "avg_win": 0.0943669970188898,
+      "avg_loss": 0.05539844384201457,
+      "expected_value": -0.017957083626788477,
+      "profit_factor": 1.7034232457504737,
+      "max_drawdown": 0.029637112081387303,
+      "reject_rate": 0.6307692307692307,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.7,
+      "opportunity_count": 54.0,
+      "filled_count": 12.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 35.0,
+      "participation_rate": 0.2222222222222222,
+      "signals_count": 54,
+      "ranked_signals_count": 70,
+      "trades_count": 24,
+      "selected_pattern_distribution": {
+        "pb": 54
+      },
+      "pattern_overlap_rate": 0.0,
+      "quality_trace_coverage": 0.0,
+      "reference_trace_coverage": 1.0,
+      "rank_diff_days_vs_bof": 25,
+      "execution_diff_days_vs_bof": 10,
+      "introduced_selected_signals_vs_bof": {
+        "count": 54,
+        "sample": [
+          {
+            "signal_date": "2026-01-06",
+            "code": "002371",
+            "signal_id": "002371_2026-01-06_pb",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-08",
+            "code": "688256",
+            "signal_id": "688256_2026-01-08_pb",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-14",
+            "code": "000100",
+            "signal_id": "000100_2026-01-14_pb",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-15",
+            "code": "300308",
+            "signal_id": "300308_2026-01-15_pb",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-15",
+            "code": "603799",
+            "signal_id": "603799_2026-01-15_pb",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2026-01-16",
+            "code": "002371",
+            "signal_id": "002371_2026-01-16_pb",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-16",
+            "code": "603986",
+            "signal_id": "603986_2026-01-16_pb",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2026-01-16",
+            "code": "688008",
+            "signal_id": "688008_2026-01-16_pb",
+            "final_rank": 3
+          },
+          {
+            "signal_date": "2026-01-16",
+            "code": "600460",
+            "signal_id": "600460_2026-01-16_pb",
+            "final_rank": 4
+          },
+          {
+            "signal_date": "2026-01-19",
+            "code": "601689",
+            "signal_id": "601689_2026-01-19_pb",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-19",
+            "code": "600487",
+            "signal_id": "600487_2026-01-19_pb",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2026-01-20",
+            "code": "600309",
+            "signal_id": "600309_2026-01-20_pb",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-20",
+            "code": "600853",
+            "signal_id": "600853_2026-01-20_pb",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2026-01-20",
+            "code": "601689",
+            "signal_id": "601689_2026-01-20_pb",
+            "final_rank": 3
+          },
+          {
+            "signal_date": "2026-01-21",
+            "code": "002415",
+            "signal_id": "002415_2026-01-21_pb",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-21",
+            "code": "002236",
+            "signal_id": "002236_2026-01-21_pb",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2026-01-21",
+            "code": "002181",
+            "signal_id": "002181_2026-01-21_pb",
+            "final_rank": 3
+          },
+          {
+            "signal_date": "2026-01-23",
+            "code": "300450",
+            "signal_id": "300450_2026-01-23_pb",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-23",
+            "code": "600879",
+            "signal_id": "600879_2026-01-23_pb",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2026-01-23",
+            "code": "600998",
+            "signal_id": "600998_2026-01-23_pb",
+            "final_rank": 3
+          }
+        ]
+      },
+      "introduced_buy_trades_vs_bof": {
+        "count": 12,
+        "sample": [
+          {
+            "execute_date": "2026-01-15",
+            "code": "000100",
+            "signal_id": "000100_2026-01-14_pb",
+            "pattern": "pb",
+            "quantity": 8000
+          },
+          {
+            "execute_date": "2026-01-16",
+            "code": "603799",
+            "signal_id": "603799_2026-01-15_pb",
+            "pattern": "pb",
+            "quantity": 500
+          },
+          {
+            "execute_date": "2026-01-19",
+            "code": "603986",
+            "signal_id": "603986_2026-01-16_pb",
+            "pattern": "pb",
+            "quantity": 100
+          },
+          {
+            "execute_date": "2026-01-19",
+            "code": "688008",
+            "signal_id": "688008_2026-01-16_pb",
+            "pattern": "pb",
+            "quantity": 200
+          },
+          {
+            "execute_date": "2026-01-22",
+            "code": "002415",
+            "signal_id": "002415_2026-01-21_pb",
+            "pattern": "pb",
+            "quantity": 1200
+          },
+          {
+            "execute_date": "2026-01-26",
+            "code": "300450",
+            "signal_id": "300450_2026-01-23_pb",
+            "pattern": "pb",
+            "quantity": 1100
+          },
+          {
+            "execute_date": "2026-01-26",
+            "code": "600879",
+            "signal_id": "600879_2026-01-23_pb",
+            "pattern": "pb",
+            "quantity": 2000
+          },
+          {
+            "execute_date": "2026-01-26",
+            "code": "600998",
+            "signal_id": "600998_2026-01-23_pb",
+            "pattern": "pb",
+            "quantity": 10900
+          },
+          {
+            "execute_date": "2026-02-04",
+            "code": "002471",
+            "signal_id": "002471_2026-02-03_pb",
+            "pattern": "pb",
+            "quantity": 4100
+          },
+          {
+            "execute_date": "2026-02-05",
+            "code": "000719",
+            "signal_id": "000719_2026-02-04_pb",
+            "pattern": "pb",
+            "quantity": 5900
+          },
+          {
+            "execute_date": "2026-02-05",
+            "code": "300118",
+            "signal_id": "300118_2026-02-04_pb",
+            "pattern": "pb",
+            "quantity": 4100
+          },
+          {
+            "execute_date": "2026-02-05",
+            "code": "300724",
+            "signal_id": "300724_2026-02-04_pb",
+            "pattern": "pb",
+            "quantity": 600
+          }
+        ]
+      },
+      "best_environment_bucket": {
+        "bucket": "NEUTRAL",
+        "expected_value": -0.017957083626788477,
+        "profit_factor": 1.7034232457504737,
+        "trade_count": 12
+      },
+      "environment_breakdown": {
+        "NEUTRAL": {
+          "trade_count": 12.0,
+          "win_rate": 0.25,
+          "avg_win": 0.0943669970188898,
+          "avg_loss": 0.05539844384201457,
+          "profit_factor": 1.7034232457504737,
+          "expected_value": -0.017957083626788477,
+          "median_pnl_pct": -0.0572964829817037
+        }
+      },
+      "top_quality_signals": []
+    },
+    {
+      "label": "TST",
+      "run_id": "pas_ablation_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t033103",
+      "patterns": [
+        "tst"
+      ],
+      "single_pattern_mode": "tst",
+      "quality_enabled": false,
+      "reference_enabled": true,
+      "trade_days": 30,
+      "trade_count": 10,
+      "win_rate": 0.2,
+      "avg_win": 0.09965572777436066,
+      "avg_loss": 0.06200927200236432,
+      "expected_value": -0.02967627204701933,
+      "profit_factor": 1.6071101071878562,
+      "max_drawdown": 0.013712367803863226,
+      "reject_rate": 0.47368421052631576,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.9333333333333333,
+      "opportunity_count": 29.0,
+      "filled_count": 10.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 18.0,
+      "participation_rate": 0.3448275862068966,
+      "signals_count": 29,
+      "ranked_signals_count": 99,
+      "trades_count": 20,
+      "selected_pattern_distribution": {
+        "tst": 29
+      },
+      "pattern_overlap_rate": 0.0,
+      "quality_trace_coverage": 0.0,
+      "reference_trace_coverage": 1.0,
+      "rank_diff_days_vs_bof": 23,
+      "execution_diff_days_vs_bof": 11,
+      "introduced_selected_signals_vs_bof": {
+        "count": 29,
+        "sample": [
+          {
+            "signal_date": "2026-01-05",
+            "code": "002757",
+            "signal_id": "002757_2026-01-05_tst",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300894",
+            "signal_id": "300894_2026-01-05_tst",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "000650",
+            "signal_id": "000650_2026-01-06_tst",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "600983",
+            "signal_id": "600983_2026-01-06_tst",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "688767",
+            "signal_id": "688767_2026-01-06_tst",
+            "final_rank": 3
+          },
+          {
+            "signal_date": "2026-01-07",
+            "code": "600266",
+            "signal_id": "600266_2026-01-07_tst",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-07",
+            "code": "600691",
+            "signal_id": "600691_2026-01-07_tst",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2026-01-07",
+            "code": "688123",
+            "signal_id": "688123_2026-01-07_tst",
+            "final_rank": 3
+          },
+          {
+            "signal_date": "2026-01-07",
+            "code": "600010",
+            "signal_id": "600010_2026-01-07_tst",
+            "final_rank": 4
+          },
+          {
+            "signal_date": "2026-01-08",
+            "code": "000983",
+            "signal_id": "000983_2026-01-08_tst",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-09",
+            "code": "920641",
+            "signal_id": "920641_2026-01-09_tst",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-09",
+            "code": "603950",
+            "signal_id": "603950_2026-01-09_tst",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2026-01-12",
+            "code": "000503",
+            "signal_id": "000503_2026-01-12_tst",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-13",
+            "code": "001896",
+            "signal_id": "001896_2026-01-13_tst",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-15",
+            "code": "600662",
+            "signal_id": "600662_2026-01-15_tst",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-15",
+            "code": "301155",
+            "signal_id": "301155_2026-01-15_tst",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2026-01-16",
+            "code": "601163",
+            "signal_id": "601163_2026-01-16_tst",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-20",
+            "code": "601163",
+            "signal_id": "601163_2026-01-20_tst",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-22",
+            "code": "600048",
+            "signal_id": "600048_2026-01-22_tst",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-26",
+            "code": "002679",
+            "signal_id": "002679_2026-01-26_tst",
+            "final_rank": 1
+          }
+        ]
+      },
+      "introduced_buy_trades_vs_bof": {
+        "count": 10,
+        "sample": [
+          {
+            "execute_date": "2026-01-06",
+            "code": "002757",
+            "signal_id": "002757_2026-01-05_tst",
+            "pattern": "tst",
+            "quantity": 1800
+          },
+          {
+            "execute_date": "2026-01-06",
+            "code": "300894",
+            "signal_id": "300894_2026-01-05_tst",
+            "pattern": "tst",
+            "quantity": 3000
+          },
+          {
+            "execute_date": "2026-01-07",
+            "code": "000650",
+            "signal_id": "000650_2026-01-06_tst",
+            "pattern": "tst",
+            "quantity": 6300
+          },
+          {
+            "execute_date": "2026-01-07",
+            "code": "600983",
+            "signal_id": "600983_2026-01-06_tst",
+            "pattern": "tst",
+            "quantity": 3500
+          },
+          {
+            "execute_date": "2026-01-09",
+            "code": "000983",
+            "signal_id": "000983_2026-01-08_tst",
+            "pattern": "tst",
+            "quantity": 5500
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "603950",
+            "signal_id": "603950_2026-01-09_tst",
+            "pattern": "tst",
+            "quantity": 2700
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "920641",
+            "signal_id": "920641_2026-01-09_tst",
+            "pattern": "tst",
+            "quantity": 4100
+          },
+          {
+            "execute_date": "2026-01-13",
+            "code": "000503",
+            "signal_id": "000503_2026-01-12_tst",
+            "pattern": "tst",
+            "quantity": 6000
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "600048",
+            "signal_id": "600048_2026-01-22_tst",
+            "pattern": "tst",
+            "quantity": 14800
+          },
+          {
+            "execute_date": "2026-02-24",
+            "code": "002520",
+            "signal_id": "002520_2026-02-13_tst",
+            "pattern": "tst",
+            "quantity": 5800
+          }
+        ]
+      },
+      "best_environment_bucket": {
+        "bucket": "NEUTRAL",
+        "expected_value": -0.02071848183002148,
+        "profit_factor": 1.8082691872172931,
+        "trade_count": 9
+      },
+      "environment_breakdown": {
+        "BULLISH": {
+          "trade_count": 1.0,
+          "win_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 0.11029638399999996,
+          "profit_factor": 0.0,
+          "expected_value": -0.11029638399999996,
+          "median_pnl_pct": -0.11029638399999996
+        },
+        "NEUTRAL": {
+          "trade_count": 9.0,
+          "win_rate": 0.2222222222222222,
+          "avg_win": 0.09965572777436066,
+          "avg_loss": 0.05511111314555923,
+          "profit_factor": 1.8082691872172931,
+          "expected_value": -0.02071848183002148,
+          "median_pnl_pct": -0.04842791599353797
+        }
+      },
+      "top_quality_signals": []
+    },
+    {
+      "label": "CPB",
+      "run_id": "pas_ablation_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t033212",
+      "patterns": [
+        "cpb"
+      ],
+      "single_pattern_mode": "cpb",
+      "quality_enabled": false,
+      "reference_enabled": true,
+      "trade_days": 30,
+      "trade_count": 23,
+      "win_rate": 0.17391304347826086,
+      "avg_win": 0.03250214835495209,
+      "avg_loss": 0.04487847846023213,
+      "expected_value": -0.03142097814454792,
+      "profit_factor": 0.7242257195451268,
+      "max_drawdown": 0.045685855257778775,
+      "reject_rate": 0.7870370370370371,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.9333333333333333,
+      "opportunity_count": 193.0,
+      "filled_count": 23.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 170.0,
+      "participation_rate": 0.11917098445595854,
+      "signals_count": 193,
+      "ranked_signals_count": 292,
+      "trades_count": 46,
+      "selected_pattern_distribution": {
+        "cpb": 193
+      },
+      "pattern_overlap_rate": 0.0,
+      "quality_trace_coverage": 0.0,
+      "reference_trace_coverage": 1.0,
+      "rank_diff_days_vs_bof": 29,
+      "execution_diff_days_vs_bof": 12,
+      "introduced_selected_signals_vs_bof": {
+        "count": 193,
+        "sample": [
+          {
+            "signal_date": "2026-01-05",
+            "code": "300143",
+            "signal_id": "300143_2026-01-05_cpb",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300003",
+            "signal_id": "300003_2026-01-05_cpb",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300238",
+            "signal_id": "300238_2026-01-05_cpb",
+            "final_rank": 3
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300430",
+            "signal_id": "300430_2026-01-05_cpb",
+            "final_rank": 4
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "688235",
+            "signal_id": "688235_2026-01-05_cpb",
+            "final_rank": 5
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "603309",
+            "signal_id": "603309_2026-01-05_cpb",
+            "final_rank": 6
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "600587",
+            "signal_id": "600587_2026-01-05_cpb",
+            "final_rank": 7
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300404",
+            "signal_id": "300404_2026-01-05_cpb",
+            "final_rank": 8
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "002230",
+            "signal_id": "002230_2026-01-05_cpb",
+            "final_rank": 9
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300459",
+            "signal_id": "300459_2026-01-05_cpb",
+            "final_rank": 10
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "600120",
+            "signal_id": "600120_2026-01-05_cpb",
+            "final_rank": 11
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "603382",
+            "signal_id": "603382_2026-01-05_cpb",
+            "final_rank": 12
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300894",
+            "signal_id": "300894_2026-01-05_cpb",
+            "final_rank": 13
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300409",
+            "signal_id": "300409_2026-01-05_cpb",
+            "final_rank": 14
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "600909",
+            "signal_id": "600909_2026-01-06_cpb",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "300033",
+            "signal_id": "300033_2026-01-06_cpb",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "000100",
+            "signal_id": "000100_2026-01-06_cpb",
+            "final_rank": 3
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "300429",
+            "signal_id": "300429_2026-01-06_cpb",
+            "final_rank": 4
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "601216",
+            "signal_id": "601216_2026-01-06_cpb",
+            "final_rank": 5
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "600999",
+            "signal_id": "600999_2026-01-06_cpb",
+            "final_rank": 6
+          }
+        ]
+      },
+      "introduced_buy_trades_vs_bof": {
+        "count": 23,
+        "sample": [
+          {
+            "execute_date": "2026-01-06",
+            "code": "300003",
+            "signal_id": "300003_2026-01-05_cpb",
+            "pattern": "cpb",
+            "quantity": 2000
+          },
+          {
+            "execute_date": "2026-01-06",
+            "code": "300143",
+            "signal_id": "300143_2026-01-05_cpb",
+            "pattern": "cpb",
+            "quantity": 3500
+          },
+          {
+            "execute_date": "2026-01-06",
+            "code": "300238",
+            "signal_id": "300238_2026-01-05_cpb",
+            "pattern": "cpb",
+            "quantity": 2200
+          },
+          {
+            "execute_date": "2026-01-06",
+            "code": "300430",
+            "signal_id": "300430_2026-01-05_cpb",
+            "pattern": "cpb",
+            "quantity": 1500
+          },
+          {
+            "execute_date": "2026-01-09",
+            "code": "600150",
+            "signal_id": "600150_2026-01-08_cpb",
+            "pattern": "cpb",
+            "quantity": 1000
+          },
+          {
+            "execute_date": "2026-01-09",
+            "code": "600845",
+            "signal_id": "600845_2026-01-08_cpb",
+            "pattern": "cpb",
+            "quantity": 1700
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "002649",
+            "signal_id": "002649_2026-01-09_cpb",
+            "pattern": "cpb",
+            "quantity": 5600
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "300676",
+            "signal_id": "300676_2026-01-09_cpb",
+            "pattern": "cpb",
+            "quantity": 1200
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "300830",
+            "signal_id": "300830_2026-01-09_cpb",
+            "pattern": "cpb",
+            "quantity": 7400
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "301559",
+            "signal_id": "301559_2026-01-09_cpb",
+            "pattern": "cpb",
+            "quantity": 5400
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "600133",
+            "signal_id": "600133_2026-01-09_cpb",
+            "pattern": "cpb",
+            "quantity": 5600
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "688133",
+            "signal_id": "688133_2026-01-09_cpb",
+            "pattern": "cpb",
+            "quantity": 2800
+          },
+          {
+            "execute_date": "2026-01-22",
+            "code": "002662",
+            "signal_id": "002662_2026-01-21_cpb",
+            "pattern": "cpb",
+            "quantity": 8700
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "000786",
+            "signal_id": "000786_2026-01-22_cpb",
+            "pattern": "cpb",
+            "quantity": 2100
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "002815",
+            "signal_id": "002815_2026-01-22_cpb",
+            "pattern": "cpb",
+            "quantity": 4500
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "300737",
+            "signal_id": "300737_2026-01-22_cpb",
+            "pattern": "cpb",
+            "quantity": 11500
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "600929",
+            "signal_id": "600929_2026-01-22_cpb",
+            "pattern": "cpb",
+            "quantity": 10800
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "603393",
+            "signal_id": "603393_2026-01-22_cpb",
+            "pattern": "cpb",
+            "quantity": 2900
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "920014",
+            "signal_id": "920014_2026-01-22_cpb",
+            "pattern": "cpb",
+            "quantity": 6100
+          },
+          {
+            "execute_date": "2026-02-04",
+            "code": "002826",
+            "signal_id": "002826_2026-02-03_cpb",
+            "pattern": "cpb",
+            "quantity": 1800
+          }
+        ]
+      },
+      "best_environment_bucket": {
+        "bucket": "NEUTRAL",
+        "expected_value": -0.03142097814454792,
+        "profit_factor": 0.7242257195451268,
+        "trade_count": 23
+      },
+      "environment_breakdown": {
+        "NEUTRAL": {
+          "trade_count": 23.0,
+          "win_rate": 0.17391304347826086,
+          "avg_win": 0.03250214835495209,
+          "avg_loss": 0.04487847846023213,
+          "profit_factor": 0.7242257195451268,
+          "expected_value": -0.03142097814454792,
+          "median_pnl_pct": -0.043965009523809544
+        }
+      },
+      "top_quality_signals": []
+    },
+    {
+      "label": "YTC5_ANY",
+      "run_id": "pas_ablation_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t033349",
+      "patterns": [
+        "bof",
+        "bpb",
+        "pb",
+        "tst",
+        "cpb"
+      ],
+      "single_pattern_mode": null,
+      "quality_enabled": false,
+      "reference_enabled": true,
+      "trade_days": 30,
+      "trade_count": 28,
+      "win_rate": 0.21428571428571427,
+      "avg_win": 0.03484914650148749,
+      "avg_loss": 0.04699863639545236,
+      "expected_value": -0.029459825774679538,
+      "profit_factor": 0.7414927149856528,
+      "max_drawdown": 0.05342155722026755,
+      "reject_rate": 0.8169934640522876,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.9333333333333333,
+      "opportunity_count": 280.0,
+      "filled_count": 28.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 249.0,
+      "participation_rate": 0.1,
+      "signals_count": 280,
+      "ranked_signals_count": 572,
+      "trades_count": 56,
+      "selected_pattern_distribution": {
+        "bof": 16,
+        "cpb": 184,
+        "pb": 52,
+        "tst": 28
+      },
+      "pattern_overlap_rate": 0.04285714285714286,
+      "quality_trace_coverage": 0.0,
+      "reference_trace_coverage": 1.0,
+      "rank_diff_days_vs_bof": 30,
+      "execution_diff_days_vs_bof": 10,
+      "introduced_selected_signals_vs_bof": {
+        "count": 277,
+        "sample": [
+          {
+            "signal_date": "2026-01-05",
+            "code": "300143",
+            "signal_id": "300143_2026-01-05_cpb",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300003",
+            "signal_id": "300003_2026-01-05_cpb",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300238",
+            "signal_id": "300238_2026-01-05_cpb",
+            "final_rank": 3
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300430",
+            "signal_id": "300430_2026-01-05_cpb",
+            "final_rank": 4
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "688235",
+            "signal_id": "688235_2026-01-05_cpb",
+            "final_rank": 5
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "603309",
+            "signal_id": "603309_2026-01-05_cpb",
+            "final_rank": 6
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "600587",
+            "signal_id": "600587_2026-01-05_cpb",
+            "final_rank": 7
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300404",
+            "signal_id": "300404_2026-01-05_cpb",
+            "final_rank": 8
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "002230",
+            "signal_id": "002230_2026-01-05_cpb",
+            "final_rank": 9
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "002757",
+            "signal_id": "002757_2026-01-05_tst",
+            "final_rank": 10
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300459",
+            "signal_id": "300459_2026-01-05_cpb",
+            "final_rank": 11
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "600120",
+            "signal_id": "600120_2026-01-05_cpb",
+            "final_rank": 12
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300894",
+            "signal_id": "300894_2026-01-05_tst",
+            "final_rank": 13
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "603382",
+            "signal_id": "603382_2026-01-05_cpb",
+            "final_rank": 14
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300409",
+            "signal_id": "300409_2026-01-05_cpb",
+            "final_rank": 15
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "600909",
+            "signal_id": "600909_2026-01-06_cpb",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "002371",
+            "signal_id": "002371_2026-01-06_pb",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "300033",
+            "signal_id": "300033_2026-01-06_cpb",
+            "final_rank": 3
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "000100",
+            "signal_id": "000100_2026-01-06_cpb",
+            "final_rank": 4
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "300429",
+            "signal_id": "300429_2026-01-06_cpb",
+            "final_rank": 5
+          }
+        ]
+      },
+      "introduced_buy_trades_vs_bof": {
+        "count": 27,
+        "sample": [
+          {
+            "execute_date": "2026-01-06",
+            "code": "300003",
+            "signal_id": "300003_2026-01-05_cpb",
+            "pattern": "cpb",
+            "quantity": 2000
+          },
+          {
+            "execute_date": "2026-01-06",
+            "code": "300143",
+            "signal_id": "300143_2026-01-05_cpb",
+            "pattern": "cpb",
+            "quantity": 3500
+          },
+          {
+            "execute_date": "2026-01-06",
+            "code": "300238",
+            "signal_id": "300238_2026-01-05_cpb",
+            "pattern": "cpb",
+            "quantity": 2200
+          },
+          {
+            "execute_date": "2026-01-06",
+            "code": "300430",
+            "signal_id": "300430_2026-01-05_cpb",
+            "pattern": "cpb",
+            "quantity": 1500
+          },
+          {
+            "execute_date": "2026-01-09",
+            "code": "000983",
+            "signal_id": "000983_2026-01-08_tst",
+            "pattern": "tst",
+            "quantity": 5500
+          },
+          {
+            "execute_date": "2026-01-09",
+            "code": "600845",
+            "signal_id": "600845_2026-01-08_cpb",
+            "pattern": "cpb",
+            "quantity": 1600
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "002649",
+            "signal_id": "002649_2026-01-09_cpb",
+            "pattern": "cpb",
+            "quantity": 5600
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "300676",
+            "signal_id": "300676_2026-01-09_cpb",
+            "pattern": "cpb",
+            "quantity": 1200
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "300830",
+            "signal_id": "300830_2026-01-09_cpb",
+            "pattern": "cpb",
+            "quantity": 7400
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "301559",
+            "signal_id": "301559_2026-01-09_cpb",
+            "pattern": "cpb",
+            "quantity": 5400
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "688133",
+            "signal_id": "688133_2026-01-09_cpb",
+            "pattern": "cpb",
+            "quantity": 2800
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "920641",
+            "signal_id": "920641_2026-01-09_tst",
+            "pattern": "tst",
+            "quantity": 2500
+          },
+          {
+            "execute_date": "2026-01-22",
+            "code": "002662",
+            "signal_id": "002662_2026-01-21_cpb",
+            "pattern": "cpb",
+            "quantity": 8700
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "002815",
+            "signal_id": "002815_2026-01-22_cpb",
+            "pattern": "cpb",
+            "quantity": 4000
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "300737",
+            "signal_id": "300737_2026-01-22_cpb",
+            "pattern": "cpb",
+            "quantity": 11500
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "600048",
+            "signal_id": "600048_2026-01-22_tst",
+            "pattern": "tst",
+            "quantity": 11000
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "600929",
+            "signal_id": "600929_2026-01-22_cpb",
+            "pattern": "cpb",
+            "quantity": 9700
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "603393",
+            "signal_id": "603393_2026-01-22_cpb",
+            "pattern": "cpb",
+            "quantity": 2900
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "920014",
+            "signal_id": "920014_2026-01-22_cpb",
+            "pattern": "cpb",
+            "quantity": 6100
+          },
+          {
+            "execute_date": "2026-02-04",
+            "code": "002227",
+            "signal_id": "002227_2026-02-03_bof",
+            "pattern": "bof",
+            "quantity": 3600
+          }
+        ]
+      },
+      "best_environment_bucket": {
+        "bucket": "NEUTRAL",
+        "expected_value": -0.029459825774679538,
+        "profit_factor": 0.7414927149856528,
+        "trade_count": 28
+      },
+      "environment_breakdown": {
+        "NEUTRAL": {
+          "trade_count": 28.0,
+          "win_rate": 0.21428571428571427,
+          "avg_win": 0.03484914650148749,
+          "avg_loss": 0.04699863639545236,
+          "profit_factor": 0.7414927149856528,
+          "expected_value": -0.029459825774679538,
+          "median_pnl_pct": -0.04502643571366029
+        }
+      },
+      "top_quality_signals": []
+    },
+    {
+      "label": "YTC5_ANY_PLUS_QUALITY",
+      "run_id": "pas_ablation_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t033606",
+      "patterns": [
+        "bof",
+        "bpb",
+        "pb",
+        "tst",
+        "cpb"
+      ],
+      "single_pattern_mode": null,
+      "quality_enabled": true,
+      "reference_enabled": true,
+      "trade_days": 30,
+      "trade_count": 28,
+      "win_rate": 0.21428571428571427,
+      "avg_win": 0.03484914650148749,
+      "avg_loss": 0.04699863639545236,
+      "expected_value": -0.029459825774679538,
+      "profit_factor": 0.7414927149856528,
+      "max_drawdown": 0.05342155722026755,
+      "reject_rate": 0.8169934640522876,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.9333333333333333,
+      "opportunity_count": 280.0,
+      "filled_count": 28.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 249.0,
+      "participation_rate": 0.1,
+      "signals_count": 280,
+      "ranked_signals_count": 852,
+      "trades_count": 56,
+      "selected_pattern_distribution": {
+        "bof": 16,
+        "cpb": 184,
+        "pb": 52,
+        "tst": 28
+      },
+      "pattern_overlap_rate": 0.04285714285714286,
+      "quality_trace_coverage": 1.0,
+      "reference_trace_coverage": 1.0,
+      "rank_diff_days_vs_bof": 30,
+      "execution_diff_days_vs_bof": 10,
+      "introduced_selected_signals_vs_bof": {
+        "count": 277,
+        "sample": [
+          {
+            "signal_date": "2026-01-05",
+            "code": "300143",
+            "signal_id": "300143_2026-01-05_cpb",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300003",
+            "signal_id": "300003_2026-01-05_cpb",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300238",
+            "signal_id": "300238_2026-01-05_cpb",
+            "final_rank": 3
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300430",
+            "signal_id": "300430_2026-01-05_cpb",
+            "final_rank": 4
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "688235",
+            "signal_id": "688235_2026-01-05_cpb",
+            "final_rank": 5
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "603309",
+            "signal_id": "603309_2026-01-05_cpb",
+            "final_rank": 6
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "600587",
+            "signal_id": "600587_2026-01-05_cpb",
+            "final_rank": 7
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300404",
+            "signal_id": "300404_2026-01-05_cpb",
+            "final_rank": 8
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "002230",
+            "signal_id": "002230_2026-01-05_cpb",
+            "final_rank": 9
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "002757",
+            "signal_id": "002757_2026-01-05_tst",
+            "final_rank": 10
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300459",
+            "signal_id": "300459_2026-01-05_cpb",
+            "final_rank": 11
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "600120",
+            "signal_id": "600120_2026-01-05_cpb",
+            "final_rank": 12
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300894",
+            "signal_id": "300894_2026-01-05_tst",
+            "final_rank": 13
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "603382",
+            "signal_id": "603382_2026-01-05_cpb",
+            "final_rank": 14
+          },
+          {
+            "signal_date": "2026-01-05",
+            "code": "300409",
+            "signal_id": "300409_2026-01-05_cpb",
+            "final_rank": 15
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "600909",
+            "signal_id": "600909_2026-01-06_cpb",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "002371",
+            "signal_id": "002371_2026-01-06_pb",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "300033",
+            "signal_id": "300033_2026-01-06_cpb",
+            "final_rank": 3
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "000100",
+            "signal_id": "000100_2026-01-06_cpb",
+            "final_rank": 4
+          },
+          {
+            "signal_date": "2026-01-06",
+            "code": "300429",
+            "signal_id": "300429_2026-01-06_cpb",
+            "final_rank": 5
+          }
+        ]
+      },
+      "introduced_buy_trades_vs_bof": {
+        "count": 27,
+        "sample": [
+          {
+            "execute_date": "2026-01-06",
+            "code": "300003",
+            "signal_id": "300003_2026-01-05_cpb",
+            "pattern": "cpb",
+            "quantity": 2000
+          },
+          {
+            "execute_date": "2026-01-06",
+            "code": "300143",
+            "signal_id": "300143_2026-01-05_cpb",
+            "pattern": "cpb",
+            "quantity": 3500
+          },
+          {
+            "execute_date": "2026-01-06",
+            "code": "300238",
+            "signal_id": "300238_2026-01-05_cpb",
+            "pattern": "cpb",
+            "quantity": 2200
+          },
+          {
+            "execute_date": "2026-01-06",
+            "code": "300430",
+            "signal_id": "300430_2026-01-05_cpb",
+            "pattern": "cpb",
+            "quantity": 1500
+          },
+          {
+            "execute_date": "2026-01-09",
+            "code": "000983",
+            "signal_id": "000983_2026-01-08_tst",
+            "pattern": "tst",
+            "quantity": 5500
+          },
+          {
+            "execute_date": "2026-01-09",
+            "code": "600845",
+            "signal_id": "600845_2026-01-08_cpb",
+            "pattern": "cpb",
+            "quantity": 1600
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "002649",
+            "signal_id": "002649_2026-01-09_cpb",
+            "pattern": "cpb",
+            "quantity": 5600
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "300676",
+            "signal_id": "300676_2026-01-09_cpb",
+            "pattern": "cpb",
+            "quantity": 1200
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "300830",
+            "signal_id": "300830_2026-01-09_cpb",
+            "pattern": "cpb",
+            "quantity": 7400
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "301559",
+            "signal_id": "301559_2026-01-09_cpb",
+            "pattern": "cpb",
+            "quantity": 5400
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "688133",
+            "signal_id": "688133_2026-01-09_cpb",
+            "pattern": "cpb",
+            "quantity": 2800
+          },
+          {
+            "execute_date": "2026-01-12",
+            "code": "920641",
+            "signal_id": "920641_2026-01-09_tst",
+            "pattern": "tst",
+            "quantity": 2500
+          },
+          {
+            "execute_date": "2026-01-22",
+            "code": "002662",
+            "signal_id": "002662_2026-01-21_cpb",
+            "pattern": "cpb",
+            "quantity": 8700
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "002815",
+            "signal_id": "002815_2026-01-22_cpb",
+            "pattern": "cpb",
+            "quantity": 4000
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "300737",
+            "signal_id": "300737_2026-01-22_cpb",
+            "pattern": "cpb",
+            "quantity": 11500
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "600048",
+            "signal_id": "600048_2026-01-22_tst",
+            "pattern": "tst",
+            "quantity": 11000
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "600929",
+            "signal_id": "600929_2026-01-22_cpb",
+            "pattern": "cpb",
+            "quantity": 9700
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "603393",
+            "signal_id": "603393_2026-01-22_cpb",
+            "pattern": "cpb",
+            "quantity": 2900
+          },
+          {
+            "execute_date": "2026-01-23",
+            "code": "920014",
+            "signal_id": "920014_2026-01-22_cpb",
+            "pattern": "cpb",
+            "quantity": 6100
+          },
+          {
+            "execute_date": "2026-02-04",
+            "code": "002227",
+            "signal_id": "002227_2026-02-03_bof",
+            "pattern": "bof",
+            "quantity": 3600
+          }
+        ]
+      },
+      "best_environment_bucket": {
+        "bucket": "NEUTRAL",
+        "expected_value": -0.029459825774679538,
+        "profit_factor": 0.7414927149856528,
+        "trade_count": 28
+      },
+      "environment_breakdown": {
+        "NEUTRAL": {
+          "trade_count": 28.0,
+          "win_rate": 0.21428571428571427,
+          "avg_win": 0.03484914650148749,
+          "avg_loss": 0.04699863639545236,
+          "profit_factor": 0.7414927149856528,
+          "expected_value": -0.029459825774679538,
+          "median_pnl_pct": -0.04502643571366029
+        }
+      },
+      "top_quality_signals": [
+        {
+          "signal_date": "2026-01-19",
+          "code": "600340",
+          "pattern": "bof",
+          "pattern_quality_score": 95.359375,
+          "risk_reward_ref": 2.0050922978994272,
+          "failure_handling_tag": "BOF_NO_FOLLOW_THROUGH"
+        },
+        {
+          "signal_date": "2026-02-03",
+          "code": "002227",
+          "pattern": "bof",
+          "pattern_quality_score": 90.173967,
+          "risk_reward_ref": 3.697558663190329,
+          "failure_handling_tag": "BOF_NO_FOLLOW_THROUGH"
+        },
+        {
+          "signal_date": "2026-02-13",
+          "code": "002759",
+          "pattern": "bof",
+          "pattern_quality_score": 89.684344,
+          "risk_reward_ref": 3.1320809882318503,
+          "failure_handling_tag": "BOF_NO_FOLLOW_THROUGH"
+        },
+        {
+          "signal_date": "2026-01-30",
+          "code": "300014",
+          "pattern": "bof",
+          "pattern_quality_score": 87.827363,
+          "risk_reward_ref": 1.6126347330309232,
+          "failure_handling_tag": "BOF_NO_FOLLOW_THROUGH"
+        },
+        {
+          "signal_date": "2026-02-04",
+          "code": "002547",
+          "pattern": "bof",
+          "pattern_quality_score": 87.731981,
+          "risk_reward_ref": 6.1927840603123245,
+          "failure_handling_tag": "BOF_NO_FOLLOW_THROUGH"
+        },
+        {
+          "signal_date": "2026-01-19",
+          "code": "600010",
+          "pattern": "bof",
+          "pattern_quality_score": 87.691792,
+          "risk_reward_ref": 2.3859649122806994,
+          "failure_handling_tag": "BOF_NO_FOLLOW_THROUGH"
+        },
+        {
+          "signal_date": "2026-02-04",
+          "code": "002175",
+          "pattern": "bof",
+          "pattern_quality_score": 86.353687,
+          "risk_reward_ref": 4.940304652120212,
+          "failure_handling_tag": "BOF_NO_FOLLOW_THROUGH"
+        },
+        {
+          "signal_date": "2026-01-27",
+          "code": "688336",
+          "pattern": "tst",
+          "pattern_quality_score": 86.034158,
+          "risk_reward_ref": 2.7849694611720603,
+          "failure_handling_tag": "TST_NO_BOUNCE"
+        },
+        {
+          "signal_date": "2026-01-09",
+          "code": "301559",
+          "pattern": "cpb",
+          "pattern_quality_score": 85.788719,
+          "risk_reward_ref": 1.5,
+          "failure_handling_tag": "CPB_NECKLINE_FAIL"
+        },
+        {
+          "signal_date": "2026-01-12",
+          "code": "601949",
+          "pattern": "cpb",
+          "pattern_quality_score": 85.549872,
+          "risk_reward_ref": 1.5000000000000009,
+          "failure_handling_tag": "CPB_NECKLINE_FAIL"
+        }
+      ]
+    }
+  ],
+  "comparisons": {
+    "quality_vs_any": {
+      "rank_diff_days": 0,
+      "execution_diff_days": 0,
+      "introduced_selected_signals": {
+        "count": 0,
+        "sample": []
+      },
+      "introduced_buy_trades": {
+        "count": 0,
+        "sample": []
+      },
+      "quality_trace_coverage": 1.0,
+      "reference_trace_coverage": 1.0,
+      "note": "quality 当前仍停留在 PAS trace/sidecar 解释层；若 rank_diff_days 或 execution_diff_days 非 0，表示 quality 已经影响运行时选择。"
+    },
+    "new_pattern_vs_bof": [
+      {
+        "label": "BPB",
+        "introduced_selected_signals": {
+          "count": 0,
+          "sample": []
+        },
+        "introduced_buy_trades": {
+          "count": 0,
+          "sample": []
+        }
+      },
+      {
+        "label": "PB",
+        "introduced_selected_signals": {
+          "count": 54,
+          "sample": [
+            {
+              "signal_date": "2026-01-06",
+              "code": "002371",
+              "signal_id": "002371_2026-01-06_pb",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-08",
+              "code": "688256",
+              "signal_id": "688256_2026-01-08_pb",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-14",
+              "code": "000100",
+              "signal_id": "000100_2026-01-14_pb",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-15",
+              "code": "300308",
+              "signal_id": "300308_2026-01-15_pb",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-15",
+              "code": "603799",
+              "signal_id": "603799_2026-01-15_pb",
+              "final_rank": 2
+            },
+            {
+              "signal_date": "2026-01-16",
+              "code": "002371",
+              "signal_id": "002371_2026-01-16_pb",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-16",
+              "code": "603986",
+              "signal_id": "603986_2026-01-16_pb",
+              "final_rank": 2
+            },
+            {
+              "signal_date": "2026-01-16",
+              "code": "688008",
+              "signal_id": "688008_2026-01-16_pb",
+              "final_rank": 3
+            },
+            {
+              "signal_date": "2026-01-16",
+              "code": "600460",
+              "signal_id": "600460_2026-01-16_pb",
+              "final_rank": 4
+            },
+            {
+              "signal_date": "2026-01-19",
+              "code": "601689",
+              "signal_id": "601689_2026-01-19_pb",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-19",
+              "code": "600487",
+              "signal_id": "600487_2026-01-19_pb",
+              "final_rank": 2
+            },
+            {
+              "signal_date": "2026-01-20",
+              "code": "600309",
+              "signal_id": "600309_2026-01-20_pb",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-20",
+              "code": "600853",
+              "signal_id": "600853_2026-01-20_pb",
+              "final_rank": 2
+            },
+            {
+              "signal_date": "2026-01-20",
+              "code": "601689",
+              "signal_id": "601689_2026-01-20_pb",
+              "final_rank": 3
+            },
+            {
+              "signal_date": "2026-01-21",
+              "code": "002415",
+              "signal_id": "002415_2026-01-21_pb",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-21",
+              "code": "002236",
+              "signal_id": "002236_2026-01-21_pb",
+              "final_rank": 2
+            },
+            {
+              "signal_date": "2026-01-21",
+              "code": "002181",
+              "signal_id": "002181_2026-01-21_pb",
+              "final_rank": 3
+            },
+            {
+              "signal_date": "2026-01-23",
+              "code": "300450",
+              "signal_id": "300450_2026-01-23_pb",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-23",
+              "code": "600879",
+              "signal_id": "600879_2026-01-23_pb",
+              "final_rank": 2
+            },
+            {
+              "signal_date": "2026-01-23",
+              "code": "600998",
+              "signal_id": "600998_2026-01-23_pb",
+              "final_rank": 3
+            }
+          ]
+        },
+        "introduced_buy_trades": {
+          "count": 12,
+          "sample": [
+            {
+              "execute_date": "2026-01-15",
+              "code": "000100",
+              "signal_id": "000100_2026-01-14_pb",
+              "pattern": "pb",
+              "quantity": 8000
+            },
+            {
+              "execute_date": "2026-01-16",
+              "code": "603799",
+              "signal_id": "603799_2026-01-15_pb",
+              "pattern": "pb",
+              "quantity": 500
+            },
+            {
+              "execute_date": "2026-01-19",
+              "code": "603986",
+              "signal_id": "603986_2026-01-16_pb",
+              "pattern": "pb",
+              "quantity": 100
+            },
+            {
+              "execute_date": "2026-01-19",
+              "code": "688008",
+              "signal_id": "688008_2026-01-16_pb",
+              "pattern": "pb",
+              "quantity": 200
+            },
+            {
+              "execute_date": "2026-01-22",
+              "code": "002415",
+              "signal_id": "002415_2026-01-21_pb",
+              "pattern": "pb",
+              "quantity": 1200
+            },
+            {
+              "execute_date": "2026-01-26",
+              "code": "300450",
+              "signal_id": "300450_2026-01-23_pb",
+              "pattern": "pb",
+              "quantity": 1100
+            },
+            {
+              "execute_date": "2026-01-26",
+              "code": "600879",
+              "signal_id": "600879_2026-01-23_pb",
+              "pattern": "pb",
+              "quantity": 2000
+            },
+            {
+              "execute_date": "2026-01-26",
+              "code": "600998",
+              "signal_id": "600998_2026-01-23_pb",
+              "pattern": "pb",
+              "quantity": 10900
+            },
+            {
+              "execute_date": "2026-02-04",
+              "code": "002471",
+              "signal_id": "002471_2026-02-03_pb",
+              "pattern": "pb",
+              "quantity": 4100
+            },
+            {
+              "execute_date": "2026-02-05",
+              "code": "000719",
+              "signal_id": "000719_2026-02-04_pb",
+              "pattern": "pb",
+              "quantity": 5900
+            },
+            {
+              "execute_date": "2026-02-05",
+              "code": "300118",
+              "signal_id": "300118_2026-02-04_pb",
+              "pattern": "pb",
+              "quantity": 4100
+            },
+            {
+              "execute_date": "2026-02-05",
+              "code": "300724",
+              "signal_id": "300724_2026-02-04_pb",
+              "pattern": "pb",
+              "quantity": 600
+            }
+          ]
+        }
+      },
+      {
+        "label": "TST",
+        "introduced_selected_signals": {
+          "count": 29,
+          "sample": [
+            {
+              "signal_date": "2026-01-05",
+              "code": "002757",
+              "signal_id": "002757_2026-01-05_tst",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300894",
+              "signal_id": "300894_2026-01-05_tst",
+              "final_rank": 2
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "000650",
+              "signal_id": "000650_2026-01-06_tst",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "600983",
+              "signal_id": "600983_2026-01-06_tst",
+              "final_rank": 2
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "688767",
+              "signal_id": "688767_2026-01-06_tst",
+              "final_rank": 3
+            },
+            {
+              "signal_date": "2026-01-07",
+              "code": "600266",
+              "signal_id": "600266_2026-01-07_tst",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-07",
+              "code": "600691",
+              "signal_id": "600691_2026-01-07_tst",
+              "final_rank": 2
+            },
+            {
+              "signal_date": "2026-01-07",
+              "code": "688123",
+              "signal_id": "688123_2026-01-07_tst",
+              "final_rank": 3
+            },
+            {
+              "signal_date": "2026-01-07",
+              "code": "600010",
+              "signal_id": "600010_2026-01-07_tst",
+              "final_rank": 4
+            },
+            {
+              "signal_date": "2026-01-08",
+              "code": "000983",
+              "signal_id": "000983_2026-01-08_tst",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-09",
+              "code": "920641",
+              "signal_id": "920641_2026-01-09_tst",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-09",
+              "code": "603950",
+              "signal_id": "603950_2026-01-09_tst",
+              "final_rank": 2
+            },
+            {
+              "signal_date": "2026-01-12",
+              "code": "000503",
+              "signal_id": "000503_2026-01-12_tst",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-13",
+              "code": "001896",
+              "signal_id": "001896_2026-01-13_tst",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-15",
+              "code": "600662",
+              "signal_id": "600662_2026-01-15_tst",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-15",
+              "code": "301155",
+              "signal_id": "301155_2026-01-15_tst",
+              "final_rank": 2
+            },
+            {
+              "signal_date": "2026-01-16",
+              "code": "601163",
+              "signal_id": "601163_2026-01-16_tst",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-20",
+              "code": "601163",
+              "signal_id": "601163_2026-01-20_tst",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-22",
+              "code": "600048",
+              "signal_id": "600048_2026-01-22_tst",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-26",
+              "code": "002679",
+              "signal_id": "002679_2026-01-26_tst",
+              "final_rank": 1
+            }
+          ]
+        },
+        "introduced_buy_trades": {
+          "count": 10,
+          "sample": [
+            {
+              "execute_date": "2026-01-06",
+              "code": "002757",
+              "signal_id": "002757_2026-01-05_tst",
+              "pattern": "tst",
+              "quantity": 1800
+            },
+            {
+              "execute_date": "2026-01-06",
+              "code": "300894",
+              "signal_id": "300894_2026-01-05_tst",
+              "pattern": "tst",
+              "quantity": 3000
+            },
+            {
+              "execute_date": "2026-01-07",
+              "code": "000650",
+              "signal_id": "000650_2026-01-06_tst",
+              "pattern": "tst",
+              "quantity": 6300
+            },
+            {
+              "execute_date": "2026-01-07",
+              "code": "600983",
+              "signal_id": "600983_2026-01-06_tst",
+              "pattern": "tst",
+              "quantity": 3500
+            },
+            {
+              "execute_date": "2026-01-09",
+              "code": "000983",
+              "signal_id": "000983_2026-01-08_tst",
+              "pattern": "tst",
+              "quantity": 5500
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "603950",
+              "signal_id": "603950_2026-01-09_tst",
+              "pattern": "tst",
+              "quantity": 2700
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "920641",
+              "signal_id": "920641_2026-01-09_tst",
+              "pattern": "tst",
+              "quantity": 4100
+            },
+            {
+              "execute_date": "2026-01-13",
+              "code": "000503",
+              "signal_id": "000503_2026-01-12_tst",
+              "pattern": "tst",
+              "quantity": 6000
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "600048",
+              "signal_id": "600048_2026-01-22_tst",
+              "pattern": "tst",
+              "quantity": 14800
+            },
+            {
+              "execute_date": "2026-02-24",
+              "code": "002520",
+              "signal_id": "002520_2026-02-13_tst",
+              "pattern": "tst",
+              "quantity": 5800
+            }
+          ]
+        }
+      },
+      {
+        "label": "CPB",
+        "introduced_selected_signals": {
+          "count": 193,
+          "sample": [
+            {
+              "signal_date": "2026-01-05",
+              "code": "300143",
+              "signal_id": "300143_2026-01-05_cpb",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300003",
+              "signal_id": "300003_2026-01-05_cpb",
+              "final_rank": 2
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300238",
+              "signal_id": "300238_2026-01-05_cpb",
+              "final_rank": 3
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300430",
+              "signal_id": "300430_2026-01-05_cpb",
+              "final_rank": 4
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "688235",
+              "signal_id": "688235_2026-01-05_cpb",
+              "final_rank": 5
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "603309",
+              "signal_id": "603309_2026-01-05_cpb",
+              "final_rank": 6
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "600587",
+              "signal_id": "600587_2026-01-05_cpb",
+              "final_rank": 7
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300404",
+              "signal_id": "300404_2026-01-05_cpb",
+              "final_rank": 8
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "002230",
+              "signal_id": "002230_2026-01-05_cpb",
+              "final_rank": 9
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300459",
+              "signal_id": "300459_2026-01-05_cpb",
+              "final_rank": 10
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "600120",
+              "signal_id": "600120_2026-01-05_cpb",
+              "final_rank": 11
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "603382",
+              "signal_id": "603382_2026-01-05_cpb",
+              "final_rank": 12
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300894",
+              "signal_id": "300894_2026-01-05_cpb",
+              "final_rank": 13
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300409",
+              "signal_id": "300409_2026-01-05_cpb",
+              "final_rank": 14
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "600909",
+              "signal_id": "600909_2026-01-06_cpb",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "300033",
+              "signal_id": "300033_2026-01-06_cpb",
+              "final_rank": 2
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "000100",
+              "signal_id": "000100_2026-01-06_cpb",
+              "final_rank": 3
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "300429",
+              "signal_id": "300429_2026-01-06_cpb",
+              "final_rank": 4
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "601216",
+              "signal_id": "601216_2026-01-06_cpb",
+              "final_rank": 5
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "600999",
+              "signal_id": "600999_2026-01-06_cpb",
+              "final_rank": 6
+            }
+          ]
+        },
+        "introduced_buy_trades": {
+          "count": 23,
+          "sample": [
+            {
+              "execute_date": "2026-01-06",
+              "code": "300003",
+              "signal_id": "300003_2026-01-05_cpb",
+              "pattern": "cpb",
+              "quantity": 2000
+            },
+            {
+              "execute_date": "2026-01-06",
+              "code": "300143",
+              "signal_id": "300143_2026-01-05_cpb",
+              "pattern": "cpb",
+              "quantity": 3500
+            },
+            {
+              "execute_date": "2026-01-06",
+              "code": "300238",
+              "signal_id": "300238_2026-01-05_cpb",
+              "pattern": "cpb",
+              "quantity": 2200
+            },
+            {
+              "execute_date": "2026-01-06",
+              "code": "300430",
+              "signal_id": "300430_2026-01-05_cpb",
+              "pattern": "cpb",
+              "quantity": 1500
+            },
+            {
+              "execute_date": "2026-01-09",
+              "code": "600150",
+              "signal_id": "600150_2026-01-08_cpb",
+              "pattern": "cpb",
+              "quantity": 1000
+            },
+            {
+              "execute_date": "2026-01-09",
+              "code": "600845",
+              "signal_id": "600845_2026-01-08_cpb",
+              "pattern": "cpb",
+              "quantity": 1700
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "002649",
+              "signal_id": "002649_2026-01-09_cpb",
+              "pattern": "cpb",
+              "quantity": 5600
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "300676",
+              "signal_id": "300676_2026-01-09_cpb",
+              "pattern": "cpb",
+              "quantity": 1200
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "300830",
+              "signal_id": "300830_2026-01-09_cpb",
+              "pattern": "cpb",
+              "quantity": 7400
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "301559",
+              "signal_id": "301559_2026-01-09_cpb",
+              "pattern": "cpb",
+              "quantity": 5400
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "600133",
+              "signal_id": "600133_2026-01-09_cpb",
+              "pattern": "cpb",
+              "quantity": 5600
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "688133",
+              "signal_id": "688133_2026-01-09_cpb",
+              "pattern": "cpb",
+              "quantity": 2800
+            },
+            {
+              "execute_date": "2026-01-22",
+              "code": "002662",
+              "signal_id": "002662_2026-01-21_cpb",
+              "pattern": "cpb",
+              "quantity": 8700
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "000786",
+              "signal_id": "000786_2026-01-22_cpb",
+              "pattern": "cpb",
+              "quantity": 2100
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "002815",
+              "signal_id": "002815_2026-01-22_cpb",
+              "pattern": "cpb",
+              "quantity": 4500
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "300737",
+              "signal_id": "300737_2026-01-22_cpb",
+              "pattern": "cpb",
+              "quantity": 11500
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "600929",
+              "signal_id": "600929_2026-01-22_cpb",
+              "pattern": "cpb",
+              "quantity": 10800
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "603393",
+              "signal_id": "603393_2026-01-22_cpb",
+              "pattern": "cpb",
+              "quantity": 2900
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "920014",
+              "signal_id": "920014_2026-01-22_cpb",
+              "pattern": "cpb",
+              "quantity": 6100
+            },
+            {
+              "execute_date": "2026-02-04",
+              "code": "002826",
+              "signal_id": "002826_2026-02-03_cpb",
+              "pattern": "cpb",
+              "quantity": 1800
+            }
+          ]
+        }
+      },
+      {
+        "label": "YTC5_ANY",
+        "introduced_selected_signals": {
+          "count": 277,
+          "sample": [
+            {
+              "signal_date": "2026-01-05",
+              "code": "300143",
+              "signal_id": "300143_2026-01-05_cpb",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300003",
+              "signal_id": "300003_2026-01-05_cpb",
+              "final_rank": 2
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300238",
+              "signal_id": "300238_2026-01-05_cpb",
+              "final_rank": 3
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300430",
+              "signal_id": "300430_2026-01-05_cpb",
+              "final_rank": 4
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "688235",
+              "signal_id": "688235_2026-01-05_cpb",
+              "final_rank": 5
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "603309",
+              "signal_id": "603309_2026-01-05_cpb",
+              "final_rank": 6
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "600587",
+              "signal_id": "600587_2026-01-05_cpb",
+              "final_rank": 7
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300404",
+              "signal_id": "300404_2026-01-05_cpb",
+              "final_rank": 8
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "002230",
+              "signal_id": "002230_2026-01-05_cpb",
+              "final_rank": 9
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "002757",
+              "signal_id": "002757_2026-01-05_tst",
+              "final_rank": 10
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300459",
+              "signal_id": "300459_2026-01-05_cpb",
+              "final_rank": 11
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "600120",
+              "signal_id": "600120_2026-01-05_cpb",
+              "final_rank": 12
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300894",
+              "signal_id": "300894_2026-01-05_tst",
+              "final_rank": 13
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "603382",
+              "signal_id": "603382_2026-01-05_cpb",
+              "final_rank": 14
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300409",
+              "signal_id": "300409_2026-01-05_cpb",
+              "final_rank": 15
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "600909",
+              "signal_id": "600909_2026-01-06_cpb",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "002371",
+              "signal_id": "002371_2026-01-06_pb",
+              "final_rank": 2
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "300033",
+              "signal_id": "300033_2026-01-06_cpb",
+              "final_rank": 3
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "000100",
+              "signal_id": "000100_2026-01-06_cpb",
+              "final_rank": 4
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "300429",
+              "signal_id": "300429_2026-01-06_cpb",
+              "final_rank": 5
+            }
+          ]
+        },
+        "introduced_buy_trades": {
+          "count": 27,
+          "sample": [
+            {
+              "execute_date": "2026-01-06",
+              "code": "300003",
+              "signal_id": "300003_2026-01-05_cpb",
+              "pattern": "cpb",
+              "quantity": 2000
+            },
+            {
+              "execute_date": "2026-01-06",
+              "code": "300143",
+              "signal_id": "300143_2026-01-05_cpb",
+              "pattern": "cpb",
+              "quantity": 3500
+            },
+            {
+              "execute_date": "2026-01-06",
+              "code": "300238",
+              "signal_id": "300238_2026-01-05_cpb",
+              "pattern": "cpb",
+              "quantity": 2200
+            },
+            {
+              "execute_date": "2026-01-06",
+              "code": "300430",
+              "signal_id": "300430_2026-01-05_cpb",
+              "pattern": "cpb",
+              "quantity": 1500
+            },
+            {
+              "execute_date": "2026-01-09",
+              "code": "000983",
+              "signal_id": "000983_2026-01-08_tst",
+              "pattern": "tst",
+              "quantity": 5500
+            },
+            {
+              "execute_date": "2026-01-09",
+              "code": "600845",
+              "signal_id": "600845_2026-01-08_cpb",
+              "pattern": "cpb",
+              "quantity": 1600
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "002649",
+              "signal_id": "002649_2026-01-09_cpb",
+              "pattern": "cpb",
+              "quantity": 5600
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "300676",
+              "signal_id": "300676_2026-01-09_cpb",
+              "pattern": "cpb",
+              "quantity": 1200
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "300830",
+              "signal_id": "300830_2026-01-09_cpb",
+              "pattern": "cpb",
+              "quantity": 7400
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "301559",
+              "signal_id": "301559_2026-01-09_cpb",
+              "pattern": "cpb",
+              "quantity": 5400
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "688133",
+              "signal_id": "688133_2026-01-09_cpb",
+              "pattern": "cpb",
+              "quantity": 2800
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "920641",
+              "signal_id": "920641_2026-01-09_tst",
+              "pattern": "tst",
+              "quantity": 2500
+            },
+            {
+              "execute_date": "2026-01-22",
+              "code": "002662",
+              "signal_id": "002662_2026-01-21_cpb",
+              "pattern": "cpb",
+              "quantity": 8700
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "002815",
+              "signal_id": "002815_2026-01-22_cpb",
+              "pattern": "cpb",
+              "quantity": 4000
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "300737",
+              "signal_id": "300737_2026-01-22_cpb",
+              "pattern": "cpb",
+              "quantity": 11500
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "600048",
+              "signal_id": "600048_2026-01-22_tst",
+              "pattern": "tst",
+              "quantity": 11000
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "600929",
+              "signal_id": "600929_2026-01-22_cpb",
+              "pattern": "cpb",
+              "quantity": 9700
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "603393",
+              "signal_id": "603393_2026-01-22_cpb",
+              "pattern": "cpb",
+              "quantity": 2900
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "920014",
+              "signal_id": "920014_2026-01-22_cpb",
+              "pattern": "cpb",
+              "quantity": 6100
+            },
+            {
+              "execute_date": "2026-02-04",
+              "code": "002227",
+              "signal_id": "002227_2026-02-03_bof",
+              "pattern": "bof",
+              "quantity": 3600
+            }
+          ]
+        }
+      },
+      {
+        "label": "YTC5_ANY_PLUS_QUALITY",
+        "introduced_selected_signals": {
+          "count": 277,
+          "sample": [
+            {
+              "signal_date": "2026-01-05",
+              "code": "300143",
+              "signal_id": "300143_2026-01-05_cpb",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300003",
+              "signal_id": "300003_2026-01-05_cpb",
+              "final_rank": 2
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300238",
+              "signal_id": "300238_2026-01-05_cpb",
+              "final_rank": 3
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300430",
+              "signal_id": "300430_2026-01-05_cpb",
+              "final_rank": 4
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "688235",
+              "signal_id": "688235_2026-01-05_cpb",
+              "final_rank": 5
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "603309",
+              "signal_id": "603309_2026-01-05_cpb",
+              "final_rank": 6
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "600587",
+              "signal_id": "600587_2026-01-05_cpb",
+              "final_rank": 7
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300404",
+              "signal_id": "300404_2026-01-05_cpb",
+              "final_rank": 8
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "002230",
+              "signal_id": "002230_2026-01-05_cpb",
+              "final_rank": 9
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "002757",
+              "signal_id": "002757_2026-01-05_tst",
+              "final_rank": 10
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300459",
+              "signal_id": "300459_2026-01-05_cpb",
+              "final_rank": 11
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "600120",
+              "signal_id": "600120_2026-01-05_cpb",
+              "final_rank": 12
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300894",
+              "signal_id": "300894_2026-01-05_tst",
+              "final_rank": 13
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "603382",
+              "signal_id": "603382_2026-01-05_cpb",
+              "final_rank": 14
+            },
+            {
+              "signal_date": "2026-01-05",
+              "code": "300409",
+              "signal_id": "300409_2026-01-05_cpb",
+              "final_rank": 15
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "600909",
+              "signal_id": "600909_2026-01-06_cpb",
+              "final_rank": 1
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "002371",
+              "signal_id": "002371_2026-01-06_pb",
+              "final_rank": 2
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "300033",
+              "signal_id": "300033_2026-01-06_cpb",
+              "final_rank": 3
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "000100",
+              "signal_id": "000100_2026-01-06_cpb",
+              "final_rank": 4
+            },
+            {
+              "signal_date": "2026-01-06",
+              "code": "300429",
+              "signal_id": "300429_2026-01-06_cpb",
+              "final_rank": 5
+            }
+          ]
+        },
+        "introduced_buy_trades": {
+          "count": 27,
+          "sample": [
+            {
+              "execute_date": "2026-01-06",
+              "code": "300003",
+              "signal_id": "300003_2026-01-05_cpb",
+              "pattern": "cpb",
+              "quantity": 2000
+            },
+            {
+              "execute_date": "2026-01-06",
+              "code": "300143",
+              "signal_id": "300143_2026-01-05_cpb",
+              "pattern": "cpb",
+              "quantity": 3500
+            },
+            {
+              "execute_date": "2026-01-06",
+              "code": "300238",
+              "signal_id": "300238_2026-01-05_cpb",
+              "pattern": "cpb",
+              "quantity": 2200
+            },
+            {
+              "execute_date": "2026-01-06",
+              "code": "300430",
+              "signal_id": "300430_2026-01-05_cpb",
+              "pattern": "cpb",
+              "quantity": 1500
+            },
+            {
+              "execute_date": "2026-01-09",
+              "code": "000983",
+              "signal_id": "000983_2026-01-08_tst",
+              "pattern": "tst",
+              "quantity": 5500
+            },
+            {
+              "execute_date": "2026-01-09",
+              "code": "600845",
+              "signal_id": "600845_2026-01-08_cpb",
+              "pattern": "cpb",
+              "quantity": 1600
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "002649",
+              "signal_id": "002649_2026-01-09_cpb",
+              "pattern": "cpb",
+              "quantity": 5600
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "300676",
+              "signal_id": "300676_2026-01-09_cpb",
+              "pattern": "cpb",
+              "quantity": 1200
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "300830",
+              "signal_id": "300830_2026-01-09_cpb",
+              "pattern": "cpb",
+              "quantity": 7400
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "301559",
+              "signal_id": "301559_2026-01-09_cpb",
+              "pattern": "cpb",
+              "quantity": 5400
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "688133",
+              "signal_id": "688133_2026-01-09_cpb",
+              "pattern": "cpb",
+              "quantity": 2800
+            },
+            {
+              "execute_date": "2026-01-12",
+              "code": "920641",
+              "signal_id": "920641_2026-01-09_tst",
+              "pattern": "tst",
+              "quantity": 2500
+            },
+            {
+              "execute_date": "2026-01-22",
+              "code": "002662",
+              "signal_id": "002662_2026-01-21_cpb",
+              "pattern": "cpb",
+              "quantity": 8700
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "002815",
+              "signal_id": "002815_2026-01-22_cpb",
+              "pattern": "cpb",
+              "quantity": 4000
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "300737",
+              "signal_id": "300737_2026-01-22_cpb",
+              "pattern": "cpb",
+              "quantity": 11500
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "600048",
+              "signal_id": "600048_2026-01-22_tst",
+              "pattern": "tst",
+              "quantity": 11000
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "600929",
+              "signal_id": "600929_2026-01-22_cpb",
+              "pattern": "cpb",
+              "quantity": 9700
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "603393",
+              "signal_id": "603393_2026-01-22_cpb",
+              "pattern": "cpb",
+              "quantity": 2900
+            },
+            {
+              "execute_date": "2026-01-23",
+              "code": "920014",
+              "signal_id": "920014_2026-01-22_cpb",
+              "pattern": "cpb",
+              "quantity": 6100
+            },
+            {
+              "execute_date": "2026-02-04",
+              "code": "002227",
+              "signal_id": "002227_2026-02-03_bof",
+              "pattern": "bof",
+              "quantity": 3600
+            }
+          ]
+        }
+      }
+    ],
+    "execution_friction": [
+      {
+        "label": "BOF",
+        "reject_rate": 0.28,
+        "skip_maxpos_count": 7.0,
+        "participation_rate": 0.5625,
+        "execution_diff_days_vs_ytc5_any": 10
+      },
+      {
+        "label": "BPB",
+        "reject_rate": 0.0,
+        "skip_maxpos_count": 0.0,
+        "participation_rate": 0.0,
+        "execution_diff_days_vs_ytc5_any": 7
+      },
+      {
+        "label": "PB",
+        "reject_rate": 0.6307692307692307,
+        "skip_maxpos_count": 35.0,
+        "participation_rate": 0.2222222222222222,
+        "execution_diff_days_vs_ytc5_any": 11
+      },
+      {
+        "label": "TST",
+        "reject_rate": 0.47368421052631576,
+        "skip_maxpos_count": 18.0,
+        "participation_rate": 0.3448275862068966,
+        "execution_diff_days_vs_ytc5_any": 10
+      },
+      {
+        "label": "CPB",
+        "reject_rate": 0.7870370370370371,
+        "skip_maxpos_count": 170.0,
+        "participation_rate": 0.11917098445595854,
+        "execution_diff_days_vs_ytc5_any": 7
+      },
+      {
+        "label": "YTC5_ANY",
+        "reject_rate": 0.8169934640522876,
+        "skip_maxpos_count": 249.0,
+        "participation_rate": 0.1,
+        "execution_diff_days_vs_ytc5_any": 0
+      },
+      {
+        "label": "YTC5_ANY_PLUS_QUALITY",
+        "reject_rate": 0.8169934640522876,
+        "skip_maxpos_count": 249.0,
+        "participation_rate": 0.1,
+        "execution_diff_days_vs_ytc5_any": 0
+      }
+    ]
+  },
+  "summary_run_id": "pas_ablation_dtt_v0_01_dtt_pattern_plus_irs_mss_score_pas_registry_matrix_w20260105_20260224_t032052"
+}

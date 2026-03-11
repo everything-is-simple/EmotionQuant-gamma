@@ -1,0 +1,1592 @@
+{
+  "summary_run_id": "rank_decomposition_dtt_v0_01_dtt_pattern_plus_irs_score_to_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t040241",
+  "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "db_path": "G:\\EmotionQuant-temp\\backtest\\rank-decomp-20260311-phase4-ytc5-mss.duckdb",
+  "artifact_root": "G:\\EmotionQuant-temp\\artifacts",
+  "start": "2026-01-05",
+  "end": "2026-02-24",
+  "patterns": [
+    "bof",
+    "bpb",
+    "pb",
+    "tst",
+    "cpb"
+  ],
+  "dtt_top_n": 50,
+  "max_positions": 10,
+  "variants": [
+    "v0_01_dtt_pattern_plus_irs_score",
+    "v0_01_dtt_pattern_plus_irs_mss_score"
+  ],
+  "runs": [
+    {
+      "variant": "v0_01_dtt_pattern_plus_irs_score",
+      "run_id": "rank_decomp_dtt_v0_01_dtt_pattern_plus_irs_score_w20260105_20260224_t035526",
+      "trade_days": 30,
+      "trade_count": 35,
+      "win_rate": 0.3142857142857143,
+      "avg_win": 0.15725113193835763,
+      "avg_loss": 0.05522618942288902,
+      "expected_value": 0.011552397290645645,
+      "profit_factor": 2.8474014517681607,
+      "max_drawdown": 0.05291067719254235,
+      "metrics": {
+        "signals_count": 280,
+        "ranked_signals_count": 280,
+        "expected_value": 0.011552397290645645,
+        "profit_factor": 2.8474014517681607,
+        "max_drawdown": 0.05291067719254235,
+        "trades_count": 70,
+        "reject_rate": 0.7763578274760383,
+        "missing_rate": 0.0,
+        "exposure_rate": 0.9333333333333333,
+        "opportunity_count": 280.0,
+        "filled_count": 35.0,
+        "skip_cash_count": 0.0,
+        "skip_maxpos_count": 238.0,
+        "participation_rate": 0.125
+      },
+      "buy_trade_count": 35,
+      "buy_reject_count": 243,
+      "buy_reject_maxpos_count": 238
+    },
+    {
+      "variant": "v0_01_dtt_pattern_plus_irs_mss_score",
+      "run_id": "rank_decomp_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t035917",
+      "trade_days": 30,
+      "trade_count": 28,
+      "win_rate": 0.21428571428571427,
+      "avg_win": 0.03484914650148749,
+      "avg_loss": 0.04699863639545236,
+      "expected_value": -0.029459825774679538,
+      "profit_factor": 0.7414927149856528,
+      "max_drawdown": 0.05342155722026755,
+      "metrics": {
+        "signals_count": 280,
+        "ranked_signals_count": 280,
+        "expected_value": -0.029459825774679538,
+        "profit_factor": 0.7414927149856528,
+        "max_drawdown": 0.05342155722026755,
+        "trades_count": 56,
+        "reject_rate": 0.8169934640522876,
+        "missing_rate": 0.0,
+        "exposure_rate": 0.9333333333333333,
+        "opportunity_count": 280.0,
+        "filled_count": 28.0,
+        "skip_cash_count": 0.0,
+        "skip_maxpos_count": 249.0,
+        "participation_rate": 0.1
+      },
+      "buy_trade_count": 28,
+      "buy_reject_count": 250,
+      "buy_reject_maxpos_count": 249
+    }
+  ],
+  "comparisons": {
+    "v0_01_dtt_pattern_plus_irs_score_vs_v0_01_dtt_pattern_plus_irs_mss_score": {
+      "rank_impact": {
+        "left_variant": "v0_01_dtt_pattern_plus_irs_score",
+        "right_variant": "v0_01_dtt_pattern_plus_irs_mss_score",
+        "shared_signal_count": 280,
+        "left_only_count": 0,
+        "right_only_count": 0,
+        "rank_changed_count": 0,
+        "score_changed_count": 0,
+        "selected_changed_count": 0,
+        "signal_date_count": 30,
+        "multi_signal_date_count": 30,
+        "max_shared_signal_count_per_day": 19,
+        "all_shared_selected_stable": true,
+        "dates_with_rank_change": [],
+        "dates_with_score_change": [],
+        "dates_with_selected_change": [],
+        "per_signal_date": [
+          {
+            "signal_date": "2026-01-05",
+            "shared_signal_count": 15,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-06",
+            "shared_signal_count": 18,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-07",
+            "shared_signal_count": 11,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-08",
+            "shared_signal_count": 7,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-09",
+            "shared_signal_count": 9,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-12",
+            "shared_signal_count": 17,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-13",
+            "shared_signal_count": 9,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-14",
+            "shared_signal_count": 3,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-15",
+            "shared_signal_count": 8,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-16",
+            "shared_signal_count": 9,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-19",
+            "shared_signal_count": 6,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-20",
+            "shared_signal_count": 15,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-21",
+            "shared_signal_count": 19,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-22",
+            "shared_signal_count": 8,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-23",
+            "shared_signal_count": 17,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-26",
+            "shared_signal_count": 11,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-27",
+            "shared_signal_count": 13,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-28",
+            "shared_signal_count": 12,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-29",
+            "shared_signal_count": 11,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-01-30",
+            "shared_signal_count": 8,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-02-02",
+            "shared_signal_count": 5,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-02-03",
+            "shared_signal_count": 6,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-02-04",
+            "shared_signal_count": 6,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-02-05",
+            "shared_signal_count": 6,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-02-06",
+            "shared_signal_count": 9,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-02-09",
+            "shared_signal_count": 4,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-02-10",
+            "shared_signal_count": 6,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-02-11",
+            "shared_signal_count": 6,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-02-13",
+            "shared_signal_count": 4,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          },
+          {
+            "signal_date": "2026-02-24",
+            "shared_signal_count": 2,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": true
+          }
+        ],
+        "conclusion": "分数、名次、入选集合都没有变化。"
+      },
+      "buy_trade_impact": {
+        "left_variant": "v0_01_dtt_pattern_plus_irs_score",
+        "right_variant": "v0_01_dtt_pattern_plus_irs_mss_score",
+        "shared_buy_trade_count": 12,
+        "left_only_count": 23,
+        "right_only_count": 16,
+        "trade_set_changed_count": 39,
+        "quantity_changed_count": 11,
+        "price_changed_count": 0,
+        "execute_date_count": 15,
+        "dates_with_trade_set_change": [
+          "2026-01-06",
+          "2026-01-09",
+          "2026-01-12",
+          "2026-01-19",
+          "2026-01-21",
+          "2026-01-22",
+          "2026-01-23",
+          "2026-01-29",
+          "2026-02-02",
+          "2026-02-03",
+          "2026-02-04",
+          "2026-02-05",
+          "2026-02-09",
+          "2026-02-10",
+          "2026-02-13"
+        ],
+        "dates_with_quantity_change": [
+          "2026-01-06",
+          "2026-01-09",
+          "2026-01-22",
+          "2026-01-23",
+          "2026-02-04"
+        ],
+        "per_execute_date": [
+          {
+            "execute_date": "2026-01-06",
+            "shared_buy_trade_count": 4,
+            "left_only_count": 6,
+            "right_only_count": 0,
+            "quantity_changed_count": 4,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-06",
+                "code": "002230",
+                "signal_id": "002230_2026-01-05_cpb",
+                "left_quantity": 800.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              },
+              {
+                "execute_date": "2026-01-06",
+                "code": "002757",
+                "signal_id": "002757_2026-01-05_tst",
+                "left_quantity": 1800.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              },
+              {
+                "execute_date": "2026-01-06",
+                "code": "300003",
+                "signal_id": "300003_2026-01-05_cpb",
+                "left_quantity": 4700.0,
+                "right_quantity": 2000.0,
+                "left_present": true,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-01-06",
+                "code": "300143",
+                "signal_id": "300143_2026-01-05_cpb",
+                "left_quantity": 8700.0,
+                "right_quantity": 3500.0,
+                "left_present": true,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-01-06",
+                "code": "300238",
+                "signal_id": "300238_2026-01-05_cpb",
+                "left_quantity": 4800.0,
+                "right_quantity": 2200.0,
+                "left_present": true,
+                "right_present": true
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-09",
+            "shared_buy_trade_count": 2,
+            "left_only_count": 1,
+            "right_only_count": 0,
+            "quantity_changed_count": 2,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-09",
+                "code": "000983",
+                "signal_id": "000983_2026-01-08_tst",
+                "left_quantity": 13800.0,
+                "right_quantity": 5500.0,
+                "left_present": true,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-01-09",
+                "code": "600150",
+                "signal_id": "600150_2026-01-08_cpb",
+                "left_quantity": 2200.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              },
+              {
+                "execute_date": "2026-01-09",
+                "code": "600845",
+                "signal_id": "600845_2026-01-08_cpb",
+                "left_quantity": 3800.0,
+                "right_quantity": 1600.0,
+                "left_present": true,
+                "right_present": true
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-12",
+            "shared_buy_trade_count": 1,
+            "left_only_count": 0,
+            "right_only_count": 5,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-12",
+                "code": "002649",
+                "signal_id": "002649_2026-01-09_cpb",
+                "left_quantity": null,
+                "right_quantity": 5600.0,
+                "left_present": false,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-01-12",
+                "code": "300676",
+                "signal_id": "300676_2026-01-09_cpb",
+                "left_quantity": null,
+                "right_quantity": 1200.0,
+                "left_present": false,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-01-12",
+                "code": "300830",
+                "signal_id": "300830_2026-01-09_cpb",
+                "left_quantity": null,
+                "right_quantity": 7400.0,
+                "left_present": false,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-01-12",
+                "code": "688133",
+                "signal_id": "688133_2026-01-09_cpb",
+                "left_quantity": null,
+                "right_quantity": 2800.0,
+                "left_present": false,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-01-12",
+                "code": "920641",
+                "signal_id": "920641_2026-01-09_tst",
+                "left_quantity": null,
+                "right_quantity": 2500.0,
+                "left_present": false,
+                "right_present": true
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-19",
+            "shared_buy_trade_count": 0,
+            "left_only_count": 1,
+            "right_only_count": 0,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-19",
+                "code": "601163",
+                "signal_id": "601163_2026-01-16_tst",
+                "left_quantity": 6400.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-21",
+            "shared_buy_trade_count": 0,
+            "left_only_count": 1,
+            "right_only_count": 0,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-21",
+                "code": "600309",
+                "signal_id": "600309_2026-01-20_pb",
+                "left_quantity": 1100.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-22",
+            "shared_buy_trade_count": 1,
+            "left_only_count": 1,
+            "right_only_count": 0,
+            "quantity_changed_count": 1,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-22",
+                "code": "002440",
+                "signal_id": "002440_2026-01-21_cpb",
+                "left_quantity": 9800.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              },
+              {
+                "execute_date": "2026-01-22",
+                "code": "002662",
+                "signal_id": "002662_2026-01-21_cpb",
+                "left_quantity": 21700.0,
+                "right_quantity": 8700.0,
+                "left_present": true,
+                "right_present": true
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-23",
+            "shared_buy_trade_count": 1,
+            "left_only_count": 0,
+            "right_only_count": 5,
+            "quantity_changed_count": 1,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-23",
+                "code": "002815",
+                "signal_id": "002815_2026-01-22_cpb",
+                "left_quantity": null,
+                "right_quantity": 4000.0,
+                "left_present": false,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-01-23",
+                "code": "300737",
+                "signal_id": "300737_2026-01-22_cpb",
+                "left_quantity": null,
+                "right_quantity": 11500.0,
+                "left_present": false,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-01-23",
+                "code": "600048",
+                "signal_id": "600048_2026-01-22_tst",
+                "left_quantity": null,
+                "right_quantity": 11000.0,
+                "left_present": false,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-01-23",
+                "code": "600929",
+                "signal_id": "600929_2026-01-22_cpb",
+                "left_quantity": null,
+                "right_quantity": 9700.0,
+                "left_present": false,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-01-23",
+                "code": "603393",
+                "signal_id": "603393_2026-01-22_cpb",
+                "left_quantity": null,
+                "right_quantity": 2900.0,
+                "left_present": false,
+                "right_present": true
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-29",
+            "shared_buy_trade_count": 0,
+            "left_only_count": 1,
+            "right_only_count": 0,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-29",
+                "code": "601600",
+                "signal_id": "601600_2026-01-28_pb",
+                "left_quantity": 6800.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-02",
+            "shared_buy_trade_count": 0,
+            "left_only_count": 1,
+            "right_only_count": 0,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-02",
+                "code": "600371",
+                "signal_id": "600371_2026-01-30_cpb",
+                "left_quantity": 9700.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-03",
+            "shared_buy_trade_count": 0,
+            "left_only_count": 3,
+            "right_only_count": 0,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-03",
+                "code": "002149",
+                "signal_id": "002149_2026-02-02_pb",
+                "left_quantity": 1800.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              },
+              {
+                "execute_date": "2026-02-03",
+                "code": "301018",
+                "signal_id": "301018_2026-02-02_pb",
+                "left_quantity": 1100.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              },
+              {
+                "execute_date": "2026-02-03",
+                "code": "600330",
+                "signal_id": "600330_2026-02-02_pb",
+                "left_quantity": 6200.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-04",
+            "shared_buy_trade_count": 3,
+            "left_only_count": 2,
+            "right_only_count": 0,
+            "quantity_changed_count": 3,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-04",
+                "code": "002227",
+                "signal_id": "002227_2026-02-03_bof",
+                "left_quantity": 8700.0,
+                "right_quantity": 3600.0,
+                "left_present": true,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-02-04",
+                "code": "002471",
+                "signal_id": "002471_2026-02-03_pb",
+                "left_quantity": 10400.0,
+                "right_quantity": 4000.0,
+                "left_present": true,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-02-04",
+                "code": "002826",
+                "signal_id": "002826_2026-02-03_cpb",
+                "left_quantity": 3100.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              },
+              {
+                "execute_date": "2026-02-04",
+                "code": "600105",
+                "signal_id": "600105_2026-02-03_pb",
+                "left_quantity": 2500.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              },
+              {
+                "execute_date": "2026-02-04",
+                "code": "600550",
+                "signal_id": "600550_2026-02-03_pb",
+                "left_quantity": 4900.0,
+                "right_quantity": 2100.0,
+                "left_present": true,
+                "right_present": true
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-05",
+            "shared_buy_trade_count": 0,
+            "left_only_count": 0,
+            "right_only_count": 6,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-05",
+                "code": "000719",
+                "signal_id": "000719_2026-02-04_pb",
+                "left_quantity": null,
+                "right_quantity": 4300.0,
+                "left_present": false,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-02-05",
+                "code": "002175",
+                "signal_id": "002175_2026-02-04_bof",
+                "left_quantity": null,
+                "right_quantity": 27500.0,
+                "left_present": false,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-02-05",
+                "code": "002547",
+                "signal_id": "002547_2026-02-04_bof",
+                "left_quantity": null,
+                "right_quantity": 21000.0,
+                "left_present": false,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-02-05",
+                "code": "300118",
+                "signal_id": "300118_2026-02-04_pb",
+                "left_quantity": null,
+                "right_quantity": 3600.0,
+                "left_present": false,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-02-05",
+                "code": "300308",
+                "signal_id": "300308_2026-02-04_bof",
+                "left_quantity": null,
+                "right_quantity": 100.0,
+                "left_present": false,
+                "right_present": true
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-09",
+            "shared_buy_trade_count": 0,
+            "left_only_count": 3,
+            "right_only_count": 0,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-09",
+                "code": "002624",
+                "signal_id": "002624_2026-02-06_pb",
+                "left_quantity": 5000.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              },
+              {
+                "execute_date": "2026-02-09",
+                "code": "003003",
+                "signal_id": "003003_2026-02-06_cpb",
+                "left_quantity": 5500.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              },
+              {
+                "execute_date": "2026-02-09",
+                "code": "300666",
+                "signal_id": "300666_2026-02-06_pb",
+                "left_quantity": 700.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-10",
+            "shared_buy_trade_count": 0,
+            "left_only_count": 1,
+            "right_only_count": 0,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-10",
+                "code": "300804",
+                "signal_id": "300804_2026-02-09_cpb",
+                "left_quantity": 2300.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-13",
+            "shared_buy_trade_count": 0,
+            "left_only_count": 2,
+            "right_only_count": 0,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-13",
+                "code": "600292",
+                "signal_id": "600292_2026-02-11_cpb",
+                "left_quantity": 6400.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              },
+              {
+                "execute_date": "2026-02-13",
+                "code": "600549",
+                "signal_id": "600549_2026-02-11_pb",
+                "left_quantity": 1400.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              }
+            ]
+          }
+        ],
+        "conclusion": "BUY 成交集合或仓位数量发生变化，左右变体差异已进入执行约束。"
+      },
+      "maxpos_reject_impact": {
+        "left_variant": "v0_01_dtt_pattern_plus_irs_score",
+        "right_variant": "v0_01_dtt_pattern_plus_irs_mss_score",
+        "shared_reject_count": 222,
+        "left_only_count": 16,
+        "right_only_count": 27,
+        "reject_set_changed_count": 43,
+        "execute_date_count": 29,
+        "dates_with_reject_change": [
+          "2026-01-06",
+          "2026-01-07",
+          "2026-01-09",
+          "2026-01-12",
+          "2026-01-19",
+          "2026-01-20",
+          "2026-01-21",
+          "2026-01-22",
+          "2026-01-23",
+          "2026-01-29",
+          "2026-02-02",
+          "2026-02-03",
+          "2026-02-04",
+          "2026-02-05",
+          "2026-02-09",
+          "2026-02-10",
+          "2026-02-13"
+        ],
+        "per_execute_date": [
+          {
+            "execute_date": "2026-01-06",
+            "shared_reject_count": 5,
+            "left_only_count": 0,
+            "right_only_count": 6,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-06",
+                "code": "002230",
+                "signal_id": "002230_2026-01-05_cpb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              },
+              {
+                "execute_date": "2026-01-06",
+                "code": "002757",
+                "signal_id": "002757_2026-01-05_tst",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              },
+              {
+                "execute_date": "2026-01-06",
+                "code": "300404",
+                "signal_id": "300404_2026-01-05_cpb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              },
+              {
+                "execute_date": "2026-01-06",
+                "code": "600587",
+                "signal_id": "600587_2026-01-05_cpb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              },
+              {
+                "execute_date": "2026-01-06",
+                "code": "603309",
+                "signal_id": "603309_2026-01-05_cpb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-07",
+            "shared_reject_count": 17,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-07",
+                "code": "600587",
+                "signal_id": "600587_2026-01-06_cpb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-08",
+            "shared_reject_count": 11,
+            "left_only_count": 0,
+            "right_only_count": 0
+          },
+          {
+            "execute_date": "2026-01-09",
+            "shared_reject_count": 3,
+            "left_only_count": 0,
+            "right_only_count": 2,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-09",
+                "code": "600150",
+                "signal_id": "600150_2026-01-08_cpb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              },
+              {
+                "execute_date": "2026-01-09",
+                "code": "688256",
+                "signal_id": "688256_2026-01-08_pb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-12",
+            "shared_reject_count": 3,
+            "left_only_count": 5,
+            "right_only_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-12",
+                "code": "002649",
+                "signal_id": "002649_2026-01-09_cpb",
+                "left_present": true,
+                "right_present": false,
+                "left_reject_reason": "MAX_POSITIONS_REACHED",
+                "right_reject_reason": NaN
+              },
+              {
+                "execute_date": "2026-01-12",
+                "code": "300676",
+                "signal_id": "300676_2026-01-09_cpb",
+                "left_present": true,
+                "right_present": false,
+                "left_reject_reason": "MAX_POSITIONS_REACHED",
+                "right_reject_reason": NaN
+              },
+              {
+                "execute_date": "2026-01-12",
+                "code": "300830",
+                "signal_id": "300830_2026-01-09_cpb",
+                "left_present": true,
+                "right_present": false,
+                "left_reject_reason": "MAX_POSITIONS_REACHED",
+                "right_reject_reason": NaN
+              },
+              {
+                "execute_date": "2026-01-12",
+                "code": "688133",
+                "signal_id": "688133_2026-01-09_cpb",
+                "left_present": true,
+                "right_present": false,
+                "left_reject_reason": "MAX_POSITIONS_REACHED",
+                "right_reject_reason": NaN
+              },
+              {
+                "execute_date": "2026-01-12",
+                "code": "920641",
+                "signal_id": "920641_2026-01-09_tst",
+                "left_present": true,
+                "right_present": false,
+                "left_reject_reason": "MAX_POSITIONS_REACHED",
+                "right_reject_reason": NaN
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-13",
+            "shared_reject_count": 17,
+            "left_only_count": 0,
+            "right_only_count": 0
+          },
+          {
+            "execute_date": "2026-01-14",
+            "shared_reject_count": 9,
+            "left_only_count": 0,
+            "right_only_count": 0
+          },
+          {
+            "execute_date": "2026-01-15",
+            "shared_reject_count": 3,
+            "left_only_count": 0,
+            "right_only_count": 0
+          },
+          {
+            "execute_date": "2026-01-16",
+            "shared_reject_count": 8,
+            "left_only_count": 0,
+            "right_only_count": 0
+          },
+          {
+            "execute_date": "2026-01-19",
+            "shared_reject_count": 8,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-19",
+                "code": "601163",
+                "signal_id": "601163_2026-01-16_tst",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-20",
+            "shared_reject_count": 5,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-20",
+                "code": "601163",
+                "signal_id": "601163_2026-01-19_cpb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-21",
+            "shared_reject_count": 13,
+            "left_only_count": 0,
+            "right_only_count": 2,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-21",
+                "code": "600309",
+                "signal_id": "600309_2026-01-20_pb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              },
+              {
+                "execute_date": "2026-01-21",
+                "code": "601163",
+                "signal_id": "601163_2026-01-20_tst",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-22",
+            "shared_reject_count": 17,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-22",
+                "code": "002440",
+                "signal_id": "002440_2026-01-21_cpb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-23",
+            "shared_reject_count": 2,
+            "left_only_count": 5,
+            "right_only_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-23",
+                "code": "002815",
+                "signal_id": "002815_2026-01-22_cpb",
+                "left_present": true,
+                "right_present": false,
+                "left_reject_reason": "MAX_POSITIONS_REACHED",
+                "right_reject_reason": NaN
+              },
+              {
+                "execute_date": "2026-01-23",
+                "code": "300737",
+                "signal_id": "300737_2026-01-22_cpb",
+                "left_present": true,
+                "right_present": false,
+                "left_reject_reason": "MAX_POSITIONS_REACHED",
+                "right_reject_reason": NaN
+              },
+              {
+                "execute_date": "2026-01-23",
+                "code": "600048",
+                "signal_id": "600048_2026-01-22_tst",
+                "left_present": true,
+                "right_present": false,
+                "left_reject_reason": "MAX_POSITIONS_REACHED",
+                "right_reject_reason": NaN
+              },
+              {
+                "execute_date": "2026-01-23",
+                "code": "600929",
+                "signal_id": "600929_2026-01-22_cpb",
+                "left_present": true,
+                "right_present": false,
+                "left_reject_reason": "MAX_POSITIONS_REACHED",
+                "right_reject_reason": NaN
+              },
+              {
+                "execute_date": "2026-01-23",
+                "code": "603393",
+                "signal_id": "603393_2026-01-22_cpb",
+                "left_present": true,
+                "right_present": false,
+                "left_reject_reason": "MAX_POSITIONS_REACHED",
+                "right_reject_reason": NaN
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-26",
+            "shared_reject_count": 17,
+            "left_only_count": 0,
+            "right_only_count": 0
+          },
+          {
+            "execute_date": "2026-01-27",
+            "shared_reject_count": 11,
+            "left_only_count": 0,
+            "right_only_count": 0
+          },
+          {
+            "execute_date": "2026-01-28",
+            "shared_reject_count": 13,
+            "left_only_count": 0,
+            "right_only_count": 0
+          },
+          {
+            "execute_date": "2026-01-29",
+            "shared_reject_count": 11,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-29",
+                "code": "601600",
+                "signal_id": "601600_2026-01-28_pb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-30",
+            "shared_reject_count": 11,
+            "left_only_count": 0,
+            "right_only_count": 0
+          },
+          {
+            "execute_date": "2026-02-02",
+            "shared_reject_count": 7,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-02",
+                "code": "600371",
+                "signal_id": "600371_2026-01-30_cpb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-03",
+            "shared_reject_count": 2,
+            "left_only_count": 0,
+            "right_only_count": 3,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-03",
+                "code": "002149",
+                "signal_id": "002149_2026-02-02_pb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              },
+              {
+                "execute_date": "2026-02-03",
+                "code": "301018",
+                "signal_id": "301018_2026-02-02_pb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              },
+              {
+                "execute_date": "2026-02-03",
+                "code": "600330",
+                "signal_id": "600330_2026-02-02_pb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-04",
+            "shared_reject_count": 1,
+            "left_only_count": 0,
+            "right_only_count": 2,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-04",
+                "code": "002826",
+                "signal_id": "002826_2026-02-03_cpb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              },
+              {
+                "execute_date": "2026-02-04",
+                "code": "600105",
+                "signal_id": "600105_2026-02-03_pb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-05",
+            "shared_reject_count": 0,
+            "left_only_count": 6,
+            "right_only_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-05",
+                "code": "000719",
+                "signal_id": "000719_2026-02-04_pb",
+                "left_present": true,
+                "right_present": false,
+                "left_reject_reason": "MAX_POSITIONS_REACHED",
+                "right_reject_reason": NaN
+              },
+              {
+                "execute_date": "2026-02-05",
+                "code": "002175",
+                "signal_id": "002175_2026-02-04_bof",
+                "left_present": true,
+                "right_present": false,
+                "left_reject_reason": "MAX_POSITIONS_REACHED",
+                "right_reject_reason": NaN
+              },
+              {
+                "execute_date": "2026-02-05",
+                "code": "002547",
+                "signal_id": "002547_2026-02-04_bof",
+                "left_present": true,
+                "right_present": false,
+                "left_reject_reason": "MAX_POSITIONS_REACHED",
+                "right_reject_reason": NaN
+              },
+              {
+                "execute_date": "2026-02-05",
+                "code": "300118",
+                "signal_id": "300118_2026-02-04_pb",
+                "left_present": true,
+                "right_present": false,
+                "left_reject_reason": "MAX_POSITIONS_REACHED",
+                "right_reject_reason": NaN
+              },
+              {
+                "execute_date": "2026-02-05",
+                "code": "300308",
+                "signal_id": "300308_2026-02-04_bof",
+                "left_present": true,
+                "right_present": false,
+                "left_reject_reason": "MAX_POSITIONS_REACHED",
+                "right_reject_reason": NaN
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-06",
+            "shared_reject_count": 6,
+            "left_only_count": 0,
+            "right_only_count": 0
+          },
+          {
+            "execute_date": "2026-02-09",
+            "shared_reject_count": 5,
+            "left_only_count": 0,
+            "right_only_count": 3,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-09",
+                "code": "002624",
+                "signal_id": "002624_2026-02-06_pb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              },
+              {
+                "execute_date": "2026-02-09",
+                "code": "003003",
+                "signal_id": "003003_2026-02-06_cpb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              },
+              {
+                "execute_date": "2026-02-09",
+                "code": "300666",
+                "signal_id": "300666_2026-02-06_pb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-10",
+            "shared_reject_count": 3,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-10",
+                "code": "300804",
+                "signal_id": "300804_2026-02-09_cpb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-11",
+            "shared_reject_count": 6,
+            "left_only_count": 0,
+            "right_only_count": 0
+          },
+          {
+            "execute_date": "2026-02-13",
+            "shared_reject_count": 4,
+            "left_only_count": 0,
+            "right_only_count": 2,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-13",
+                "code": "600292",
+                "signal_id": "600292_2026-02-11_cpb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              },
+              {
+                "execute_date": "2026-02-13",
+                "code": "600549",
+                "signal_id": "600549_2026-02-11_pb",
+                "left_present": false,
+                "right_present": true,
+                "left_reject_reason": NaN,
+                "right_reject_reason": "MAX_POSITIONS_REACHED"
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-24",
+            "shared_reject_count": 4,
+            "left_only_count": 0,
+            "right_only_count": 0
+          }
+        ],
+        "conclusion": "MAX_POSITIONS 拒单集合发生变化，左右变体差异已进入 Broker 风控边界。"
+      }
+    }
+  }
+}

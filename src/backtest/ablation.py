@@ -195,6 +195,10 @@ def _normalize_environment_breakdown(
 def prepare_working_db(source_db: str | Path, working_db: str | Path) -> Path:
     source = Path(source_db).expanduser().resolve()
     target = Path(working_db).expanduser().resolve()
+    # 当前主线强制采用“正式执行库 + TEMP working copy”模式：
+    # - source 应该是 DATA_PATH 下的长期库
+    # - target 应该是 TEMP_PATH/backtest 下的短生命周期副本
+    # 这样能保持正式库稳定，也避免把实验副本误写到仓库目录。
     target.parent.mkdir(parents=True, exist_ok=True)
     if target.exists():
         target.unlink()

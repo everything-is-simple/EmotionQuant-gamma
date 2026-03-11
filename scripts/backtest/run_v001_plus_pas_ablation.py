@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+# Phase 4 / PAS Gate 归因脚本：
+# 1. 当前正式主线默认仍是 BOF-only；这个脚本只做专项归因，不负责偷偷切默认配置。
+# 2. 正式执行库固定走 DATA_PATH/emotionquant.duckdb，working copy 固定走 TEMP_PATH/backtest，
+#    evidence 固定回写 docs/spec/，避免仓库根目录和正式数据目录互相污染。
+# 3. 这个脚本不直接补数据；若源库窗口缺口需要补数，必须先按 blueprint 口径走
+#    RAW_DB_PATH/本地旧库优先，再按 TUSHARE_PRIMARY_* -> TUSHARE_FALLBACK_* 兜底。
+
 import argparse
 import sys
 from datetime import date

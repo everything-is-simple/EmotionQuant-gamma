@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+# Phase 4 / windowed sensitivity:
+# - 默认 variant 使用当前 pattern_* 命名，不再沿用旧 bof_* 别名。
+# - 每个子窗口都拆到独立 working db，副本和缓存固定放 TEMP_PATH，避免长窗口把正式库和仓库目录打脏。
+# - 该脚本只重放既有数据，不直接补数；若窗口缺口存在，必须先按旧库优先、双 TuShare 通道兜底补齐。
+
 import argparse
 import json
 import os
@@ -16,8 +21,8 @@ if str(REPO_ROOT) not in sys.path:
 from src.run_metadata import build_artifact_name, build_run_id
 
 DEFAULT_VARIANTS = [
-    "v0_01_dtt_bof_only",
-    "v0_01_dtt_bof_plus_irs_score",
+    "v0_01_dtt_pattern_only",
+    "v0_01_dtt_pattern_plus_irs_score",
 ]
 DEFAULT_WINDOWS = [
     ("mid_window", "2025-12-22", "2026-02-24"),

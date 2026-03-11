@@ -1,0 +1,283 @@
+{
+  "summary_run_id": "mss_regime_sensitivity_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t040306",
+  "run_id": "mss_regime_sensitivity_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t040306",
+  "db_path": "G:\\EmotionQuant-temp\\backtest\\mss-regime-sensitivity-20260311-ytc5.duckdb",
+  "start": "2026-01-05",
+  "end": "2026-02-24",
+  "patterns": [
+    "bof",
+    "bpb",
+    "pb",
+    "tst",
+    "cpb"
+  ],
+  "overall_metrics": {
+    "trade_days": 30,
+    "trade_count": 28,
+    "win_rate": 0.21428571428571427,
+    "avg_win": 0.03484914650148749,
+    "avg_loss": 0.04699863639545236,
+    "expected_value": -0.029459825774679538,
+    "profit_factor": 0.7414927149856528,
+    "max_drawdown": 0.05342155722026755,
+    "reject_rate": 0.8169934640522876,
+    "missing_rate": 0.0,
+    "exposure_rate": 0.9333333333333333,
+    "opportunity_count": 280.0,
+    "filled_count": 28.0,
+    "skip_cash_count": 0.0,
+    "skip_maxpos_count": 249.0,
+    "participation_rate": 0.1
+  },
+  "trace_counts": {
+    "overlay_trace_rows": 280,
+    "buy_entry_rows": 28,
+    "paired_trade_rows": 28
+  },
+  "regime_trace_summary": [
+    {
+      "risk_regime": "RISK_NEUTRAL",
+      "signal_count": 34,
+      "accepted_count": 0,
+      "rejected_count": 34,
+      "avg_market_score": 63.49145719156621,
+      "avg_effective_max_positions": 7.0,
+      "avg_effective_risk_per_trade_pct": 0.0056,
+      "avg_effective_max_position_pct": 0.06999999999999998,
+      "overlay_reasons": [
+        "NORMAL",
+        "TREND_COLD_START"
+      ]
+    },
+    {
+      "risk_regime": "RISK_OFF",
+      "signal_count": 223,
+      "accepted_count": 11,
+      "rejected_count": 212,
+      "avg_market_score": 51.98269379805224,
+      "avg_effective_max_positions": 4.0,
+      "avg_effective_risk_per_trade_pct": 0.0032,
+      "avg_effective_max_position_pct": 0.04000000000000002,
+      "overlay_reasons": [
+        "NORMAL",
+        "TREND_COLD_START"
+      ]
+    },
+    {
+      "risk_regime": "RISK_ON",
+      "signal_count": 23,
+      "accepted_count": 18,
+      "rejected_count": 5,
+      "avg_market_score": 57.22670598896685,
+      "avg_effective_max_positions": 10.0,
+      "avg_effective_risk_per_trade_pct": 0.008000000000000002,
+      "avg_effective_max_position_pct": 0.10000000000000003,
+      "overlay_reasons": [
+        "NORMAL",
+        "TREND_COLD_START"
+      ]
+    }
+  ],
+  "regime_trade_summary": [
+    {
+      "risk_regime": "RISK_OFF",
+      "trade_count": 10,
+      "win_rate": 0.3,
+      "avg_win": 0.037469321028263336,
+      "avg_loss": 0.044849251339079445,
+      "expected_value": -0.020153679628876608,
+      "profit_factor": 0.8354503120905923,
+      "max_drawdown": 19.124061341401816,
+      "avg_pnl": -742.7570440000002,
+      "avg_pnl_pct": -0.02015367962887661
+    },
+    {
+      "risk_regime": "RISK_ON",
+      "trade_count": 18,
+      "win_rate": 0.16666666666666666,
+      "avg_win": 0.03222897197471164,
+      "avg_loss": 0.04800168275509306,
+      "expected_value": -0.03462990696679228,
+      "profit_factor": 0.6714133781339591,
+      "max_drawdown": -0.0,
+      "avg_pnl": -2557.8658177777766,
+      "avg_pnl_pct": -0.03462990696679227
+    }
+  ],
+  "overlay_reason_summary": [
+    {
+      "overlay_reason": "NORMAL",
+      "signal_count": 194,
+      "accepted_count": 17,
+      "rejected_count": 177
+    },
+    {
+      "overlay_reason": "TREND_COLD_START",
+      "signal_count": 86,
+      "accepted_count": 12,
+      "rejected_count": 74
+    }
+  ],
+  "decision_bucket_summary": [
+    {
+      "decision_bucket": "ACCEPTED",
+      "signal_count": 29,
+      "accepted_count": 29,
+      "rejected_count": 0
+    },
+    {
+      "decision_bucket": "ALREADY_HOLDING",
+      "signal_count": 1,
+      "accepted_count": 0,
+      "rejected_count": 1
+    },
+    {
+      "decision_bucket": "BROKER_CAPACITY_REJECT",
+      "signal_count": 250,
+      "accepted_count": 0,
+      "rejected_count": 250
+    }
+  ],
+  "sample_dates_with_regimes": [
+    {
+      "signal_date": "2026-01-05",
+      "signal_id": "002230_2026-01-05_cpb",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "REJECTED"
+    },
+    {
+      "signal_date": "2026-01-05",
+      "signal_id": "002757_2026-01-05_tst",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "REJECTED"
+    },
+    {
+      "signal_date": "2026-01-05",
+      "signal_id": "300003_2026-01-05_cpb",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-01-05",
+      "signal_id": "300143_2026-01-05_cpb",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-01-05",
+      "signal_id": "300238_2026-01-05_cpb",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-01-05",
+      "signal_id": "300404_2026-01-05_cpb",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "REJECTED"
+    },
+    {
+      "signal_date": "2026-01-05",
+      "signal_id": "300409_2026-01-05_cpb",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "REJECTED"
+    },
+    {
+      "signal_date": "2026-01-05",
+      "signal_id": "300430_2026-01-05_cpb",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "ACCEPTED"
+    },
+    {
+      "signal_date": "2026-01-05",
+      "signal_id": "300459_2026-01-05_cpb",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "REJECTED"
+    },
+    {
+      "signal_date": "2026-01-05",
+      "signal_id": "300894_2026-01-05_tst",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "REJECTED"
+    },
+    {
+      "signal_date": "2026-01-05",
+      "signal_id": "600120_2026-01-05_cpb",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "REJECTED"
+    },
+    {
+      "signal_date": "2026-01-05",
+      "signal_id": "600587_2026-01-05_cpb",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "REJECTED"
+    },
+    {
+      "signal_date": "2026-01-05",
+      "signal_id": "603309_2026-01-05_cpb",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "REJECTED"
+    },
+    {
+      "signal_date": "2026-01-05",
+      "signal_id": "603382_2026-01-05_cpb",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "REJECTED"
+    },
+    {
+      "signal_date": "2026-01-05",
+      "signal_id": "688235_2026-01-05_cpb",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "REJECTED"
+    },
+    {
+      "signal_date": "2026-01-06",
+      "signal_id": "000100_2026-01-06_cpb",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "REJECTED"
+    },
+    {
+      "signal_date": "2026-01-06",
+      "signal_id": "000650_2026-01-06_tst",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "REJECTED"
+    },
+    {
+      "signal_date": "2026-01-06",
+      "signal_id": "000725_2026-01-06_cpb",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "REJECTED"
+    },
+    {
+      "signal_date": "2026-01-06",
+      "signal_id": "000768_2026-01-06_cpb",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "REJECTED"
+    },
+    {
+      "signal_date": "2026-01-06",
+      "signal_id": "002371_2026-01-06_pb",
+      "risk_regime": "RISK_OFF",
+      "overlay_reason": "TREND_COLD_START",
+      "decision_status": "REJECTED"
+    }
+  ]
+}

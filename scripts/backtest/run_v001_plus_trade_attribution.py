@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+# Phase 4 / trade attribution:
+# 1. 默认 variant 必须跟当前 pattern_* 主链一致，避免旧 bof_* 别名把 Gate 结论带偏。
+# 2. 脚本只消费已经准备好的执行库；若窗口缺数据，补数顺序固定为本地旧库优先，
+#    再按 TUSHARE_PRIMARY_* 和 TUSHARE_FALLBACK_* 执行兜底。
+# 3. working db / artefact cache 只落 TEMP_PATH，最终 evidence 才允许写入 docs/spec/。
+
 import argparse
 import json
 import math
@@ -23,8 +29,8 @@ from src.report.reporter import _pair_trades
 from src.run_metadata import build_artifact_name, build_run_id, finish_run, start_run
 
 DEFAULT_VARIANTS = [
-    "v0_01_dtt_bof_only",
-    "v0_01_dtt_bof_plus_irs_score",
+    "v0_01_dtt_pattern_only",
+    "v0_01_dtt_pattern_plus_irs_score",
 ]
 DEFAULT_EXECUTE_DATES = [
     "2026-01-20",
@@ -405,9 +411,9 @@ def _build_date_payload(
         right_only[f"entry_pnl_{right_variant}"].fillna(0.0).sum() + quantity_changed[f"entry_pnl_{right_variant}"].fillna(0.0).sum()
     )
     if right_changed_total > left_changed_total + EPSILON:
-        pnl_direction = "IRS 更好"
+        pnl_direction = f"{right_variant} 更好"
     elif right_changed_total + EPSILON < left_changed_total:
-        pnl_direction = "IRS 更差"
+        pnl_direction = f"{right_variant} 更差"
     else:
         pnl_direction = "持平"
 
@@ -453,6 +459,8 @@ def main() -> int:
     working_root.mkdir(parents=True, exist_ok=True)
     artifact_root = (cfg.resolved_temp_path / "artifacts").resolve()
     artifact_root.mkdir(parents=True, exist_ok=True)
+    # 这里显式把 working db 和 artifact cache 锁在 TEMP_PATH：
+    # repo 根目录只留可提交证据，正式执行库仍留在 DATA_PATH。
 
     summary_run_id = build_run_id(
         scope="trade_attribution",

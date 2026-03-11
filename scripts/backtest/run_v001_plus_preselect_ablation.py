@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+# Preselect ablation:
+# - 这里固定只扫当前 pattern_* DTT 主线，不再沿用旧 bof_* variant 命名。
+# - 源库读 DATA_PATH，工作副本写 TEMP_PATH；若源库窗口缺数据，补数顺序仍遵守旧库优先和双 TuShare 兜底。
+
 import argparse
 import json
 import shutil
@@ -76,7 +80,7 @@ def _prepare_working_db(source_db: Path, target_db: Path) -> Path:
 def _build_scenarios(candidate_top_ns: list[int], modes: list[str]) -> list[PreselectScenario]:
     # 这里固定扫两条 DTT 主线：纯 BOF 与 BOF+IRS，专门看初选是否改变后续交易结果。
     scenarios: list[PreselectScenario] = []
-    variants = ["v0_01_dtt_bof_only", "v0_01_dtt_bof_plus_irs_score"]
+    variants = ["v0_01_dtt_pattern_only", "v0_01_dtt_pattern_plus_irs_score"]
     for variant in variants:
         for top_n in candidate_top_ns:
             for mode in modes:
