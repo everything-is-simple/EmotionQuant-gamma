@@ -21,8 +21,8 @@ if str(REPO_ROOT) not in sys.path:
 from src.run_metadata import build_artifact_name, build_run_id
 
 DEFAULT_VARIANTS = [
-    "v0_01_dtt_pattern_only",
     "v0_01_dtt_pattern_plus_irs_score",
+    "v0_01_dtt_pattern_plus_irs_mss_score",
 ]
 DEFAULT_WINDOWS = [
     ("mid_window", "2025-12-22", "2026-02-24"),

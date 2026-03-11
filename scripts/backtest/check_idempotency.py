@@ -1,5 +1,12 @@
 from __future__ import annotations
 
+# Phase 4 / idempotency:
+# 1. 幂等验证只验证“当前要裁决的运行口径”，默认固定到 dtt + plus_irs_mss_score，
+#    避免继续沿用 .env 里的旧默认值把 Gate 比较对象跑偏。
+# 2. 正式执行库只从 DATA_PATH 读取；working copy / runtime cleanup 只允许落 TEMP_PATH。
+# 3. 该脚本不负责补数；若窗口缺口存在，先看 RAW_DB_PATH / 本地旧库，再走
+#    TUSHARE_PRIMARY_*，最后才允许 TUSHARE_FALLBACK_* 兜底。
+
 import argparse
 import json
 import sys
@@ -14,6 +21,7 @@ if str(REPO_ROOT) not in sys.path:
 from src.backtest.ablation import prepare_working_db
 from src.backtest.engine import run_backtest
 from src.config import get_settings
+from src.data.builder import build_layers
 from src.data.store import Store
 from src.run_metadata import build_artifact_name, finish_run, start_run
 
@@ -77,7 +85,15 @@ def _snapshot(store: Store, start: date, end: date) -> dict:
 
 
 def _clear_runtime_tables(store: Store) -> None:
-    for t in ["l4_pattern_stats", "l4_daily_report", "l4_trades", "l4_orders", "l3_signals", "l3_signal_rank_exp"]:
+    for t in [
+        "l4_pattern_stats",
+        "l4_daily_report",
+        "l4_trades",
+        "l4_orders",
+        "l4_stock_trust",
+        "l3_signals",
+        "l3_signal_rank_exp",
+    ]:
         store.conn.execute(f"DELETE FROM {t}")
 
 
@@ -86,6 +102,17 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--start", required=True)
     p.add_argument("--end", required=True)
     p.add_argument("--patterns", default="bof")
+    p.add_argument(
+        "--pipeline-mode",
+        default="dtt",
+        choices=("legacy", "dtt"),
+        help="Pipeline mode under verification; Phase 4 Gate defaults to current DTT mainline path",
+    )
+    p.add_argument(
+        "--dtt-variant",
+        default="v0_01_dtt_pattern_plus_irs_mss_score",
+        help="DTT variant under verification; ignored when --pipeline-mode=legacy",
+    )
     p.add_argument("--cash", type=float, default=1_000_000)
     p.add_argument("--min-amount", type=float, default=None)
     p.add_argument("--db-path", default=None, help="Source DuckDB path override")
@@ -93,6 +120,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--working-db-path",
         default=None,
         help="Optional working copy DuckDB path; default uses TEMP_PATH/backtest",
+    )
+    p.add_argument(
+        "--skip-rebuild-l3",
+        action="store_true",
+        help="Reuse existing l3_mss_daily/l3_irs_daily in working DB instead of rebuilding them for the target window",
     )
     p.add_argument("--output", default=None)
     return p
@@ -104,6 +136,10 @@ def main() -> int:
     end = _parse_date(args.end)
 
     cfg = get_settings().model_copy(deep=True)
+    cfg.pipeline_mode = args.pipeline_mode.strip().lower()
+    cfg.enable_dtt_mode = cfg.pipeline_mode != "legacy"
+    if cfg.use_dtt_pipeline:
+        cfg.dtt_variant = args.dtt_variant.strip().lower()
     if args.min_amount is not None:
         cfg.min_amount = args.min_amount
 
@@ -116,6 +152,13 @@ def main() -> int:
     )
     # 幂等验证只在工作副本上清 runtime tables，避免污染正式执行库。
     db_file = prepare_working_db(source_db, working_db_path)
+    if not args.skip_rebuild_l3:
+        build_store = Store(db_file)
+        try:
+            # 和 Matrix Replay 对齐：默认先重建当前窗口的 L3，再验证两次运行是否稳定。
+            build_layers(build_store, cfg, layers=["l3"], start=start, end=end, force=True)
+        finally:
+            build_store.close()
 
     store = Store(db_file)
     _clear_runtime_tables(store)
@@ -210,6 +253,9 @@ def main() -> int:
         "start": args.start,
         "end": args.end,
         "patterns": patterns,
+        "pipeline_mode": cfg.pipeline_mode_normalized,
+        "dtt_variant": cfg.dtt_variant_normalized if cfg.use_dtt_pipeline else "legacy_bof_baseline",
+        "rebuild_l3": not args.skip_rebuild_l3,
         "cash": args.cash,
         "min_amount": args.min_amount,
         "source_db_path": str(source_db),
