@@ -1,0 +1,131 @@
+{
+  "start": "2026-01-05",
+  "end": "2026-02-24",
+  "patterns": [
+    "bof"
+  ],
+  "pipeline_mode": "dtt",
+  "dtt_variant": "v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay",
+  "rebuild_l3": true,
+  "cash": 1000000,
+  "min_amount": null,
+  "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "db_path": "G:\\EmotionQuant-temp\\backtest\\idempotency-20260311-phase4-sizeonly-candidate.duckdb",
+  "first": {
+    "start": "2026-01-05",
+    "end": "2026-02-24",
+    "trade_days": 30,
+    "win_rate": 0.625,
+    "avg_win": 0.027206377213108528,
+    "avg_loss": 0.05476132461121395,
+    "expected_value": -0.0035315109710124006,
+    "profit_factor": 0.49681736894175205,
+    "max_drawdown": 0.009240971261879033,
+    "trade_count": 16,
+    "reject_rate": 0.0,
+    "missing_rate": 0.0,
+    "exposure_rate": 0.7666666666666667,
+    "opportunity_count": 16.0,
+    "filled_count": 16.0,
+    "skip_cash_count": 0.0,
+    "skip_maxpos_count": 0.0,
+    "participation_rate": 1.0,
+    "environment_breakdown": {
+      "BULLISH": {
+        "trade_count": 1.0,
+        "win_rate": 1.0,
+        "avg_win": 0.013239362508435885,
+        "avg_loss": 0.0,
+        "profit_factor": Infinity,
+        "expected_value": 0.013239362508435885,
+        "median_pnl_pct": 0.013239362508435885
+      },
+      "NEUTRAL": {
+        "trade_count": 15.0,
+        "win_rate": 0.6,
+        "avg_win": 0.028758267735849934,
+        "avg_loss": 0.05476132461121395,
+        "profit_factor": 0.5251565395837934,
+        "expected_value": -0.004649569202975622,
+        "median_pnl_pct": 0.00439987378385477
+      }
+    }
+  },
+  "second": {
+    "start": "2026-01-05",
+    "end": "2026-02-24",
+    "trade_days": 30,
+    "win_rate": 0.625,
+    "avg_win": 0.027206377213108528,
+    "avg_loss": 0.05476132461121395,
+    "expected_value": -0.0035315109710124006,
+    "profit_factor": 0.49681736894175205,
+    "max_drawdown": 0.009240971261879033,
+    "trade_count": 16,
+    "reject_rate": 0.0,
+    "missing_rate": 0.0,
+    "exposure_rate": 0.7666666666666667,
+    "opportunity_count": 16.0,
+    "filled_count": 16.0,
+    "skip_cash_count": 0.0,
+    "skip_maxpos_count": 0.0,
+    "participation_rate": 1.0,
+    "environment_breakdown": {
+      "BULLISH": {
+        "trade_count": 1.0,
+        "win_rate": 1.0,
+        "avg_win": 0.013239362508435885,
+        "avg_loss": 0.0,
+        "profit_factor": Infinity,
+        "expected_value": 0.013239362508435885,
+        "median_pnl_pct": 0.013239362508435885
+      },
+      "NEUTRAL": {
+        "trade_count": 15.0,
+        "win_rate": 0.6,
+        "avg_win": 0.028758267735849934,
+        "avg_loss": 0.05476132461121395,
+        "profit_factor": 0.5251565395837934,
+        "expected_value": -0.004649569202975622,
+        "median_pnl_pct": 0.00439987378385477
+      }
+    }
+  },
+  "order_id_set_equal": true,
+  "trade_id_set_equal": true,
+  "metrics_equal": true,
+  "first_metrics": {
+    "expected_value": -0.0035315109710124006,
+    "profit_factor": 0.49681736894175205,
+    "max_drawdown": 0.009240971261879033,
+    "trades_count": 32,
+    "reject_rate": 0.0,
+    "missing_rate": 0.0,
+    "exposure_rate": 0.7666666666666667,
+    "failure_reason_breakdown": "{}",
+    "opportunity_count": 16,
+    "filled_count": 16,
+    "skip_cash_count": 0,
+    "skip_maxpos_count": 0,
+    "participation_rate": 1.0
+  },
+  "second_metrics": {
+    "expected_value": -0.0035315109710124006,
+    "profit_factor": 0.49681736894175205,
+    "max_drawdown": 0.009240971261879033,
+    "trades_count": 32,
+    "reject_rate": 0.0,
+    "missing_rate": 0.0,
+    "exposure_rate": 0.7666666666666667,
+    "failure_reason_breakdown": "{}",
+    "opportunity_count": 16,
+    "filled_count": 16,
+    "skip_cash_count": 0,
+    "skip_maxpos_count": 0,
+    "participation_rate": 1.0
+  },
+  "order_count_1": 32,
+  "order_count_2": 32,
+  "trade_count_1": 32,
+  "trade_count_2": 32
+}

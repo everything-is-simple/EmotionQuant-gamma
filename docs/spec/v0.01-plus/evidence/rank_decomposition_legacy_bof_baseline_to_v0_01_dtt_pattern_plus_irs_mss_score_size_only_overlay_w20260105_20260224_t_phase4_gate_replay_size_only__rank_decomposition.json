@@ -1,0 +1,715 @@
+{
+  "summary_run_id": "rank_decomposition_dtt_legacy_bof_baseline_to_v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay_w20260105_20260224_t125443",
+  "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "db_path": "G:\\EmotionQuant-temp\\backtest\\rank-decomp-phase4-sizeonly-20260311.duckdb",
+  "artifact_root": "G:\\EmotionQuant-temp\\artifacts",
+  "start": "2026-01-05",
+  "end": "2026-02-24",
+  "patterns": [
+    "bof"
+  ],
+  "dtt_top_n": 50,
+  "max_positions": 10,
+  "variants": [
+    "legacy_bof_baseline",
+    "v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay"
+  ],
+  "runs": [
+    {
+      "variant": "legacy_bof_baseline",
+      "run_id": "rank_decomp_legacy_legacy_bof_baseline_w20260105_20260224_t125137",
+      "trade_days": 30,
+      "trade_count": 5,
+      "win_rate": 0.4,
+      "avg_win": 0.08181967687470239,
+      "avg_loss": 0.03664566461360636,
+      "expected_value": 0.01074047198171714,
+      "profit_factor": 2.2327246002334236,
+      "max_drawdown": 0.003867375207861774,
+      "metrics": {
+        "signals_count": 5,
+        "ranked_signals_count": 0,
+        "expected_value": 0.01074047198171714,
+        "profit_factor": 2.2327246002334236,
+        "max_drawdown": 0.003867375207861774,
+        "trades_count": 10,
+        "reject_rate": 0.0,
+        "missing_rate": 0.0,
+        "exposure_rate": 0.7666666666666667,
+        "opportunity_count": 5.0,
+        "filled_count": 5.0,
+        "skip_cash_count": 0.0,
+        "skip_maxpos_count": 0.0,
+        "participation_rate": 1.0
+      },
+      "buy_trade_count": 5,
+      "buy_reject_count": 0,
+      "buy_reject_maxpos_count": 0
+    },
+    {
+      "variant": "v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay",
+      "run_id": "rank_decomp_dtt_v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay_w20260105_20260224_t125245",
+      "trade_days": 30,
+      "trade_count": 16,
+      "win_rate": 0.625,
+      "avg_win": 0.027206377213108528,
+      "avg_loss": 0.05476132461121395,
+      "expected_value": -0.0035315109710124006,
+      "profit_factor": 0.49681736894175205,
+      "max_drawdown": 0.009240971261879033,
+      "metrics": {
+        "signals_count": 16,
+        "ranked_signals_count": 16,
+        "expected_value": -0.0035315109710124006,
+        "profit_factor": 0.49681736894175205,
+        "max_drawdown": 0.009240971261879033,
+        "trades_count": 32,
+        "reject_rate": 0.0,
+        "missing_rate": 0.0,
+        "exposure_rate": 0.7666666666666667,
+        "opportunity_count": 16.0,
+        "filled_count": 16.0,
+        "skip_cash_count": 0.0,
+        "skip_maxpos_count": 0.0,
+        "participation_rate": 1.0
+      },
+      "buy_trade_count": 16,
+      "buy_reject_count": 0,
+      "buy_reject_maxpos_count": 0
+    }
+  ],
+  "comparisons": {
+    "legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay": {
+      "rank_impact": {
+        "left_variant": "legacy_bof_baseline",
+        "right_variant": "v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay",
+        "shared_signal_count": 0,
+        "left_only_count": 0,
+        "right_only_count": 16,
+        "rank_changed_count": 0,
+        "score_changed_count": 0,
+        "selected_changed_count": 0,
+        "signal_date_count": 10,
+        "multi_signal_date_count": 0,
+        "max_shared_signal_count_per_day": 0,
+        "all_shared_selected_stable": false,
+        "dates_with_rank_change": [],
+        "dates_with_score_change": [],
+        "dates_with_selected_change": [],
+        "per_signal_date": [
+          {
+            "signal_date": "2026-01-12",
+            "shared_signal_count": 0,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": false,
+            "sample_changes": [
+              {
+                "signal_date": "2026-01-12",
+                "code": "300502",
+                "signal_id": "300502_2026-01-12_bof",
+                "left_rank": null,
+                "right_rank": 1,
+                "left_score": null,
+                "right_score": 40.61966628911893,
+                "left_selected": null,
+                "right_selected": true
+              }
+            ]
+          },
+          {
+            "signal_date": "2026-01-19",
+            "shared_signal_count": 0,
+            "left_only_count": 0,
+            "right_only_count": 2,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": false,
+            "sample_changes": [
+              {
+                "signal_date": "2026-01-19",
+                "code": "600010",
+                "signal_id": "600010_2026-01-19_bof",
+                "left_rank": null,
+                "right_rank": 1,
+                "left_score": null,
+                "right_score": 74.0625,
+                "left_selected": null,
+                "right_selected": true
+              },
+              {
+                "signal_date": "2026-01-19",
+                "code": "600340",
+                "signal_id": "600340_2026-01-19_bof",
+                "left_rank": null,
+                "right_rank": 2,
+                "left_score": null,
+                "right_score": 73.515625,
+                "left_selected": null,
+                "right_selected": true
+              }
+            ]
+          },
+          {
+            "signal_date": "2026-01-28",
+            "shared_signal_count": 0,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": false,
+            "sample_changes": [
+              {
+                "signal_date": "2026-01-28",
+                "code": "002594",
+                "signal_id": "002594_2026-01-28_bof",
+                "left_rank": null,
+                "right_rank": 1,
+                "left_score": null,
+                "right_score": 73.65570955229383,
+                "left_selected": null,
+                "right_selected": true
+              }
+            ]
+          },
+          {
+            "signal_date": "2026-01-29",
+            "shared_signal_count": 0,
+            "left_only_count": 0,
+            "right_only_count": 3,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": false,
+            "sample_changes": [
+              {
+                "signal_date": "2026-01-29",
+                "code": "300755",
+                "signal_id": "300755_2026-01-29_bof",
+                "left_rank": null,
+                "right_rank": 3,
+                "left_score": null,
+                "right_score": 55.97810734463277,
+                "left_selected": null,
+                "right_selected": true
+              },
+              {
+                "signal_date": "2026-01-29",
+                "code": "600436",
+                "signal_id": "600436_2026-01-29_bof",
+                "left_rank": null,
+                "right_rank": 1,
+                "left_score": null,
+                "right_score": 73.13882063882066,
+                "left_selected": null,
+                "right_selected": true
+              },
+              {
+                "signal_date": "2026-01-29",
+                "code": "601668",
+                "signal_id": "601668_2026-01-29_bof",
+                "left_rank": null,
+                "right_rank": 2,
+                "left_score": null,
+                "right_score": 70.23437500000004,
+                "left_selected": null,
+                "right_selected": true
+              }
+            ]
+          },
+          {
+            "signal_date": "2026-01-30",
+            "shared_signal_count": 0,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": false,
+            "sample_changes": [
+              {
+                "signal_date": "2026-01-30",
+                "code": "300014",
+                "signal_id": "300014_2026-01-30_bof",
+                "left_rank": null,
+                "right_rank": 1,
+                "left_score": null,
+                "right_score": 53.618078888227,
+                "left_selected": null,
+                "right_selected": true
+              }
+            ]
+          },
+          {
+            "signal_date": "2026-02-03",
+            "shared_signal_count": 0,
+            "left_only_count": 0,
+            "right_only_count": 2,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": false,
+            "sample_changes": [
+              {
+                "signal_date": "2026-02-03",
+                "code": "002227",
+                "signal_id": "002227_2026-02-03_bof",
+                "left_rank": null,
+                "right_rank": 1,
+                "left_score": null,
+                "right_score": 67.04545454545455,
+                "left_selected": null,
+                "right_selected": true
+              },
+              {
+                "signal_date": "2026-02-03",
+                "code": "002517",
+                "signal_id": "002517_2026-02-03_bof",
+                "left_rank": null,
+                "right_rank": 2,
+                "left_score": null,
+                "right_score": 38.12928008276996,
+                "left_selected": null,
+                "right_selected": true
+              }
+            ]
+          },
+          {
+            "signal_date": "2026-02-04",
+            "shared_signal_count": 0,
+            "left_only_count": 0,
+            "right_only_count": 3,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": false,
+            "sample_changes": [
+              {
+                "signal_date": "2026-02-04",
+                "code": "002175",
+                "signal_id": "002175_2026-02-04_bof",
+                "left_rank": null,
+                "right_rank": 1,
+                "left_score": null,
+                "right_score": 77.13709677419352,
+                "left_selected": null,
+                "right_selected": true
+              },
+              {
+                "signal_date": "2026-02-04",
+                "code": "002547",
+                "signal_id": "002547_2026-02-04_bof",
+                "left_rank": null,
+                "right_rank": 2,
+                "left_score": null,
+                "right_score": 76.0795454545455,
+                "left_selected": null,
+                "right_selected": true
+              },
+              {
+                "signal_date": "2026-02-04",
+                "code": "300308",
+                "signal_id": "300308_2026-02-04_bof",
+                "left_rank": null,
+                "right_rank": 3,
+                "left_score": null,
+                "right_score": 58.786999304722954,
+                "left_selected": null,
+                "right_selected": true
+              }
+            ]
+          },
+          {
+            "signal_date": "2026-02-05",
+            "shared_signal_count": 0,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": false,
+            "sample_changes": [
+              {
+                "signal_date": "2026-02-05",
+                "code": "002384",
+                "signal_id": "002384_2026-02-05_bof",
+                "left_rank": null,
+                "right_rank": 1,
+                "left_score": null,
+                "right_score": 68.16674540258897,
+                "left_selected": null,
+                "right_selected": true
+              }
+            ]
+          },
+          {
+            "signal_date": "2026-02-06",
+            "shared_signal_count": 0,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": false,
+            "sample_changes": [
+              {
+                "signal_date": "2026-02-06",
+                "code": "002709",
+                "signal_id": "002709_2026-02-06_bof",
+                "left_rank": null,
+                "right_rank": 1,
+                "left_score": null,
+                "right_score": 57.97990766136995,
+                "left_selected": null,
+                "right_selected": true
+              }
+            ]
+          },
+          {
+            "signal_date": "2026-02-13",
+            "shared_signal_count": 0,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "rank_changed_count": 0,
+            "score_changed_count": 0,
+            "selected_changed_count": 0,
+            "is_multi_signal_date": false,
+            "sample_changes": [
+              {
+                "signal_date": "2026-02-13",
+                "code": "002759",
+                "signal_id": "002759_2026-02-13_bof",
+                "left_rank": null,
+                "right_rank": 1,
+                "left_score": null,
+                "right_score": 74.52532618861679,
+                "left_selected": null,
+                "right_selected": true
+              }
+            ]
+          }
+        ],
+        "conclusion": "所有 signal_date 都只有 1 条共享信号，排序层在该窗口内没有被真正触发。"
+      },
+      "buy_trade_impact": {
+        "left_variant": "legacy_bof_baseline",
+        "right_variant": "v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay",
+        "shared_buy_trade_count": 3,
+        "left_only_count": 2,
+        "right_only_count": 13,
+        "trade_set_changed_count": 15,
+        "quantity_changed_count": 3,
+        "price_changed_count": 0,
+        "execute_date_count": 11,
+        "dates_with_trade_set_change": [
+          "2026-01-12",
+          "2026-01-13",
+          "2026-01-20",
+          "2026-01-29",
+          "2026-01-30",
+          "2026-02-02",
+          "2026-02-04",
+          "2026-02-05",
+          "2026-02-09",
+          "2026-02-24"
+        ],
+        "dates_with_quantity_change": [
+          "2026-02-05",
+          "2026-02-06"
+        ],
+        "per_execute_date": [
+          {
+            "execute_date": "2026-01-12",
+            "shared_buy_trade_count": 0,
+            "left_only_count": 1,
+            "right_only_count": 0,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-12",
+                "code": "002475",
+                "signal_id": "002475_2026-01-09_bof",
+                "left_quantity": 1700.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-13",
+            "shared_buy_trade_count": 0,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-13",
+                "code": "300502",
+                "signal_id": "300502_2026-01-12_bof",
+                "left_quantity": null,
+                "right_quantity": 100.0,
+                "left_present": false,
+                "right_present": true
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-20",
+            "shared_buy_trade_count": 0,
+            "left_only_count": 0,
+            "right_only_count": 2,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-20",
+                "code": "600010",
+                "signal_id": "600010_2026-01-19_bof",
+                "left_quantity": null,
+                "right_quantity": 16900.0,
+                "left_present": false,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-01-20",
+                "code": "600340",
+                "signal_id": "600340_2026-01-19_bof",
+                "left_quantity": null,
+                "right_quantity": 22300.0,
+                "left_present": false,
+                "right_present": true
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-29",
+            "shared_buy_trade_count": 0,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-29",
+                "code": "002594",
+                "signal_id": "002594_2026-01-28_bof",
+                "left_quantity": null,
+                "right_quantity": 400.0,
+                "left_present": false,
+                "right_present": true
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-01-30",
+            "shared_buy_trade_count": 0,
+            "left_only_count": 1,
+            "right_only_count": 3,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-01-30",
+                "code": "300755",
+                "signal_id": "300755_2026-01-29_bof",
+                "left_quantity": null,
+                "right_quantity": 1900.0,
+                "left_present": false,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-01-30",
+                "code": "600436",
+                "signal_id": "600436_2026-01-29_bof",
+                "left_quantity": null,
+                "right_quantity": 200.0,
+                "left_present": false,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-01-30",
+                "code": "600887",
+                "signal_id": "600887_2026-01-29_bof",
+                "left_quantity": 3700.0,
+                "right_quantity": null,
+                "left_present": true,
+                "right_present": false
+              },
+              {
+                "execute_date": "2026-01-30",
+                "code": "601668",
+                "signal_id": "601668_2026-01-29_bof",
+                "left_quantity": null,
+                "right_quantity": 7700.0,
+                "left_present": false,
+                "right_present": true
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-02",
+            "shared_buy_trade_count": 0,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-02",
+                "code": "300014",
+                "signal_id": "300014_2026-01-30_bof",
+                "left_quantity": null,
+                "right_quantity": 600.0,
+                "left_present": false,
+                "right_present": true
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-04",
+            "shared_buy_trade_count": 0,
+            "left_only_count": 0,
+            "right_only_count": 2,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-04",
+                "code": "002227",
+                "signal_id": "002227_2026-02-03_bof",
+                "left_quantity": null,
+                "right_quantity": 3900.0,
+                "left_present": false,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-02-04",
+                "code": "002517",
+                "signal_id": "002517_2026-02-03_bof",
+                "left_quantity": null,
+                "right_quantity": 1600.0,
+                "left_present": false,
+                "right_present": true
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-05",
+            "shared_buy_trade_count": 2,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "quantity_changed_count": 2,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-05",
+                "code": "002175",
+                "signal_id": "002175_2026-02-04_bof",
+                "left_quantity": 25600.0,
+                "right_quantity": 28500.0,
+                "left_present": true,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-02-05",
+                "code": "002547",
+                "signal_id": "002547_2026-02-04_bof",
+                "left_quantity": 26800.0,
+                "right_quantity": 24100.0,
+                "left_present": true,
+                "right_present": true
+              },
+              {
+                "execute_date": "2026-02-05",
+                "code": "300308",
+                "signal_id": "300308_2026-02-04_bof",
+                "left_quantity": null,
+                "right_quantity": 100.0,
+                "left_present": false,
+                "right_present": true
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-06",
+            "shared_buy_trade_count": 1,
+            "left_only_count": 0,
+            "right_only_count": 0,
+            "quantity_changed_count": 1,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-06",
+                "code": "002384",
+                "signal_id": "002384_2026-02-05_bof",
+                "left_quantity": 1300.0,
+                "right_quantity": 500.0,
+                "left_present": true,
+                "right_present": true
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-09",
+            "shared_buy_trade_count": 0,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-09",
+                "code": "002709",
+                "signal_id": "002709_2026-02-06_bof",
+                "left_quantity": null,
+                "right_quantity": 900.0,
+                "left_present": false,
+                "right_present": true
+              }
+            ]
+          },
+          {
+            "execute_date": "2026-02-24",
+            "shared_buy_trade_count": 0,
+            "left_only_count": 0,
+            "right_only_count": 1,
+            "quantity_changed_count": 0,
+            "price_changed_count": 0,
+            "sample_changes": [
+              {
+                "execute_date": "2026-02-24",
+                "code": "002759",
+                "signal_id": "002759_2026-02-13_bof",
+                "left_quantity": null,
+                "right_quantity": 1000.0,
+                "left_present": false,
+                "right_present": true
+              }
+            ]
+          }
+        ],
+        "conclusion": "BUY 成交集合或仓位数量发生变化，左右变体差异已进入执行约束。"
+      },
+      "maxpos_reject_impact": {
+        "left_variant": "legacy_bof_baseline",
+        "right_variant": "v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay",
+        "shared_reject_count": 0,
+        "left_only_count": 0,
+        "right_only_count": 0,
+        "reject_set_changed_count": 0,
+        "execute_date_count": 0,
+        "dates_with_reject_change": [],
+        "per_execute_date": [],
+        "conclusion": "MAX_POSITIONS 拒单集合未变化。"
+      }
+    }
+  }
+}
