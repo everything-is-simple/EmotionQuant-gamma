@@ -1,0 +1,571 @@
+{
+  "summary_run_id": "trade_attribution_dtt_v0_01_dtt_pattern_plus_irs_score_vs_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t042410",
+  "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "start": "2026-01-05",
+  "end": "2026-02-24",
+  "execute_dates": [
+    "2026-01-06",
+    "2026-01-12",
+    "2026-01-23",
+    "2026-02-04",
+    "2026-02-05"
+  ],
+  "patterns": [
+    "bof",
+    "bpb",
+    "pb",
+    "tst",
+    "cpb"
+  ],
+  "variants": [
+    "v0_01_dtt_pattern_plus_irs_score",
+    "v0_01_dtt_pattern_plus_irs_mss_score"
+  ],
+  "scenarios": [
+    {
+      "label": "top50_pos10",
+      "dtt_top_n": 50,
+      "max_positions": 10
+    }
+  ],
+  "results": [
+    {
+      "label": "top50_pos10",
+      "dtt_top_n": 50,
+      "max_positions": 10,
+      "working_db_path": "G:\\EmotionQuant-temp\\backtest\\trade_attr_top50_pos10_top50_pos10.duckdb",
+      "variants": {
+        "v0_01_dtt_pattern_plus_irs_score": {
+          "run_id": "trade_attribution_dtt_v0_01_dtt_pattern_plus_irs_score_w20260105_20260224_t042421"
+        },
+        "v0_01_dtt_pattern_plus_irs_mss_score": {
+          "run_id": "trade_attribution_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t042640"
+        }
+      },
+      "dates": [
+        {
+          "execute_date": "2026-01-06",
+          "trade_set_swaps": [
+            {
+              "code": "002230",
+              "signal_id": "002230_2026-01-05_cpb",
+              "left_quantity": 800,
+              "right_quantity": null,
+              "left_entry_pnl": 3548.276480000001,
+              "right_entry_pnl": null,
+              "left_entry_pnl_pct": 0.08200345373482708,
+              "right_entry_pnl_pct": null
+            },
+            {
+              "code": "002757",
+              "signal_id": "002757_2026-01-05_tst",
+              "left_quantity": 1800,
+              "right_quantity": null,
+              "left_entry_pnl": -2352.5315999999993,
+              "right_entry_pnl": null,
+              "left_entry_pnl_pct": -0.055456023172754484,
+              "right_entry_pnl_pct": null
+            },
+            {
+              "code": "300404",
+              "signal_id": "300404_2026-01-05_cpb",
+              "left_quantity": 4700,
+              "right_quantity": null,
+              "left_entry_pnl": 3580.226879999997,
+              "right_entry_pnl": null,
+              "left_entry_pnl_pct": 0.07252444931907498,
+              "right_entry_pnl_pct": null
+            },
+            {
+              "code": "600587",
+              "signal_id": "600587_2026-01-05_cpb",
+              "left_quantity": 3400,
+              "right_quantity": null,
+              "left_entry_pnl": -3690.4103200000077,
+              "right_entry_pnl": null,
+              "left_entry_pnl_pct": -0.06636498950305333,
+              "right_entry_pnl_pct": null
+            },
+            {
+              "code": "603309",
+              "signal_id": "603309_2026-01-05_cpb",
+              "left_quantity": 4100,
+              "right_quantity": null,
+              "left_entry_pnl": -6485.3242399999945,
+              "right_entry_pnl": null,
+              "left_entry_pnl_pct": -0.10875380950998009,
+              "right_entry_pnl_pct": null
+            },
+            {
+              "code": "688235",
+              "signal_id": "688235_2026-01-05_cpb",
+              "left_quantity": 200,
+              "right_quantity": null,
+              "left_entry_pnl": -2895.032,
+              "right_entry_pnl": null,
+              "left_entry_pnl_pct": -0.04807484860658543,
+              "right_entry_pnl_pct": null
+            }
+          ],
+          "quantity_changes": [
+            {
+              "code": "300003",
+              "signal_id": "300003_2026-01-05_cpb",
+              "left_quantity": 4700,
+              "right_quantity": 2000,
+              "left_entry_pnl": -6444.694519999999,
+              "right_entry_pnl": -2742.4231999999993,
+              "left_entry_pnl_pct": -0.06816374702412482,
+              "right_entry_pnl_pct": -0.06816374702412481
+            },
+            {
+              "code": "300143",
+              "signal_id": "300143_2026-01-05_cpb",
+              "left_quantity": 8700,
+              "right_quantity": 3500,
+              "left_entry_pnl": 7658.435999999987,
+              "right_entry_pnl": 3080.979999999995,
+              "left_entry_pnl_pct": 0.07787596464706502,
+              "right_entry_pnl_pct": 0.07787596464706502
+            },
+            {
+              "code": "300238",
+              "signal_id": "300238_2026-01-05_cpb",
+              "left_quantity": 4800,
+              "right_quantity": 2200,
+              "left_entry_pnl": -3633.2774400000017,
+              "right_entry_pnl": -1665.252160000001,
+              "left_entry_pnl_pct": -0.04448504755961927,
+              "right_entry_pnl_pct": -0.04448504755961928
+            },
+            {
+              "code": "300430",
+              "signal_id": "300430_2026-01-05_cpb",
+              "left_quantity": 3100,
+              "right_quantity": 1500,
+              "left_entry_pnl": 245.93416000000303,
+              "right_entry_pnl": 119.00040000000148,
+              "left_entry_pnl_pct": 0.003210859164743435,
+              "right_entry_pnl_pct": 0.0032108591647434354
+            }
+          ],
+          "maxpos_reject_swaps": [
+            {
+              "code": "002230",
+              "signal_id": "002230_2026-01-05_cpb",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "002757",
+              "signal_id": "002757_2026-01-05_tst",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "300404",
+              "signal_id": "300404_2026-01-05_cpb",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "600587",
+              "signal_id": "600587_2026-01-05_cpb",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "603309",
+              "signal_id": "603309_2026-01-05_cpb",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "688235",
+              "signal_id": "688235_2026-01-05_cpb",
+              "left_rejected": true,
+              "right_rejected": true
+            }
+          ],
+          "left_changed_entry_pnl_total": -10468.396600000015,
+          "right_changed_entry_pnl_total": -1207.6949600000037,
+          "pnl_direction": "v0_01_dtt_pattern_plus_irs_mss_score 更好"
+        },
+        {
+          "execute_date": "2026-01-12",
+          "trade_set_swaps": [
+            {
+              "code": "002649",
+              "signal_id": "002649_2026-01-09_cpb",
+              "left_quantity": null,
+              "right_quantity": 5600,
+              "left_entry_pnl": null,
+              "right_entry_pnl": -1756.8611199999953,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": -0.021335023132733524
+            },
+            {
+              "code": "300676",
+              "signal_id": "300676_2026-01-09_cpb",
+              "left_quantity": null,
+              "right_quantity": 1200,
+              "left_entry_pnl": null,
+              "right_entry_pnl": 736.5355200000033,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": 0.011797409216668485
+            },
+            {
+              "code": "300830",
+              "signal_id": "300830_2026-01-09_cpb",
+              "left_quantity": null,
+              "right_quantity": 7400,
+              "left_entry_pnl": null,
+              "right_entry_pnl": -1266.302800000003,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": -0.013159019882868281
+            },
+            {
+              "code": "688133",
+              "signal_id": "688133_2026-01-09_cpb",
+              "left_quantity": null,
+              "right_quantity": 2800,
+              "left_entry_pnl": null,
+              "right_entry_pnl": -3847.660319999996,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": -0.04906160028790781
+            },
+            {
+              "code": "920641",
+              "signal_id": "920641_2026-01-09_tst",
+              "left_quantity": null,
+              "right_quantity": 2500,
+              "left_entry_pnl": null,
+              "right_entry_pnl": -4716.639000000004,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": -0.07911292211995523
+            }
+          ],
+          "quantity_changes": [],
+          "maxpos_reject_swaps": [
+            {
+              "code": "002649",
+              "signal_id": "002649_2026-01-09_cpb",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "300676",
+              "signal_id": "300676_2026-01-09_cpb",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "300830",
+              "signal_id": "300830_2026-01-09_cpb",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "688133",
+              "signal_id": "688133_2026-01-09_cpb",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "920641",
+              "signal_id": "920641_2026-01-09_tst",
+              "left_rejected": true,
+              "right_rejected": true
+            }
+          ],
+          "left_changed_entry_pnl_total": 0.0,
+          "right_changed_entry_pnl_total": -10850.927719999996,
+          "pnl_direction": "v0_01_dtt_pattern_plus_irs_mss_score 更差"
+        },
+        {
+          "execute_date": "2026-01-23",
+          "trade_set_swaps": [
+            {
+              "code": "002815",
+              "signal_id": "002815_2026-01-22_cpb",
+              "left_quantity": null,
+              "right_quantity": 4000,
+              "left_entry_pnl": null,
+              "right_entry_pnl": -4417.9456,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": -0.0698818403427359
+            },
+            {
+              "code": "300737",
+              "signal_id": "300737_2026-01-22_cpb",
+              "left_quantity": null,
+              "right_quantity": 11500,
+              "left_entry_pnl": null,
+              "right_entry_pnl": -3118.073199999998,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": -0.03872143771136091
+            },
+            {
+              "code": "600048",
+              "signal_id": "600048_2026-01-22_tst",
+              "left_quantity": null,
+              "right_quantity": 11000,
+              "left_entry_pnl": null,
+              "right_entry_pnl": 2408.3180000000048,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": 0.03336401863598777
+            },
+            {
+              "code": "600929",
+              "signal_id": "600929_2026-01-22_cpb",
+              "left_quantity": null,
+              "right_quantity": 9700,
+              "left_entry_pnl": null,
+              "right_entry_pnl": -3103.8874799999967,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": -0.0504552107994211
+            },
+            {
+              "code": "603393",
+              "signal_id": "603393_2026-01-22_cpb",
+              "left_quantity": null,
+              "right_quantity": 2900,
+              "left_entry_pnl": null,
+              "right_entry_pnl": -2864.8438799999935,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": -0.03297366211760476
+            }
+          ],
+          "quantity_changes": [
+            {
+              "code": "920014",
+              "signal_id": "920014_2026-01-22_cpb",
+              "left_quantity": 6200,
+              "right_quantity": 6100,
+              "left_entry_pnl": -4854.843039999999,
+              "right_entry_pnl": -4776.5391199999995,
+              "left_entry_pnl_pct": -0.053396228350174865,
+              "right_entry_pnl_pct": -0.053396228350174865
+            }
+          ],
+          "maxpos_reject_swaps": [
+            {
+              "code": "002815",
+              "signal_id": "002815_2026-01-22_cpb",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "300737",
+              "signal_id": "300737_2026-01-22_cpb",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "600048",
+              "signal_id": "600048_2026-01-22_tst",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "600929",
+              "signal_id": "600929_2026-01-22_cpb",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "603393",
+              "signal_id": "603393_2026-01-22_cpb",
+              "left_rejected": true,
+              "right_rejected": true
+            }
+          ],
+          "left_changed_entry_pnl_total": -4854.843039999999,
+          "right_changed_entry_pnl_total": -15872.971279999982,
+          "pnl_direction": "v0_01_dtt_pattern_plus_irs_mss_score 更差"
+        },
+        {
+          "execute_date": "2026-02-04",
+          "trade_set_swaps": [
+            {
+              "code": "002826",
+              "signal_id": "002826_2026-02-03_cpb",
+              "left_quantity": 3100,
+              "right_quantity": null,
+              "left_entry_pnl": -2862.122120000002,
+              "right_entry_pnl": null,
+              "left_entry_pnl_pct": -0.04395094522133872,
+              "right_entry_pnl_pct": null
+            },
+            {
+              "code": "600105",
+              "signal_id": "600105_2026-02-03_pb",
+              "left_quantity": 2500,
+              "right_quantity": null,
+              "left_entry_pnl": -6381.475999999995,
+              "right_entry_pnl": null,
+              "left_entry_pnl_pct": -0.09116733949173413,
+              "right_entry_pnl_pct": null
+            }
+          ],
+          "quantity_changes": [
+            {
+              "code": "002227",
+              "signal_id": "002227_2026-02-03_bof",
+              "left_quantity": 8700,
+              "right_quantity": 3600,
+              "left_entry_pnl": -752.7309600000025,
+              "right_entry_pnl": -311.474880000001,
+              "left_entry_pnl_pct": -0.008538314136317473,
+              "right_entry_pnl_pct": -0.008538314136317473
+            },
+            {
+              "code": "002471",
+              "signal_id": "002471_2026-02-03_pb",
+              "left_quantity": 10400,
+              "right_quantity": 4000,
+              "left_entry_pnl": 3059.4179200000053,
+              "right_entry_pnl": 1176.699200000002,
+              "left_entry_pnl_pct": 0.031285180231687616,
+              "right_entry_pnl_pct": 0.031285180231687616
+            },
+            {
+              "code": "600550",
+              "signal_id": "600550_2026-02-03_pb",
+              "left_quantity": 4900,
+              "right_quantity": 2100,
+              "left_entry_pnl": -5511.461199999998,
+              "right_entry_pnl": -2362.054799999999,
+              "left_entry_pnl_pct": -0.07027676143634035,
+              "right_entry_pnl_pct": -0.07027676143634035
+            }
+          ],
+          "maxpos_reject_swaps": [
+            {
+              "code": "002826",
+              "signal_id": "002826_2026-02-03_cpb",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "600105",
+              "signal_id": "600105_2026-02-03_pb",
+              "left_rejected": true,
+              "right_rejected": true
+            }
+          ],
+          "left_changed_entry_pnl_total": -12448.372359999992,
+          "right_changed_entry_pnl_total": -1496.8304799999978,
+          "pnl_direction": "v0_01_dtt_pattern_plus_irs_mss_score 更好"
+        },
+        {
+          "execute_date": "2026-02-05",
+          "trade_set_swaps": [
+            {
+              "code": "000719",
+              "signal_id": "000719_2026-02-04_pb",
+              "left_quantity": null,
+              "right_quantity": 4300,
+              "left_entry_pnl": null,
+              "right_entry_pnl": -50.284200000000915,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": -0.0008842858636219929
+            },
+            {
+              "code": "002175",
+              "signal_id": "002175_2026-02-04_bof",
+              "left_quantity": null,
+              "right_quantity": 27500,
+              "left_entry_pnl": null,
+              "right_entry_pnl": -5096.805999999992,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": -0.05449385608370019
+            },
+            {
+              "code": "002547",
+              "signal_id": "002547_2026-02-04_bof",
+              "left_quantity": null,
+              "right_quantity": 21000,
+              "left_entry_pnl": null,
+              "right_entry_pnl": 3861.782399999999,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": 0.05149455815595591
+            },
+            {
+              "code": "300118",
+              "signal_id": "300118_2026-02-04_pb",
+              "left_quantity": null,
+              "right_quantity": 3600,
+              "left_entry_pnl": null,
+              "right_entry_pnl": -5703.585120000003,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": -0.07140768155272373
+            },
+            {
+              "code": "300308",
+              "signal_id": "300308_2026-02-04_bof",
+              "left_quantity": null,
+              "right_quantity": 100,
+              "left_entry_pnl": null,
+              "right_entry_pnl": -3788.120319999999,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": -0.06750162223983584
+            },
+            {
+              "code": "300724",
+              "signal_id": "300724_2026-02-04_pb",
+              "left_quantity": null,
+              "right_quantity": 400,
+              "left_entry_pnl": null,
+              "right_entry_pnl": -3849.6579199999987,
+              "left_entry_pnl_pct": null,
+              "right_entry_pnl_pct": -0.06964217197872719
+            }
+          ],
+          "quantity_changes": [],
+          "maxpos_reject_swaps": [
+            {
+              "code": "000719",
+              "signal_id": "000719_2026-02-04_pb",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "002175",
+              "signal_id": "002175_2026-02-04_bof",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "002547",
+              "signal_id": "002547_2026-02-04_bof",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "300118",
+              "signal_id": "300118_2026-02-04_pb",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "300308",
+              "signal_id": "300308_2026-02-04_bof",
+              "left_rejected": true,
+              "right_rejected": true
+            },
+            {
+              "code": "300724",
+              "signal_id": "300724_2026-02-04_pb",
+              "left_rejected": true,
+              "right_rejected": true
+            }
+          ],
+          "left_changed_entry_pnl_total": 0.0,
+          "right_changed_entry_pnl_total": -14626.671159999994,
+          "pnl_direction": "v0_01_dtt_pattern_plus_irs_mss_score 更差"
+        }
+      ]
+    }
+  ]
+}
