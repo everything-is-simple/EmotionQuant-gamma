@@ -19,6 +19,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.backtest.ablation import prepare_working_db
+from src.backtest.replay_variants import LEGACY_BASELINE_VARIANT, apply_replay_variant_runtime
 from src.backtest.engine import run_backtest
 from src.config import get_settings
 from src.data.builder import build_layers
@@ -112,7 +113,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--dtt-variant",
         default="v0_01_dtt_pattern_plus_irs_mss_score",
-        help="DTT variant under verification; ignored when --pipeline-mode=legacy",
+        help="DTT/replay variant under verification; legacy baseline replay requires --pipeline-mode=legacy --dtt-variant=legacy_bof_baseline",
     )
     p.add_argument("--cash", type=float, default=1_000_000)
     p.add_argument("--min-amount", type=float, default=None)
@@ -137,12 +138,18 @@ def main() -> int:
     end = _parse_date(args.end)
 
     cfg = get_settings().model_copy(deep=True)
-    cfg.pipeline_mode = args.pipeline_mode.strip().lower()
+    requested_pipeline = args.pipeline_mode.strip().lower()
+    requested_variant = args.dtt_variant.strip().lower()
+    cfg.pipeline_mode = requested_pipeline
     cfg.enable_dtt_mode = cfg.pipeline_mode != "legacy"
-    if cfg.use_dtt_pipeline:
+    if requested_pipeline == "legacy" and requested_variant == LEGACY_BASELINE_VARIANT:
+        # Gate replay 里的 legacy baseline 不是“随便切到 legacy 模式”；
+        # 它必须回到和 matrix 里 frozen legacy_bof_baseline 完全一致的运行语义。
+        cfg = apply_replay_variant_runtime(cfg, requested_variant)
+    elif cfg.use_dtt_pipeline:
         # Phase 4.1-D 需要保证幂等重放和 matrix replay 使用同一套 runtime override，
         # 不能只切 dtt_variant 字符串而漏掉 carryover_buffer 这类 Broker 侧别名语义。
-        cfg = apply_dtt_variant_runtime(cfg, args.dtt_variant.strip().lower())
+        cfg = apply_dtt_variant_runtime(cfg, requested_variant)
     if args.min_amount is not None:
         cfg.min_amount = args.min_amount
 

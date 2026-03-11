@@ -20,14 +20,16 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.backtest.ablation import prepare_working_db
+from src.backtest.replay_variants import REPLAY_VARIANTS, apply_replay_variant_runtime
 from src.backtest.engine import run_backtest
 from src.config import Settings, get_settings
 from src.data.builder import build_layers
 from src.data.store import Store
 from src.run_metadata import build_artifact_name, build_run_id, finish_run, start_run
-from src.strategy.ranker import MSS_CARRYOVER_BUFFER_VARIANT, apply_dtt_variant_runtime
+from src.strategy.ranker import MSS_CARRYOVER_BUFFER_VARIANT
 
 DTT_VARIANTS = [
+    "legacy_bof_baseline",
     "v0_01_dtt_pattern_only",
     "v0_01_dtt_pattern_plus_irs_score",
     "v0_01_dtt_pattern_plus_irs_mss_score",
@@ -100,22 +102,18 @@ def _clear_runtime_tables(store: Store, preserve_rank_exp: bool) -> None:
 
 def _build_variant_config(base: Settings, variant: str) -> Settings:
     cfg = base.model_copy(deep=True)
-    cfg.pipeline_mode = "dtt"
-    cfg.enable_dtt_mode = True
-    cfg.enable_mss_gate = False
-    cfg.enable_irs_filter = False
-    # rank decomposition 也必须吃到 variant 别名携带的 Broker runtime override，
-    # 否则 carryover_buffer(1) 和 hard_cap 会被错误地看成同一个 replay 对象。
-    return apply_dtt_variant_runtime(cfg, variant)
+    # rank decomposition 在 Gate replay 中既可能对比 DTT 变体，也可能直接对比 legacy baseline；
+    # 这里统一走 replay alias，确保 pipeline 语义和 Broker shrink 语义一起切换。
+    return apply_replay_variant_runtime(cfg, variant)
 
 
 def _parse_variants(text: str) -> list[str]:
     variants = [item.strip().lower() for item in text.split(",") if item.strip()]
     if not variants:
-        raise ValueError("At least one DTT variant is required.")
-    unknown = sorted(set(variants) - set(DTT_VARIANTS))
+        raise ValueError("At least one replay variant is required.")
+    unknown = sorted(set(variants) - REPLAY_VARIANTS)
     if unknown:
-        raise ValueError(f"Unsupported DTT variants: {', '.join(unknown)}")
+        raise ValueError(f"Unsupported replay variants: {', '.join(unknown)}")
     return variants
 
 

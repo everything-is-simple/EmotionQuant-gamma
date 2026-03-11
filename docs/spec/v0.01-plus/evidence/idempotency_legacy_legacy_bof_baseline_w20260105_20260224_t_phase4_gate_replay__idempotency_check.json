@@ -1,0 +1,113 @@
+{
+  "start": "2026-01-05",
+  "end": "2026-02-24",
+  "patterns": [
+    "bof"
+  ],
+  "pipeline_mode": "legacy",
+  "dtt_variant": "legacy_bof_baseline",
+  "rebuild_l3": true,
+  "cash": 1000000,
+  "min_amount": null,
+  "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "db_path": "G:\\EmotionQuant-temp\\backtest\\phase4-gate-replay-idempotency-legacy-20260311.duckdb",
+  "first": {
+    "start": "2026-01-05",
+    "end": "2026-02-24",
+    "trade_days": 30,
+    "win_rate": 0.4,
+    "avg_win": 0.08181967687470239,
+    "avg_loss": 0.03664566461360636,
+    "expected_value": 0.01074047198171714,
+    "profit_factor": 2.2327246002334236,
+    "max_drawdown": 0.003867375207861774,
+    "trade_count": 5,
+    "reject_rate": 0.0,
+    "missing_rate": 0.0,
+    "exposure_rate": 0.7666666666666667,
+    "opportunity_count": 5.0,
+    "filled_count": 5.0,
+    "skip_cash_count": 0.0,
+    "skip_maxpos_count": 0.0,
+    "participation_rate": 1.0,
+    "environment_breakdown": {
+      "NEUTRAL": {
+        "trade_count": 5.0,
+        "win_rate": 0.4,
+        "avg_win": 0.08181967687470239,
+        "avg_loss": 0.03664566461360636,
+        "profit_factor": 2.2327246002334236,
+        "expected_value": 0.01074047198171714,
+        "median_pnl_pct": -0.013983235955056116
+      }
+    }
+  },
+  "second": {
+    "start": "2026-01-05",
+    "end": "2026-02-24",
+    "trade_days": 30,
+    "win_rate": 0.4,
+    "avg_win": 0.08181967687470239,
+    "avg_loss": 0.03664566461360636,
+    "expected_value": 0.01074047198171714,
+    "profit_factor": 2.2327246002334236,
+    "max_drawdown": 0.003867375207861774,
+    "trade_count": 5,
+    "reject_rate": 0.0,
+    "missing_rate": 0.0,
+    "exposure_rate": 0.7666666666666667,
+    "opportunity_count": 5.0,
+    "filled_count": 5.0,
+    "skip_cash_count": 0.0,
+    "skip_maxpos_count": 0.0,
+    "participation_rate": 1.0,
+    "environment_breakdown": {
+      "NEUTRAL": {
+        "trade_count": 5.0,
+        "win_rate": 0.4,
+        "avg_win": 0.08181967687470239,
+        "avg_loss": 0.03664566461360636,
+        "profit_factor": 2.2327246002334236,
+        "expected_value": 0.01074047198171714,
+        "median_pnl_pct": -0.013983235955056116
+      }
+    }
+  },
+  "order_id_set_equal": true,
+  "trade_id_set_equal": true,
+  "metrics_equal": true,
+  "first_metrics": {
+    "expected_value": 0.01074047198171714,
+    "profit_factor": 2.2327246002334236,
+    "max_drawdown": 0.003867375207861774,
+    "trades_count": 10,
+    "reject_rate": 0.0,
+    "missing_rate": 0.0,
+    "exposure_rate": 0.7666666666666667,
+    "failure_reason_breakdown": "{}",
+    "opportunity_count": 5,
+    "filled_count": 5,
+    "skip_cash_count": 0,
+    "skip_maxpos_count": 0,
+    "participation_rate": 1.0
+  },
+  "second_metrics": {
+    "expected_value": 0.01074047198171714,
+    "profit_factor": 2.2327246002334236,
+    "max_drawdown": 0.003867375207861774,
+    "trades_count": 10,
+    "reject_rate": 0.0,
+    "missing_rate": 0.0,
+    "exposure_rate": 0.7666666666666667,
+    "failure_reason_breakdown": "{}",
+    "opportunity_count": 5,
+    "filled_count": 5,
+    "skip_cash_count": 0,
+    "skip_maxpos_count": 0,
+    "participation_rate": 1.0
+  },
+  "order_count_1": 10,
+  "order_count_2": 10,
+  "trade_count_1": 10,
+  "trade_count_2": 10
+}

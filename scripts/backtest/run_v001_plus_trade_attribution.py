@@ -21,13 +21,13 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from src.backtest.ablation import prepare_working_db
+from src.backtest.replay_variants import REPLAY_VARIANTS, apply_replay_variant_runtime
 from src.backtest.engine import run_backtest
 from src.config import Settings, get_settings
 from src.data.builder import build_layers
 from src.data.store import Store
 from src.report.reporter import _pair_trades
 from src.run_metadata import build_artifact_name, build_run_id, finish_run, start_run
-from src.strategy.ranker import apply_dtt_variant_runtime
 
 DEFAULT_VARIANTS = [
     "v0_01_dtt_pattern_only",
@@ -79,10 +79,25 @@ def _to_iso(value: object) -> str | None:
     return str(value)
 
 
+def _normalize_date_column(frame: pd.DataFrame, column: str) -> pd.DataFrame:
+    normalized = frame.copy()
+    if column not in normalized.columns:
+        normalized[column] = pd.Series(dtype="object")
+        return normalized
+    if normalized.empty:
+        normalized[column] = normalized[column].astype("object")
+        return normalized
+    normalized[column] = normalized[column].apply(_to_iso).astype("object")
+    return normalized
+
+
 def _parse_variants(text: str) -> list[str]:
     variants = [item.strip().lower() for item in text.split(",") if item.strip()]
     if len(variants) != 2:
-        raise ValueError("逐笔归因当前只支持 2 个 variant 对比。")
+        raise ValueError("逐笔归因当前只支持 2 个 replay variant 对比。")
+    unknown = sorted(set(variants) - REPLAY_VARIANTS)
+    if unknown:
+        raise ValueError(f"不支持的 replay variant: {', '.join(unknown)}")
     return variants
 
 
@@ -127,15 +142,11 @@ def _clear_runtime_tables(store: Store) -> None:
 
 def _build_variant_config(base: Settings, variant: str, dtt_top_n: int, max_positions: int) -> Settings:
     cfg = base.model_copy(deep=True)
-    cfg.pipeline_mode = "dtt"
-    cfg.enable_dtt_mode = True
-    cfg.enable_mss_gate = False
-    cfg.enable_irs_filter = False
     cfg.dtt_top_n = int(dtt_top_n)
     cfg.max_positions = int(max_positions)
-    # trade attribution 需要比较“同排序、不同 shrink 语义”的成交替换，
-    # 因此这里不能只改 label，必须让 carryover_buffer runtime override 真正生效。
-    return apply_dtt_variant_runtime(cfg, variant)
+    # Phase 4 Gate replay 现在允许 legacy baseline 和 DTT 候选直接逐笔对照；
+    # 这里统一走 replay alias 解释层，避免脚本自己再手搓 pipeline 分叉。
+    return apply_replay_variant_runtime(cfg, variant)
 
 
 def _read_buy_trades(store: Store, start: date, end: date) -> pd.DataFrame:
@@ -158,10 +169,7 @@ def _read_buy_trades(store: Store, start: date, end: date) -> pd.DataFrame:
         """,
         (start, end),
     )
-    if frame.empty:
-        return frame
-    frame["execute_date"] = frame["execute_date"].apply(_to_iso)
-    return frame
+    return _normalize_date_column(frame, "execute_date")
 
 
 def _read_maxpos_rejects(store: Store, start: date, end: date) -> pd.DataFrame:
@@ -177,10 +185,7 @@ def _read_maxpos_rejects(store: Store, start: date, end: date) -> pd.DataFrame:
         """,
         (start, end),
     )
-    if frame.empty:
-        return frame
-    frame["execute_date"] = frame["execute_date"].apply(_to_iso)
-    return frame
+    return _normalize_date_column(frame, "execute_date")
 
 
 def _read_entry_pnl(store: Store, start: date, end: date) -> pd.DataFrame:
@@ -224,7 +229,10 @@ def _read_entry_pnl(store: Store, start: date, end: date) -> pd.DataFrame:
         lambda row: 0.0 if float(row["entry_notional"] or 0.0) <= 0 else float(row["entry_pnl"]) / float(row["entry_notional"]),
         axis=1,
     )
-    return merged[["execute_date", "code", "pattern", "entry_quantity", "entry_pnl", "entry_pnl_pct"]]
+    return _normalize_date_column(
+        merged[["execute_date", "code", "pattern", "entry_quantity", "entry_pnl", "entry_pnl_pct"]],
+        "execute_date",
+    )
 
 
 def _run_variant(
@@ -365,6 +373,10 @@ def _build_date_payload(
     left_rejects: pd.DataFrame,
     right_rejects: pd.DataFrame,
 ) -> dict[str, object]:
+    left_attr = _normalize_date_column(left_attr, "execute_date")
+    right_attr = _normalize_date_column(right_attr, "execute_date")
+    left_rejects = _normalize_date_column(left_rejects, "execute_date")
+    right_rejects = _normalize_date_column(right_rejects, "execute_date")
     left_buy = left_attr[left_attr["execute_date"] == execute_date].copy()
     right_buy = right_attr[right_attr["execute_date"] == execute_date].copy()
     left_buy = left_buy.rename(
@@ -437,7 +449,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--execute-dates", nargs="+", default=DEFAULT_EXECUTE_DATES, help="Execute dates to attribute")
     parser.add_argument("--patterns", default="bof", help="Comma-separated patterns")
     parser.add_argument("--cash", type=float, default=None, help="Initial cash override")
-    parser.add_argument("--variants", default=",".join(DEFAULT_VARIANTS), help="Comma-separated DTT variants")
+    parser.add_argument("--variants", default=",".join(DEFAULT_VARIANTS), help="Comma-separated replay variants")
     parser.add_argument("--scenarios", default=None, help="Comma-separated label:dtt_top_n:max_positions items")
     parser.add_argument("--db-path", default=None, help="Execution DuckDB path override")
     parser.add_argument("--skip-rebuild-l3", action="store_true", help="Reuse existing l3_mss_daily/l3_irs_daily in working DB")

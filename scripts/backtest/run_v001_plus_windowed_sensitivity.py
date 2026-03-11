@@ -4,6 +4,7 @@ from __future__ import annotations
 # - 默认 variant 使用当前 pattern_* 命名，不再沿用旧 bof_* 别名。
 # - 每个子窗口都拆到独立 working db，副本和缓存固定放 TEMP_PATH，避免长窗口把正式库和仓库目录打脏。
 # - 该脚本只重放既有数据，不直接补数；若窗口缺口存在，必须先按旧库优先、双 TuShare 通道兜底补齐。
+# - Phase 4 Gate replay 允许把 legacy baseline 和 DTT 候选一起喂给子 rank_decomposition 进程。
 
 import argparse
 import json
@@ -131,7 +132,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run windowed DTT sensitivity matrix")
     parser.add_argument("--windows", default=None, help="Comma-separated label:start:end windows")
     parser.add_argument("--scenarios", default=None, help="Comma-separated label:dtt_top_n:max_positions scenarios")
-    parser.add_argument("--variants", default=",".join(DEFAULT_VARIANTS), help="Comma-separated variants")
+    parser.add_argument("--variants", default=",".join(DEFAULT_VARIANTS), help="Comma-separated replay variants")
     parser.add_argument("--patterns", default="bof", help="Comma-separated patterns")
     parser.add_argument("--db-path", default=None, help="Execution DuckDB path override")
     parser.add_argument("--memory-limit", default="4GB", help="DuckDB memory limit for child runs")

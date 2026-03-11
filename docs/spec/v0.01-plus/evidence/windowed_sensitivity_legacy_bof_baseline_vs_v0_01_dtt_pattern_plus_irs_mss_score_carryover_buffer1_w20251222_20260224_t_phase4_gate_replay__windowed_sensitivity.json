@@ -1,0 +1,411 @@
+{
+  "summary_run_id": "windowed_sensitivity_dtt_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20251222_20260224_t111206",
+  "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "patterns": [
+    "bof"
+  ],
+  "variants": [
+    "legacy_bof_baseline",
+    "v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1"
+  ],
+  "windows": [
+    {
+      "label": "mid_window",
+      "start": "2025-12-22",
+      "end": "2026-02-24"
+    }
+  ],
+  "scenarios": [
+    {
+      "label": "top1_pos1",
+      "dtt_top_n": 1,
+      "max_positions": 1
+    },
+    {
+      "label": "top1_pos2",
+      "dtt_top_n": 1,
+      "max_positions": 2
+    },
+    {
+      "label": "top2_pos1",
+      "dtt_top_n": 2,
+      "max_positions": 1
+    },
+    {
+      "label": "top2_pos2",
+      "dtt_top_n": 2,
+      "max_positions": 2
+    },
+    {
+      "label": "top50_pos10",
+      "dtt_top_n": 50,
+      "max_positions": 10
+    }
+  ],
+  "memory_limit": "4GB",
+  "completed_count": 5,
+  "failed_count": 0,
+  "results": [
+    {
+      "result_path": "G:\\EmotionQuant-gamma\\docs\\spec\\v0.01-plus\\evidence\\rank_decomp_mid_window_top1_pos1_dtt_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20251222_20260224_t111206__rank_decomposition.json",
+      "summary_run_id": "rank_decomposition_dtt_legacy_bof_baseline_to_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20251222_20260224_t111346",
+      "comparison_key": "legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1",
+      "runs": [
+        {
+          "variant": "legacy_bof_baseline",
+          "trade_count": 3,
+          "expected_value": -0.03747526294131395,
+          "profit_factor": 0.18065613522750676,
+          "max_drawdown": 0.006199165532520104,
+          "buy_trade_count": 3,
+          "buy_reject_maxpos_count": 6
+        },
+        {
+          "variant": "v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1",
+          "trade_count": 3,
+          "expected_value": 0.023198189802537125,
+          "profit_factor": 1.1239079088828257,
+          "max_drawdown": 0.0021932118726247845,
+          "buy_trade_count": 3,
+          "buy_reject_maxpos_count": 8
+        }
+      ],
+      "rank_impact": {
+        "rank_changed_count": 0,
+        "selected_changed_count": 0,
+        "dates_with_rank_change": [],
+        "dates_with_selected_change": []
+      },
+      "buy_trade_impact": {
+        "trade_set_changed_count": 4,
+        "quantity_changed_count": 1,
+        "dates_with_trade_set_change": [
+          "2026-01-13",
+          "2026-01-20",
+          "2026-02-04",
+          "2026-02-06"
+        ],
+        "dates_with_quantity_change": [
+          "2026-01-05"
+        ]
+      },
+      "maxpos_reject_impact": {
+        "reject_set_changed_count": 12,
+        "dates_with_reject_change": [
+          "2026-01-20",
+          "2026-01-29",
+          "2026-01-30",
+          "2026-02-02",
+          "2026-02-04",
+          "2026-02-05",
+          "2026-02-06",
+          "2026-02-09",
+          "2026-02-24"
+        ]
+      },
+      "window": {
+        "label": "mid_window",
+        "start": "2025-12-22",
+        "end": "2026-02-24"
+      },
+      "scenario": {
+        "label": "top1_pos1",
+        "dtt_top_n": 1,
+        "max_positions": 1
+      },
+      "memory_limit": "4GB",
+      "stdout_tail": [
+        "rank_decomposition=G:\\EmotionQuant-gamma\\docs\\spec\\v0.01-plus\\evidence\\rank_decomp_mid_window_top1_pos1_dtt_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20251222_20260224_t111206__rank_decomposition.json"
+      ]
+    },
+    {
+      "result_path": "G:\\EmotionQuant-gamma\\docs\\spec\\v0.01-plus\\evidence\\rank_decomp_mid_window_top1_pos2_dtt_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20251222_20260224_t111346__rank_decomposition.json",
+      "summary_run_id": "rank_decomposition_dtt_legacy_bof_baseline_to_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20251222_20260224_t111533",
+      "comparison_key": "legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1",
+      "runs": [
+        {
+          "variant": "legacy_bof_baseline",
+          "trade_count": 4,
+          "expected_value": -0.031602256194749496,
+          "profit_factor": 0.243440668384408,
+          "max_drawdown": 0.0075868113311756994,
+          "buy_trade_count": 4,
+          "buy_reject_maxpos_count": 5
+        },
+        {
+          "variant": "v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1",
+          "trade_count": 5,
+          "expected_value": 0.014443422550872007,
+          "profit_factor": 1.4152536684620092,
+          "max_drawdown": 0.0021939492508176576,
+          "buy_trade_count": 5,
+          "buy_reject_maxpos_count": 6
+        }
+      ],
+      "rank_impact": {
+        "rank_changed_count": 0,
+        "selected_changed_count": 0,
+        "dates_with_rank_change": [],
+        "dates_with_selected_change": []
+      },
+      "buy_trade_impact": {
+        "trade_set_changed_count": 5,
+        "quantity_changed_count": 2,
+        "dates_with_trade_set_change": [
+          "2026-01-13",
+          "2026-01-30",
+          "2026-02-04",
+          "2026-02-06"
+        ],
+        "dates_with_quantity_change": [
+          "2026-01-05",
+          "2026-01-20"
+        ]
+      },
+      "maxpos_reject_impact": {
+        "reject_set_changed_count": 9,
+        "dates_with_reject_change": [
+          "2026-01-29",
+          "2026-01-30",
+          "2026-02-02",
+          "2026-02-05",
+          "2026-02-06",
+          "2026-02-09",
+          "2026-02-24"
+        ]
+      },
+      "window": {
+        "label": "mid_window",
+        "start": "2025-12-22",
+        "end": "2026-02-24"
+      },
+      "scenario": {
+        "label": "top1_pos2",
+        "dtt_top_n": 1,
+        "max_positions": 2
+      },
+      "memory_limit": "4GB",
+      "stdout_tail": [
+        "rank_decomposition=G:\\EmotionQuant-gamma\\docs\\spec\\v0.01-plus\\evidence\\rank_decomp_mid_window_top1_pos2_dtt_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20251222_20260224_t111346__rank_decomposition.json"
+      ]
+    },
+    {
+      "result_path": "G:\\EmotionQuant-gamma\\docs\\spec\\v0.01-plus\\evidence\\rank_decomp_mid_window_top2_pos1_dtt_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20251222_20260224_t111533__rank_decomposition.json",
+      "summary_run_id": "rank_decomposition_dtt_legacy_bof_baseline_to_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20251222_20260224_t111717",
+      "comparison_key": "legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1",
+      "runs": [
+        {
+          "variant": "legacy_bof_baseline",
+          "trade_count": 3,
+          "expected_value": -0.03747526294131395,
+          "profit_factor": 0.18065613522750676,
+          "max_drawdown": 0.006199165532520104,
+          "buy_trade_count": 3,
+          "buy_reject_maxpos_count": 6
+        },
+        {
+          "variant": "v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1",
+          "trade_count": 3,
+          "expected_value": 0.023198189802537125,
+          "profit_factor": 1.1239079088828257,
+          "max_drawdown": 0.0021932118726247845,
+          "buy_trade_count": 3,
+          "buy_reject_maxpos_count": 12
+        }
+      ],
+      "rank_impact": {
+        "rank_changed_count": 0,
+        "selected_changed_count": 0,
+        "dates_with_rank_change": [],
+        "dates_with_selected_change": []
+      },
+      "buy_trade_impact": {
+        "trade_set_changed_count": 4,
+        "quantity_changed_count": 1,
+        "dates_with_trade_set_change": [
+          "2026-01-13",
+          "2026-01-20",
+          "2026-02-04",
+          "2026-02-06"
+        ],
+        "dates_with_quantity_change": [
+          "2026-01-05"
+        ]
+      },
+      "maxpos_reject_impact": {
+        "reject_set_changed_count": 14,
+        "dates_with_reject_change": [
+          "2026-01-20",
+          "2026-01-29",
+          "2026-01-30",
+          "2026-02-02",
+          "2026-02-04",
+          "2026-02-05",
+          "2026-02-06",
+          "2026-02-09",
+          "2026-02-24"
+        ]
+      },
+      "window": {
+        "label": "mid_window",
+        "start": "2025-12-22",
+        "end": "2026-02-24"
+      },
+      "scenario": {
+        "label": "top2_pos1",
+        "dtt_top_n": 2,
+        "max_positions": 1
+      },
+      "memory_limit": "4GB",
+      "stdout_tail": [
+        "rank_decomposition=G:\\EmotionQuant-gamma\\docs\\spec\\v0.01-plus\\evidence\\rank_decomp_mid_window_top2_pos1_dtt_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20251222_20260224_t111533__rank_decomposition.json"
+      ]
+    },
+    {
+      "result_path": "G:\\EmotionQuant-gamma\\docs\\spec\\v0.01-plus\\evidence\\rank_decomp_mid_window_top2_pos2_dtt_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20251222_20260224_t111717__rank_decomposition.json",
+      "summary_run_id": "rank_decomposition_dtt_legacy_bof_baseline_to_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20251222_20260224_t111904",
+      "comparison_key": "legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1",
+      "runs": [
+        {
+          "variant": "legacy_bof_baseline",
+          "trade_count": 4,
+          "expected_value": -0.031602256194749496,
+          "profit_factor": 0.243440668384408,
+          "max_drawdown": 0.0075868113311756994,
+          "buy_trade_count": 4,
+          "buy_reject_maxpos_count": 5
+        },
+        {
+          "variant": "v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1",
+          "trade_count": 5,
+          "expected_value": 0.014443422550872007,
+          "profit_factor": 1.4152536684620092,
+          "max_drawdown": 0.0021939492508176576,
+          "buy_trade_count": 5,
+          "buy_reject_maxpos_count": 10
+        }
+      ],
+      "rank_impact": {
+        "rank_changed_count": 0,
+        "selected_changed_count": 0,
+        "dates_with_rank_change": [],
+        "dates_with_selected_change": []
+      },
+      "buy_trade_impact": {
+        "trade_set_changed_count": 5,
+        "quantity_changed_count": 2,
+        "dates_with_trade_set_change": [
+          "2026-01-13",
+          "2026-01-30",
+          "2026-02-04",
+          "2026-02-06"
+        ],
+        "dates_with_quantity_change": [
+          "2026-01-05",
+          "2026-01-20"
+        ]
+      },
+      "maxpos_reject_impact": {
+        "reject_set_changed_count": 11,
+        "dates_with_reject_change": [
+          "2026-01-20",
+          "2026-01-29",
+          "2026-01-30",
+          "2026-02-02",
+          "2026-02-04",
+          "2026-02-05",
+          "2026-02-06",
+          "2026-02-09",
+          "2026-02-24"
+        ]
+      },
+      "window": {
+        "label": "mid_window",
+        "start": "2025-12-22",
+        "end": "2026-02-24"
+      },
+      "scenario": {
+        "label": "top2_pos2",
+        "dtt_top_n": 2,
+        "max_positions": 2
+      },
+      "memory_limit": "4GB",
+      "stdout_tail": [
+        "rank_decomposition=G:\\EmotionQuant-gamma\\docs\\spec\\v0.01-plus\\evidence\\rank_decomp_mid_window_top2_pos2_dtt_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20251222_20260224_t111717__rank_decomposition.json"
+      ]
+    },
+    {
+      "result_path": "G:\\EmotionQuant-gamma\\docs\\spec\\v0.01-plus\\evidence\\rank_decomp_mid_window_top50_pos10_dtt_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20251222_20260224_t111904__rank_decomposition.json",
+      "summary_run_id": "rank_decomposition_dtt_legacy_bof_baseline_to_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20251222_20260224_t112101",
+      "comparison_key": "legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1",
+      "runs": [
+        {
+          "variant": "legacy_bof_baseline",
+          "trade_count": 9,
+          "expected_value": -0.016840819603431218,
+          "profit_factor": 0.9142251605802361,
+          "max_drawdown": 0.015721057940050645,
+          "buy_trade_count": 9,
+          "buy_reject_maxpos_count": 0
+        },
+        {
+          "variant": "v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1",
+          "trade_count": 14,
+          "expected_value": -0.009952524676156028,
+          "profit_factor": 0.6374695273153385,
+          "max_drawdown": 0.011684783262548069,
+          "buy_trade_count": 14,
+          "buy_reject_maxpos_count": 3
+        }
+      ],
+      "rank_impact": {
+        "rank_changed_count": 0,
+        "selected_changed_count": 0,
+        "dates_with_rank_change": [],
+        "dates_with_selected_change": []
+      },
+      "buy_trade_impact": {
+        "trade_set_changed_count": 13,
+        "quantity_changed_count": 3,
+        "dates_with_trade_set_change": [
+          "2026-01-13",
+          "2026-01-20",
+          "2026-01-29",
+          "2026-01-30",
+          "2026-02-02",
+          "2026-02-04",
+          "2026-02-05",
+          "2026-02-09",
+          "2026-02-24"
+        ],
+        "dates_with_quantity_change": [
+          "2026-01-05",
+          "2026-01-20",
+          "2026-02-06"
+        ]
+      },
+      "maxpos_reject_impact": {
+        "reject_set_changed_count": 3,
+        "dates_with_reject_change": [
+          "2026-01-30",
+          "2026-02-04"
+        ]
+      },
+      "window": {
+        "label": "mid_window",
+        "start": "2025-12-22",
+        "end": "2026-02-24"
+      },
+      "scenario": {
+        "label": "top50_pos10",
+        "dtt_top_n": 50,
+        "max_positions": 10
+      },
+      "memory_limit": "4GB",
+      "stdout_tail": [
+        "rank_decomposition=G:\\EmotionQuant-gamma\\docs\\spec\\v0.01-plus\\evidence\\rank_decomp_mid_window_top50_pos10_dtt_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20251222_20260224_t111904__rank_decomposition.json"
+      ]
+    }
+  ],
+  "failures": []
+}

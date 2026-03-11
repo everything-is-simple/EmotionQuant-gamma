@@ -196,7 +196,7 @@
 
 ## 7. 下一步
 
-从 `2026-03-11` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3` 与 `Phase 4` 都已完成当前轮次收口，`Phase 4.1` 已启动且 `P4.1-A / P4.1-B / P4.1-C / P4.1-D` 已完成。
+从 `2026-03-11` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3` 与 `Phase 4` 都已完成当前轮次收口，`Phase 4.1` 已启动且 `P4.1-A / P4.1-B / P4.1-C / P4.1-D` 已完成，随后已带着 `carryover_buffer(1)` 完成一次 direct `Phase 4 Gate replay`。
 
 其中：
 
@@ -207,9 +207,9 @@
 
 后续顺序固定为：
 
-1. `Phase 4 Gate replay`（只允许携带 `carryover_buffer(1)` 这条单一候选返回）
-2. 若 replay 后仍不达标，再决定 `Phase 4.1` 是否继续保留或关闭
+1. 先做治理裁决：是否继续 `Phase 4.1` 冻结下一条 `MSS / Broker` 候选
+2. 若不继续，则保持 `legacy_bof_baseline` 为正式默认 / rollback target
 
 也就是：
 
-`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 已收口；Phase 4.1 已启动且 P4.1-A / P4.1-B / P4.1-C / P4.1-D 已完成，当前唯一整改候选 carryover_buffer(1) 已完成 Gate re-entry bundle，结论是允许重新进入 Phase 4 Gate replay，但当前仍不是 GO。`
+`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 已收口；Phase 4.1 已启动且 P4.1-A / P4.1-B / P4.1-C / P4.1-D 已完成，当前唯一整改候选 carryover_buffer(1) 已完成 direct Phase 4 Gate replay，但结论仍然是 NO-GO persists，正式默认路径继续保持 legacy_bof_baseline。`
