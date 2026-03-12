@@ -92,12 +92,14 @@
 当前已经落下的入口文件有：
 
 - `../docs/spec/common/records/repo-line-map-20260312.md`
+- `90-archive/README.md`
 - `02-implementation-spec/01-alpha-provenance-and-exit-decomposition-spec-20260311.md`
 - `02-implementation-spec/02-volman-second-alpha-search-spec-20260312.md`
 - `02-implementation-spec/03-fb-second-layer-provenance-spec-20260312.md`
 - `02-implementation-spec/04-fb-stability-and-purity-spec-20260312.md`
 - `02-implementation-spec/05-tachibana-contrary-alpha-search-spec-20260312.md`
-- `../docs/Strategy/PAS/tachibana-crowd-failure-minimal-contract-note-20260312.md`
+- `01-full-design/90-research-assets/README.md`
+- `01-full-design/90-research-assets/tachibana-crowd-failure-minimal-contract-note-20260312.md`
 - `03-execution/00-dev-data-baseline-inheritance-20260311.md`
 - `03-execution/01-phase-n1-pas-alpha-provenance-card-20260311.md`
 - `03-execution/02-phase-n1-5-volman-second-alpha-card-20260312.md`
@@ -110,19 +112,21 @@
 它们分别负责：
 
 1. 仓库层面的历史线 / 主线 / 研究线三分地图。
-2. 第二战场当前实验范围与对照约束。
-3. 在 `BOF` baseline 固定后，单独搜索第二个自带 alpha 的 `Volman` 候选。
-4. 在 `FB` 已成为第二个 alpha 候选后，继续做第二层 provenance。
-5. 在 `FB` 已通过第二层 dossier 后，继续做稳定性与 purity 审核。
-6. 基于 `Tachibana` 理论骨架，把 `TACHI_CROWD_FAILURE` 收缩成最小 formal contract。
-7. 三目录纪律、执行库 / 旧库候选、`RAW_DB_PATH`、双 TuShare key 的继承规则。
-8. 第一张执行卡：先做 `PAS raw alpha provenance`。
-9. 第二张执行卡：围绕 `RB_FAKE / SB / FB` 搜索第二个自带 alpha 候选。
-10. 第三张执行卡：围绕 `FB` 做 focused dossier，判断它是稳定补充型 alpha，还是暂时成立的小样本候选。
-11. 第四张执行卡：围绕 `FB` 做 stability / purity 审核，并明确是否进入 `N2`。
-12. 第五张执行卡：围绕 `Tachibana contrary alpha` 做第一轮 formal backtest screen。
-13. `N1.8` 首轮 formal readout：固定 `TACHI_CROWD_FAILURE` 当前只是 observation-only，而不是独立 alpha 胜者。
-14. 当前阶段性结论、对象分层与延后研究清单。
+2. 研究线早期方案和已退场计划的归档层。
+3. 第二战场当前实验范围与对照约束。
+4. 在 `BOF` baseline 固定后，单独搜索第二个自带 alpha 的 `Volman` 候选。
+5. 在 `FB` 已成为第二个 alpha 候选后，继续做第二层 provenance。
+6. 在 `FB` 已通过第二层 dossier 后，继续做稳定性与 purity 审核。
+7. `Normandy` 专属 research asset 的统一入口。
+8. 基于 `Tachibana` 理论骨架，把 `TACHI_CROWD_FAILURE` 收缩成最小 formal contract。
+9. 三目录纪律、执行库 / 旧库候选、`RAW_DB_PATH`、双 TuShare key 的继承规则。
+10. 第一张执行卡：先做 `PAS raw alpha provenance`。
+11. 第二张执行卡：围绕 `RB_FAKE / SB / FB` 搜索第二个自带 alpha 候选。
+12. 第三张执行卡：围绕 `FB` 做 focused dossier，判断它是稳定补充型 alpha，还是暂时成立的小样本候选。
+13. 第四张执行卡：围绕 `FB` 做 stability / purity 审核，并明确是否进入 `N2`。
+14. 第五张执行卡：围绕 `Tachibana contrary alpha` 做第一轮 formal backtest screen。
+15. `N1.8` 首轮 formal readout：固定 `TACHI_CROWD_FAILURE` 当前只是 observation-only，而不是独立 alpha 胜者。
+16. 当前阶段性结论、对象分层与延后研究清单。
 
 ---
 

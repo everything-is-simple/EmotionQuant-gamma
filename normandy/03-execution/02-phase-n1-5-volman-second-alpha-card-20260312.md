@@ -32,10 +32,10 @@
 4. `normandy/02-implementation-spec/02-volman-second-alpha-search-spec-20260312.md`
 5. `normandy/03-execution/00-dev-data-baseline-inheritance-20260311.md`
 6. `normandy/03-execution/records/01-phase-n1-bof-conclusion-record-20260312.md`
-7. `docs/Strategy/PAS/volman-pas-alpha-screening.md`
-8. `docs/Strategy/PAS/volman-pas-v0-research-card-20260312.md`
-9. `docs/Strategy/PAS/bof-firstborn-record-20260312.md`
-10. `docs/Strategy/PAS/volman-rb-sb-fb-minimal-contract-note-20260312.md`
+7. `normandy/01-full-design/90-research-assets/volman-pas-alpha-screening.md`
+8. `normandy/01-full-design/90-research-assets/volman-pas-v0-research-card-20260312.md`
+9. `normandy/01-full-design/90-research-assets/bof-firstborn-record-20260312.md`
+10. `normandy/01-full-design/90-research-assets/volman-rb-sb-fb-minimal-contract-note-20260312.md`
 
 这意味着本卡默认继续遵守：
 

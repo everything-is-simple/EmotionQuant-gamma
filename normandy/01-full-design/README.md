@@ -25,7 +25,8 @@
 
 1. 先用 `02-implementation-spec/` 定义本轮实验范围。
 2. 再用 `03-execution/` 推动 `N1 / PAS raw alpha provenance`。
-3. 等第一轮 evidence 落地后，再决定 `01-full-design/` 是否需要扩展成正式设计正文。
+3. `Normandy` 专属 research asset 统一收进 `90-research-assets/`，不再散落在共享理论目录。
+4. 等第一轮 evidence 落地后，再决定 `01-full-design/` 是否需要扩展成正式设计正文。
 
 ---
 

@@ -33,6 +33,7 @@
 | 主线实现卡 | `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md` | 当前实现卡归档 |
 | 主线切换 Gate | `docs/spec/v0.01-plus/governance/v0.01-plus-gate-checklist.md` | Gate 规则归档 |
 | 契约补充 | `docs/spec/v0.01-plus/governance/v0.01-plus-data-contract-table.md` | 运行期契约归档 |
+| 战役后续废案 | `docs/spec/v0.01-plus/90-archive/README.md` | 已退场修复路线与临时方案归档 |
 
 ---
 
@@ -44,6 +45,7 @@
 4. 若本目录材料与 `blueprint/` 冲突，以 `blueprint/` 为准；若与历史基线冲突，按问题类型区分：
    - 历史回看：以 `system-baseline.md` 为准
    - 当前主线：以 `blueprint/` 为准
+5. 已经退场的 `v0.01-plus` 后续方案统一放在 `90-archive/`，不再回堆到共享目录。
 
 ---
 

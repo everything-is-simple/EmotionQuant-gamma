@@ -241,5 +241,5 @@
 3. `G:\《股市浮沉二十载》\2012.(Japan)【立花义正】\立花义正的操作法.doc`
 4. `G:\《股市浮沉二十载》\2012.(Japan)【立花义正】\你也能够成为股票高手：一位从零开始学炒股的职业炒家的不平凡操作记录(高清).pdf`
 5. `docs/Strategy/PAS/lance-beggs-ytc-analysis.md`
-6. `docs/Strategy/PAS/volman-pas-alpha-screening.md`
+6. `normandy/01-full-design/90-research-assets/volman-pas-alpha-screening.md`
 7. `normandy/03-execution/records/00-normandy-interim-conclusions-20260312.md`

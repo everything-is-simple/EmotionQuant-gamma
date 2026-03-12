@@ -1,6 +1,6 @@
 # docs/ 目录说明
 
-**状态**: `历史 / 治理 / 辅助层`  
+**状态**: `导航 / 历史 / 治理 / 辅助层`  
 **当前主线入口**: `../blueprint/README.md`
 
 ---
@@ -14,6 +14,10 @@
 1. 历史基线与历史版本归档
 2. 当前主线所需的治理、证据与状态记录
 3. 理论、评审、流程、参考资料等长期辅助资产
+
+从 `2026-03-12` 起，再加一条新规则：
+
+4. 先用 `campaigns/` 把三大战役和共用层分开，再进入具体目录
 
 如果你想看“现在系统怎么定义”，请直接去：
 
@@ -30,6 +34,7 @@
 
 | 目录 | 定位 | 是否为当前主线 |
 |------|------|----------------|
+| `campaigns/` | 三大战役 + 共用层统一导航 | - |
 | `../blueprint/` | 当前主线设计 | ✅ 是 |
 | `design-v2/` | `v0.01 Frozen` 历史基线 | ❌ 否 |
 | `spec/` | 治理、证据、records 归档层 | ❌ 否 |
@@ -40,9 +45,10 @@
 
 其中：
 
-1. `blueprint/` 是当前设计世界。
-2. `docs/` 是退场后的历史、治理与辅助世界。
-3. `spec/` 会持续增长，但增长的是治理与证据，不是设计正文。
+1. `campaigns/` 是先看战役、再进目录的总入口。
+2. `blueprint/` 是当前设计世界。
+3. `docs/` 是退场后的历史、治理与辅助世界。
+4. `spec/` 会持续增长，但增长的是治理与证据，不是设计正文。
 
 ---
 
@@ -50,23 +56,29 @@
 
 ### 3.1 看当前主线
 
-1. `../blueprint/README.md`
-2. `../blueprint/01-full-design/`
-3. `../blueprint/02-implementation-spec/`
-4. `../blueprint/03-execution/`
+1. `campaigns/README.md`
+2. `campaigns/02-v0.01-plus/README.md`
+3. `../blueprint/README.md`
+4. `../blueprint/01-full-design/`
+5. `../blueprint/02-implementation-spec/`
+6. `../blueprint/03-execution/`
 
 ### 3.2 看历史与治理
 
-1. `spec/common/records/development-status.md`
-2. `spec/README.md`
-3. `design-v2/01-system/system-baseline.md`
+1. `campaigns/README.md`
+2. `campaigns/01-v0.01-frozen/README.md`
+3. `spec/common/records/development-status.md`
+4. `spec/README.md`
+5. `design-v2/01-system/system-baseline.md`
 
 ### 3.3 看长期辅助资产
 
-1. `observatory/README.md`
-2. `reference/README.md`
-3. `Strategy/README.md`
-4. `workflow/README.md`
+1. `campaigns/README.md`
+2. `campaigns/00-shared/README.md`
+3. `observatory/README.md`
+4. `reference/README.md`
+5. `Strategy/README.md`
+6. `workflow/README.md`
 
 ---
 
@@ -83,6 +95,7 @@
 ## 5. 相关入口
 
 - 设计迁移边界：`docs/design-migration-boundary.md`
+- 三大战役总图：`docs/campaigns/README.md`
 - 当前治理状态：`docs/spec/common/records/development-status.md`
 - 历史基线：`docs/design-v2/01-system/system-baseline.md`
 - 当前主线设计：`../blueprint/README.md`

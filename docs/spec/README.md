@@ -22,6 +22,7 @@
 
 | 入口 | 用途 |
 |---|---|
+| `../campaigns/README.md` | 三大战役与共用层统一导航 |
 | `common/records/development-status.md` | 当前治理状态与阶段判断 |
 | `common/README.md` | 跨版本 common 层入口 |
 | `v0.01/README.md` | `v0.01 Frozen` 历史版本材料 |

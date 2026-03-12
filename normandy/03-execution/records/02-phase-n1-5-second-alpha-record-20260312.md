@@ -27,10 +27,10 @@
 
 ### 2.1 来源语义参考
 
-1. `docs/Strategy/PAS/volman-pas-alpha-screening.md`
-2. `docs/Strategy/PAS/volman-pas-v0-research-card-20260312.md`
-3. `docs/Strategy/PAS/volman-rb-sb-fb-minimal-contract-note-20260312.md`
-4. `docs/Strategy/PAS/bof-firstborn-record-20260312.md`
+1. `normandy/01-full-design/90-research-assets/volman-pas-alpha-screening.md`
+2. `normandy/01-full-design/90-research-assets/volman-pas-v0-research-card-20260312.md`
+3. `normandy/01-full-design/90-research-assets/volman-rb-sb-fb-minimal-contract-note-20260312.md`
+4. `normandy/01-full-design/90-research-assets/bof-firstborn-record-20260312.md`
 
 这些参考对当前问题给出的固定边界是：
 

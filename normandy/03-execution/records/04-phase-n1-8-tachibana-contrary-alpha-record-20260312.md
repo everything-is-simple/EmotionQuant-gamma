@@ -22,7 +22,7 @@
 ### 2.1 理论与上游结论
 
 1. `docs/Strategy/PAS/tachibana-yoshimasa-analysis.md`
-2. `docs/Strategy/PAS/tachibana-crowd-failure-minimal-contract-note-20260312.md`
+2. `normandy/01-full-design/90-research-assets/tachibana-crowd-failure-minimal-contract-note-20260312.md`
 3. `normandy/README.md`
 4. `normandy/02-implementation-spec/05-tachibana-contrary-alpha-search-spec-20260312.md`
 5. `normandy/03-execution/05-phase-n1-8-tachibana-contrary-alpha-card-20260312.md`
