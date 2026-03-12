@@ -73,7 +73,7 @@
 
 当前实验固定允许：
 
-1. 参考 `docs/Strategy/PAS/tachibana-yoshimasa-analysis.md`
+1. 参考 `normandy/01-full-design/90-research-assets/tachibana-yoshimasa-analysis.md`
 2. 结合本地原始资料抽取最小 formal contract
 3. 在统一长窗口上比较：
    - `BOF_CONTROL`

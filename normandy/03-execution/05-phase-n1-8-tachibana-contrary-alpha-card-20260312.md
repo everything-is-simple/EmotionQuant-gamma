@@ -21,7 +21,7 @@
 开工前必须先继承：
 
 1. `normandy/README.md`
-2. `docs/Strategy/PAS/tachibana-yoshimasa-analysis.md`
+2. `normandy/01-full-design/90-research-assets/tachibana-yoshimasa-analysis.md`
 3. `normandy/03-execution/records/00-normandy-interim-conclusions-20260312.md`
 4. `normandy/02-implementation-spec/05-tachibana-contrary-alpha-search-spec-20260312.md`
 5. `normandy/03-execution/records/01-phase-n1-bof-conclusion-record-20260312.md`
