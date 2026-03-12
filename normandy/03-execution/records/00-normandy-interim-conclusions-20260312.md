@@ -1,14 +1,14 @@
 # Normandy Interim Conclusions
 
 **状态**: `Active`  
-**日期**: `2026-03-12`  
+**日期**: `2026-03-13`  
 **对象**: `第二战场当前阶段性研究结论与后续研究清单`
 
 ---
 
 ## 1. 当前已经可以写死的结论
 
-截至 `2026-03-12`，`Normandy` 当前已经可以固定下面这些结论：
+截至 `2026-03-13`，`Normandy` 当前已经可以固定下面这些结论：
 
 1. `BOF` 是当前 `PAS raw alpha baseline`
 2. `BOF` 接下来不再作为“待证对象”，而是作为所有候选的固定对照与尺子
@@ -18,6 +18,8 @@
 6. `SB` 已完成 `N1.10` formal readout：当前 full detector 路线 `no-go`，但保留 `SB_SMALL_W_MID_STRENGTH` 为窄 watch branch
 7. `PB / TST / CPB` 暂不再以“谁接班 BOF”的方式继续平行竞争
 8. `TACHI_CROWD_FAILURE` 当前 minimal contract 已形成可审判样本，但首轮长窗裁决仍是 `observation-only`
+9. `BOF family` 已完成 `N1.11 / N1.12` formal readout：`BOF_KEYLEVEL_PINBAR` 虽在 `N1.11` 中成为 retained branch，但 `N1.12` 已正式裁定其 `branch_no_go`
+10. `BOF_CONTROL` 当前继续保持 `Normandy` 唯一 baseline；`N2 / controlled exit decomposition` 当前没有可放行对象
 
 ---
 
@@ -26,6 +28,9 @@
 | 对象 | 当前定位 | 当前处理 |
 |---|---|---|
 | `BOF` | 固定 baseline / control | 所有新候选的统一对照尺 |
+| `BOF_KEYLEVEL_PINBAR` | `n1_11_retained_but_n1_12_branch_no_go` | 结束当前升格，回到 `BOF_CONTROL` |
+| `BOF_KEYLEVEL_STRICT` | 正向读数存在，但未成为 retained 主位 | 保留为观察分支，不进入主队列 |
+| `BOF_PINBAR_EXPRESSION` | 长窗正式 `no-go` | 退出 `BOF` quality 主队列 |
 | `FB_BOUNDARY` | `retained_watch_candidate_not_n2_ready` | 保留 retained branch 身份，但主队列不继续优先深挖，`N2` 暂不打开 |
 | `FB_CLEANER` | cleaner textbook branch but not carrying current edge | 退出 `FB` 主队列，保留为观测分支 |
 | `SB` | `full_detector_no_go_watch_branch_only` | 冻结 full detector 路线；仅保留 `SB_SMALL_W_MID_STRENGTH` 为 watch / backlog 分支 |
@@ -62,65 +67,68 @@
 
 ## 4. 当前研究优先级
 
-### 4.1 第一优先级：`N1.11 / BOF pinbar quality provenance`
-
-研究内容：
-
-1. 以 `BOF_CONTROL` 为固定对照
-2. 在同一套 Broker 出场语义下比较 `key-level / pinbar` quality branches
-3. 决定 `BOF` family 内部是否存在 retained branch
-
-预计时间：
-
-`1 ~ 2` 天
-
-要求深度：
-
-`足以决定是进入 N1.12，还是把 BOF family 继续保持为 baseline-only。`
-
-### 4.2 第二优先级：`N1.12 / BOF family stability or no-go`
-
-研究内容：
-
-1. 只对 `N1.11` 的 retained branch 做稳定性与 purity 审核
-2. 复核跨年、环境桶、selected / executed gap 与 overlap / incremental
-3. 决定是否允许打开 `N2`
-
-预计时间：
-
-`1 ~ 2` 天
-
-要求深度：
-
-`足以决定 retained branch 是真的 entry alpha，还是只是局部样本事故。`
-
-### 4.3 第三优先级：`N2 / controlled exit decomposition`
-
-前提：
-
-只有当 `N1.12` 判定 retained branch `eligible_for_n2` 时才允许打开。
-
-研究内容：
-
-1. 先做 `BOF_CONTROL vs retained BOF quality branch`
-2. 判断 retained branch 是买对卖坏，还是 entry 仍不够稳
-3. 继续保持 `MSS / IRS` 在本轮之外
-
-预计时间：
-
-`2 ~ 3` 天
-
-要求深度：
-
-`只在 retained branch 已经通过稳定性审核时才要求达到这个深度。`
-
-### 4.4 第四优先级：`Tachibana detector refinement or backlog retention`
+### 4.1 第一优先级：`Tachibana detector refinement or backlog retention`
 
 研究内容：
 
 1. 承认 `TACHI_CROWD_FAILURE` 当前只保留为 observation / backlog
 2. 不把当前 minimal contract 的失败误写成“立花理论整体失败”
-3. 只有在 `BOF family` 这条主队列读完后，才允许回到这条线
+3. 把这条线从“口头保留”推进到正式 `refinement` 或正式 `backlog retention`
+
+预计时间：
+
+`延后排队，但应完成治理收口`
+
+要求深度：
+
+`足以决定 Tachibana 这条线是继续 formalize，还是明确留在 backlog。`
+
+### 4.2 第二优先级：`观察池 / watch branches 治理收口`
+
+研究内容：
+
+1. 承认 `FB_BOUNDARY / SB_SMALL_W_MID_STRENGTH / BOF_KEYLEVEL_STRICT` 当前都不属于主队列可直推对象
+2. 区分：
+   - `watch candidate`
+   - `watch backlog branch`
+   - `not retained but worth留档`
+3. 避免把观察池对象重新误拉回大混战
+
+预计时间：
+
+`1 ~ 2` 天
+
+要求深度：
+
+`足以让当前对象分层在文档和主队列口径上彻底一致。`
+
+### 4.3 第三优先级：`N2 / controlled exit decomposition`
+
+前提：
+
+只有当未来重新出现 `eligible_for_n2` 的 retained object 时才允许打开。
+
+研究内容：
+
+1. 当前只保留锁定状态，不进入执行
+2. 不把 `BOF quality branch` 的局部亮点误读成 `N2 ready`
+3. 继续保持 `MSS / IRS` 在本轮之外
+
+预计时间：
+
+`未解锁，不排期`
+
+要求深度：
+
+`只有在出现新的稳定 retained object 时才要求达到这个深度。`
+
+### 4.4 第四优先级：`Volman deferred queue`
+
+研究内容：
+
+1. `RB_TRUE / IRB / DD / BB / ARB` 当前继续只保留在后备研究队列
+2. 不把 sidecar / enhancer 类对象误写成新一轮正式 detector 主队列
+3. 等主队列和 backlog 口径彻底收口后再讨论是否重开
 
 预计时间：
 
@@ -128,7 +136,7 @@
 
 要求深度：
 
-`只保留 refinement / dossier 价值，不先占用主队列。`
+`只保留研究清单价值，不先占用执行资源。`
 
 ---
 
@@ -194,11 +202,11 @@
 
 1. 再把 `PB / TST / CPB / SB / FB` 一起拖进新一轮大混战
 2. 继续围绕 `BPB` 烧时间
-3. 在 `FB_BOUNDARY` 还没通过稳定性审查前，直接讨论主线升格
+3. 把 `BOF quality split` 的局部亮点误读成“已经可以开 N2”
 4. 把 `Tachibana` 粗暴翻译成“把 PAS 反着做”
 
 ---
 
 ## 8. 当前一句话路线图
 
-`BOF 作为尺子固定，当前主队列先回到 BOF / pinbar / key-level family，在无 MSS / 无 IRS、同一套 Broker 出场语义下做 quality provenance 与 stability 审核；只有 retained branch 真正站住后，才允许打开 N2。`
+`BOF 作为尺子固定，BOF family quality gate 已经读完且当前结论是 baseline-only；N2 继续锁住，主队列回到 Tachibana / 观察池 / backlog 的治理收口。`
