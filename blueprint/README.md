@@ -59,7 +59,6 @@
 
 当前已经落下的入口文件有：
 
-- `00-doc-reorganization-todolist-20260308.md`
 - `01-full-design/01-selector-contract-annex-20260308.md`
 - `01-full-design/02-pas-trigger-registry-contract-annex-20260308.md`
 - `01-full-design/03-irs-lite-contract-annex-20260308.md`
