@@ -131,6 +131,7 @@
 - `03-execution/records/00-normandy-interim-conclusions-20260312.md`
 - `03-execution/records/12-phase-n2-bof-control-baseline-exit-decomposition-record-20260313.md`
 - `03-execution/records/13-phase-n2a-targeted-trailing-stop-follow-up-record-20260313.md`
+- `03-execution/records/14-phase-n2a-2-profit-gated-micro-sweep-record-20260313.md`
 
 它们分别负责：
 
@@ -173,6 +174,7 @@
 37. 当前阶段性结论、对象分层与延后研究清单。
 38. `N2 baseline lane` 第一轮 formal readout：固定 `BOF_CONTROL` 不是买错，`execution friction` 不是主因，而当前最可疑的是 `trailing-stop` 的 mixed damage。
 39. `N2A` 第一轮 formal readout：固定当前 trailing-stop 伤害更像 `small_cluster_of_outlier_truncation`，而不是普遍存在的 `repeatable trend-premature-exit`，因此不支持当前主线立刻全局取消 trailing-stop。
+40. `N2A-2` profit-gated micro-sweep formal readout：固定 `PROFIT_GATED_TRAIL_25P` 是当前最平衡的 preservation 候选，但它仍然只是 `partial trade-off`，不支持默认 trailing-stop 语义改写，也不解锁 `promotion lane`。
 
 ---
 
