@@ -95,10 +95,15 @@
 - `02-implementation-spec/01-alpha-provenance-and-exit-decomposition-spec-20260311.md`
 - `02-implementation-spec/02-volman-second-alpha-search-spec-20260312.md`
 - `02-implementation-spec/03-fb-second-layer-provenance-spec-20260312.md`
+- `02-implementation-spec/04-fb-stability-and-purity-spec-20260312.md`
+- `02-implementation-spec/05-tachibana-contrary-alpha-search-spec-20260312.md`
 - `03-execution/00-dev-data-baseline-inheritance-20260311.md`
 - `03-execution/01-phase-n1-pas-alpha-provenance-card-20260311.md`
 - `03-execution/02-phase-n1-5-volman-second-alpha-card-20260312.md`
 - `03-execution/03-phase-n1-6-fb-second-layer-provenance-card-20260312.md`
+- `03-execution/04-phase-n1-7-fb-stability-and-purity-card-20260312.md`
+- `03-execution/05-phase-n1-8-tachibana-contrary-alpha-card-20260312.md`
+- `03-execution/records/00-normandy-interim-conclusions-20260312.md`
 
 它们分别负责：
 
@@ -106,10 +111,15 @@
 2. 第二战场当前实验范围与对照约束。
 3. 在 `BOF` baseline 固定后，单独搜索第二个自带 alpha 的 `Volman` 候选。
 4. 在 `FB` 已成为第二个 alpha 候选后，继续做第二层 provenance。
-5. 三目录纪律、执行库 / 旧库候选、`RAW_DB_PATH`、双 TuShare key 的继承规则。
-6. 第一张执行卡：先做 `PAS raw alpha provenance`。
-7. 第二张执行卡：围绕 `RB_FAKE / SB / FB` 搜索第二个自带 alpha 候选。
-8. 第三张执行卡：围绕 `FB` 做 focused dossier，判断它是稳定补充型 alpha，还是暂时成立的小样本候选。
+5. 在 `FB` 已通过第二层 dossier 后，继续做稳定性与 purity 审核。
+6. 基于 `Tachibana` 理论骨架，先测试“极端一致失效”是否能形成独立 alpha。
+7. 三目录纪律、执行库 / 旧库候选、`RAW_DB_PATH`、双 TuShare key 的继承规则。
+8. 第一张执行卡：先做 `PAS raw alpha provenance`。
+9. 第二张执行卡：围绕 `RB_FAKE / SB / FB` 搜索第二个自带 alpha 候选。
+10. 第三张执行卡：围绕 `FB` 做 focused dossier，判断它是稳定补充型 alpha，还是暂时成立的小样本候选。
+11. 第四张执行卡：围绕 `FB` 做 stability / purity 审核，并明确是否进入 `N2`。
+12. 第五张执行卡：围绕 `Tachibana contrary alpha` 做第一轮 formal backtest screen。
+13. 当前阶段性结论、对象分层与延后研究清单。
 
 ---
 
