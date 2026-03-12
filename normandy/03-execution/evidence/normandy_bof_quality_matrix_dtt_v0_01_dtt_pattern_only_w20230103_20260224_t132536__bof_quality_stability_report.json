@@ -1,0 +1,302 @@
+{
+  "generated_at": "2026-03-12T14:31:42Z",
+  "matrix_summary_run_id": "normandy_bof_quality_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t132536",
+  "matrix_path": "G:\\EmotionQuant-gamma\\normandy\\03-execution\\evidence\\normandy_bof_quality_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t132536__bof_quality_matrix.json",
+  "quality_digest_summary_run_id": "normandy_bof_quality_digest_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t143141",
+  "quality_digest_path": "G:\\EmotionQuant-gamma\\normandy\\03-execution\\evidence\\normandy_bof_quality_digest_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t143141__bof_quality_digest.json",
+  "snapshot_status": "available",
+  "snapshot_db_path": "G:\\EmotionQuant-temp\\backtest\\normandy-bof-quality-w20230103-20260224-20260312_212534.duckdb",
+  "retained_branch_label": "BOF_KEYLEVEL_PINBAR",
+  "retained_branch_run_id": "normandy_bof_quality_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t140903",
+  "control_label": "BOF_CONTROL",
+  "candidate_summary": {
+    "trade_count": 21,
+    "expected_value": 0.03355098978172765,
+    "profit_factor": 1.9180761644263824,
+    "max_drawdown": 0.026847079705046253,
+    "participation_rate": 1.0,
+    "overlap_rate_vs_bof_control": 0.7142857142857143,
+    "incremental_buy_trades_vs_bof_control": 6
+  },
+  "control_summary": {
+    "trade_count": 277,
+    "expected_value": 0.01608650155535747,
+    "profit_factor": 2.6120732101489508,
+    "max_drawdown": 0.13267002776878056,
+    "participation_rate": 0.8052325581395349
+  },
+  "pairing_diagnostics": {
+    "selected_entry_count": 21,
+    "buy_fill_count": 21,
+    "exit_fill_count": 21,
+    "paired_trade_count": 21
+  },
+  "selected_trace_summary": {
+    "selected_count": 21,
+    "avg_pattern_quality_score": 81.46553666666667,
+    "avg_risk_reward_ref": 3.0951832415835447,
+    "avg_close_pos": 0.8307276650687921,
+    "avg_reclaim_pct": 0.01890257142857143,
+    "avg_keylevel_proxy_score": 83.70628557142857,
+    "avg_pinbar_proxy_score": 85.81696585714288,
+    "keylevel_pass_ratio": 1.0,
+    "pinbar_pass_ratio": 1.0
+  },
+  "signal_year_slices": [
+    {
+      "signal_year": 2023,
+      "trade_count": 4,
+      "avg_gross_return": -0.012244935148368757,
+      "win_rate": 0.25,
+      "avg_strength": 0.6676084021574867,
+      "avg_quality_score": 84.85340674999999
+    },
+    {
+      "signal_year": 2024,
+      "trade_count": 10,
+      "avg_gross_return": 0.0871535335475863,
+      "win_rate": 0.6,
+      "avg_strength": 0.6236548315087754,
+      "avg_quality_score": 80.0116071
+    },
+    {
+      "signal_year": 2025,
+      "trade_count": 6,
+      "avg_gross_return": -0.014757353582091293,
+      "win_rate": 0.5,
+      "avg_strength": 0.7088438967593279,
+      "avg_quality_score": 82.66704233333333
+    },
+    {
+      "signal_year": 2026,
+      "trade_count": 1,
+      "avg_gross_return": 0.005976095617529931,
+      "win_rate": 1.0,
+      "avg_strength": 0.7437500000000009,
+      "avg_quality_score": 75.244318
+    }
+  ],
+  "quarter_activity": [
+    {
+      "signal_quarter": "2023-Q1",
+      "selected_count": 1,
+      "avg_strength": 0.716876120709504,
+      "avg_quality_score": 89.619502,
+      "avg_risk_reward_ref": 2.99457454710011
+    },
+    {
+      "signal_quarter": "2023-Q2",
+      "selected_count": 1,
+      "avg_strength": 0.6004925095228731,
+      "avg_quality_score": 83.860844,
+      "avg_risk_reward_ref": 5.371900826446286
+    },
+    {
+      "signal_quarter": "2023-Q3",
+      "selected_count": 1,
+      "avg_strength": 0.6742268041237109,
+      "avg_quality_score": 82.197924,
+      "avg_risk_reward_ref": 2.6200633753549463
+    },
+    {
+      "signal_quarter": "2023-Q4",
+      "selected_count": 1,
+      "avg_strength": 0.6788381742738591,
+      "avg_quality_score": 83.735357,
+      "avg_risk_reward_ref": 2.095092024539878
+    },
+    {
+      "signal_quarter": "2024-Q1",
+      "selected_count": 4,
+      "avg_strength": 0.6238597986768705,
+      "avg_quality_score": 76.024023,
+      "avg_risk_reward_ref": 2.151344361588875
+    },
+    {
+      "signal_quarter": "2024-Q2",
+      "selected_count": 4,
+      "avg_strength": 0.6230205799909906,
+      "avg_quality_score": 82.92095125,
+      "avg_risk_reward_ref": 2.8406790884016813
+    },
+    {
+      "signal_quarter": "2024-Q3",
+      "selected_count": 2,
+      "avg_strength": 0.6245134002081547,
+      "avg_quality_score": 82.168087,
+      "avg_risk_reward_ref": 4.684252710210613
+    },
+    {
+      "signal_quarter": "2025-Q1",
+      "selected_count": 3,
+      "avg_strength": 0.7287742504409173,
+      "avg_quality_score": 84.82556133333333,
+      "avg_risk_reward_ref": 4.383618886832813
+    },
+    {
+      "signal_quarter": "2025-Q3",
+      "selected_count": 1,
+      "avg_strength": 0.7645161290322564,
+      "avg_quality_score": 76.750455,
+      "avg_risk_reward_ref": 1.5
+    },
+    {
+      "signal_quarter": "2025-Q4",
+      "selected_count": 2,
+      "avg_strength": 0.6511122501004796,
+      "avg_quality_score": 82.3875575,
+      "avg_risk_reward_ref": 3.214880709465662
+    },
+    {
+      "signal_quarter": "2026-Q1",
+      "selected_count": 1,
+      "avg_strength": 0.7437500000000009,
+      "avg_quality_score": 75.244318,
+      "avg_risk_reward_ref": 1.5
+    }
+  ],
+  "positive_examples": [
+    {
+      "signal_date": "2024-01-23",
+      "code": "601899",
+      "entry_date": "2024-01-24",
+      "exit_date": "2024-04-24",
+      "gross_return": 0.4664371772805508,
+      "pattern_strength": 0.5561986883783678,
+      "pattern_quality_score": 79.771463
+    },
+    {
+      "signal_date": "2024-01-18",
+      "code": "601328",
+      "entry_date": "2024-01-19",
+      "exit_date": "2024-09-02",
+      "gross_return": 0.22395833333333334,
+      "pattern_strength": 0.6399999999999996,
+      "pattern_quality_score": 70.529108
+    },
+    {
+      "signal_date": "2024-01-18",
+      "code": "601988",
+      "entry_date": "2024-01-19",
+      "exit_date": "2024-09-05",
+      "gross_return": 0.18500000000000005,
+      "pattern_strength": 0.6600000000000003,
+      "pattern_quality_score": 71.658228
+    },
+    {
+      "signal_date": "2024-04-26",
+      "code": "600522",
+      "entry_date": "2024-04-29",
+      "exit_date": "2024-07-16",
+      "gross_return": 0.15360253365003954,
+      "pattern_strength": 0.6915254237288138,
+      "pattern_quality_score": 83.280793
+    },
+    {
+      "signal_date": "2023-05-15",
+      "code": "601899",
+      "entry_date": "2023-05-16",
+      "exit_date": "2023-08-22",
+      "gross_return": 0.09321266968325785,
+      "pattern_strength": 0.6004925095228731,
+      "pattern_quality_score": 83.860844
+    },
+    {
+      "signal_date": "2025-01-17",
+      "code": "000002",
+      "entry_date": "2025-01-20",
+      "exit_date": "2025-03-25",
+      "gross_return": 0.0863636363636364,
+      "pattern_strength": 0.7349999999999988,
+      "pattern_quality_score": 83.937405
+    }
+  ],
+  "negative_examples": [
+    {
+      "signal_date": "2024-01-25",
+      "code": "300015",
+      "entry_date": "2024-01-26",
+      "exit_date": "2024-02-01",
+      "gross_return": -0.08254887762490952,
+      "pattern_strength": 0.6392405063291141,
+      "pattern_quality_score": 82.137293
+    },
+    {
+      "signal_date": "2025-12-08",
+      "code": "002402",
+      "entry_date": "2025-12-09",
+      "exit_date": "2025-12-15",
+      "gross_return": -0.07777777777777778,
+      "pattern_strength": 0.6300768491942478,
+      "pattern_quality_score": 82.099146
+    },
+    {
+      "signal_date": "2025-10-27",
+      "code": "689009",
+      "entry_date": "2025-10-28",
+      "exit_date": "2025-11-05",
+      "gross_return": -0.07687400318979266,
+      "pattern_strength": 0.6721476510067113,
+      "pattern_quality_score": 82.675969
+    },
+    {
+      "signal_date": "2023-03-06",
+      "code": "300750",
+      "entry_date": "2023-03-07",
+      "exit_date": "2023-03-20",
+      "gross_return": -0.07292079207920787,
+      "pattern_strength": 0.716876120709504,
+      "pattern_quality_score": 89.619502
+    },
+    {
+      "signal_date": "2024-06-26",
+      "code": "601127",
+      "entry_date": "2024-06-27",
+      "exit_date": "2024-07-15",
+      "gross_return": -0.06256590509666068,
+      "pattern_strength": 0.7002922833276982,
+      "pattern_quality_score": 85.326794
+    },
+    {
+      "signal_date": "2025-07-02",
+      "code": "002455",
+      "entry_date": "2025-07-03",
+      "exit_date": "2025-09-04",
+      "gross_return": -0.061516452074392075,
+      "pattern_strength": 0.7645161290322564,
+      "pattern_quality_score": 76.750455
+    }
+  ],
+  "meaningful_negative_signal_years": [
+    2023,
+    2025
+  ],
+  "meaningful_positive_signal_years": [
+    2024
+  ],
+  "dominant_environment_share": 0.9523809523809523,
+  "best_environment_bucket": {
+    "bucket": "NEUTRAL",
+    "expected_value": 0.03943253492613627,
+    "profit_factor": 1.9898154575785574,
+    "trade_count": 20
+  },
+  "trade_share_vs_bof_control": 0.07581227436823104,
+  "selected_to_fill_ratio": 1.0,
+  "stability_flags": [
+    "negative_signal_year_slices",
+    "single_bucket_dependency"
+  ],
+  "stability_status": "branch_no_go",
+  "decision": "branch_no_go_keep_bof_control",
+  "conclusion": "BOF_KEYLEVEL_PINBAR 虽然在 N1.11 中成为 retained branch，但当前稳定性 / 纯度审计仍未通过，暂不允许进入 N2。",
+  "next_actions": [
+    "结束当前 retained branch 的继续推进。",
+    "保持 BOF_CONTROL 为唯一 baseline。",
+    "除非后续重新定义 branch contract，否则当前不打开 N2。"
+  ],
+  "notes": [
+    "N1.12 只围绕 N1.11 retained branch，不重新打开跨 family 竞争。",
+    "BOF quality branches 是 control 内部子集，因此 overlap 读数只作为 purity 约束，不作为独立 alpha 证明。"
+  ]
+}

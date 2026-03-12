@@ -1,0 +1,1157 @@
+{
+  "generated_at": "2026-03-12T14:22:44Z",
+  "matrix_status": "completed",
+  "research_parent": "BOF",
+  "research_question": "Does the BOF family contain a stricter key-level / pinbar branch worth promoting under the same Broker semantics?",
+  "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "db_path": "G:\\EmotionQuant-temp\\backtest\\normandy-bof-quality-w20230103-20260224-20260312_212534.duckdb",
+  "artifact_root": "G:\\EmotionQuant-temp\\artifacts",
+  "start": "2023-01-03",
+  "end": "2026-02-24",
+  "dtt_variant": "v0_01_dtt_pattern_only",
+  "execution_mode": {
+    "pipeline_mode": "dtt",
+    "enable_mss_gate": false,
+    "enable_irs_filter": false,
+    "dtt_variant": "v0_01_dtt_pattern_only",
+    "dtt_top_n": 50,
+    "max_positions": 10,
+    "pas_quality_enabled": true,
+    "pas_reference_enabled": true,
+    "control_label": "BOF_CONTROL"
+  },
+  "scenarios": [
+    {
+      "label": "BOF_CONTROL",
+      "family": "BOF_CONTROL",
+      "signal_pattern": "bof",
+      "control": true,
+      "requires_keylevel": false,
+      "requires_pinbar": false
+    },
+    {
+      "label": "BOF_KEYLEVEL_STRICT",
+      "family": "BOF_QUALITY",
+      "signal_pattern": "bof",
+      "control": false,
+      "requires_keylevel": true,
+      "requires_pinbar": false
+    },
+    {
+      "label": "BOF_PINBAR_EXPRESSION",
+      "family": "BOF_QUALITY",
+      "signal_pattern": "bof",
+      "control": false,
+      "requires_keylevel": false,
+      "requires_pinbar": true
+    },
+    {
+      "label": "BOF_KEYLEVEL_PINBAR",
+      "family": "BOF_QUALITY",
+      "signal_pattern": "bof",
+      "control": false,
+      "requires_keylevel": true,
+      "requires_pinbar": true
+    }
+  ],
+  "matrix_summary": [
+    {
+      "label": "BOF_CONTROL",
+      "family": "BOF_CONTROL",
+      "signal_pattern": "bof",
+      "trade_count": 277,
+      "expected_value": 0.01608650155535747,
+      "profit_factor": 2.6120732101489508,
+      "max_drawdown": 0.13267002776878056,
+      "participation_rate": 0.8052325581395349,
+      "overlap_rate_vs_bof_control": 1.0,
+      "incremental_buy_trades_vs_bof_control": 0,
+      "expected_value_delta_vs_bof_control": 0.0,
+      "profit_factor_delta_vs_bof_control": 0.0,
+      "max_drawdown_delta_vs_bof_control": 0.0,
+      "participation_delta_vs_bof_control": 0.0
+    },
+    {
+      "label": "BOF_KEYLEVEL_STRICT",
+      "family": "BOF_QUALITY",
+      "signal_pattern": "bof",
+      "trade_count": 56,
+      "expected_value": 0.018382660175728545,
+      "profit_factor": 2.012534668651318,
+      "max_drawdown": 0.09739005872277688,
+      "participation_rate": 0.9655172413793104,
+      "overlap_rate_vs_bof_control": 0.75,
+      "incremental_buy_trades_vs_bof_control": 14,
+      "expected_value_delta_vs_bof_control": 0.0022961586203710735,
+      "profit_factor_delta_vs_bof_control": -0.5995385414976329,
+      "max_drawdown_delta_vs_bof_control": -0.03527996904600368,
+      "participation_delta_vs_bof_control": 0.16028468323977552
+    },
+    {
+      "label": "BOF_PINBAR_EXPRESSION",
+      "family": "BOF_QUALITY",
+      "signal_pattern": "bof",
+      "trade_count": 96,
+      "expected_value": -0.0042540306009341,
+      "profit_factor": 1.9552015040405064,
+      "max_drawdown": 0.15113967391066607,
+      "participation_rate": 0.9696969696969697,
+      "overlap_rate_vs_bof_control": 0.71875,
+      "incremental_buy_trades_vs_bof_control": 27,
+      "expected_value_delta_vs_bof_control": -0.02034053215629157,
+      "profit_factor_delta_vs_bof_control": -0.6568717061084444,
+      "max_drawdown_delta_vs_bof_control": 0.01846964614188551,
+      "participation_delta_vs_bof_control": 0.16446441155743485
+    },
+    {
+      "label": "BOF_KEYLEVEL_PINBAR",
+      "family": "BOF_QUALITY",
+      "signal_pattern": "bof",
+      "trade_count": 21,
+      "expected_value": 0.03355098978172765,
+      "profit_factor": 1.9180761644263824,
+      "max_drawdown": 0.026847079705046253,
+      "participation_rate": 1.0,
+      "overlap_rate_vs_bof_control": 0.7142857142857143,
+      "incremental_buy_trades_vs_bof_control": 6,
+      "expected_value_delta_vs_bof_control": 0.01746448822637018,
+      "profit_factor_delta_vs_bof_control": -0.6939970457225684,
+      "max_drawdown_delta_vs_bof_control": -0.10582294806373431,
+      "participation_delta_vs_bof_control": 0.19476744186046513
+    }
+  ],
+  "results": [
+    {
+      "label": "BOF_CONTROL",
+      "family": "BOF_CONTROL",
+      "signal_pattern": "bof",
+      "control": true,
+      "run_id": "normandy_bof_quality_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t132541",
+      "trade_days": 757,
+      "trade_count": 277,
+      "win_rate": 0.35018050541516244,
+      "avg_win": 0.15863597456326312,
+      "avg_loss": 0.06073182556556945,
+      "expected_value": 0.01608650155535747,
+      "profit_factor": 2.6120732101489508,
+      "max_drawdown": 0.13267002776878056,
+      "reject_rate": 0.10789049919484701,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.9564068692206077,
+      "opportunity_count": 344.0,
+      "filled_count": 277.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 62.0,
+      "participation_rate": 0.8052325581395349,
+      "signals_count": 344,
+      "ranked_signals_count": 344,
+      "trades_count": 554,
+      "selected_pattern_distribution": {
+        "bof": 344
+      },
+      "reference_trace_coverage": 1.0,
+      "rank_diff_days_vs_bof_control": 0,
+      "execution_diff_days_vs_bof_control": 0,
+      "introduced_selected_signals_vs_bof_control": {
+        "count": 0,
+        "sample": []
+      },
+      "introduced_buy_trades_vs_bof_control": {
+        "count": 0,
+        "sample": []
+      },
+      "overlap_rate_vs_bof_control": 1.0,
+      "incremental_buy_trades_vs_bof_control": 0,
+      "best_environment_bucket": {
+        "bucket": "BULLISH",
+        "expected_value": 0.08285832336071403,
+        "profit_factor": 2.662752142053132,
+        "trade_count": 12
+      },
+      "environment_breakdown": {
+        "BULLISH": {
+          "trade_count": 12.0,
+          "win_rate": 0.6666666666666666,
+          "avg_win": 0.1530211255319049,
+          "avg_loss": 0.0574672809816677,
+          "profit_factor": 2.662752142053132,
+          "expected_value": 0.08285832336071403,
+          "median_pnl_pct": 0.016221413513088742
+        },
+        "NEUTRAL": {
+          "trade_count": 243.0,
+          "win_rate": 0.3292181069958848,
+          "avg_win": 0.15762513891619542,
+          "avg_loss": 0.0601025753849705,
+          "profit_factor": 2.622602074978834,
+          "expected_value": 0.011577330557800178,
+          "median_pnl_pct": -0.04521876363636367
+        },
+        "BEARISH": {
+          "trade_count": 22.0,
+          "win_rate": 0.4090909090909091,
+          "avg_win": 0.1726121572317386,
+          "avg_loss": 0.06962613000966458,
+          "profit_factor": 2.4791289880362277,
+          "expected_value": 0.02947135113454582,
+          "median_pnl_pct": -0.040588217693661645
+        }
+      }
+    },
+    {
+      "label": "BOF_KEYLEVEL_STRICT",
+      "family": "BOF_QUALITY",
+      "signal_pattern": "bof",
+      "control": false,
+      "run_id": "normandy_bof_quality_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t134023",
+      "trade_days": 757,
+      "trade_count": 56,
+      "win_rate": 0.42857142857142855,
+      "avg_win": 0.1270954442487878,
+      "avg_loss": 0.06315192787906589,
+      "expected_value": 0.018382660175728545,
+      "profit_factor": 2.012534668651318,
+      "max_drawdown": 0.09739005872277688,
+      "reject_rate": 0.017543859649122806,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.7952443857331571,
+      "opportunity_count": 58.0,
+      "filled_count": 56.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 0.9655172413793104,
+      "signals_count": 58,
+      "ranked_signals_count": 402,
+      "trades_count": 112,
+      "selected_pattern_distribution": {
+        "bof": 58
+      },
+      "reference_trace_coverage": 1.0,
+      "rank_diff_days_vs_bof_control": 181,
+      "execution_diff_days_vs_bof_control": 190,
+      "introduced_selected_signals_vs_bof_control": {
+        "count": 26,
+        "sample": [
+          {
+            "signal_date": "2023-03-06",
+            "code": "300750",
+            "signal_id": "300750_2023-03-06_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-03-23",
+            "code": "301236",
+            "signal_id": "301236_2023-03-23_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-05-15",
+            "code": "601899",
+            "signal_id": "601899_2023-05-15_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-08-24",
+            "code": "002053",
+            "signal_id": "002053_2023-08-24_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-10-20",
+            "code": "002466",
+            "signal_id": "002466_2023-10-20_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-12-11",
+            "code": "300059",
+            "signal_id": "300059_2023-12-11_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-12-11",
+            "code": "600809",
+            "signal_id": "600809_2023-12-11_bof",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2024-01-18",
+            "code": "300059",
+            "signal_id": "300059_2024-01-18_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-01-18",
+            "code": "600519",
+            "signal_id": "600519_2024-01-18_bof",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2024-01-18",
+            "code": "600030",
+            "signal_id": "600030_2024-01-18_bof",
+            "final_rank": 3
+          },
+          {
+            "signal_date": "2024-01-18",
+            "code": "000858",
+            "signal_id": "000858_2024-01-18_bof",
+            "final_rank": 4
+          },
+          {
+            "signal_date": "2024-01-18",
+            "code": "601988",
+            "signal_id": "601988_2024-01-18_bof",
+            "final_rank": 5
+          },
+          {
+            "signal_date": "2024-01-18",
+            "code": "601328",
+            "signal_id": "601328_2024-01-18_bof",
+            "final_rank": 6
+          },
+          {
+            "signal_date": "2024-01-23",
+            "code": "601899",
+            "signal_id": "601899_2024-01-23_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-02-05",
+            "code": "300059",
+            "signal_id": "300059_2024-02-05_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-04-17",
+            "code": "603859",
+            "signal_id": "603859_2024-04-17_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-04-26",
+            "code": "600522",
+            "signal_id": "600522_2024-04-26_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-05-17",
+            "code": "603993",
+            "signal_id": "603993_2024-05-17_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-06-04",
+            "code": "600188",
+            "signal_id": "600188_2024-06-04_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-06-24",
+            "code": "000858",
+            "signal_id": "000858_2024-06-24_bof",
+            "final_rank": 1
+          }
+        ]
+      },
+      "introduced_buy_trades_vs_bof_control": {
+        "count": 53,
+        "sample": [
+          {
+            "execute_date": "2023-03-07",
+            "code": "300750",
+            "signal_id": "300750_2023-03-06_bof",
+            "pattern": "bof",
+            "quantity": 200
+          },
+          {
+            "execute_date": "2023-03-24",
+            "code": "301236",
+            "signal_id": "301236_2023-03-23_bof",
+            "pattern": "bof",
+            "quantity": 2700
+          },
+          {
+            "execute_date": "2023-05-16",
+            "code": "601899",
+            "signal_id": "601899_2023-05-15_bof",
+            "pattern": "bof",
+            "quantity": 9200
+          },
+          {
+            "execute_date": "2023-06-07",
+            "code": "002129",
+            "signal_id": "002129_2023-06-06_bof",
+            "pattern": "bof",
+            "quantity": 2800
+          },
+          {
+            "execute_date": "2023-07-05",
+            "code": "603345",
+            "signal_id": "603345_2023-07-04_bof",
+            "pattern": "bof",
+            "quantity": 700
+          },
+          {
+            "execute_date": "2023-07-13",
+            "code": "002142",
+            "signal_id": "002142_2023-07-12_bof",
+            "pattern": "bof",
+            "quantity": 4100
+          },
+          {
+            "execute_date": "2023-08-25",
+            "code": "002053",
+            "signal_id": "002053_2023-08-24_bof",
+            "pattern": "bof",
+            "quantity": 9100
+          },
+          {
+            "execute_date": "2023-08-30",
+            "code": "000858",
+            "signal_id": "000858_2023-08-29_bof",
+            "pattern": "bof",
+            "quantity": 600
+          },
+          {
+            "execute_date": "2023-08-31",
+            "code": "301087",
+            "signal_id": "301087_2023-08-30_bof",
+            "pattern": "bof",
+            "quantity": 2500
+          },
+          {
+            "execute_date": "2023-10-23",
+            "code": "002466",
+            "signal_id": "002466_2023-10-20_bof",
+            "pattern": "bof",
+            "quantity": 1800
+          },
+          {
+            "execute_date": "2023-12-07",
+            "code": "000792",
+            "signal_id": "000792_2023-12-06_bof",
+            "pattern": "bof",
+            "quantity": 6100
+          },
+          {
+            "execute_date": "2023-12-12",
+            "code": "300059",
+            "signal_id": "300059_2023-12-11_bof",
+            "pattern": "bof",
+            "quantity": 6800
+          },
+          {
+            "execute_date": "2023-12-12",
+            "code": "600809",
+            "signal_id": "600809_2023-12-11_bof",
+            "pattern": "bof",
+            "quantity": 300
+          },
+          {
+            "execute_date": "2024-01-15",
+            "code": "603225",
+            "signal_id": "603225_2024-01-12_bof",
+            "pattern": "bof",
+            "quantity": 7700
+          },
+          {
+            "execute_date": "2024-01-19",
+            "code": "000858",
+            "signal_id": "000858_2024-01-18_bof",
+            "pattern": "bof",
+            "quantity": 600
+          },
+          {
+            "execute_date": "2024-01-19",
+            "code": "300059",
+            "signal_id": "300059_2024-01-18_bof",
+            "pattern": "bof",
+            "quantity": 7600
+          },
+          {
+            "execute_date": "2024-01-19",
+            "code": "600030",
+            "signal_id": "600030_2024-01-18_bof",
+            "pattern": "bof",
+            "quantity": 4500
+          },
+          {
+            "execute_date": "2024-01-19",
+            "code": "601328",
+            "signal_id": "601328_2024-01-18_bof",
+            "pattern": "bof",
+            "quantity": 11200
+          },
+          {
+            "execute_date": "2024-01-19",
+            "code": "601988",
+            "signal_id": "601988_2024-01-18_bof",
+            "pattern": "bof",
+            "quantity": 18000
+          },
+          {
+            "execute_date": "2024-01-24",
+            "code": "601899",
+            "signal_id": "601899_2024-01-23_bof",
+            "pattern": "bof",
+            "quantity": 8400
+          }
+        ]
+      },
+      "overlap_rate_vs_bof_control": 0.75,
+      "incremental_buy_trades_vs_bof_control": 14,
+      "best_environment_bucket": {
+        "bucket": "NEUTRAL",
+        "expected_value": 0.030618228943375445,
+        "profit_factor": 2.170553422435493,
+        "trade_count": 47
+      },
+      "environment_breakdown": {
+        "BULLISH": {
+          "trade_count": 5.0,
+          "win_rate": 0.4,
+          "avg_win": 0.015002019622797994,
+          "avg_loss": 0.05484937059364058,
+          "profit_factor": 0.27351306788810037,
+          "expected_value": -0.026908814507065146,
+          "median_pnl_pct": -0.026137106649937247
+        },
+        "NEUTRAL": {
+          "trade_count": 47.0,
+          "win_rate": 0.46808510638297873,
+          "avg_win": 0.13728575557842324,
+          "avg_loss": 0.06324919449546662,
+          "profit_factor": 2.170553422435493,
+          "expected_value": 0.030618228943375445,
+          "median_pnl_pct": -0.04927045061122511
+        },
+        "BEARISH": {
+          "trade_count": 4.0,
+          "win_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 0.06877092949063023,
+          "profit_factor": 0.0,
+          "expected_value": -0.06877092949063023,
+          "median_pnl_pct": -0.06921648434465381
+        }
+      }
+    },
+    {
+      "label": "BOF_PINBAR_EXPRESSION",
+      "family": "BOF_QUALITY",
+      "signal_pattern": "bof",
+      "control": false,
+      "run_id": "normandy_bof_quality_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t135418",
+      "trade_days": 757,
+      "trade_count": 96,
+      "win_rate": 0.3125,
+      "avg_win": 0.10872598865060963,
+      "avg_loss": 0.05560858480618125,
+      "expected_value": -0.0042540306009341,
+      "profit_factor": 1.9552015040405064,
+      "max_drawdown": 0.15113967391066607,
+      "reject_rate": 0.015384615384615385,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.7780713342140027,
+      "opportunity_count": 99.0,
+      "filled_count": 96.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 0.9696969696969697,
+      "signals_count": 99,
+      "ranked_signals_count": 501,
+      "trades_count": 192,
+      "selected_pattern_distribution": {
+        "bof": 99
+      },
+      "reference_trace_coverage": 1.0,
+      "rank_diff_days_vs_bof_control": 160,
+      "execution_diff_days_vs_bof_control": 186,
+      "introduced_selected_signals_vs_bof_control": {
+        "count": 41,
+        "sample": [
+          {
+            "signal_date": "2023-03-06",
+            "code": "300750",
+            "signal_id": "300750_2023-03-06_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-03-06",
+            "code": "002779",
+            "signal_id": "002779_2023-03-06_bof",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2023-05-15",
+            "code": "601899",
+            "signal_id": "601899_2023-05-15_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-06-28",
+            "code": "300982",
+            "signal_id": "300982_2023-06-28_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-08-08",
+            "code": "000756",
+            "signal_id": "000756_2023-08-08_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-08-14",
+            "code": "300118",
+            "signal_id": "300118_2023-08-14_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-10-26",
+            "code": "600435",
+            "signal_id": "600435_2023-10-26_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-10-26",
+            "code": "000063",
+            "signal_id": "000063_2023-10-26_bof",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2023-12-11",
+            "code": "600809",
+            "signal_id": "600809_2023-12-11_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-12-11",
+            "code": "600519",
+            "signal_id": "600519_2023-12-11_bof",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2023-12-29",
+            "code": "000893",
+            "signal_id": "000893_2023-12-29_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-12-29",
+            "code": "002430",
+            "signal_id": "002430_2023-12-29_bof",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2024-01-18",
+            "code": "600150",
+            "signal_id": "600150_2024-01-18_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-01-18",
+            "code": "601668",
+            "signal_id": "601668_2024-01-18_bof",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2024-01-18",
+            "code": "601988",
+            "signal_id": "601988_2024-01-18_bof",
+            "final_rank": 3
+          },
+          {
+            "signal_date": "2024-01-18",
+            "code": "601328",
+            "signal_id": "601328_2024-01-18_bof",
+            "final_rank": 4
+          },
+          {
+            "signal_date": "2024-01-23",
+            "code": "601899",
+            "signal_id": "601899_2024-01-23_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-01-24",
+            "code": "600372",
+            "signal_id": "600372_2024-01-24_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-02-05",
+            "code": "688012",
+            "signal_id": "688012_2024-02-05_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-02-06",
+            "code": "301469",
+            "signal_id": "301469_2024-02-06_bof",
+            "final_rank": 1
+          }
+        ]
+      },
+      "introduced_buy_trades_vs_bof_control": {
+        "count": 82,
+        "sample": [
+          {
+            "execute_date": "2023-03-07",
+            "code": "002779",
+            "signal_id": "002779_2023-03-06_bof",
+            "pattern": "bof",
+            "quantity": 3600
+          },
+          {
+            "execute_date": "2023-04-04",
+            "code": "000063",
+            "signal_id": "000063_2023-04-03_bof",
+            "pattern": "bof",
+            "quantity": 3000
+          },
+          {
+            "execute_date": "2023-04-13",
+            "code": "600141",
+            "signal_id": "600141_2023-04-12_bof",
+            "pattern": "bof",
+            "quantity": 3700
+          },
+          {
+            "execute_date": "2023-04-27",
+            "code": "600483",
+            "signal_id": "600483_2023-04-26_bof",
+            "pattern": "bof",
+            "quantity": 8000
+          },
+          {
+            "execute_date": "2023-05-11",
+            "code": "600226",
+            "signal_id": "600226_2023-05-10_bof",
+            "pattern": "bof",
+            "quantity": 35700
+          },
+          {
+            "execute_date": "2023-05-16",
+            "code": "601899",
+            "signal_id": "601899_2023-05-15_bof",
+            "pattern": "bof",
+            "quantity": 8700
+          },
+          {
+            "execute_date": "2023-05-25",
+            "code": "002793",
+            "signal_id": "002793_2023-05-24_bof",
+            "pattern": "bof",
+            "quantity": 14200
+          },
+          {
+            "execute_date": "2023-06-08",
+            "code": "603876",
+            "signal_id": "603876_2023-06-07_bof",
+            "pattern": "bof",
+            "quantity": 5200
+          },
+          {
+            "execute_date": "2023-06-29",
+            "code": "300982",
+            "signal_id": "300982_2023-06-28_bof",
+            "pattern": "bof",
+            "quantity": 1700
+          },
+          {
+            "execute_date": "2023-07-05",
+            "code": "603345",
+            "signal_id": "603345_2023-07-04_bof",
+            "pattern": "bof",
+            "quantity": 600
+          },
+          {
+            "execute_date": "2023-07-12",
+            "code": "002250",
+            "signal_id": "002250_2023-07-11_bof",
+            "pattern": "bof",
+            "quantity": 9000
+          },
+          {
+            "execute_date": "2023-08-08",
+            "code": "300705",
+            "signal_id": "300705_2023-08-07_bof",
+            "pattern": "bof",
+            "quantity": 4500
+          },
+          {
+            "execute_date": "2023-08-09",
+            "code": "000756",
+            "signal_id": "000756_2023-08-08_bof",
+            "pattern": "bof",
+            "quantity": 4500
+          },
+          {
+            "execute_date": "2023-08-15",
+            "code": "300118",
+            "signal_id": "300118_2023-08-14_bof",
+            "pattern": "bof",
+            "quantity": 4600
+          },
+          {
+            "execute_date": "2023-08-18",
+            "code": "300830",
+            "signal_id": "300830_2023-08-17_bof",
+            "pattern": "bof",
+            "quantity": 10600
+          },
+          {
+            "execute_date": "2023-09-01",
+            "code": "600754",
+            "signal_id": "600754_2023-08-31_bof",
+            "pattern": "bof",
+            "quantity": 2300
+          },
+          {
+            "execute_date": "2023-10-27",
+            "code": "000063",
+            "signal_id": "000063_2023-10-26_bof",
+            "pattern": "bof",
+            "quantity": 3100
+          },
+          {
+            "execute_date": "2023-10-27",
+            "code": "600435",
+            "signal_id": "600435_2023-10-26_bof",
+            "pattern": "bof",
+            "quantity": 8800
+          },
+          {
+            "execute_date": "2023-11-20",
+            "code": "002271",
+            "signal_id": "002271_2023-11-17_bof",
+            "pattern": "bof",
+            "quantity": 4100
+          },
+          {
+            "execute_date": "2023-12-11",
+            "code": "002736",
+            "signal_id": "002736_2023-12-08_bof",
+            "pattern": "bof",
+            "quantity": 10200
+          }
+        ]
+      },
+      "overlap_rate_vs_bof_control": 0.71875,
+      "incremental_buy_trades_vs_bof_control": 27,
+      "best_environment_bucket": {
+        "bucket": "BEARISH",
+        "expected_value": 0.19084281763780878,
+        "profit_factor": null,
+        "trade_count": 2
+      },
+      "environment_breakdown": {
+        "BULLISH": {
+          "trade_count": 5.0,
+          "win_rate": 0.4,
+          "avg_win": 0.03457807381234089,
+          "avg_loss": 0.05352299121867828,
+          "profit_factor": 0.6460415052489432,
+          "expected_value": -0.018282565206270612,
+          "median_pnl_pct": -0.02124759162303658
+        },
+        "NEUTRAL": {
+          "trade_count": 89.0,
+          "win_rate": 0.29213483146067415,
+          "avg_win": 0.10811299525453807,
+          "avg_loss": 0.05570789878653854,
+          "profit_factor": 1.9407121361515594,
+          "expected_value": -0.007850109516111661,
+          "median_pnl_pct": -0.04777811221719461
+        },
+        "BEARISH": {
+          "trade_count": 2.0,
+          "win_rate": 1.0,
+          "avg_win": 0.19084281763780878,
+          "avg_loss": 0.0,
+          "profit_factor": null,
+          "expected_value": 0.19084281763780878,
+          "median_pnl_pct": 0.19084281763780878
+        }
+      }
+    },
+    {
+      "label": "BOF_KEYLEVEL_PINBAR",
+      "family": "BOF_QUALITY",
+      "signal_pattern": "bof",
+      "control": false,
+      "run_id": "normandy_bof_quality_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t140903",
+      "trade_days": 757,
+      "trade_count": 21,
+      "win_rate": 0.5238095238095238,
+      "avg_win": 0.12176233700793458,
+      "avg_loss": 0.06348149216709999,
+      "expected_value": 0.03355098978172765,
+      "profit_factor": 1.9180761644263824,
+      "max_drawdown": 0.026847079705046253,
+      "reject_rate": 0.0,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.4663143989431968,
+      "opportunity_count": 21.0,
+      "filled_count": 21.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 1.0,
+      "signals_count": 21,
+      "ranked_signals_count": 522,
+      "trades_count": 42,
+      "selected_pattern_distribution": {
+        "bof": 21
+      },
+      "reference_trace_coverage": 1.0,
+      "rank_diff_days_vs_bof_control": 200,
+      "execution_diff_days_vs_bof_control": 188,
+      "introduced_selected_signals_vs_bof_control": {
+        "count": 11,
+        "sample": [
+          {
+            "signal_date": "2023-03-06",
+            "code": "300750",
+            "signal_id": "300750_2023-03-06_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-05-15",
+            "code": "601899",
+            "signal_id": "601899_2023-05-15_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-12-11",
+            "code": "600809",
+            "signal_id": "600809_2023-12-11_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-01-18",
+            "code": "601988",
+            "signal_id": "601988_2024-01-18_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-01-18",
+            "code": "601328",
+            "signal_id": "601328_2024-01-18_bof",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2024-01-23",
+            "code": "601899",
+            "signal_id": "601899_2024-01-23_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-04-26",
+            "code": "600522",
+            "signal_id": "600522_2024-04-26_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-05-17",
+            "code": "603993",
+            "signal_id": "603993_2024-05-17_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-07-09",
+            "code": "601012",
+            "signal_id": "601012_2024-07-09_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-07-22",
+            "code": "601088",
+            "signal_id": "601088_2024-07-22_bof",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-29",
+            "code": "601668",
+            "signal_id": "601668_2026-01-29_bof",
+            "final_rank": 1
+          }
+        ]
+      },
+      "introduced_buy_trades_vs_bof_control": {
+        "count": 21,
+        "sample": [
+          {
+            "execute_date": "2023-03-07",
+            "code": "300750",
+            "signal_id": "300750_2023-03-06_bof",
+            "pattern": "bof",
+            "quantity": 200
+          },
+          {
+            "execute_date": "2023-05-16",
+            "code": "601899",
+            "signal_id": "601899_2023-05-15_bof",
+            "pattern": "bof",
+            "quantity": 8900
+          },
+          {
+            "execute_date": "2023-07-05",
+            "code": "603345",
+            "signal_id": "603345_2023-07-04_bof",
+            "pattern": "bof",
+            "quantity": 600
+          },
+          {
+            "execute_date": "2023-12-12",
+            "code": "600809",
+            "signal_id": "600809_2023-12-11_bof",
+            "pattern": "bof",
+            "quantity": 400
+          },
+          {
+            "execute_date": "2024-01-19",
+            "code": "601328",
+            "signal_id": "601328_2024-01-18_bof",
+            "pattern": "bof",
+            "quantity": 15400
+          },
+          {
+            "execute_date": "2024-01-19",
+            "code": "601988",
+            "signal_id": "601988_2024-01-18_bof",
+            "pattern": "bof",
+            "quantity": 24800
+          },
+          {
+            "execute_date": "2024-01-24",
+            "code": "601899",
+            "signal_id": "601899_2024-01-23_bof",
+            "pattern": "bof",
+            "quantity": 8600
+          },
+          {
+            "execute_date": "2024-01-26",
+            "code": "300015",
+            "signal_id": "300015_2024-01-25_bof",
+            "pattern": "bof",
+            "quantity": 7200
+          },
+          {
+            "execute_date": "2024-04-24",
+            "code": "600160",
+            "signal_id": "600160_2024-04-23_bof",
+            "pattern": "bof",
+            "quantity": 4800
+          },
+          {
+            "execute_date": "2024-04-29",
+            "code": "600522",
+            "signal_id": "600522_2024-04-26_bof",
+            "pattern": "bof",
+            "quantity": 8500
+          },
+          {
+            "execute_date": "2024-05-20",
+            "code": "603993",
+            "signal_id": "603993_2024-05-17_bof",
+            "pattern": "bof",
+            "quantity": 12600
+          },
+          {
+            "execute_date": "2024-06-27",
+            "code": "601127",
+            "signal_id": "601127_2024-06-26_bof",
+            "pattern": "bof",
+            "quantity": 1200
+          },
+          {
+            "execute_date": "2024-07-10",
+            "code": "601012",
+            "signal_id": "601012_2024-07-09_bof",
+            "pattern": "bof",
+            "quantity": 8400
+          },
+          {
+            "execute_date": "2024-07-23",
+            "code": "601088",
+            "signal_id": "601088_2024-07-22_bof",
+            "pattern": "bof",
+            "quantity": 2600
+          },
+          {
+            "execute_date": "2025-01-20",
+            "code": "000002",
+            "signal_id": "000002_2025-01-17_bof",
+            "pattern": "bof",
+            "quantity": 16200
+          },
+          {
+            "execute_date": "2025-02-07",
+            "code": "002463",
+            "signal_id": "002463_2025-02-06_bof",
+            "pattern": "bof",
+            "quantity": 2800
+          },
+          {
+            "execute_date": "2025-02-11",
+            "code": "600217",
+            "signal_id": "600217_2025-02-10_bof",
+            "pattern": "bof",
+            "quantity": 22000
+          },
+          {
+            "execute_date": "2025-07-03",
+            "code": "002455",
+            "signal_id": "002455_2025-07-02_bof",
+            "pattern": "bof",
+            "quantity": 15400
+          },
+          {
+            "execute_date": "2025-10-28",
+            "code": "689009",
+            "signal_id": "689009_2025-10-27_bof",
+            "pattern": "bof",
+            "quantity": 1700
+          },
+          {
+            "execute_date": "2025-12-09",
+            "code": "002402",
+            "signal_id": "002402_2025-12-08_bof",
+            "pattern": "bof",
+            "quantity": 2300
+          }
+        ]
+      },
+      "overlap_rate_vs_bof_control": 0.7142857142857143,
+      "incremental_buy_trades_vs_bof_control": 6,
+      "best_environment_bucket": {
+        "bucket": "NEUTRAL",
+        "expected_value": 0.03943253492613627,
+        "profit_factor": 1.9898154575785574,
+        "trade_count": 20
+      },
+      "environment_breakdown": {
+        "BULLISH": {
+          "trade_count": 1.0,
+          "win_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 0.08407991310644465,
+          "profit_factor": 0.0,
+          "expected_value": -0.08407991310644465,
+          "median_pnl_pct": -0.08407991310644465
+        },
+        "NEUTRAL": {
+          "trade_count": 20.0,
+          "win_rate": 0.55,
+          "avg_win": 0.12176233700793458,
+          "avg_loss": 0.06119277872939503,
+          "profit_factor": 1.9898154575785574,
+          "expected_value": 0.03943253492613627,
+          "median_pnl_pct": 0.010404708424367057
+        }
+      }
+    }
+  ],
+  "summary_run_id": "normandy_bof_quality_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t132536"
+}
