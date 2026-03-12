@@ -123,6 +123,27 @@ def build_normandy_bof_quality_scenarios(_config: Settings | None = None) -> lis
     ]
 
 
+def resolve_normandy_bof_quality_scenarios(
+    config: Settings | None = None,
+    scenario_labels: list[str] | None = None,
+) -> list[NormandyBofQualityScenario]:
+    scenarios = build_normandy_bof_quality_scenarios(config)
+    if not scenario_labels:
+        return scenarios
+
+    requested = {str(label).strip().upper() for label in scenario_labels if str(label).strip()}
+    if not requested:
+        return scenarios
+    requested.add("BOF_CONTROL")
+
+    known = {scenario.label for scenario in scenarios}
+    unknown = sorted(requested - known)
+    if unknown:
+        raise ValueError(f"Unknown Normandy BOF quality scenarios: {', '.join(unknown)}")
+
+    return [scenario for scenario in scenarios if scenario.label in requested]
+
+
 def _finite_or_none(value: object) -> float | None:
     if value is None:
         return None
@@ -688,6 +709,7 @@ def run_normandy_bof_quality_matrix(
     artifact_root: str | Path | None = None,
     dtt_top_n: int | None = None,
     max_positions: int | None = None,
+    scenario_labels: list[str] | None = None,
 ) -> dict[str, object]:
     source_db = Path(db_path).expanduser().resolve()
     db_file = prepare_working_db(source_db, working_db_path) if working_db_path is not None else source_db
@@ -701,7 +723,7 @@ def run_normandy_bof_quality_matrix(
         finally:
             build_store.close()
 
-    active_scenarios = build_normandy_bof_quality_scenarios(config)
+    active_scenarios = resolve_normandy_bof_quality_scenarios(config, scenario_labels)
     runs = [
         _run_normandy_bof_quality_scenario(
             db_file=db_file,
