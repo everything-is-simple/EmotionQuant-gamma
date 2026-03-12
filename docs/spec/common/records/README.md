@@ -12,6 +12,7 @@
 | 类型 | 路径 | 用途 |
 |---|---|---|
 | 当前状态 | `development-status.md` | 查看当前治理阶段、历史摘要与重启条件 |
+| 系统宪法 | `system-constitution-v1.md` | 查看当前跨线不可违背铁律 |
 | 技术债 | `debts.md` | 查看风险与欠账 |
 | 资产复用 | `reusable-assets.md` | 查看可复用沉淀 |
 | 历史桥接审计 | `../bridge-review-20260304.md` | 查看文档治理转折期的桥接审计 |

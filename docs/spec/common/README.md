@@ -13,6 +13,7 @@
 |---|---|---|
 | 治理记录 | `records/README.md` | 查看跨版本 records 的结构与边界 |
 | 当前状态 | `records/development-status.md` | 查看当前治理阶段、历史摘要与主线切换判定 |
+| 系统宪法 | `records/system-constitution-v1.md` | 查看当前跨线不可违背铁律 |
 | 历史桥接 | `bridge-review-20260304.md` | 查看历史桥接审计，不作为当前执行入口 |
 
 ## 使用规则

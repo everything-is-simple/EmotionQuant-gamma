@@ -1,0 +1,69 @@
+{
+  "generated_at": "2026-03-11T23:34:37Z",
+  "matrix_status": "detector_contract_only",
+  "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "artifact_root": "G:\\EmotionQuant-temp\\artifacts",
+  "start": "2023-01-03",
+  "end": "2026-02-24",
+  "dtt_variant": "v0_01_dtt_pattern_only",
+  "execution_mode": {
+    "pipeline_mode": "dtt",
+    "enable_mss_gate": false,
+    "enable_irs_filter": false,
+    "dtt_variant": "v0_01_dtt_pattern_only",
+    "dtt_top_n": 50,
+    "max_positions": 10,
+    "control_label": "BOF_CONTROL"
+  },
+  "scenarios": [
+    {
+      "label": "BOF_CONTROL",
+      "family": "BOF_CONTROL",
+      "detector_key": "bof_control",
+      "detector_ready": true,
+      "detector_status": "ready",
+      "control": true,
+      "backing_pas_pattern": "bof",
+      "notes": "Current validated baseline detector; fixed control for N1.5."
+    },
+    {
+      "label": "RB_FAKE",
+      "family": "RB_FAKE",
+      "detector_key": "rb_fake",
+      "detector_ready": false,
+      "detector_status": "pending_contract",
+      "control": false,
+      "backing_pas_pattern": null,
+      "notes": "Volman range-boundary fake breakout failure candidate."
+    },
+    {
+      "label": "SB",
+      "family": "SB",
+      "detector_key": "sb",
+      "detector_ready": false,
+      "detector_status": "pending_contract",
+      "control": false,
+      "backing_pas_pattern": null,
+      "notes": "Volman second-break continuation candidate; must remain in first batch."
+    },
+    {
+      "label": "FB",
+      "family": "FB",
+      "detector_key": "fb",
+      "detector_ready": false,
+      "detector_status": "pending_contract",
+      "control": false,
+      "backing_pas_pattern": null,
+      "notes": "Volman first-break / first-pullback continuation candidate."
+    }
+  ],
+  "pending_detectors": [
+    "RB_FAKE",
+    "SB",
+    "FB"
+  ],
+  "results": [],
+  "conclusion": "Current Volman N1.5 matrix remains in detector_contract_only status; pending candidates: RB_FAKE, SB, FB.",
+  "summary_run_id": "normandy_volman_alpha_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t233437"
+}

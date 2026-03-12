@@ -13,6 +13,7 @@
 | 类型 | 路径 | 说明 |
 |---|---|---|
 | 仓库三线地图 | `docs/spec/common/records/repo-line-map-20260312.md` | 历史线 / 主线 / 研究线的总拓扑说明 |
+| 系统宪法 | `docs/spec/common/records/system-constitution-v1.md` | 当前跨线不可违背铁律 |
 | 新版设计总入口 | `blueprint/README.md` | 新版设计权威层 |
 | 第二战场总入口 | `normandy/README.md` | 独立研究线入口；不是版本线，不改写当前主线 SoT |
 | 当前完整设计 SoT | `blueprint/01-full-design/` | 新版设计正文 |
