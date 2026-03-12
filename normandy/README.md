@@ -119,6 +119,7 @@
 - `03-execution/09-phase-n1-11-bof-pinbar-quality-provenance-card-20260312.md`
 - `03-execution/10-phase-n1-12-bof-pinbar-stability-or-no-go-card-20260312.md`
 - `03-execution/11-phase-n1-13-tachibana-refinement-or-backlog-retention-card-20260313.md`
+- `03-execution/12-phase-n2-bof-control-baseline-exit-decomposition-card-20260313.md`
 - `03-execution/records/05-phase-n1-7-fb-stability-and-purity-record-20260312.md`
 - `03-execution/records/09-phase-n1-11-bof-pinbar-quality-provenance-record-20260313.md`
 - `03-execution/records/10-phase-n1-12-bof-pinbar-stability-or-no-go-record-20260313.md`
@@ -158,13 +159,14 @@
 26. 第九张执行卡：围绕 `BOF` quality branches 做 provenance readout。
 27. 第十张执行卡：围绕 retained `BOF` branch 做 stability / no-go formal readout。
 28. 第十一张执行卡：围绕 `Tachibana` 做 refinement / backlog retention formal gate。
-29. `N1.8` 首轮 formal readout：固定 `TACHI_CROWD_FAILURE` 当前只是 observation-only，而不是独立 alpha 胜者。
-30. `N1.9` 首轮 formal readout：固定 `FB_BOUNDARY` 是当前 retained branch，但它仍需先做 stability follow-up，不能直接打开 `N2`。
-31. `N1.9A` 首轮 formal readout：固定 `FB_BOUNDARY` 当前仍不够稳，主队列优先级切到 `SB refinement or no-go`。
-32. `N1.10` 首轮 formal readout：固定 `SB` 当前 full detector 路线 `no-go`，但保留 `SB_SMALL_W_MID_STRENGTH` 为窄 watch branch。
-33. `N1.11` 首轮 formal readout：固定 `BOF_KEYLEVEL_PINBAR` 为 retained branch，`BOF_KEYLEVEL_STRICT` 只保留 candidate-level positive read，`BOF_PINBAR_EXPRESSION` 直接 no-go。
-34. `N1.12` 首轮 formal readout：固定 retained `BOF_KEYLEVEL_PINBAR` 在长窗下仍属 `branch_no_go`，`BOF_CONTROL` 继续保持唯一 baseline，`N2` 不打开。
-35. 当前阶段性结论、对象分层与延后研究清单。
+29. 第十二张执行卡：围绕 `BOF_CONTROL` 打开 `N2 baseline lane`，先做 baseline exit decomposition。
+30. `N1.8` 首轮 formal readout：固定 `TACHI_CROWD_FAILURE` 当前只是 observation-only，而不是独立 alpha 胜者。
+31. `N1.9` 首轮 formal readout：固定 `FB_BOUNDARY` 是当前 retained branch，但它仍需先做 stability follow-up，不能直接打开 `N2`。
+32. `N1.9A` 首轮 formal readout：固定 `FB_BOUNDARY` 当前仍不够稳，主队列优先级切到 `SB refinement or no-go`。
+33. `N1.10` 首轮 formal readout：固定 `SB` 当前 full detector 路线 `no-go`，但保留 `SB_SMALL_W_MID_STRENGTH` 为窄 watch branch。
+34. `N1.11` 首轮 formal readout：固定 `BOF_KEYLEVEL_PINBAR` 为 retained branch，`BOF_KEYLEVEL_STRICT` 只保留 candidate-level positive read，`BOF_PINBAR_EXPRESSION` 直接 no-go。
+35. `N1.12` 首轮 formal readout：固定 retained `BOF_KEYLEVEL_PINBAR` 在长窗下仍属 `branch_no_go`，`BOF_CONTROL` 继续保持唯一 baseline，`N2` 不打开。
+36. 当前阶段性结论、对象分层与延后研究清单。
 
 ---
 

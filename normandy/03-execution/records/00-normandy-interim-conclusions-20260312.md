@@ -19,7 +19,7 @@
 7. `PB / TST / CPB` 暂不再以“谁接班 BOF”的方式继续平行竞争
 8. `TACHI_CROWD_FAILURE` 当前 minimal contract 已形成可审判样本，但首轮长窗裁决仍是 `observation-only`
 9. `BOF family` 已完成 `N1.11 / N1.12` formal readout：`BOF_KEYLEVEL_PINBAR` 虽在 `N1.11` 中成为 retained branch，但 `N1.12` 已正式裁定其 `branch_no_go`
-10. `BOF_CONTROL` 当前继续保持 `Normandy` 唯一 baseline；`N2 / controlled exit decomposition` 当前没有可放行对象
+10. `BOF_CONTROL` 当前继续保持 `Normandy` 唯一 baseline；`N2` 的 `promotion lane` 当前仍没有可放行对象，但 `baseline diagnosis lane` 已允许围绕 `BOF_CONTROL` 打开
 
 ---
 
@@ -27,7 +27,7 @@
 
 | 对象 | 当前定位 | 当前处理 |
 |---|---|---|
-| `BOF` | 固定 baseline / control | 所有新候选的统一对照尺 |
+| `BOF` | 固定 baseline / control | 所有新候选的统一对照尺；并作为 `N2 baseline lane` 的固定 entry set |
 | `BOF_KEYLEVEL_PINBAR` | `n1_11_retained_but_n1_12_branch_no_go` | 结束当前升格，回到 `BOF_CONTROL` |
 | `BOF_KEYLEVEL_STRICT` | 正向读数存在，但未成为 retained 主位 | 保留为观察分支，不进入主队列 |
 | `BOF_PINBAR_EXPRESSION` | 长窗正式 `no-go` | 退出 `BOF` quality 主队列 |
@@ -67,7 +67,26 @@
 
 ## 4. 当前研究优先级
 
-### 4.1 第一优先级：`Tachibana detector refinement or backlog retention`
+### 4.1 第一优先级：`N2 baseline lane / BOF_CONTROL exit decomposition`
+
+研究内容：
+
+1. 固定 `BOF_CONTROL` 为唯一 baseline entry set
+2. 在不改 entry 的前提下，拆解当前统一 Broker exit 语义到底吞掉了多少 edge
+3. 正式回答当前问题更偏：
+   - `买错`
+   - `卖坏`
+   - 还是 `execution friction`
+
+预计时间：
+
+`立即开工`
+
+要求深度：
+
+`足以把 baseline diagnosis lane 跑成 formal matrix / attribution / digest / record。`
+
+### 4.2 第二优先级：`Tachibana detector refinement or backlog retention`
 
 研究内容：
 
@@ -83,7 +102,7 @@
 
 `足以决定 Tachibana 这条线是继续 formalize，还是明确留在 backlog。`
 
-### 4.2 第二优先级：`观察池 / watch branches 治理收口`
+### 4.3 第三优先级：`观察池 / watch branches 治理收口`
 
 研究内容：
 
@@ -102,17 +121,17 @@
 
 `足以让当前对象分层在文档和主队列口径上彻底一致。`
 
-### 4.3 第三优先级：`N2 / controlled exit decomposition`
+### 4.4 第四优先级：`N2 promotion lane`
 
 前提：
 
-只有当未来重新出现 `eligible_for_n2` 的 retained object 时才允许打开。
+只有当未来重新出现 `eligible_for_n2` 的稳定 retained object 时才允许打开。
 
 研究内容：
 
-1. 当前只保留锁定状态，不进入执行
+1. 当前继续保持锁定状态，不进入执行
 2. 不把 `BOF quality branch` 的局部亮点误读成 `N2 ready`
-3. 继续保持 `MSS / IRS` 在本轮之外
+3. 保持 `baseline diagnosis lane` 与 `promotion lane` 明确分离
 
 预计时间：
 
@@ -122,7 +141,7 @@
 
 `只有在出现新的稳定 retained object 时才要求达到这个深度。`
 
-### 4.4 第四优先级：`Volman deferred queue`
+### 4.5 第五优先级：`Volman deferred queue`
 
 研究内容：
 
@@ -209,4 +228,4 @@
 
 ## 8. 当前一句话路线图
 
-`BOF 作为尺子固定，BOF family quality gate 已经读完且当前结论是 baseline-only；N2 继续锁住，主队列回到 Tachibana / 观察池 / backlog 的治理收口。`
+BOF 作为尺子固定，BOF family quality gate 已经读完且当前结论是 baseline-only；现在先打开 `BOF_CONTROL` 的 `N2 baseline lane` 做 exit diagnosis，而 `N2 promotion lane` 继续锁住。
