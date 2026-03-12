@@ -129,18 +129,7 @@ def _finite_or_none(value: object) -> float | None:
 
 
 BASELINE_PAIRED_TRADES_QUERY = """
-WITH entries AS (
-    SELECT
-        signal_id,
-        signal_date,
-        code,
-        ROW_NUMBER() OVER (PARTITION BY code ORDER BY signal_date, signal_id) AS entry_seq
-    FROM pas_trigger_trace_exp
-    WHERE run_id = ?
-      AND detected = TRUE
-      AND selected_pattern = detector
-),
-buyfills AS (
+WITH buyfills AS (
     SELECT
         signal_id,
         code,
@@ -151,6 +140,20 @@ buyfills AS (
     WHERE run_id = ?
       AND event_stage = 'MATCH_FILLED'
       AND action = 'BUY'
+),
+entries AS (
+    SELECT
+        pt.signal_id,
+        pt.signal_date,
+        pt.code,
+        ROW_NUMBER() OVER (PARTITION BY pt.code ORDER BY pt.signal_date, pt.signal_id) AS entry_seq
+    FROM pas_trigger_trace_exp pt
+    JOIN buyfills b
+      ON pt.signal_id = b.signal_id
+     AND pt.code = b.code
+    WHERE pt.run_id = ?
+      AND pt.detected = TRUE
+      AND pt.selected_pattern = pt.detector
 ),
 exit_orders AS (
     SELECT order_id, reason_code AS planned_exit_reason
