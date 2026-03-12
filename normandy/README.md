@@ -94,18 +94,22 @@
 - `../docs/spec/common/records/repo-line-map-20260312.md`
 - `02-implementation-spec/01-alpha-provenance-and-exit-decomposition-spec-20260311.md`
 - `02-implementation-spec/02-volman-second-alpha-search-spec-20260312.md`
+- `02-implementation-spec/03-fb-second-layer-provenance-spec-20260312.md`
 - `03-execution/00-dev-data-baseline-inheritance-20260311.md`
 - `03-execution/01-phase-n1-pas-alpha-provenance-card-20260311.md`
 - `03-execution/02-phase-n1-5-volman-second-alpha-card-20260312.md`
+- `03-execution/03-phase-n1-6-fb-second-layer-provenance-card-20260312.md`
 
 它们分别负责：
 
 1. 仓库层面的历史线 / 主线 / 研究线三分地图。
 2. 第二战场当前实验范围与对照约束。
 3. 在 `BOF` baseline 固定后，单独搜索第二个自带 alpha 的 `Volman` 候选。
-4. 三目录纪律、执行库 / 旧库候选、`RAW_DB_PATH`、双 TuShare key 的继承规则。
-5. 第一张执行卡：先做 `PAS raw alpha provenance`。
-6. 第二张执行卡：围绕 `RB_FAKE / SB / FB` 搜索第二个自带 alpha 候选。
+4. 在 `FB` 已成为第二个 alpha 候选后，继续做第二层 provenance。
+5. 三目录纪律、执行库 / 旧库候选、`RAW_DB_PATH`、双 TuShare key 的继承规则。
+6. 第一张执行卡：先做 `PAS raw alpha provenance`。
+7. 第二张执行卡：围绕 `RB_FAKE / SB / FB` 搜索第二个自带 alpha 候选。
+8. 第三张执行卡：围绕 `FB` 做 focused dossier，判断它是稳定补充型 alpha，还是暂时成立的小样本候选。
 
 ---
 

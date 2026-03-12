@@ -1,0 +1,68 @@
+{
+  "generated_at": "2026-03-12T02:36:37Z",
+  "matrix_summary_run_id": "normandy_volman_alpha_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t001652",
+  "digest_summary_run_id": "normandy_volman_alpha_digest_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t015510",
+  "matrix_path": "G:\\EmotionQuant-gamma\\normandy\\03-execution\\evidence\\normandy_volman_alpha_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t001652__volman_alpha_matrix.json",
+  "candidate_label": "FB",
+  "control_label": "BOF_CONTROL",
+  "qualification": "qualified_second_alpha_candidate_with_risk_flags",
+  "qualified_second_alpha_candidate": true,
+  "candidate_summary": {
+    "trade_count": 33,
+    "expected_value": 0.014495274304757104,
+    "profit_factor": 3.4433099405551975,
+    "max_drawdown": 0.05907731617076216,
+    "participation_rate": 1.0,
+    "overlap_rate_vs_bof_control": 0.0,
+    "incremental_buy_trades_vs_bof_control": 33
+  },
+  "control_summary": {
+    "trade_count": 277,
+    "expected_value": 0.01608650155535747,
+    "profit_factor": 2.6120732101489508,
+    "max_drawdown": 0.13267002776878056,
+    "participation_rate": 0.8052325581395349
+  },
+  "bucket_breakdown": [
+    {
+      "bucket": "NEUTRAL",
+      "trade_count": 31,
+      "expected_value": 0.02200910326988345,
+      "profit_factor": 3.6038518195571387,
+      "win_rate": 0.2903225806451613,
+      "share_of_candidate_trades": 0.9393939393939394
+    },
+    {
+      "bucket": "BULLISH",
+      "trade_count": 2,
+      "expected_value": -0.10196907465470098,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "share_of_candidate_trades": 0.06060606060606061
+    }
+  ],
+  "positive_buckets": [
+    "NEUTRAL"
+  ],
+  "negative_buckets": [
+    "BULLISH"
+  ],
+  "best_environment_bucket": {
+    "bucket": "NEUTRAL",
+    "expected_value": 0.02200910326988345,
+    "profit_factor": 3.6038518195571387,
+    "trade_count": 31
+  },
+  "risk_flags": [
+    "low_sample_count",
+    "dominant_bucket_dependency",
+    "bullish_failure_observed",
+    "edge_below_bof_control"
+  ],
+  "next_actions": [
+    "做 FB regime slicing，确认当前正向 edge 是否主要依赖 NEUTRAL bucket",
+    "做 first-pullback purity audit，确认当前 detector 是否混入普通 PB 或 late continuation",
+    "在 BOF_CONTROL 对照下评估 FB 的最简 exit decomposition，再判断是否进入更深阶段"
+  ],
+  "conclusion": "FB 当前已经通过第二个 alpha 候选门槛，但仍带有样本规模与环境依赖风险；下一步不应直接升主线，而应继续做 focused provenance。"
+}
