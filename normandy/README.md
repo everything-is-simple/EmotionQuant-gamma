@@ -85,14 +85,18 @@
 当前已经落下的入口文件有：
 
 - `02-implementation-spec/01-alpha-provenance-and-exit-decomposition-spec-20260311.md`
+- `02-implementation-spec/02-volman-second-alpha-search-spec-20260312.md`
 - `03-execution/00-dev-data-baseline-inheritance-20260311.md`
 - `03-execution/01-phase-n1-pas-alpha-provenance-card-20260311.md`
+- `03-execution/02-phase-n1-5-volman-second-alpha-card-20260312.md`
 
 它们分别负责：
 
 1. 第二战场当前实验范围与对照约束。
-2. 三目录纪律、执行库 / 旧库候选、`RAW_DB_PATH`、双 TuShare key 的继承规则。
-3. 第一张执行卡：先做 `PAS raw alpha provenance`。
+2. 在 `BOF` baseline 固定后，单独搜索第二个自带 alpha 的 `Volman` 候选。
+3. 三目录纪律、执行库 / 旧库候选、`RAW_DB_PATH`、双 TuShare key 的继承规则。
+4. 第一张执行卡：先做 `PAS raw alpha provenance`。
+5. 第二张执行卡：围绕 `RB_FAKE / SB / FB` 搜索第二个自带 alpha 候选。
 
 ---
 
