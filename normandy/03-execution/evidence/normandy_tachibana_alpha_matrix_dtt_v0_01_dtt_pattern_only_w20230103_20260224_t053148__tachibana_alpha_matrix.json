@@ -1,0 +1,485 @@
+{
+  "generated_at": "2026-03-12T06:10:46Z",
+  "matrix_status": "completed",
+  "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "db_path": "G:\\EmotionQuant-temp\\backtest\\normandy-tachibana-alpha-matrix-20260312.duckdb",
+  "artifact_root": "G:\\EmotionQuant-temp\\artifacts",
+  "start": "2023-01-03",
+  "end": "2026-02-24",
+  "dtt_variant": "v0_01_dtt_pattern_only",
+  "execution_mode": {
+    "pipeline_mode": "dtt",
+    "enable_mss_gate": false,
+    "enable_irs_filter": false,
+    "dtt_variant": "v0_01_dtt_pattern_only",
+    "dtt_top_n": 50,
+    "max_positions": 10,
+    "control_label": "BOF_CONTROL"
+  },
+  "scenarios": [
+    {
+      "label": "BOF_CONTROL",
+      "family": "BOF_CONTROL",
+      "detector_key": "bof_control",
+      "signal_pattern": "bof",
+      "detector_status": "ready",
+      "control": true,
+      "backing_pas_pattern": "bof"
+    },
+    {
+      "label": "TACHI_CROWD_FAILURE",
+      "family": "TACHIBANA_CONTRARY",
+      "detector_key": "tachi_crowd_failure",
+      "signal_pattern": "tachi_crowd_failure",
+      "detector_status": "ready",
+      "control": false,
+      "backing_pas_pattern": null
+    }
+  ],
+  "matrix_summary": [
+    {
+      "label": "BOF_CONTROL",
+      "family": "BOF_CONTROL",
+      "signal_pattern": "bof",
+      "trade_count": 277,
+      "expected_value": 0.01608650155535747,
+      "profit_factor": 2.6120732101489508,
+      "max_drawdown": 0.13267002776878056,
+      "participation_rate": 0.8052325581395349,
+      "overlap_rate_vs_bof_control": 1.0,
+      "incremental_buy_trades_vs_bof_control": 0,
+      "expected_value_delta_vs_bof_control": 0.0,
+      "profit_factor_delta_vs_bof_control": 0.0,
+      "max_drawdown_delta_vs_bof_control": 0.0,
+      "participation_delta_vs_bof_control": 0.0
+    },
+    {
+      "label": "TACHI_CROWD_FAILURE",
+      "family": "TACHIBANA_CONTRARY",
+      "signal_pattern": "tachi_crowd_failure",
+      "trade_count": 20,
+      "expected_value": -0.012419175159821591,
+      "profit_factor": 2.2521633492782014,
+      "max_drawdown": 0.06300439154663073,
+      "participation_rate": 1.0,
+      "overlap_rate_vs_bof_control": 0.95,
+      "incremental_buy_trades_vs_bof_control": 1,
+      "expected_value_delta_vs_bof_control": -0.028505676715179062,
+      "profit_factor_delta_vs_bof_control": -0.3599098608707494,
+      "max_drawdown_delta_vs_bof_control": -0.06966563622214983,
+      "participation_delta_vs_bof_control": 0.19476744186046513
+    }
+  ],
+  "results": [
+    {
+      "label": "BOF_CONTROL",
+      "family": "BOF_CONTROL",
+      "detector_key": "bof_control",
+      "signal_pattern": "bof",
+      "control": true,
+      "detector_status": "ready",
+      "backing_pas_pattern": "bof",
+      "run_id": "normandy_tachibana_alpha_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t053250",
+      "trade_days": 757,
+      "trade_count": 277,
+      "win_rate": 0.35018050541516244,
+      "avg_win": 0.15863597456326312,
+      "avg_loss": 0.06073182556556945,
+      "expected_value": 0.01608650155535747,
+      "profit_factor": 2.6120732101489508,
+      "max_drawdown": 0.13267002776878056,
+      "reject_rate": 0.10789049919484701,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.9564068692206077,
+      "opportunity_count": 344.0,
+      "filled_count": 277.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 62.0,
+      "participation_rate": 0.8052325581395349,
+      "signals_count": 344,
+      "ranked_signals_count": 344,
+      "trades_count": 554,
+      "selected_pattern_distribution": {},
+      "reference_trace_coverage": 0.0,
+      "rank_diff_days_vs_bof_control": 0,
+      "execution_diff_days_vs_bof_control": 0,
+      "introduced_selected_signals_vs_bof_control": {
+        "count": 0,
+        "sample": []
+      },
+      "introduced_buy_trades_vs_bof_control": {
+        "count": 0,
+        "sample": []
+      },
+      "overlap_rate_vs_bof_control": 1.0,
+      "incremental_buy_trades_vs_bof_control": 0,
+      "best_environment_bucket": {
+        "bucket": "BULLISH",
+        "expected_value": 0.08285832336071403,
+        "profit_factor": 2.662752142053132,
+        "trade_count": 12
+      },
+      "environment_breakdown": {
+        "BULLISH": {
+          "trade_count": 12.0,
+          "win_rate": 0.6666666666666666,
+          "avg_win": 0.1530211255319049,
+          "avg_loss": 0.0574672809816677,
+          "profit_factor": 2.662752142053132,
+          "expected_value": 0.08285832336071403,
+          "median_pnl_pct": 0.016221413513088742
+        },
+        "NEUTRAL": {
+          "trade_count": 243.0,
+          "win_rate": 0.3292181069958848,
+          "avg_win": 0.15762513891619542,
+          "avg_loss": 0.0601025753849705,
+          "profit_factor": 2.622602074978834,
+          "expected_value": 0.011577330557800178,
+          "median_pnl_pct": -0.04521876363636367
+        },
+        "BEARISH": {
+          "trade_count": 22.0,
+          "win_rate": 0.4090909090909091,
+          "avg_win": 0.1726121572317386,
+          "avg_loss": 0.06962613000966458,
+          "profit_factor": 2.4791289880362277,
+          "expected_value": 0.02947135113454582,
+          "median_pnl_pct": -0.040588217693661645
+        }
+      }
+    },
+    {
+      "label": "TACHI_CROWD_FAILURE",
+      "family": "TACHIBANA_CONTRARY",
+      "detector_key": "tachi_crowd_failure",
+      "signal_pattern": "tachi_crowd_failure",
+      "control": false,
+      "detector_status": "ready",
+      "backing_pas_pattern": null,
+      "run_id": "normandy_tachibana_alpha_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t055319",
+      "trade_days": 757,
+      "trade_count": 20,
+      "win_rate": 0.25,
+      "avg_win": 0.14960492292652558,
+      "avg_loss": 0.06642720785527065,
+      "expected_value": -0.012419175159821591,
+      "profit_factor": 2.2521633492782014,
+      "max_drawdown": 0.06300439154663073,
+      "reject_rate": 0.0,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.24702774108322326,
+      "opportunity_count": 20.0,
+      "filled_count": 20.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 1.0,
+      "signals_count": 20,
+      "ranked_signals_count": 364,
+      "trades_count": 40,
+      "selected_pattern_distribution": {},
+      "reference_trace_coverage": 0.0,
+      "rank_diff_days_vs_bof_control": 206,
+      "execution_diff_days_vs_bof_control": 188,
+      "introduced_selected_signals_vs_bof_control": {
+        "count": 20,
+        "sample": [
+          {
+            "signal_date": "2023-06-01",
+            "code": "300782",
+            "signal_id": "300782_2023-06-01_tachi_crowd_failure",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-08-08",
+            "code": "301281",
+            "signal_id": "301281_2023-08-08_tachi_crowd_failure",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-09-22",
+            "code": "002555",
+            "signal_id": "002555_2023-09-22_tachi_crowd_failure",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-10-26",
+            "code": "300014",
+            "signal_id": "300014_2023-10-26_tachi_crowd_failure",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-12-21",
+            "code": "000799",
+            "signal_id": "000799_2023-12-21_tachi_crowd_failure",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-01-10",
+            "code": "300783",
+            "signal_id": "300783_2024-01-10_tachi_crowd_failure",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-01-15",
+            "code": "603707",
+            "signal_id": "603707_2024-01-15_tachi_crowd_failure",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-01-18",
+            "code": "301205",
+            "signal_id": "301205_2024-01-18_tachi_crowd_failure",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-01-18",
+            "code": "300308",
+            "signal_id": "300308_2024-01-18_tachi_crowd_failure",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2024-01-18",
+            "code": "605186",
+            "signal_id": "605186_2024-01-18_tachi_crowd_failure",
+            "final_rank": 3
+          },
+          {
+            "signal_date": "2024-01-23",
+            "code": "300418",
+            "signal_id": "300418_2024-01-23_tachi_crowd_failure",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-04-22",
+            "code": "300003",
+            "signal_id": "300003_2024-04-22_tachi_crowd_failure",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-05-17",
+            "code": "300394",
+            "signal_id": "300394_2024-05-17_tachi_crowd_failure",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-11-25",
+            "code": "301162",
+            "signal_id": "301162_2024-11-25_tachi_crowd_failure",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2025-11-12",
+            "code": "600418",
+            "signal_id": "600418_2025-11-12_tachi_crowd_failure",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2025-11-17",
+            "code": "301261",
+            "signal_id": "301261_2025-11-17_tachi_crowd_failure",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2025-11-21",
+            "code": "688036",
+            "signal_id": "688036_2025-11-21_tachi_crowd_failure",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2025-12-10",
+            "code": "000002",
+            "signal_id": "000002_2025-12-10_tachi_crowd_failure",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-29",
+            "code": "300755",
+            "signal_id": "300755_2026-01-29_tachi_crowd_failure",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-02-06",
+            "code": "002709",
+            "signal_id": "002709_2026-02-06_tachi_crowd_failure",
+            "final_rank": 1
+          }
+        ]
+      },
+      "introduced_buy_trades_vs_bof_control": {
+        "count": 20,
+        "sample": [
+          {
+            "execute_date": "2023-06-02",
+            "code": "300782",
+            "signal_id": "300782_2023-06-01_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 1000
+          },
+          {
+            "execute_date": "2023-08-09",
+            "code": "301281",
+            "signal_id": "301281_2023-08-08_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 3000
+          },
+          {
+            "execute_date": "2023-09-25",
+            "code": "002555",
+            "signal_id": "002555_2023-09-22_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 4700
+          },
+          {
+            "execute_date": "2023-10-27",
+            "code": "300014",
+            "signal_id": "300014_2023-10-26_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 2300
+          },
+          {
+            "execute_date": "2023-12-22",
+            "code": "000799",
+            "signal_id": "000799_2023-12-21_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 1500
+          },
+          {
+            "execute_date": "2024-01-11",
+            "code": "300783",
+            "signal_id": "300783_2024-01-10_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 5200
+          },
+          {
+            "execute_date": "2024-01-16",
+            "code": "603707",
+            "signal_id": "603707_2024-01-15_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 7200
+          },
+          {
+            "execute_date": "2024-01-19",
+            "code": "300308",
+            "signal_id": "300308_2024-01-18_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 800
+          },
+          {
+            "execute_date": "2024-01-19",
+            "code": "301205",
+            "signal_id": "301205_2024-01-18_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 1000
+          },
+          {
+            "execute_date": "2024-01-19",
+            "code": "605186",
+            "signal_id": "605186_2024-01-18_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 2300
+          },
+          {
+            "execute_date": "2024-01-24",
+            "code": "300418",
+            "signal_id": "300418_2024-01-23_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 2700
+          },
+          {
+            "execute_date": "2024-04-23",
+            "code": "300003",
+            "signal_id": "300003_2024-04-22_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 7000
+          },
+          {
+            "execute_date": "2024-05-20",
+            "code": "300394",
+            "signal_id": "300394_2024-05-17_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 600
+          },
+          {
+            "execute_date": "2024-11-26",
+            "code": "301162",
+            "signal_id": "301162_2024-11-25_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 2100
+          },
+          {
+            "execute_date": "2025-11-13",
+            "code": "600418",
+            "signal_id": "600418_2025-11-12_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 2000
+          },
+          {
+            "execute_date": "2025-11-18",
+            "code": "301261",
+            "signal_id": "301261_2025-11-17_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 1100
+          },
+          {
+            "execute_date": "2025-11-24",
+            "code": "688036",
+            "signal_id": "688036_2025-11-21_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 1400
+          },
+          {
+            "execute_date": "2025-12-11",
+            "code": "000002",
+            "signal_id": "000002_2025-12-10_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 18500
+          },
+          {
+            "execute_date": "2026-01-30",
+            "code": "300755",
+            "signal_id": "300755_2026-01-29_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 5200
+          },
+          {
+            "execute_date": "2026-02-09",
+            "code": "002709",
+            "signal_id": "002709_2026-02-06_tachi_crowd_failure",
+            "pattern": "tachi_crowd_failure",
+            "quantity": 2300
+          }
+        ]
+      },
+      "overlap_rate_vs_bof_control": 0.95,
+      "incremental_buy_trades_vs_bof_control": 1,
+      "best_environment_bucket": {
+        "bucket": "BEARISH",
+        "expected_value": 0.03973968961880368,
+        "profit_factor": null,
+        "trade_count": 1
+      },
+      "environment_breakdown": {
+        "NEUTRAL": {
+          "trade_count": 19.0,
+          "win_rate": 0.21052631578947367,
+          "avg_win": 0.17707123125345606,
+          "avg_loss": 0.06642720785527065,
+          "profit_factor": 2.6656431448880533,
+          "expected_value": -0.015164378569222918,
+          "median_pnl_pct": -0.06103590594744134
+        },
+        "BEARISH": {
+          "trade_count": 1.0,
+          "win_rate": 1.0,
+          "avg_win": 0.03973968961880368,
+          "avg_loss": 0.0,
+          "profit_factor": null,
+          "expected_value": 0.03973968961880368,
+          "median_pnl_pct": 0.03973968961880368
+        }
+      }
+    }
+  ],
+  "summary_run_id": "normandy_tachibana_alpha_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t053148"
+}

@@ -17,6 +17,7 @@
 5. `RB_FAKE` 当前更像 `BOF` 的 Volman 化窄子集，不像第二条独立 alpha 链
 6. `SB` 当前不退场，但先进入 detector refinement 队列
 7. `PB / TST / CPB` 暂不再以“谁接班 BOF”的方式继续平行竞争
+8. `TACHI_CROWD_FAILURE` 当前 minimal contract 已形成可审判样本，但首轮长窗裁决仍是 `observation-only`
 
 ---
 
@@ -30,6 +31,7 @@
 | `RB_FAKE` | `BOF` 的 Volman 化窄子集 | 进入观察池，不抢第二 alpha 主位 |
 | `PB / TST / CPB` | 未通过 standalone provenance | 进入观察池，延后处理 |
 | `BPB` | 当前 standalone `no-go` | 冻结当前 detector 路线 |
+| `TACHI_CROWD_FAILURE` | 已形成首轮可审判样本，但未形成独立 contrary alpha | 保留为 Tachibana refinement / backlog 对象 |
 
 这里的 `BPB no-go` 只针对：
 
@@ -59,28 +61,7 @@
 
 ## 4. 当前研究优先级
 
-### 4.1 第一优先级：`N1.8 / Tachibana contrary alpha search`
-
-研究内容：
-
-1. 从 `Tachibana` 理论骨架抽出最小可执行 detector
-2. 固定第一轮对象为 `TACHI_CROWD_FAILURE`
-3. 与 `BOF_CONTROL` 做统一长窗 matrix
-4. 判断这条线是独立 alpha、`BOF` 子集，还是当前 `no-go`
-
-预计时间：
-
-1. detector formalization：`1 ~ 2` 天
-2. 长窗回放：`2 ~ 3` 小时
-3. digest / record：`0.5 ~ 1` 天
-
-合计：`2 ~ 3` 天
-
-要求深度：
-
-`足以回答“立花义正最核心的那条 crowd-failure 逻辑，能否形成可复现的 A 股日线 alpha”。`
-
-### 4.2 第二优先级：`N1.7 / FB stability and purity`
+### 4.1 第一优先级：`N1.7 / FB stability and purity`
 
 研究内容：
 
@@ -101,7 +82,7 @@
 
 `足以判断 FB 是继续深挖，还是先收缩 detector。`
 
-### 4.3 第三优先级：`N1.9 / SB refinement or no-go`
+### 4.2 第二优先级：`N1.9 / SB refinement or no-go`
 
 研究内容：
 
@@ -119,6 +100,22 @@
 要求深度：
 
 `足以在 retain / delay / no-go 三者中做出正式裁决。`
+
+### 4.3 第三优先级：`Tachibana detector refinement or backlog retention`
+
+研究内容：
+
+1. 承认 `TACHI_CROWD_FAILURE` 当前已经形成首轮可审判样本
+2. 不把当前 minimal contract 的失败误写成“立花理论整体失败”
+3. 若未来继续推进，只允许先做 deeper detector refinement
+
+预计时间：
+
+`延后排队，不占主队列`
+
+要求深度：
+
+`足以决定是继续收缩 detector，还是仅保留为 backlog。`
 
 ### 4.4 第四优先级：`N2 / controlled exit decomposition`
 
@@ -211,4 +208,4 @@
 
 ## 8. 当前一句话路线图
 
-`BOF 作为尺子固定，Tachibana 的 TACHI_CROWD_FAILURE 先接受首轮 alpha 审核，FB 暂居第二优先级继续深挖，SB 进入延后 refinement，剩余 Volman 结构与 Tachibana 第二层议题统一进入 backlog。`
+`BOF 作为尺子固定，FB 回到主队列优先接受稳定性与 purity 审核，SB 进入下一位 refinement，Tachibana 当前 minimal contract 固定为 observation-only 并转入延后 refinement / backlog。`
