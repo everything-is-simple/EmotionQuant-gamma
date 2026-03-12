@@ -120,6 +120,7 @@
 - `03-execution/10-phase-n1-12-bof-pinbar-stability-or-no-go-card-20260312.md`
 - `03-execution/11-phase-n1-13-tachibana-refinement-or-backlog-retention-card-20260313.md`
 - `03-execution/12-phase-n2-bof-control-baseline-exit-decomposition-card-20260313.md`
+- `03-execution/13-phase-n2a-targeted-trailing-stop-follow-up-card-20260313.md`
 - `03-execution/records/05-phase-n1-7-fb-stability-and-purity-record-20260312.md`
 - `03-execution/records/09-phase-n1-11-bof-pinbar-quality-provenance-record-20260313.md`
 - `03-execution/records/10-phase-n1-12-bof-pinbar-stability-or-no-go-record-20260313.md`
@@ -128,6 +129,8 @@
 - `03-execution/records/07-phase-n1-9a-fb-boundary-stability-follow-up-record-20260312.md`
 - `03-execution/records/08-phase-n1-10-sb-refinement-or-no-go-record-20260312.md`
 - `03-execution/records/00-normandy-interim-conclusions-20260312.md`
+- `03-execution/records/12-phase-n2-bof-control-baseline-exit-decomposition-record-20260313.md`
+- `03-execution/records/13-phase-n2a-targeted-trailing-stop-follow-up-record-20260313.md`
 
 它们分别负责：
 
@@ -160,13 +163,16 @@
 27. 第十张执行卡：围绕 retained `BOF` branch 做 stability / no-go formal readout。
 28. 第十一张执行卡：围绕 `Tachibana` 做 refinement / backlog retention formal gate。
 29. 第十二张执行卡：围绕 `BOF_CONTROL` 打开 `N2 baseline lane`，先做 baseline exit decomposition。
-30. `N1.8` 首轮 formal readout：固定 `TACHI_CROWD_FAILURE` 当前只是 observation-only，而不是独立 alpha 胜者。
-31. `N1.9` 首轮 formal readout：固定 `FB_BOUNDARY` 是当前 retained branch，但它仍需先做 stability follow-up，不能直接打开 `N2`。
-32. `N1.9A` 首轮 formal readout：固定 `FB_BOUNDARY` 当前仍不够稳，主队列优先级切到 `SB refinement or no-go`。
-33. `N1.10` 首轮 formal readout：固定 `SB` 当前 full detector 路线 `no-go`，但保留 `SB_SMALL_W_MID_STRENGTH` 为窄 watch branch。
-34. `N1.11` 首轮 formal readout：固定 `BOF_KEYLEVEL_PINBAR` 为 retained branch，`BOF_KEYLEVEL_STRICT` 只保留 candidate-level positive read，`BOF_PINBAR_EXPRESSION` 直接 no-go。
-35. `N1.12` 首轮 formal readout：固定 retained `BOF_KEYLEVEL_PINBAR` 在长窗下仍属 `branch_no_go`，`BOF_CONTROL` 继续保持唯一 baseline，`N2` 不打开。
-36. 当前阶段性结论、对象分层与延后研究清单。
+30. 第十三张执行卡：围绕 `BOF_CONTROL` 当前最可疑的 `trailing-stop` 路径做 targeted follow-up，不重开 entry family。
+31. `N1.8` 首轮 formal readout：固定 `TACHI_CROWD_FAILURE` 当前只是 observation-only，而不是独立 alpha 胜者。
+32. `N1.9` 首轮 formal readout：固定 `FB_BOUNDARY` 是当前 retained branch，但它仍需先做 stability follow-up，不能直接打开 `N2`。
+33. `N1.9A` 首轮 formal readout：固定 `FB_BOUNDARY` 当前仍不够稳，主队列优先级切到 `SB refinement or no-go`。
+34. `N1.10` 首轮 formal readout：固定 `SB` 当前 full detector 路线 `no-go`，但保留 `SB_SMALL_W_MID_STRENGTH` 为窄 watch branch。
+35. `N1.11` 首轮 formal readout：固定 `BOF_KEYLEVEL_PINBAR` 为 retained branch，`BOF_KEYLEVEL_STRICT` 只保留 candidate-level positive read，`BOF_PINBAR_EXPRESSION` 直接 no-go。
+36. `N1.12` 首轮 formal readout：固定 retained `BOF_KEYLEVEL_PINBAR` 在长窗下仍属 `branch_no_go`，`BOF_CONTROL` 继续保持唯一 baseline，`N2` 不打开。
+37. 当前阶段性结论、对象分层与延后研究清单。
+38. `N2 baseline lane` 第一轮 formal readout：固定 `BOF_CONTROL` 不是买错，`execution friction` 不是主因，而当前最可疑的是 `trailing-stop` 的 mixed damage。
+39. `N2A` 第一轮 formal readout：固定当前 trailing-stop 伤害更像 `small_cluster_of_outlier_truncation`，而不是普遍存在的 `repeatable trend-premature-exit`，因此不支持当前主线立刻全局取消 trailing-stop。
 
 ---
 
