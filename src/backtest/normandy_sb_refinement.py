@@ -695,7 +695,7 @@ def build_normandy_sb_refinement_report(
                 "SB 当前 full detector 路线已经可以判为 no-go：长窗 EV 为负、MDD 过大，"
                 "且未观察到达到留队门槛的窄正向分支。"
             )
-        next_main_queue_card = "N1.11 / Tachibana detector refinement or backlog retention"
+        next_main_queue_card = "N1.11 / BOF pinbar quality provenance"
     else:
         refinement_status = "retained_for_further_refinement"
         refinement_verdict = "current_sb_detector_retained"
@@ -707,7 +707,7 @@ def build_normandy_sb_refinement_report(
         [
             "冻结当前 full SB detector，不再把它当作独立第二 alpha 候选继续推进。",
             "仅保留最强窄分支为 watch/backlog 候选，等待未来单独 micro-contract 卡。",
-            "Normandy 主队列切到 Tachibana detector refinement or backlog retention。",
+            "Normandy 主队列切到 BOF pinbar quality provenance。",
         ]
         if decision in {"freeze_full_sb_and_shift_main_queue", "close_sb_route_and_shift_main_queue"}
         else [

@@ -1,0 +1,360 @@
+{
+  "generated_at": "2026-03-12T13:01:57Z",
+  "matrix_status": "completed",
+  "research_parent": "BOF",
+  "research_question": "Does the BOF family contain a stricter key-level / pinbar branch worth promoting under the same Broker semantics?",
+  "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "db_path": "G:\\EmotionQuant-temp\\backtest\\normandy-bof-quality-20260312.duckdb",
+  "artifact_root": "G:\\EmotionQuant-temp\\artifacts",
+  "start": "2026-02-03",
+  "end": "2026-02-10",
+  "dtt_variant": "v0_01_dtt_pattern_only",
+  "execution_mode": {
+    "pipeline_mode": "dtt",
+    "enable_mss_gate": false,
+    "enable_irs_filter": false,
+    "dtt_variant": "v0_01_dtt_pattern_only",
+    "dtt_top_n": 50,
+    "max_positions": 10,
+    "pas_quality_enabled": true,
+    "pas_reference_enabled": true,
+    "control_label": "BOF_CONTROL"
+  },
+  "scenarios": [
+    {
+      "label": "BOF_CONTROL",
+      "family": "BOF_CONTROL",
+      "signal_pattern": "bof",
+      "control": true,
+      "requires_keylevel": false,
+      "requires_pinbar": false
+    },
+    {
+      "label": "BOF_KEYLEVEL_STRICT",
+      "family": "BOF_QUALITY",
+      "signal_pattern": "bof",
+      "control": false,
+      "requires_keylevel": true,
+      "requires_pinbar": false
+    },
+    {
+      "label": "BOF_PINBAR_EXPRESSION",
+      "family": "BOF_QUALITY",
+      "signal_pattern": "bof",
+      "control": false,
+      "requires_keylevel": false,
+      "requires_pinbar": true
+    },
+    {
+      "label": "BOF_KEYLEVEL_PINBAR",
+      "family": "BOF_QUALITY",
+      "signal_pattern": "bof",
+      "control": false,
+      "requires_keylevel": true,
+      "requires_pinbar": true
+    }
+  ],
+  "matrix_summary": [
+    {
+      "label": "BOF_CONTROL",
+      "family": "BOF_CONTROL",
+      "signal_pattern": "bof",
+      "trade_count": 7,
+      "expected_value": 0.042332132274794265,
+      "profit_factor": 6.092700253701054,
+      "max_drawdown": 0.003530080789306379,
+      "participation_rate": 1.0,
+      "overlap_rate_vs_bof_control": 1.0,
+      "incremental_buy_trades_vs_bof_control": 0,
+      "expected_value_delta_vs_bof_control": 0.0,
+      "profit_factor_delta_vs_bof_control": 0.0,
+      "max_drawdown_delta_vs_bof_control": 0.0,
+      "participation_delta_vs_bof_control": 0.0
+    },
+    {
+      "label": "BOF_KEYLEVEL_STRICT",
+      "family": "BOF_QUALITY",
+      "signal_pattern": "bof",
+      "trade_count": 1,
+      "expected_value": 0.14102857142857148,
+      "profit_factor": null,
+      "max_drawdown": 0.0,
+      "participation_rate": 1.0,
+      "overlap_rate_vs_bof_control": 1.0,
+      "incremental_buy_trades_vs_bof_control": 0,
+      "expected_value_delta_vs_bof_control": 0.09869643915377721,
+      "profit_factor_delta_vs_bof_control": null,
+      "max_drawdown_delta_vs_bof_control": -0.003530080789306379,
+      "participation_delta_vs_bof_control": 0.0
+    },
+    {
+      "label": "BOF_PINBAR_EXPRESSION",
+      "family": "BOF_QUALITY",
+      "signal_pattern": "bof",
+      "trade_count": 2,
+      "expected_value": 0.037274946557225186,
+      "profit_factor": 7.731503131071785,
+      "max_drawdown": 0.0006164451559891783,
+      "participation_rate": 1.0,
+      "overlap_rate_vs_bof_control": 1.0,
+      "incremental_buy_trades_vs_bof_control": 0,
+      "expected_value_delta_vs_bof_control": -0.005057185717569079,
+      "profit_factor_delta_vs_bof_control": 1.6388028773707317,
+      "max_drawdown_delta_vs_bof_control": -0.0029136356333172007,
+      "participation_delta_vs_bof_control": 0.0
+    },
+    {
+      "label": "BOF_KEYLEVEL_PINBAR",
+      "family": "BOF_QUALITY",
+      "signal_pattern": "bof",
+      "trade_count": 0,
+      "expected_value": 0.0,
+      "profit_factor": 0.0,
+      "max_drawdown": 0.0,
+      "participation_rate": 0.0,
+      "overlap_rate_vs_bof_control": null,
+      "incremental_buy_trades_vs_bof_control": 0,
+      "expected_value_delta_vs_bof_control": -0.042332132274794265,
+      "profit_factor_delta_vs_bof_control": -6.092700253701054,
+      "max_drawdown_delta_vs_bof_control": -0.003530080789306379,
+      "participation_delta_vs_bof_control": -1.0
+    }
+  ],
+  "results": [
+    {
+      "label": "BOF_CONTROL",
+      "family": "BOF_CONTROL",
+      "signal_pattern": "bof",
+      "control": true,
+      "run_id": "normandy_bof_quality_dtt_v0_01_dtt_pattern_only_w20260203_20260210_t130118",
+      "trade_days": 6,
+      "trade_count": 7,
+      "win_rate": 0.5714285714285714,
+      "avg_win": 0.08448064020163538,
+      "avg_loss": 0.01386587829432722,
+      "expected_value": 0.042332132274794265,
+      "profit_factor": 6.092700253701054,
+      "max_drawdown": 0.003530080789306379,
+      "reject_rate": 0.0,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.6666666666666666,
+      "opportunity_count": 7.0,
+      "filled_count": 7.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 1.0,
+      "signals_count": 7,
+      "ranked_signals_count": 7,
+      "trades_count": 14,
+      "selected_pattern_distribution": {
+        "bof": 7
+      },
+      "reference_trace_coverage": 1.0,
+      "rank_diff_days_vs_bof_control": 0,
+      "execution_diff_days_vs_bof_control": 0,
+      "introduced_selected_signals_vs_bof_control": {
+        "count": 0,
+        "sample": []
+      },
+      "introduced_buy_trades_vs_bof_control": {
+        "count": 0,
+        "sample": []
+      },
+      "overlap_rate_vs_bof_control": 1.0,
+      "incremental_buy_trades_vs_bof_control": 0,
+      "best_environment_bucket": {
+        "bucket": "NEUTRAL",
+        "expected_value": 0.042332132274794265,
+        "profit_factor": 6.092700253701054,
+        "trade_count": 7
+      },
+      "environment_breakdown": {
+        "NEUTRAL": {
+          "trade_count": 7.0,
+          "win_rate": 0.5714285714285714,
+          "avg_win": 0.08448064020163538,
+          "avg_loss": 0.01386587829432722,
+          "profit_factor": 6.092700253701054,
+          "expected_value": 0.042332132274794265,
+          "median_pnl_pct": 0.04241941176470585
+        }
+      }
+    },
+    {
+      "label": "BOF_KEYLEVEL_STRICT",
+      "family": "BOF_QUALITY",
+      "signal_pattern": "bof",
+      "control": false,
+      "run_id": "normandy_bof_quality_dtt_v0_01_dtt_pattern_only_w20260203_20260210_t130131",
+      "trade_days": 6,
+      "trade_count": 1,
+      "win_rate": 1.0,
+      "avg_win": 0.14102857142857148,
+      "avg_loss": 0.0,
+      "expected_value": 0.14102857142857148,
+      "profit_factor": null,
+      "max_drawdown": 0.0,
+      "reject_rate": 0.0,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.5,
+      "opportunity_count": 1.0,
+      "filled_count": 1.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 1.0,
+      "signals_count": 1,
+      "ranked_signals_count": 8,
+      "trades_count": 2,
+      "selected_pattern_distribution": {
+        "bof": 1
+      },
+      "reference_trace_coverage": 1.0,
+      "rank_diff_days_vs_bof_control": 4,
+      "execution_diff_days_vs_bof_control": 4,
+      "introduced_selected_signals_vs_bof_control": {
+        "count": 0,
+        "sample": []
+      },
+      "introduced_buy_trades_vs_bof_control": {
+        "count": 1,
+        "sample": [
+          {
+            "execute_date": "2026-02-05",
+            "code": "002547",
+            "signal_id": "002547_2026-02-04_bof",
+            "pattern": "bof",
+            "quantity": 26800
+          }
+        ]
+      },
+      "overlap_rate_vs_bof_control": 1.0,
+      "incremental_buy_trades_vs_bof_control": 0,
+      "best_environment_bucket": {
+        "bucket": "NEUTRAL",
+        "expected_value": 0.14102857142857148,
+        "profit_factor": null,
+        "trade_count": 1
+      },
+      "environment_breakdown": {
+        "NEUTRAL": {
+          "trade_count": 1.0,
+          "win_rate": 1.0,
+          "avg_win": 0.14102857142857148,
+          "avg_loss": 0.0,
+          "profit_factor": null,
+          "expected_value": 0.14102857142857148,
+          "median_pnl_pct": 0.14102857142857148
+        }
+      }
+    },
+    {
+      "label": "BOF_PINBAR_EXPRESSION",
+      "family": "BOF_QUALITY",
+      "signal_pattern": "bof",
+      "control": false,
+      "run_id": "normandy_bof_quality_dtt_v0_01_dtt_pattern_only_w20260203_20260210_t130140",
+      "trade_days": 6,
+      "trade_count": 2,
+      "win_rate": 0.5,
+      "avg_win": 0.08562466967814791,
+      "avg_loss": 0.011074776563697535,
+      "expected_value": 0.037274946557225186,
+      "profit_factor": 7.731503131071785,
+      "max_drawdown": 0.0006164451559891783,
+      "reject_rate": 0.0,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.5,
+      "opportunity_count": 2.0,
+      "filled_count": 2.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 1.0,
+      "signals_count": 2,
+      "ranked_signals_count": 10,
+      "trades_count": 4,
+      "selected_pattern_distribution": {
+        "bof": 2
+      },
+      "reference_trace_coverage": 1.0,
+      "rank_diff_days_vs_bof_control": 3,
+      "execution_diff_days_vs_bof_control": 3,
+      "introduced_selected_signals_vs_bof_control": {
+        "count": 1,
+        "sample": [
+          {
+            "signal_date": "2026-02-04",
+            "code": "300308",
+            "signal_id": "300308_2026-02-04_bof",
+            "final_rank": 1
+          }
+        ]
+      },
+      "introduced_buy_trades_vs_bof_control": {
+        "count": 0,
+        "sample": []
+      },
+      "overlap_rate_vs_bof_control": 1.0,
+      "incremental_buy_trades_vs_bof_control": 0,
+      "best_environment_bucket": {
+        "bucket": "NEUTRAL",
+        "expected_value": 0.037274946557225186,
+        "profit_factor": 7.731503131071785,
+        "trade_count": 2
+      },
+      "environment_breakdown": {
+        "NEUTRAL": {
+          "trade_count": 2.0,
+          "win_rate": 0.5,
+          "avg_win": 0.08562466967814791,
+          "avg_loss": 0.011074776563697535,
+          "profit_factor": 7.731503131071785,
+          "expected_value": 0.037274946557225186,
+          "median_pnl_pct": 0.037274946557225186
+        }
+      }
+    },
+    {
+      "label": "BOF_KEYLEVEL_PINBAR",
+      "family": "BOF_QUALITY",
+      "signal_pattern": "bof",
+      "control": false,
+      "run_id": "normandy_bof_quality_dtt_v0_01_dtt_pattern_only_w20260203_20260210_t130149",
+      "trade_days": 6,
+      "trade_count": 0,
+      "win_rate": 0.0,
+      "avg_win": 0.0,
+      "avg_loss": 0.0,
+      "expected_value": 0.0,
+      "profit_factor": 0.0,
+      "max_drawdown": 0.0,
+      "reject_rate": 0.0,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.0,
+      "opportunity_count": 0.0,
+      "filled_count": 0.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 0.0,
+      "signals_count": 0,
+      "ranked_signals_count": 10,
+      "trades_count": 0,
+      "selected_pattern_distribution": {},
+      "reference_trace_coverage": 0.0,
+      "rank_diff_days_vs_bof_control": 4,
+      "execution_diff_days_vs_bof_control": 4,
+      "introduced_selected_signals_vs_bof_control": {
+        "count": 0,
+        "sample": []
+      },
+      "introduced_buy_trades_vs_bof_control": {
+        "count": 0,
+        "sample": []
+      },
+      "overlap_rate_vs_bof_control": null,
+      "incremental_buy_trades_vs_bof_control": 0,
+      "best_environment_bucket": null,
+      "environment_breakdown": {}
+    }
+  ],
+  "summary_run_id": "normandy_bof_quality_matrix_dtt_v0_01_dtt_pattern_only_w20260203_20260210_t130111"
+}

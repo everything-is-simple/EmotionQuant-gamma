@@ -146,7 +146,7 @@ def test_build_normandy_sb_refinement_report_marks_full_detector_no_go() -> None
     assert "negative_full_detector_edge" in report["refinement_flags"]
     assert "extreme_drawdown_profile" in report["refinement_flags"]
     assert "detector_overwide_vs_execution" in report["refinement_flags"]
-    assert report["next_main_queue_card"] == "N1.11 / Tachibana detector refinement or backlog retention"
+    assert report["next_main_queue_card"] == "N1.11 / BOF pinbar quality provenance"
 
 
 def test_build_normandy_sb_refinement_report_without_watch_branch_closes_route() -> None:

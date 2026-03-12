@@ -1,0 +1,114 @@
+{
+  "generated_at": "2026-03-12T13:02:21Z",
+  "matrix_summary_run_id": "normandy_bof_quality_matrix_dtt_v0_01_dtt_pattern_only_w20260203_20260210_t130111",
+  "matrix_path": "G:\\EmotionQuant-gamma\\normandy\\03-execution\\evidence\\normandy_bof_quality_matrix_dtt_v0_01_dtt_pattern_only_w20260203_20260210_t130111__bof_quality_matrix.json",
+  "quality_digest_summary_run_id": "normandy_bof_quality_digest_dtt_v0_01_dtt_pattern_only_w20260203_20260210_t130206",
+  "quality_digest_path": "G:\\EmotionQuant-gamma\\normandy\\03-execution\\evidence\\normandy_bof_quality_digest_dtt_v0_01_dtt_pattern_only_w20260203_20260210_t130206__bof_quality_digest.json",
+  "snapshot_status": "available",
+  "snapshot_db_path": "G:\\EmotionQuant-temp\\backtest\\normandy-bof-quality-20260312.duckdb",
+  "retained_branch_label": "BOF_PINBAR_EXPRESSION",
+  "retained_branch_run_id": "normandy_bof_quality_dtt_v0_01_dtt_pattern_only_w20260203_20260210_t130140",
+  "control_label": "BOF_CONTROL",
+  "candidate_summary": {
+    "trade_count": 2,
+    "expected_value": 0.037274946557225186,
+    "profit_factor": 7.731503131071785,
+    "max_drawdown": 0.0006164451559891783,
+    "participation_rate": 1.0,
+    "overlap_rate_vs_bof_control": 1.0,
+    "incremental_buy_trades_vs_bof_control": 0
+  },
+  "control_summary": {
+    "trade_count": 7,
+    "expected_value": 0.042332132274794265,
+    "profit_factor": 6.092700253701054,
+    "max_drawdown": 0.003530080789306379,
+    "participation_rate": 1.0
+  },
+  "pairing_diagnostics": {
+    "selected_entry_count": 2,
+    "buy_fill_count": 2,
+    "exit_fill_count": 2,
+    "paired_trade_count": 2
+  },
+  "selected_trace_summary": {
+    "selected_count": 2,
+    "avg_pattern_quality_score": 76.98085900000001,
+    "avg_risk_reward_ref": 1.983044363641825,
+    "avg_close_pos": 0.7859400240562116,
+    "avg_reclaim_pct": 0.013027,
+    "avg_keylevel_proxy_score": 52.818985,
+    "avg_pinbar_proxy_score": 83.9125305,
+    "keylevel_pass_ratio": 0.0,
+    "pinbar_pass_ratio": 1.0
+  },
+  "signal_year_slices": [
+    {
+      "signal_year": 2026,
+      "trade_count": 2,
+      "avg_gross_return": 0.038966382181705034,
+      "win_rate": 0.5,
+      "avg_strength": 0.6156299576584956,
+      "avg_quality_score": 76.98085900000001
+    }
+  ],
+  "quarter_activity": [
+    {
+      "signal_quarter": "2026-Q1",
+      "selected_count": 2,
+      "avg_strength": 0.6156299576584956,
+      "avg_quality_score": 76.98085900000001,
+      "avg_risk_reward_ref": 1.983044363641825
+    }
+  ],
+  "positive_examples": [
+    {
+      "signal_date": "2026-02-05",
+      "code": "002384",
+      "entry_date": "2026-02-06",
+      "exit_date": "2026-02-10",
+      "gross_return": 0.08738001129305474,
+      "pattern_strength": 0.6706679264414237,
+      "pattern_quality_score": 75.363997
+    }
+  ],
+  "negative_examples": [
+    {
+      "signal_date": "2026-02-04",
+      "code": "300308",
+      "entry_date": "2026-02-05",
+      "exit_date": "2026-02-10",
+      "gross_return": -0.009447246929644666,
+      "pattern_strength": 0.5605919888755675,
+      "pattern_quality_score": 78.597721
+    }
+  ],
+  "meaningful_negative_signal_years": [],
+  "meaningful_positive_signal_years": [
+    2026
+  ],
+  "dominant_environment_share": 1.0,
+  "best_environment_bucket": {
+    "bucket": "NEUTRAL",
+    "expected_value": 0.037274946557225186,
+    "profit_factor": 7.731503131071785,
+    "trade_count": 2
+  },
+  "trade_share_vs_bof_control": 0.2857142857142857,
+  "selected_to_fill_ratio": 1.0,
+  "stability_flags": [
+    "single_bucket_dependency"
+  ],
+  "stability_status": "branch_no_go",
+  "decision": "branch_no_go_keep_bof_control",
+  "conclusion": "BOF_PINBAR_EXPRESSION 虽然在 N1.11 中成为 retained branch，但当前稳定性 / 纯度审计仍未通过，暂不允许进入 N2。",
+  "next_actions": [
+    "结束当前 retained branch 的继续推进。",
+    "保持 BOF_CONTROL 为唯一 baseline。",
+    "除非后续重新定义 branch contract，否则当前不打开 N2。"
+  ],
+  "notes": [
+    "N1.12 只围绕 N1.11 retained branch，不重新打开跨 family 竞争。",
+    "BOF quality branches 是 control 内部子集，因此 overlap 读数只作为 purity 约束，不作为独立 alpha 证明。"
+  ]
+}
