@@ -1,0 +1,502 @@
+{
+  "generated_at": "2026-03-12T10:18:56Z",
+  "matrix_summary_run_id": "normandy_volman_alpha_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t001652",
+  "matrix_path": "G:\\EmotionQuant-gamma\\normandy\\03-execution\\evidence\\normandy_volman_alpha_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t001652__volman_alpha_matrix.json",
+  "snapshot_status": "available",
+  "snapshot_db_path": "G:\\EmotionQuant-temp\\backtest\\normandy-volman-alpha-matrix-20260312.duckdb",
+  "sb_run_id": "normandy_volman_alpha_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t010627",
+  "candidate_label": "SB",
+  "control_label": "BOF_CONTROL",
+  "pairing_method": "buy_fill_sequence_to_exit_sequence",
+  "candidate_summary": {
+    "trade_count": 648,
+    "expected_value": -0.01454687874785425,
+    "profit_factor": 2.0909103278444965,
+    "max_drawdown": 0.6410323900329354,
+    "participation_rate": 0.1558816454173683,
+    "overlap_rate_vs_bof_control": 0.0,
+    "incremental_buy_trades_vs_bof_control": 648
+  },
+  "control_summary": {
+    "trade_count": 277,
+    "expected_value": 0.01608650155535747,
+    "profit_factor": 2.6120732101489508,
+    "max_drawdown": 0.13267002776878056,
+    "participation_rate": 0.8052325581395349
+  },
+  "best_environment_bucket": {
+    "bucket": "BEARISH",
+    "expected_value": 0.02146337982915105,
+    "profit_factor": 1.5550062016487831,
+    "trade_count": 19
+  },
+  "best_environment_share": 0.029320987654320986,
+  "dominant_environment_bucket": {
+    "bucket": "NEUTRAL",
+    "trade_count": 617,
+    "expected_value": -0.01502032913717595,
+    "profit_factor": 2.1497564484130507,
+    "share_of_trades": 0.9521604938271605
+  },
+  "environment_breakdown": {
+    "BULLISH": {
+      "trade_count": 12.0,
+      "win_rate": 0.16666666666666666,
+      "avg_win": 0.014703806377941773,
+      "avg_loss": 0.05960461804817534,
+      "profit_factor": 0.24668904624231372,
+      "expected_value": -0.04721988064382249,
+      "median_pnl_pct": -0.0417785445093008
+    },
+    "NEUTRAL": {
+      "trade_count": 617.0,
+      "win_rate": 0.24959481361426256,
+      "avg_win": 0.15100300857203794,
+      "avg_loss": 0.07024191446594255,
+      "profit_factor": 2.1497564484130507,
+      "expected_value": -0.01502032913717595,
+      "median_pnl_pct": -0.055916086956521734
+    },
+    "BEARISH": {
+      "trade_count": 19.0,
+      "win_rate": 0.5263157894736842,
+      "avg_win": 0.09681405832716372,
+      "avg_loss": 0.06225959627975191,
+      "profit_factor": 1.5550062016487831,
+      "expected_value": 0.02146337982915105,
+      "median_pnl_pct": 0.004601750000000088
+    }
+  },
+  "pairing_diagnostics": {
+    "selected_entry_count": 4157,
+    "buy_fill_count": 648,
+    "executed_entry_count": 648,
+    "exit_fill_count": 648,
+    "paired_trade_count": 648
+  },
+  "signal_year_slices": [
+    {
+      "signal_year": 2023,
+      "trade_count": 232,
+      "avg_gross_return": -0.012532236616267557,
+      "win_rate": 0.2543103448275862,
+      "avg_strength": 0.8358607914524365
+    },
+    {
+      "signal_year": 2024,
+      "trade_count": 208,
+      "avg_gross_return": -0.020211303983379163,
+      "win_rate": 0.2548076923076923,
+      "avg_strength": 0.8351266071712149
+    },
+    {
+      "signal_year": 2025,
+      "trade_count": 187,
+      "avg_gross_return": -0.008084665980186733,
+      "win_rate": 0.25133689839572193,
+      "avg_strength": 0.8568641174947093
+    },
+    {
+      "signal_year": 2026,
+      "trade_count": 21,
+      "avg_gross_return": 0.011835743490393609,
+      "win_rate": 0.38095238095238093,
+      "avg_strength": 0.8568643201337741
+    }
+  ],
+  "meaningful_negative_signal_years": [
+    2023,
+    2024,
+    2025
+  ],
+  "meaningful_positive_signal_years": [
+    2026
+  ],
+  "selected_trace_summary": {
+    "selected_count": 4157,
+    "avg_trend_gain": 0.2746741049977217,
+    "avg_retest_similarity": 0.017091920793398087,
+    "avg_w_amplitude": 0.14235644979225548,
+    "avg_volume_ratio": 3.984295598735695,
+    "tight_retest_ratio": 0.6497474140004811,
+    "small_w_ratio": 0.2480153957180659,
+    "large_w_ratio": 0.47847005051719993,
+    "low_trend_ratio": 0.21722395958624008,
+    "high_trend_ratio": 0.4190522011065672,
+    "mid_strength_ratio": 0.4779889343276401,
+    "min_strength": 0.43933064840128644,
+    "avg_strength": 0.7919542139750476,
+    "max_strength": 1.0
+  },
+  "failure_reason_breakdown": [
+    {
+      "reason": "TREND_NOT_ESTABLISHED",
+      "count": 37150,
+      "share": 0.5311467909583518
+    },
+    {
+      "reason": "NOT_SECOND_TEST_SETUP",
+      "count": 17385,
+      "share": 0.24855954134080607
+    },
+    {
+      "reason": "FIRST_BREAK_NOT_FAILED",
+      "count": 7661,
+      "share": 0.10953204752441274
+    },
+    {
+      "reason": "NO_SB_CONFIRM",
+      "count": 3614,
+      "share": 0.05167064609753656
+    },
+    {
+      "reason": "INSUFFICIENT_HISTORY",
+      "count": 2407,
+      "share": 0.03441373690004718
+    },
+    {
+      "reason": "SECOND_TEST_NOT_DISTINCT",
+      "count": 1261,
+      "share": 0.018028966444104486
+    },
+    {
+      "reason": "NO_W_STRUCTURE",
+      "count": 423,
+      "share": 0.006047781765151624
+    },
+    {
+      "reason": "INVALID_RANGE",
+      "count": 25,
+      "share": 0.0003574339104699541
+    }
+  ],
+  "performance_by_strength_bucket": [
+    {
+      "strength_bucket": "high_strength",
+      "trade_count": 251,
+      "avg_gross_return": -0.021051642467627106,
+      "win_rate": 0.24302788844621515,
+      "avg_strength": 0.9461432331944544
+    },
+    {
+      "strength_bucket": "low_strength",
+      "trade_count": 126,
+      "avg_gross_return": -0.014322725145310638,
+      "win_rate": 0.23809523809523808,
+      "avg_strength": 0.6590843509345005
+    },
+    {
+      "strength_bucket": "mid_strength",
+      "trade_count": 271,
+      "avg_gross_return": -0.004745706349926378,
+      "win_rate": 0.28044280442804426,
+      "avg_strength": 0.8314656784256191
+    }
+  ],
+  "performance_by_retest_bucket": [
+    {
+      "retest_bucket": "mid_retest",
+      "trade_count": 150,
+      "avg_gross_return": -0.013784046832742357,
+      "win_rate": 0.26,
+      "avg_strength": 0.7456779375101781
+    },
+    {
+      "retest_bucket": "tight_retest",
+      "trade_count": 498,
+      "avg_gross_return": -0.012664869525305697,
+      "win_rate": 0.2570281124497992,
+      "avg_strength": 0.8714901364987373
+    }
+  ],
+  "performance_by_trend_bucket": [
+    {
+      "trend_bucket": "high_trend",
+      "trade_count": 237,
+      "avg_gross_return": -0.013134994959507876,
+      "win_rate": 0.28270042194092826,
+      "avg_strength": 0.8852409779391511
+    },
+    {
+      "trend_bucket": "low_trend",
+      "trade_count": 115,
+      "avg_gross_return": -0.00888236396554723,
+      "win_rate": 0.2608695652173913,
+      "avg_strength": 0.734821945827848
+    },
+    {
+      "trend_bucket": "mid_trend",
+      "trade_count": 296,
+      "avg_gross_return": -0.014325156713082071,
+      "win_rate": 0.23648648648648649,
+      "avg_strength": 0.8498214292605292
+    }
+  ],
+  "performance_by_w_bucket": [
+    {
+      "w_bucket": "large_w",
+      "trade_count": 316,
+      "avg_gross_return": -0.012449172467771948,
+      "win_rate": 0.2689873417721519,
+      "avg_strength": 0.8704525860293381
+    },
+    {
+      "w_bucket": "medium_w",
+      "trade_count": 189,
+      "avg_gross_return": -0.02477404648065801,
+      "win_rate": 0.2222222222222222,
+      "avg_strength": 0.8443761168063806
+    },
+    {
+      "w_bucket": "small_w",
+      "trade_count": 143,
+      "avg_gross_return": 0.0016889596933336198,
+      "win_rate": 0.27972027972027974,
+      "avg_strength": 0.7776480793092388
+    }
+  ],
+  "branch_candidates": [
+    {
+      "branch_label": "SB_SMALL_W_MID_STRENGTH",
+      "trade_count": 68,
+      "avg_gross_return": 0.022715539270279316,
+      "win_rate": 0.29411764705882354,
+      "avg_strength": 0.833609774396804,
+      "branch_notes": "同时要求窄 W 与中等强度，回避当前高强度但失真的样本。"
+    },
+    {
+      "branch_label": "SB_LOW_TREND_MID_STRENGTH",
+      "trade_count": 46,
+      "avg_gross_return": 0.01547147228151206,
+      "win_rate": 0.32608695652173914,
+      "avg_strength": 0.8212641428068059,
+      "branch_notes": "同时约束低趋势增益与中等强度，测试是否需要放弃过强趋势背景。"
+    },
+    {
+      "branch_label": "SB_SMALL_W_MID_PLUS_TREND",
+      "trade_count": 121,
+      "avg_gross_return": 0.0073617751807948375,
+      "win_rate": 0.2892561983471074,
+      "avg_strength": 0.7647461335316718,
+      "branch_notes": "窄 W + 非高趋势的宽松分支，作为过渡型观察口径。"
+    },
+    {
+      "branch_label": "SB_SMALL_W",
+      "trade_count": 143,
+      "avg_gross_return": 0.0016889596933336146,
+      "win_rate": 0.27972027972027974,
+      "avg_strength": 0.7776480793092392,
+      "branch_notes": "只保留较窄 W 振幅，测试是否来自更干净的二次失败结构。"
+    }
+  ],
+  "retained_watch_branch": {
+    "branch_label": "SB_SMALL_W_MID_STRENGTH",
+    "trade_count": 68,
+    "avg_gross_return": 0.022715539270279316,
+    "win_rate": 0.29411764705882354,
+    "avg_strength": 0.833609774396804,
+    "branch_notes": "同时要求窄 W 与中等强度，回避当前高强度但失真的样本。"
+  },
+  "positive_examples": [
+    {
+      "signal_date": "2025-10-10",
+      "code": "603730",
+      "entry_date": "2025-10-13",
+      "exit_date": "2026-02-24",
+      "gross_return": 0.7539936102236423,
+      "trend_gain": 0.12834224598930477,
+      "retest_similarity": 0.011925042589437867,
+      "w_amplitude": 0.07758620689655175,
+      "pattern_strength": 0.8156106651030903
+    },
+    {
+      "signal_date": "2024-11-29",
+      "code": "002593",
+      "entry_date": "2024-12-02",
+      "exit_date": "2024-12-16",
+      "gross_return": 0.6780821917808219,
+      "trend_gain": 0.2367491166077738,
+      "retest_similarity": 0.022222222222222313,
+      "w_amplitude": 0.2920634920634922,
+      "pattern_strength": 0.8888888888888884
+    },
+    {
+      "signal_date": "2023-06-29",
+      "code": "301007",
+      "entry_date": "2023-06-30",
+      "exit_date": "2023-07-10",
+      "gross_return": 0.6082758620689656,
+      "trend_gain": 0.327188940092166,
+      "retest_similarity": 0.0030864197530863537,
+      "w_amplitude": 0.09259259259259253,
+      "pattern_strength": 0.950308641975309
+    },
+    {
+      "signal_date": "2025-12-12",
+      "code": "600865",
+      "entry_date": "2025-12-15",
+      "exit_date": "2025-12-30",
+      "gross_return": 0.5530629853321829,
+      "trend_gain": 0.13641488162344995,
+      "retest_similarity": 0.01510248112189866,
+      "w_amplitude": 0.1650485436893205,
+      "pattern_strength": 0.8639527077564094
+    },
+    {
+      "signal_date": "2025-05-09",
+      "code": "002651",
+      "entry_date": "2025-05-12",
+      "exit_date": "2025-05-21",
+      "gross_return": 0.5053635280095351,
+      "trend_gain": 0.4136622390891842,
+      "retest_similarity": 0.00940438871473348,
+      "w_amplitude": 0.2863924050632912,
+      "pattern_strength": 0.9529780564263326
+    },
+    {
+      "signal_date": "2024-11-25",
+      "code": "002820",
+      "entry_date": "2024-11-26",
+      "exit_date": "2024-12-06",
+      "gross_return": 0.5026315789473683,
+      "trend_gain": 0.3129445234708393,
+      "retest_similarity": 0.015312131919905863,
+      "w_amplitude": 0.17942583732057418,
+      "pattern_strength": 0.9234393404004707
+    },
+    {
+      "signal_date": "2023-09-04",
+      "code": "300045",
+      "entry_date": "2023-09-05",
+      "exit_date": "2023-09-15",
+      "gross_return": 0.4905027932960895,
+      "trend_gain": 0.24591836734693878,
+      "retest_similarity": 0.016885553470919298,
+      "w_amplitude": 0.42964352720450283,
+      "pattern_strength": 0.9155722326454035
+    },
+    {
+      "signal_date": "2023-03-07",
+      "code": "000506",
+      "entry_date": "2023-03-08",
+      "exit_date": "2023-03-23",
+      "gross_return": 0.48800000000000004,
+      "trend_gain": 0.16510903426791285,
+      "retest_similarity": 0.005797101449275368,
+      "w_amplitude": 0.06413994169096203,
+      "pattern_strength": 0.7903248746153784
+    }
+  ],
+  "negative_examples": [
+    {
+      "signal_date": "2024-08-20",
+      "code": "300532",
+      "entry_date": "2024-08-21",
+      "exit_date": "2024-09-20",
+      "gross_return": -0.3338078291814947,
+      "trend_gain": 0.23283858998144713,
+      "retest_similarity": 0.005993150684931532,
+      "w_amplitude": 0.09560723514211897,
+      "pattern_strength": 0.939543290502991
+    },
+    {
+      "signal_date": "2025-05-15",
+      "code": "300791",
+      "entry_date": "2025-05-16",
+      "exit_date": "2025-05-28",
+      "gross_return": -0.20103448275862063,
+      "trend_gain": 0.403393025447691,
+      "retest_similarity": 0.009764035801464687,
+      "w_amplitude": 0.11432058584214819,
+      "pattern_strength": 0.9440805532953617
+    },
+    {
+      "signal_date": "2025-11-19",
+      "code": "605136",
+      "entry_date": "2025-11-20",
+      "exit_date": "2025-11-21",
+      "gross_return": -0.19437751004016066,
+      "trend_gain": 0.32608695652173914,
+      "retest_similarity": 0.002076843198338481,
+      "w_amplitude": 0.14641744548286587,
+      "pattern_strength": 0.9896157840083076
+    },
+    {
+      "signal_date": "2024-01-18",
+      "code": "603679",
+      "entry_date": "2024-01-19",
+      "exit_date": "2024-01-22",
+      "gross_return": -0.19257142857142853,
+      "trend_gain": 0.26118326118326124,
+      "retest_similarity": 0.0014204545454545151,
+      "w_amplitude": 0.07102272727272728,
+      "pattern_strength": 0.9316761363636364
+    },
+    {
+      "signal_date": "2024-04-08",
+      "code": "000803",
+      "entry_date": "2024-04-09",
+      "exit_date": "2024-04-10",
+      "gross_return": -0.18242122719734669,
+      "trend_gain": 0.6506410256410257,
+      "retest_similarity": 0.002272727272727224,
+      "w_amplitude": 0.15909090909090892,
+      "pattern_strength": 0.9886363636363639
+    },
+    {
+      "signal_date": "2024-03-27",
+      "code": "600683",
+      "entry_date": "2024-03-28",
+      "exit_date": "2024-04-01",
+      "gross_return": -0.17986798679867985,
+      "trend_gain": 0.6066066066066065,
+      "retest_similarity": 0.015151515151515053,
+      "w_amplitude": 0.3914141414141414,
+      "pattern_strength": 0.9242424242424248
+    },
+    {
+      "signal_date": "2024-12-20",
+      "code": "300386",
+      "entry_date": "2024-12-23",
+      "exit_date": "2024-12-25",
+      "gross_return": -0.17901234567901228,
+      "trend_gain": 0.6442451420029894,
+      "retest_similarity": 0.008018327605956504,
+      "w_amplitude": 0.2245131729667811,
+      "pattern_strength": 0.9599083619702174
+    },
+    {
+      "signal_date": "2023-09-15",
+      "code": "002889",
+      "entry_date": "2023-09-18",
+      "exit_date": "2023-09-20",
+      "gross_return": -0.17516946129147343,
+      "trend_gain": 0.19491525423728812,
+      "retest_similarity": 0.013333333333333334,
+      "w_amplitude": 0.23520000000000002,
+      "pattern_strength": 0.9333333333333333
+    }
+  ],
+  "refinement_flags": [
+    "negative_full_detector_edge",
+    "extreme_drawdown_profile",
+    "multi_year_negative_signal_slices",
+    "positive_environment_too_small",
+    "detector_overwide_vs_execution",
+    "narrow_positive_watch_branch_only"
+  ],
+  "refinement_status": "full_detector_no_go_watch_branch_only",
+  "refinement_verdict": "current_sb_detector_no_go_narrow_watch_branch_only",
+  "decision": "freeze_full_sb_and_shift_main_queue",
+  "next_main_queue_card": "N1.11 / Tachibana detector refinement or backlog retention",
+  "conclusion": "SB 当前 full detector 路线已经可以判为 no-go：长窗 EV 仍为负、MDD 明显过大，且负 signal-year 切片横跨 2023, 2024, 2025。当前只观察到一个值得保留的窄 watch branch：SB_SMALL_W_MID_STRENGTH，它可以进入 backlog，但不足以继续占用 Normandy 主队列。",
+  "next_actions": [
+    "冻结当前 full SB detector，不再把它当作独立第二 alpha 候选继续推进。",
+    "仅保留最强窄分支为 watch/backlog 候选，等待未来单独 micro-contract 卡。",
+    "Normandy 主队列切到 Tachibana detector refinement or backlog retention。"
+  ],
+  "notes": [
+    "SB 的 paired trade 重建采用 buy-fill sequence 作为锚点，而不是 selected entry sequence。",
+    "当前 branch_candidates 只是 coarse bucket watchlist，不等于已完成 detector split。"
+  ]
+}

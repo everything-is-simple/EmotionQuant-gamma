@@ -1,0 +1,193 @@
+{
+  "generated_at": "2026-03-12T08:15:58Z",
+  "matrix_summary_run_id": "normandy_volman_alpha_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t001652",
+  "matrix_path": "G:\\EmotionQuant-gamma\\normandy\\03-execution\\evidence\\normandy_volman_alpha_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t001652__volman_alpha_matrix.json",
+  "snapshot_status": "available",
+  "snapshot_db_path": "G:\\EmotionQuant-temp\\backtest\\normandy-volman-alpha-matrix-20260312.duckdb",
+  "fb_run_id": "normandy_volman_alpha_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t013256",
+  "candidate_label": "FB",
+  "control_label": "BOF_CONTROL",
+  "candidate_summary": {
+    "trade_count": 33,
+    "expected_value": 0.014495274304757104,
+    "profit_factor": 3.4433099405551975,
+    "max_drawdown": 0.05907731617076216,
+    "participation_rate": 1.0,
+    "overlap_rate_vs_bof_control": 0.0,
+    "incremental_buy_trades_vs_bof_control": 33
+  },
+  "control_summary": {
+    "trade_count": 277,
+    "expected_value": 0.01608650155535747,
+    "profit_factor": 2.6120732101489508,
+    "max_drawdown": 0.13267002776878056,
+    "participation_rate": 0.8052325581395349
+  },
+  "bucket_breakdown": [
+    {
+      "bucket": "NEUTRAL",
+      "trade_count": 31,
+      "expected_value": 0.02200910326988345,
+      "profit_factor": 3.6038518195571387,
+      "win_rate": 0.2903225806451613,
+      "share_of_candidate_trades": 0.9393939393939394
+    },
+    {
+      "bucket": "BULLISH",
+      "trade_count": 2,
+      "expected_value": -0.10196907465470098,
+      "profit_factor": 0.0,
+      "win_rate": 0.0,
+      "share_of_candidate_trades": 0.06060606060606061
+    }
+  ],
+  "positive_buckets": [
+    "NEUTRAL"
+  ],
+  "negative_buckets": [
+    "BULLISH"
+  ],
+  "pairing_diagnostics": {
+    "selected_entry_count": 33,
+    "buy_fill_count": 33,
+    "exit_fill_count": 33,
+    "paired_trade_count": 33
+  },
+  "signal_year_slices": [
+    {
+      "signal_year": 2023,
+      "trade_count": 10,
+      "avg_gross_return": 0.020133591722215287,
+      "win_rate": 0.3,
+      "avg_strength": 0.789496532145155
+    },
+    {
+      "signal_year": 2024,
+      "trade_count": 8,
+      "avg_gross_return": -0.04150589080422375,
+      "win_rate": 0.125,
+      "avg_strength": 0.8547620246714658
+    },
+    {
+      "signal_year": 2025,
+      "trade_count": 11,
+      "avg_gross_return": 0.07240777629507672,
+      "win_rate": 0.36363636363636365,
+      "avg_strength": 0.792774577490971
+    },
+    {
+      "signal_year": 2026,
+      "trade_count": 4,
+      "avg_gross_return": -0.03315162410921847,
+      "win_rate": 0.25,
+      "avg_strength": 0.73744152602439
+    }
+  ],
+  "quarter_activity": [
+    {
+      "signal_quarter": "2023-Q1",
+      "selected_count": 9,
+      "avg_strength": 0.778592732047346,
+      "avg_trend_gain": 0.14147022376980956,
+      "avg_pullback_depth": 0.42722393088819244,
+      "avg_prior_ema_touches": 1.2222222222222223
+    },
+    {
+      "signal_quarter": "2023-Q2",
+      "selected_count": 1,
+      "avg_strength": 0.8876307330254364,
+      "avg_trend_gain": 0.6775364950250562,
+      "avg_pullback_depth": 0.326923076923077,
+      "avg_prior_ema_touches": 0.0
+    },
+    {
+      "signal_quarter": "2024-Q1",
+      "selected_count": 1,
+      "avg_strength": 0.7484848484848483,
+      "avg_trend_gain": 0.22390109890109888,
+      "avg_pullback_depth": 0.2364672364672365,
+      "avg_prior_ema_touches": 2.0
+    },
+    {
+      "signal_quarter": "2024-Q2",
+      "selected_count": 2,
+      "avg_strength": 0.8302620839117544,
+      "avg_trend_gain": 0.5282258841968759,
+      "avg_pullback_depth": 0.4158893280632411,
+      "avg_prior_ema_touches": 0.0
+    },
+    {
+      "signal_quarter": "2024-Q4",
+      "selected_count": 5,
+      "avg_strength": 0.8858174362126737,
+      "avg_trend_gain": 0.4522812762683568,
+      "avg_pullback_depth": 0.3846897786077854,
+      "avg_prior_ema_touches": 1.0
+    },
+    {
+      "signal_quarter": "2025-Q1",
+      "selected_count": 1,
+      "avg_strength": 0.7035445211428912,
+      "avg_trend_gain": 0.13959183673469394,
+      "avg_pullback_depth": 0.35,
+      "avg_prior_ema_touches": 2.0
+    },
+    {
+      "signal_quarter": "2025-Q2",
+      "selected_count": 1,
+      "avg_strength": 0.7634077366629586,
+      "avg_trend_gain": 0.6190476190476191,
+      "avg_pullback_depth": 0.36199575371549897,
+      "avg_prior_ema_touches": 2.0
+    },
+    {
+      "signal_quarter": "2025-Q3",
+      "selected_count": 7,
+      "avg_strength": 0.7830554973411061,
+      "avg_trend_gain": 0.26902462006069977,
+      "avg_pullback_depth": 0.43356452455839584,
+      "avg_prior_ema_touches": 1.2857142857142858
+    },
+    {
+      "signal_quarter": "2025-Q4",
+      "selected_count": 2,
+      "avg_strength": 0.8860898066035441,
+      "avg_trend_gain": 0.4253795555324603,
+      "avg_pullback_depth": 0.4361510868021025,
+      "avg_prior_ema_touches": 1.0
+    },
+    {
+      "signal_quarter": "2026-Q1",
+      "selected_count": 4,
+      "avg_strength": 0.7374415260243898,
+      "avg_trend_gain": 0.3419438869381083,
+      "avg_pullback_depth": 0.3948105780573033,
+      "avg_prior_ema_touches": 1.5
+    }
+  ],
+  "positive_signal_years": [
+    2023,
+    2025
+  ],
+  "meaningful_negative_signal_years": [
+    2024
+  ],
+  "stability_flags": [
+    "single_bucket_positive_edge",
+    "negative_signal_year_slices",
+    "time_slice_sign_flip",
+    "sample_still_small"
+  ],
+  "stability_status": "fragile_candidate_not_exit_ready",
+  "decision": "detector_refinement_before_n2",
+  "conclusion": "FB 已跨 10 个季度出现，不是单次爆点；但正向 edge 仍主要集中在 NEUTRAL，且 signal-year 切片在 2024 出现负读数。当前更合理的动作是先做 detector refinement，而不是直接进入 N2 exit decomposition。",
+  "next_actions": [
+    "先把 FB 拆成 cleaner / boundary 两个子 detector，再复跑长窗稳定性。",
+    "保持 BOF_CONTROL 为 baseline，不直接把当前 FB detector 带进 N2。",
+    "若 refinement 后稳定性回升，再进入 BOF vs FB 的 controlled exit decomposition。"
+  ],
+  "notes": [
+    "signal_year_slices 使用 run snapshot 的 lifecycle 价格重建，作为 N1.7 时间切片代理读数。",
+    "环境桶口径沿用上游 matrix / report 的 entry-side market environment 定义。"
+  ]
+}

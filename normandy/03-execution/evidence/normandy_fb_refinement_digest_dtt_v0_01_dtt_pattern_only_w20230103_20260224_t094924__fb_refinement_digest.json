@@ -1,0 +1,171 @@
+{
+  "generated_at": "2026-03-12T09:49:24Z",
+  "matrix_summary_run_id": "normandy_fb_refinement_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t083246",
+  "matrix_path": "G:\\EmotionQuant-gamma\\normandy\\03-execution\\evidence\\normandy_fb_refinement_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t083246__fb_refinement_matrix.json",
+  "upstream_matrix_path": "G:\\EmotionQuant-gamma\\normandy\\03-execution\\evidence\\normandy_volman_alpha_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t001652__volman_alpha_matrix.json",
+  "start": "2023-01-03",
+  "end": "2026-02-24",
+  "dtt_variant": "v0_01_dtt_pattern_only",
+  "matrix_status": "completed",
+  "control_label": "BOF_CONTROL",
+  "parent_candidate": "FB",
+  "research_question": "Which FB branch carries the current edge: cleaner 0/1 touch or boundary 2 touch?",
+  "candidate_rule": {
+    "expected_value_must_be_positive": true,
+    "profit_factor_floor": 1.0,
+    "min_trade_count": 20,
+    "min_participation_rate": 0.05,
+    "max_overlap_for_independent": 0.85,
+    "min_incremental_trades": 20
+  },
+  "scorecard": [
+    {
+      "label": "FB_BOUNDARY",
+      "family": "FB_REFINED",
+      "signal_pattern": "fb_boundary",
+      "trade_count": 17,
+      "expected_value": 0.03142657992683415,
+      "profit_factor": 3.248452009108869,
+      "max_drawdown": 0.02543533471878162,
+      "participation_rate": 1.0,
+      "overlap_rate_vs_bof_control": 0.0,
+      "incremental_buy_trades_vs_bof_control": 17,
+      "expected_value_delta_vs_bof_control": 0.015340078371476676,
+      "profit_factor_delta_vs_bof_control": 0.6363787989599183,
+      "positive_edge_ok": true,
+      "sample_density_ok": true,
+      "complementary_edge_ok": true,
+      "refined_second_alpha_candidate": true,
+      "dominant_environment_share": 0.9411764705882353,
+      "signal_year_slices": [
+        {
+          "signal_year": 2023,
+          "trade_count": 5,
+          "avg_gross_return": 0.07679600208684093,
+          "win_rate": 0.4,
+          "avg_strength": 0.7094542798417869
+        },
+        {
+          "signal_year": 2024,
+          "trade_count": 2,
+          "avg_gross_return": -0.09483783812674713,
+          "win_rate": 0.0,
+          "avg_strength": 0.8367424242424242
+        },
+        {
+          "signal_year": 2025,
+          "trade_count": 7,
+          "avg_gross_return": 0.05315650555120172,
+          "win_rate": 0.42857142857142855,
+          "avg_strength": 0.7619768834149345
+        },
+        {
+          "signal_year": 2026,
+          "trade_count": 3,
+          "avg_gross_return": -0.0011750064920796933,
+          "win_rate": 0.3333333333333333,
+          "avg_strength": 0.7215601023988132
+        }
+      ],
+      "negative_signal_years": [
+        2024,
+        2026
+      ],
+      "stability_flags": [
+        "single_bucket_dependency",
+        "negative_signal_year_slices"
+      ],
+      "best_environment_bucket": {
+        "bucket": "NEUTRAL",
+        "expected_value": 0.040783962268804784,
+        "profit_factor": 3.5618888173719854,
+        "trade_count": 16
+      }
+    },
+    {
+      "label": "FB_CLEANER",
+      "family": "FB_REFINED",
+      "signal_pattern": "fb_cleaner",
+      "trade_count": 16,
+      "expected_value": -0.0034942379186997316,
+      "profit_factor": 4.078393472497596,
+      "max_drawdown": 0.07143075188935724,
+      "participation_rate": 1.0,
+      "overlap_rate_vs_bof_control": 0.0,
+      "incremental_buy_trades_vs_bof_control": 16,
+      "expected_value_delta_vs_bof_control": -0.019580739474057203,
+      "profit_factor_delta_vs_bof_control": 1.466320262348645,
+      "positive_edge_ok": false,
+      "sample_density_ok": true,
+      "complementary_edge_ok": true,
+      "refined_second_alpha_candidate": false,
+      "dominant_environment_share": 0.9375,
+      "signal_year_slices": [
+        {
+          "signal_year": 2023,
+          "trade_count": 5,
+          "avg_gross_return": -0.03652881864241035,
+          "win_rate": 0.2,
+          "avg_strength": 0.8695387844485232
+        },
+        {
+          "signal_year": 2024,
+          "trade_count": 6,
+          "avg_gross_return": -0.02372857503004928,
+          "win_rate": 0.16666666666666666,
+          "avg_strength": 0.860768558147813
+        },
+        {
+          "signal_year": 2025,
+          "trade_count": 4,
+          "avg_gross_return": 0.10609750009685795,
+          "win_rate": 0.25,
+          "avg_strength": 0.846670542124035
+        },
+        {
+          "signal_year": 2026,
+          "trade_count": 1,
+          "avg_gross_return": -0.12908147696063482,
+          "win_rate": 0.0,
+          "avg_strength": 0.7850857969011201
+        }
+      ],
+      "negative_signal_years": [
+        2023,
+        2024
+      ],
+      "stability_flags": [
+        "single_bucket_dependency",
+        "negative_signal_year_slices"
+      ],
+      "best_environment_bucket": {
+        "bucket": "NEUTRAL",
+        "expected_value": 0.001982587004367327,
+        "profit_factor": 4.137576978583296,
+        "trade_count": 15
+      }
+    }
+  ],
+  "positive_edge_branches": [
+    "FB_BOUNDARY"
+  ],
+  "refined_second_alpha_candidates": [
+    "FB_BOUNDARY"
+  ],
+  "branch_leader": "FB_BOUNDARY",
+  "leader_stability_flags": [
+    "single_bucket_dependency",
+    "negative_signal_year_slices"
+  ],
+  "refinement_verdict": "boundary_branch_promoted",
+  "decision": "boundary_stability_follow_up_before_n2",
+  "risk_flags": [
+    "boundary_branch_carries_edge",
+    "cleaner_branch_loses_edge",
+    "single_bucket_dependency",
+    "negative_signal_year_slices",
+    "leader_branch_still_fragile_after_refinement"
+  ],
+  "conclusion": "FB refinement 当前由 `FB_BOUNDARY` 保住正向 edge 并通过第二 alpha 门槛，但跨年与 bucket 稳定性仍偏脆弱，暂不直接打开 N2。",
+  "summary_run_id": "normandy_fb_refinement_digest_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t094924"
+}

@@ -13,9 +13,9 @@
 1. `BOF` 是当前 `PAS raw alpha baseline`
 2. `BOF` 接下来不再作为“待证对象”，而是作为所有候选的固定对照与尺子
 3. `BPB` 当前 standalone detector 路线视为 `no-go`
-4. `FB` 是当前唯一通过门槛的第二 alpha 候选，但仍带风险标记
+4. `FB family` 已完成 refinement 与 focused stability follow-up：当前 retained branch 固定为 `FB_BOUNDARY`，但它已被正式降级为 `watch candidate / not-n2-ready`
 5. `RB_FAKE` 当前更像 `BOF` 的 Volman 化窄子集，不像第二条独立 alpha 链
-6. `SB` 当前不退场，但先进入 detector refinement 队列
+6. `SB` 已完成 `N1.10` formal readout：当前 full detector 路线 `no-go`，但保留 `SB_SMALL_W_MID_STRENGTH` 为窄 watch branch
 7. `PB / TST / CPB` 暂不再以“谁接班 BOF”的方式继续平行竞争
 8. `TACHI_CROWD_FAILURE` 当前 minimal contract 已形成可审判样本，但首轮长窗裁决仍是 `observation-only`
 
@@ -26,8 +26,9 @@
 | 对象 | 当前定位 | 当前处理 |
 |---|---|---|
 | `BOF` | 固定 baseline / control | 所有新候选的统一对照尺 |
-| `FB` | `qualified_second_alpha_candidate_with_risk_flags` | 继续做稳定性与 purity 审核 |
-| `SB` | 有理论吸引力但 detector 过宽 | 延后进入 refinement / no-go 判定 |
+| `FB_BOUNDARY` | `retained_watch_candidate_not_n2_ready` | 保留 retained branch 身份，但主队列不继续优先深挖，`N2` 暂不打开 |
+| `FB_CLEANER` | cleaner textbook branch but not carrying current edge | 退出 `FB` 主队列，保留为观测分支 |
+| `SB` | `full_detector_no_go_watch_branch_only` | 冻结 full detector 路线；仅保留 `SB_SMALL_W_MID_STRENGTH` 为 watch / backlog 分支 |
 | `RB_FAKE` | `BOF` 的 Volman 化窄子集 | 进入观察池，不抢第二 alpha 主位 |
 | `PB / TST / CPB` | 未通过 standalone provenance | 进入观察池，延后处理 |
 | `BPB` | 当前 standalone `no-go` | 冻结当前 detector 路线 |
@@ -61,73 +62,49 @@
 
 ## 4. 当前研究优先级
 
-### 4.1 第一优先级：`N1.7 / FB stability and purity`
+### 4.1 第一优先级：`N1.11 / BOF pinbar quality provenance`
 
 研究内容：
 
-1. `FB` 的 regime slicing
-2. `FB` 的 first-pullback purity audit
-3. `FB` 对 `BOF` 的补充性确认
-4. `FB` 是否值得进入 `N2`
+1. 以 `BOF_CONTROL` 为固定对照
+2. 在同一套 Broker 出场语义下比较 `key-level / pinbar` quality branches
+3. 决定 `BOF` family 内部是否存在 retained branch
 
 预计时间：
 
-1. 文档与脚本骨架：`0.5` 天
-2. 分析与证据：`1.0 ~ 1.5` 天
-3. 结论 record：`0.5` 天
-
-合计：`2 ~ 3` 天
+`1 ~ 2` 天
 
 要求深度：
 
-`足以判断 FB 是继续深挖，还是先收缩 detector。`
+`足以决定是进入 N1.12，还是把 BOF family 继续保持为 baseline-only。`
 
-### 4.2 第二优先级：`N1.9 / SB refinement or no-go`
+### 4.2 第二优先级：`N1.12 / BOF family stability or no-go`
 
 研究内容：
 
-1. 收窄 `SB detector`
-2. 排查第二次失败语义是否被杂样污染
-3. 判断 `SB` 是 detector 问题，还是对象本身在当前系统语义下不成立
+1. 只对 `N1.11` 的 retained branch 做稳定性与 purity 审核
+2. 复核跨年、环境桶、selected / executed gap 与 overlap / incremental
+3. 决定是否允许打开 `N2`
 
 预计时间：
 
-1. detector 收缩与短窗复核：`1 ~ 2` 天
-2. 长窗复核与结论：`1 ~ 2` 天
-
-合计：`2 ~ 4` 天
+`1 ~ 2` 天
 
 要求深度：
 
-`足以在 retain / delay / no-go 三者中做出正式裁决。`
+`足以决定 retained branch 是真的 entry alpha，还是只是局部样本事故。`
 
-### 4.3 第三优先级：`Tachibana detector refinement or backlog retention`
-
-研究内容：
-
-1. 承认 `TACHI_CROWD_FAILURE` 当前已经形成首轮可审判样本
-2. 不把当前 minimal contract 的失败误写成“立花理论整体失败”
-3. 若未来继续推进，只允许先做 deeper detector refinement
-
-预计时间：
-
-`延后排队，不占主队列`
-
-要求深度：
-
-`足以决定是继续收缩 detector，还是仅保留为 backlog。`
-
-### 4.4 第四优先级：`N2 / controlled exit decomposition`
+### 4.3 第三优先级：`N2 / controlled exit decomposition`
 
 前提：
 
-`只在 FB 已经通过 N1.7 后才开。`
+只有当 `N1.12` 判定 retained branch `eligible_for_n2` 时才允许打开。
 
 研究内容：
 
-1. 先做 `BOF vs FB`
-2. 判断 `FB` 是买对卖坏，还是 entry 本身仍不够稳
-3. 暂不把全部 `PAS` 一起拖入 exit 拆解
+1. 先做 `BOF_CONTROL vs retained BOF quality branch`
+2. 判断 retained branch 是买对卖坏，还是 entry 仍不够稳
+3. 继续保持 `MSS / IRS` 在本轮之外
 
 预计时间：
 
@@ -135,7 +112,23 @@
 
 要求深度：
 
-`足以决定 FB 后续应继续修 entry，还是转向修 exit。`
+`只在 retained branch 已经通过稳定性审核时才要求达到这个深度。`
+
+### 4.4 第四优先级：`Tachibana detector refinement or backlog retention`
+
+研究内容：
+
+1. 承认 `TACHI_CROWD_FAILURE` 当前只保留为 observation / backlog
+2. 不把当前 minimal contract 的失败误写成“立花理论整体失败”
+3. 只有在 `BOF family` 这条主队列读完后，才允许回到这条线
+
+预计时间：
+
+`延后排队，不占主队列`
+
+要求深度：
+
+`只保留 refinement / dossier 价值，不先占用主队列。`
 
 ---
 
@@ -201,11 +194,11 @@
 
 1. 再把 `PB / TST / CPB / SB / FB` 一起拖进新一轮大混战
 2. 继续围绕 `BPB` 烧时间
-3. 在 `FB` 还没通过稳定性审查前，直接讨论主线升格
+3. 在 `FB_BOUNDARY` 还没通过稳定性审查前，直接讨论主线升格
 4. 把 `Tachibana` 粗暴翻译成“把 PAS 反着做”
 
 ---
 
 ## 8. 当前一句话路线图
 
-`BOF 作为尺子固定，FB 回到主队列优先接受稳定性与 purity 审核，SB 进入下一位 refinement，Tachibana 当前 minimal contract 固定为 observation-only 并转入延后 refinement / backlog。`
+`BOF 作为尺子固定，当前主队列先回到 BOF / pinbar / key-level family，在无 MSS / 无 IRS、同一套 Broker 出场语义下做 quality provenance 与 stability 审核；只有 retained branch 真正站住后，才允许打开 N2。`

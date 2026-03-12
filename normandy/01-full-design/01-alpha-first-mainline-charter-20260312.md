@@ -200,20 +200,22 @@
 
 ## 8. 当前文档与执行物件裁决
 
-当前立即需要补齐的物件，只有两类：
+当前立即需要补齐的物件，固定为四类：
 
-1. `01-full-design/` 正式总纲
-2. `01-full-design/README.md` 的激活入口
+1. `BOF / pinbar / key-level` 的战役专用 doctrine note
+2. `broker-frozen PAS-only go path` implementation spec
+3. `N1.11 / BOF family quality provenance` 执行卡
+4. `N1.12 / BOF family stability or no-go` 执行卡
 
-当前不需要立刻补新的执行卡，原因也固定为：
+当前这样做的原因也固定为：
 
-1. 当前 active card 仍然是 `03-execution/04-phase-n1-7-fb-stability-and-purity-card-20260312.md`
-2. `N1.9 / SB refinement or no-go` 与 `N2 / controlled exit decomposition` 的下一张卡，取决于 `N1.7` 的正式结论
-3. 在 `N1.7` 结束前，先把架构思想和晋升法写死，比提前堆更多执行卡更重要
+1. `BOF` 已经不是待证对象，而是 baseline / control
+2. 当前更缺的是 `BOF family` 在同一套 Broker 下的 quality gate，而不是新的跨 family 扩张
+3. 只有先把 `entry alpha` 在固定 exit 语义下读干净，后面的 `N2` 才不会重新把 entry / exit 混掉
 
 换句话说：
 
-`现在最缺的不是更多任务卡，而是一个不再摇摆的研究主线 SoT。`
+`现在最缺的不是更远的新对象，而是 BOF family 的 broker-frozen go path。`
 
 ---
 

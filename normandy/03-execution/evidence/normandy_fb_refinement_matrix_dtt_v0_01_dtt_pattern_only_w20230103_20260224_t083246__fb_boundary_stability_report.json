@@ -1,0 +1,227 @@
+{
+  "generated_at": "2026-03-12T10:05:51Z",
+  "matrix_summary_run_id": "normandy_fb_refinement_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t083246",
+  "matrix_path": "G:\\EmotionQuant-gamma\\normandy\\03-execution\\evidence\\normandy_fb_refinement_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t083246__fb_refinement_matrix.json",
+  "refinement_digest_summary_run_id": "normandy_fb_refinement_digest_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t094924",
+  "refinement_digest_path": "G:\\EmotionQuant-gamma\\normandy\\03-execution\\evidence\\normandy_fb_refinement_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t083246__fb_refinement_matrix.json",
+  "snapshot_status": "available",
+  "snapshot_db_path": "G:\\EmotionQuant-temp\\backtest\\normandy-fb-refinement-20260312.duckdb",
+  "boundary_run_id": "normandy_volman_alpha_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t092801",
+  "candidate_label": "FB_BOUNDARY",
+  "parent_candidate": "FB",
+  "control_label": "BOF_CONTROL",
+  "candidate_summary": {
+    "trade_count": 17,
+    "expected_value": 0.03142657992683415,
+    "profit_factor": 3.248452009108869,
+    "max_drawdown": 0.02543533471878162,
+    "participation_rate": 1.0
+  },
+  "control_summary": {
+    "trade_count": 277,
+    "expected_value": 0.01608650155535747,
+    "profit_factor": 2.6120732101489508,
+    "max_drawdown": 0.13267002776878056,
+    "participation_rate": 0.8052325581395349
+  },
+  "pairing_diagnostics": {
+    "selected_entry_count": 17,
+    "buy_fill_count": 17,
+    "exit_fill_count": 17,
+    "paired_trade_count": 17
+  },
+  "signal_year_slices": [
+    {
+      "signal_year": 2023,
+      "trade_count": 5,
+      "avg_gross_return": 0.07679600208684093,
+      "win_rate": 0.4,
+      "avg_strength": 0.7094542798417869
+    },
+    {
+      "signal_year": 2024,
+      "trade_count": 2,
+      "avg_gross_return": -0.09483783812674713,
+      "win_rate": 0.0,
+      "avg_strength": 0.8367424242424242
+    },
+    {
+      "signal_year": 2025,
+      "trade_count": 7,
+      "avg_gross_return": 0.05315650555120173,
+      "win_rate": 0.42857142857142855,
+      "avg_strength": 0.7619768834149345
+    },
+    {
+      "signal_year": 2026,
+      "trade_count": 3,
+      "avg_gross_return": -0.001175006492079698,
+      "win_rate": 0.3333333333333333,
+      "avg_strength": 0.7215601023988132
+    }
+  ],
+  "quarter_activity": [
+    {
+      "signal_quarter": "2023-Q1",
+      "selected_count": 5,
+      "avg_strength": 0.7094542798417869,
+      "avg_trend_gain": 0.12563191504377474,
+      "avg_pullback_depth": 0.42208510906957875
+    },
+    {
+      "signal_quarter": "2024-Q1",
+      "selected_count": 1,
+      "avg_strength": 0.7484848484848483,
+      "avg_trend_gain": 0.22390109890109888,
+      "avg_pullback_depth": 0.2364672364672365
+    },
+    {
+      "signal_quarter": "2024-Q4",
+      "selected_count": 1,
+      "avg_strength": 0.9249999999999999,
+      "avg_trend_gain": 0.5041493775933609,
+      "avg_pullback_depth": 0.4886561954624783
+    },
+    {
+      "signal_quarter": "2025-Q1",
+      "selected_count": 1,
+      "avg_strength": 0.7035445211428912,
+      "avg_trend_gain": 0.13959183673469394,
+      "avg_pullback_depth": 0.35
+    },
+    {
+      "signal_quarter": "2025-Q2",
+      "selected_count": 1,
+      "avg_strength": 0.7634077366629586,
+      "avg_trend_gain": 0.6190476190476191,
+      "avg_pullback_depth": 0.36199575371549897
+    },
+    {
+      "signal_quarter": "2025-Q3",
+      "selected_count": 4,
+      "avg_strength": 0.7361600230770016,
+      "avg_trend_gain": 0.23353013531019284,
+      "avg_pullback_depth": 0.41095076619703763
+    },
+    {
+      "signal_quarter": "2025-Q4",
+      "selected_count": 1,
+      "avg_strength": 0.9222458337906848,
+      "avg_trend_gain": 0.16607773851590096,
+      "avg_pullback_depth": 0.46499999999999986
+    },
+    {
+      "signal_quarter": "2026-Q1",
+      "selected_count": 3,
+      "avg_strength": 0.7215601023988132,
+      "avg_trend_gain": 0.32931233500255336,
+      "avg_pullback_depth": 0.43444713710943755
+    }
+  ],
+  "negative_examples": [
+    {
+      "signal_date": "2024-10-28",
+      "code": "300846",
+      "entry_date": "2024-10-29",
+      "exit_date": "2024-10-30",
+      "gross_return": -0.11680572109654355,
+      "pattern_strength": 0.9249999999999999
+    },
+    {
+      "signal_date": "2026-01-26",
+      "code": "603993",
+      "entry_date": "2026-01-27",
+      "exit_date": "2026-02-02",
+      "gross_return": -0.10319410319410331,
+      "pattern_strength": 0.7495092661344833
+    },
+    {
+      "signal_date": "2025-02-27",
+      "code": "002611",
+      "entry_date": "2025-02-28",
+      "exit_date": "2025-03-03",
+      "gross_return": -0.09767092411720515,
+      "pattern_strength": 0.7035445211428912
+    },
+    {
+      "signal_date": "2024-03-20",
+      "code": "002245",
+      "entry_date": "2024-03-21",
+      "exit_date": "2024-03-26",
+      "gross_return": -0.07286995515695072,
+      "pattern_strength": 0.7484848484848483
+    },
+    {
+      "signal_date": "2025-08-25",
+      "code": "601727",
+      "entry_date": "2025-08-26",
+      "exit_date": "2025-09-03",
+      "gross_return": -0.07252747252747255,
+      "pattern_strength": 0.7991980267447156
+    },
+    {
+      "signal_date": "2025-12-10",
+      "code": "300189",
+      "entry_date": "2025-12-11",
+      "exit_date": "2025-12-16",
+      "gross_return": -0.06990014265335238,
+      "pattern_strength": 0.9222458337906848
+    },
+    {
+      "signal_date": "2023-03-13",
+      "code": "000063",
+      "entry_date": "2023-03-14",
+      "exit_date": "2023-03-31",
+      "gross_return": -0.04660136539032355,
+      "pattern_strength": 0.7260850029578414
+    },
+    {
+      "signal_date": "2026-01-29",
+      "code": "002230",
+      "entry_date": "2026-01-30",
+      "exit_date": "2026-02-03",
+      "gross_return": -0.04433091628213576,
+      "pattern_strength": 0.6896316230939439
+    }
+  ],
+  "active_quarters": 8,
+  "meaningful_negative_signal_years": [
+    2024,
+    2026
+  ],
+  "negative_example_years": [
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "dominant_environment_share": 0.9411764705882353,
+  "best_environment_bucket": {
+    "bucket": "NEUTRAL",
+    "expected_value": 0.040783962268804784,
+    "profit_factor": 3.5618888173719854,
+    "trade_count": 16
+  },
+  "leader_stability_flags": [
+    "single_bucket_dependency",
+    "negative_signal_year_slices"
+  ],
+  "stability_flags": [
+    "single_bucket_dependency",
+    "negative_signal_year_slices",
+    "losses_not_isolated",
+    "sample_still_small"
+  ],
+  "stability_status": "fragile_boundary_not_n2_ready",
+  "decision": "hold_n2_and_demote_boundary_to_watch_candidate",
+  "conclusion": "FB_BOUNDARY 虽然已经是 FB family 的 retained branch，但 focused stability follow-up 仍显示它高度依赖单一 bucket，并在 2024, 2026 出现负切片；当前不应直接打开 N2。",
+  "next_actions": [
+    "保持 FB_BOUNDARY 为 retained branch，但先降级为 watch candidate。",
+    "主队列切到 N1.10 / SB refinement or no-go。",
+    "除非出现新的更强证据，否则当前不直接打开 BOF vs FB_BOUNDARY 的 N2。"
+  ],
+  "notes": [
+    "focused stability follow-up 只围绕 N1.9 retained branch `FB_BOUNDARY`，不重新打开 family-level FB。",
+    "negative_examples 使用 lifecycle pairing proxy，只服务 N1.9A 的稳定性读数，不替代上游 formal EV。"
+  ]
+}

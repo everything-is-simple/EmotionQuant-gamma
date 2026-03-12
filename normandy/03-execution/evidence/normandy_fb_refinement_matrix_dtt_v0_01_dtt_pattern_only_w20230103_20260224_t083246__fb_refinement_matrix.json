@@ -1,0 +1,759 @@
+{
+  "generated_at": "2026-03-12T09:46:30Z",
+  "matrix_status": "completed",
+  "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "db_path": "G:\\EmotionQuant-temp\\backtest\\normandy-fb-refinement-20260312.duckdb",
+  "artifact_root": "G:\\EmotionQuant-temp\\artifacts",
+  "start": "2023-01-03",
+  "end": "2026-02-24",
+  "dtt_variant": "v0_01_dtt_pattern_only",
+  "execution_mode": {
+    "pipeline_mode": "dtt",
+    "enable_mss_gate": false,
+    "enable_irs_filter": false,
+    "dtt_variant": "v0_01_dtt_pattern_only",
+    "dtt_top_n": 50,
+    "max_positions": 10,
+    "control_label": "BOF_CONTROL"
+  },
+  "scenarios": [
+    {
+      "label": "BOF_CONTROL",
+      "family": "BOF_CONTROL",
+      "detector_key": "bof_control",
+      "signal_pattern": "bof",
+      "detector_status": "ready",
+      "control": true,
+      "backing_pas_pattern": "bof"
+    },
+    {
+      "label": "FB_CLEANER",
+      "family": "FB_REFINED",
+      "detector_key": "fb_cleaner",
+      "signal_pattern": "fb_cleaner",
+      "detector_status": "ready",
+      "control": false,
+      "backing_pas_pattern": null
+    },
+    {
+      "label": "FB_BOUNDARY",
+      "family": "FB_REFINED",
+      "detector_key": "fb_boundary",
+      "signal_pattern": "fb_boundary",
+      "detector_status": "ready",
+      "control": false,
+      "backing_pas_pattern": null
+    }
+  ],
+  "matrix_summary": [
+    {
+      "label": "BOF_CONTROL",
+      "family": "BOF_CONTROL",
+      "signal_pattern": "bof",
+      "trade_count": 277,
+      "expected_value": 0.01608650155535747,
+      "profit_factor": 2.6120732101489508,
+      "max_drawdown": 0.13267002776878056,
+      "participation_rate": 0.8052325581395349,
+      "overlap_rate_vs_bof_control": 1.0,
+      "incremental_buy_trades_vs_bof_control": 0,
+      "expected_value_delta_vs_bof_control": 0.0,
+      "profit_factor_delta_vs_bof_control": 0.0,
+      "max_drawdown_delta_vs_bof_control": 0.0,
+      "participation_delta_vs_bof_control": 0.0
+    },
+    {
+      "label": "FB_CLEANER",
+      "family": "FB_REFINED",
+      "signal_pattern": "fb_cleaner",
+      "trade_count": 16,
+      "expected_value": -0.0034942379186997316,
+      "profit_factor": 4.078393472497596,
+      "max_drawdown": 0.07143075188935724,
+      "participation_rate": 1.0,
+      "overlap_rate_vs_bof_control": 0.0,
+      "incremental_buy_trades_vs_bof_control": 16,
+      "expected_value_delta_vs_bof_control": -0.019580739474057203,
+      "profit_factor_delta_vs_bof_control": 1.466320262348645,
+      "max_drawdown_delta_vs_bof_control": -0.06123927587942332,
+      "participation_delta_vs_bof_control": 0.19476744186046513
+    },
+    {
+      "label": "FB_BOUNDARY",
+      "family": "FB_REFINED",
+      "signal_pattern": "fb_boundary",
+      "trade_count": 17,
+      "expected_value": 0.03142657992683415,
+      "profit_factor": 3.248452009108869,
+      "max_drawdown": 0.02543533471878162,
+      "participation_rate": 1.0,
+      "overlap_rate_vs_bof_control": 0.0,
+      "incremental_buy_trades_vs_bof_control": 17,
+      "expected_value_delta_vs_bof_control": 0.015340078371476676,
+      "profit_factor_delta_vs_bof_control": 0.6363787989599183,
+      "max_drawdown_delta_vs_bof_control": -0.10723469304999894,
+      "participation_delta_vs_bof_control": 0.19476744186046513
+    }
+  ],
+  "results": [
+    {
+      "label": "BOF_CONTROL",
+      "family": "BOF_CONTROL",
+      "detector_key": "bof_control",
+      "signal_pattern": "bof",
+      "control": true,
+      "detector_status": "ready",
+      "backing_pas_pattern": "bof",
+      "run_id": "normandy_volman_alpha_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t083320",
+      "trade_days": 757,
+      "trade_count": 277,
+      "win_rate": 0.35018050541516244,
+      "avg_win": 0.15863597456326312,
+      "avg_loss": 0.06073182556556945,
+      "expected_value": 0.01608650155535747,
+      "profit_factor": 2.6120732101489508,
+      "max_drawdown": 0.13267002776878056,
+      "reject_rate": 0.10789049919484701,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.9564068692206077,
+      "opportunity_count": 344.0,
+      "filled_count": 277.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 62.0,
+      "participation_rate": 0.8052325581395349,
+      "signals_count": 344,
+      "ranked_signals_count": 344,
+      "trades_count": 554,
+      "selected_pattern_distribution": {
+        "bof": 344
+      },
+      "reference_trace_coverage": 0.0,
+      "rank_diff_days_vs_bof_control": 0,
+      "execution_diff_days_vs_bof_control": 0,
+      "introduced_selected_signals_vs_bof_control": {
+        "count": 0,
+        "sample": []
+      },
+      "introduced_buy_trades_vs_bof_control": {
+        "count": 0,
+        "sample": []
+      },
+      "overlap_rate_vs_bof_control": 1.0,
+      "incremental_buy_trades_vs_bof_control": 0,
+      "best_environment_bucket": {
+        "bucket": "BULLISH",
+        "expected_value": 0.08285832336071403,
+        "profit_factor": 2.662752142053132,
+        "trade_count": 12
+      },
+      "environment_breakdown": {
+        "BULLISH": {
+          "trade_count": 12.0,
+          "win_rate": 0.6666666666666666,
+          "avg_win": 0.1530211255319049,
+          "avg_loss": 0.0574672809816677,
+          "profit_factor": 2.662752142053132,
+          "expected_value": 0.08285832336071403,
+          "median_pnl_pct": 0.016221413513088742
+        },
+        "NEUTRAL": {
+          "trade_count": 243.0,
+          "win_rate": 0.3292181069958848,
+          "avg_win": 0.15762513891619542,
+          "avg_loss": 0.0601025753849705,
+          "profit_factor": 2.622602074978834,
+          "expected_value": 0.011577330557800178,
+          "median_pnl_pct": -0.04521876363636367
+        },
+        "BEARISH": {
+          "trade_count": 22.0,
+          "win_rate": 0.4090909090909091,
+          "avg_win": 0.1726121572317386,
+          "avg_loss": 0.06962613000966458,
+          "profit_factor": 2.4791289880362277,
+          "expected_value": 0.02947135113454582,
+          "median_pnl_pct": -0.040588217693661645
+        }
+      }
+    },
+    {
+      "label": "FB_CLEANER",
+      "family": "FB_REFINED",
+      "detector_key": "fb_cleaner",
+      "signal_pattern": "fb_cleaner",
+      "control": false,
+      "detector_status": "ready",
+      "backing_pas_pattern": null,
+      "run_id": "normandy_volman_alpha_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t090635",
+      "trade_days": 757,
+      "trade_count": 16,
+      "win_rate": 0.1875,
+      "avg_win": 0.2981278710937126,
+      "avg_loss": 0.0730993399984872,
+      "expected_value": -0.0034942379186997316,
+      "profit_factor": 4.078393472497596,
+      "max_drawdown": 0.07143075188935724,
+      "reject_rate": 0.0,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.09379128137384413,
+      "opportunity_count": 16.0,
+      "filled_count": 16.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 1.0,
+      "signals_count": 16,
+      "ranked_signals_count": 360,
+      "trades_count": 32,
+      "selected_pattern_distribution": {
+        "fb_cleaner": 16
+      },
+      "reference_trace_coverage": 0.0,
+      "rank_diff_days_vs_bof_control": 219,
+      "execution_diff_days_vs_bof_control": 201,
+      "introduced_selected_signals_vs_bof_control": {
+        "count": 16,
+        "sample": [
+          {
+            "signal_date": "2023-02-21",
+            "code": "300222",
+            "signal_id": "300222_2023-02-21_fb_cleaner",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-02-22",
+            "code": "300830",
+            "signal_id": "300830_2023-02-22_fb_cleaner",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-02-22",
+            "code": "301359",
+            "signal_id": "301359_2023-02-22_fb_cleaner",
+            "final_rank": 2
+          },
+          {
+            "signal_date": "2023-03-01",
+            "code": "601872",
+            "signal_id": "601872_2023-03-01_fb_cleaner",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-04-19",
+            "code": "688256",
+            "signal_id": "688256_2023-04-19_fb_cleaner",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-04-12",
+            "code": "002130",
+            "signal_id": "002130_2024-04-12_fb_cleaner",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-04-19",
+            "code": "603619",
+            "signal_id": "603619_2024-04-19_fb_cleaner",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-10-28",
+            "code": "000519",
+            "signal_id": "000519_2024-10-28_fb_cleaner",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-10-29",
+            "code": "300075",
+            "signal_id": "300075_2024-10-29_fb_cleaner",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-10-31",
+            "code": "000617",
+            "signal_id": "000617_2024-10-31_fb_cleaner",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-11-01",
+            "code": "002378",
+            "signal_id": "002378_2024-11-01_fb_cleaner",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2025-08-12",
+            "code": "688702",
+            "signal_id": "688702_2025-08-12_fb_cleaner",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2025-08-13",
+            "code": "603259",
+            "signal_id": "603259_2025-08-13_fb_cleaner",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2025-09-15",
+            "code": "002195",
+            "signal_id": "002195_2025-09-15_fb_cleaner",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2025-10-24",
+            "code": "688347",
+            "signal_id": "688347_2025-10-24_fb_cleaner",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-28",
+            "code": "600362",
+            "signal_id": "600362_2026-01-28_fb_cleaner",
+            "final_rank": 1
+          }
+        ]
+      },
+      "introduced_buy_trades_vs_bof_control": {
+        "count": 16,
+        "sample": [
+          {
+            "execute_date": "2023-02-22",
+            "code": "300222",
+            "signal_id": "300222_2023-02-21_fb_cleaner",
+            "pattern": "fb_cleaner",
+            "quantity": 11400
+          },
+          {
+            "execute_date": "2023-02-23",
+            "code": "300830",
+            "signal_id": "300830_2023-02-22_fb_cleaner",
+            "pattern": "fb_cleaner",
+            "quantity": 9800
+          },
+          {
+            "execute_date": "2023-02-23",
+            "code": "301359",
+            "signal_id": "301359_2023-02-22_fb_cleaner",
+            "pattern": "fb_cleaner",
+            "quantity": 3500
+          },
+          {
+            "execute_date": "2023-03-02",
+            "code": "601872",
+            "signal_id": "601872_2023-03-01_fb_cleaner",
+            "pattern": "fb_cleaner",
+            "quantity": 12900
+          },
+          {
+            "execute_date": "2023-04-20",
+            "code": "688256",
+            "signal_id": "688256_2023-04-19_fb_cleaner",
+            "pattern": "fb_cleaner",
+            "quantity": 400
+          },
+          {
+            "execute_date": "2024-04-15",
+            "code": "002130",
+            "signal_id": "002130_2024-04-12_fb_cleaner",
+            "pattern": "fb_cleaner",
+            "quantity": 9200
+          },
+          {
+            "execute_date": "2024-04-22",
+            "code": "603619",
+            "signal_id": "603619_2024-04-19_fb_cleaner",
+            "pattern": "fb_cleaner",
+            "quantity": 3300
+          },
+          {
+            "execute_date": "2024-10-29",
+            "code": "000519",
+            "signal_id": "000519_2024-10-28_fb_cleaner",
+            "pattern": "fb_cleaner",
+            "quantity": 5900
+          },
+          {
+            "execute_date": "2024-10-30",
+            "code": "300075",
+            "signal_id": "300075_2024-10-29_fb_cleaner",
+            "pattern": "fb_cleaner",
+            "quantity": 4900
+          },
+          {
+            "execute_date": "2024-11-01",
+            "code": "000617",
+            "signal_id": "000617_2024-10-31_fb_cleaner",
+            "pattern": "fb_cleaner",
+            "quantity": 11300
+          },
+          {
+            "execute_date": "2024-11-04",
+            "code": "002378",
+            "signal_id": "002378_2024-11-01_fb_cleaner",
+            "pattern": "fb_cleaner",
+            "quantity": 13300
+          },
+          {
+            "execute_date": "2025-08-13",
+            "code": "688702",
+            "signal_id": "688702_2025-08-12_fb_cleaner",
+            "pattern": "fb_cleaner",
+            "quantity": 1200
+          },
+          {
+            "execute_date": "2025-08-14",
+            "code": "603259",
+            "signal_id": "603259_2025-08-13_fb_cleaner",
+            "pattern": "fb_cleaner",
+            "quantity": 900
+          },
+          {
+            "execute_date": "2025-09-16",
+            "code": "002195",
+            "signal_id": "002195_2025-09-15_fb_cleaner",
+            "pattern": "fb_cleaner",
+            "quantity": 12000
+          },
+          {
+            "execute_date": "2025-10-27",
+            "code": "688347",
+            "signal_id": "688347_2025-10-24_fb_cleaner",
+            "pattern": "fb_cleaner",
+            "quantity": 700
+          },
+          {
+            "execute_date": "2026-01-29",
+            "code": "600362",
+            "signal_id": "600362_2026-01-28_fb_cleaner",
+            "pattern": "fb_cleaner",
+            "quantity": 1500
+          }
+        ]
+      },
+      "overlap_rate_vs_bof_control": 0.0,
+      "incremental_buy_trades_vs_bof_control": 16,
+      "best_environment_bucket": {
+        "bucket": "NEUTRAL",
+        "expected_value": 0.001982587004367327,
+        "profit_factor": 4.137576978583296,
+        "trade_count": 15
+      },
+      "environment_breakdown": {
+        "BULLISH": {
+          "trade_count": 1.0,
+          "win_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 0.08564661176470585,
+          "profit_factor": 0.0,
+          "expected_value": -0.08564661176470585,
+          "median_pnl_pct": -0.08564661176470585
+        },
+        "NEUTRAL": {
+          "trade_count": 15.0,
+          "win_rate": 0.2,
+          "avg_win": 0.2981278710937126,
+          "avg_loss": 0.07205373401796898,
+          "profit_factor": 4.137576978583296,
+          "expected_value": 0.001982587004367327,
+          "median_pnl_pct": -0.062325970937912804
+        }
+      }
+    },
+    {
+      "label": "FB_BOUNDARY",
+      "family": "FB_REFINED",
+      "detector_key": "fb_boundary",
+      "signal_pattern": "fb_boundary",
+      "control": false,
+      "detector_status": "ready",
+      "backing_pas_pattern": null,
+      "run_id": "normandy_volman_alpha_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t092801",
+      "trade_days": 757,
+      "trade_count": 17,
+      "win_rate": 0.35294117647058826,
+      "avg_win": 0.20439881988408148,
+      "avg_loss": 0.06292191459530078,
+      "expected_value": 0.03142657992683415,
+      "profit_factor": 3.248452009108869,
+      "max_drawdown": 0.02543533471878162,
+      "reject_rate": 0.0,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.14002642007926025,
+      "opportunity_count": 17.0,
+      "filled_count": 17.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 1.0,
+      "signals_count": 17,
+      "ranked_signals_count": 377,
+      "trades_count": 34,
+      "selected_pattern_distribution": {
+        "fb_boundary": 17
+      },
+      "reference_trace_coverage": 0.0,
+      "rank_diff_days_vs_bof_control": 218,
+      "execution_diff_days_vs_bof_control": 200,
+      "introduced_selected_signals_vs_bof_control": {
+        "count": 17,
+        "sample": [
+          {
+            "signal_date": "2023-02-21",
+            "code": "600118",
+            "signal_id": "600118_2023-02-21_fb_boundary",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-02-27",
+            "code": "300435",
+            "signal_id": "300435_2023-02-27_fb_boundary",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-03-13",
+            "code": "000063",
+            "signal_id": "000063_2023-03-13_fb_boundary",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-03-28",
+            "code": "002268",
+            "signal_id": "002268_2023-03-28_fb_boundary",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2023-03-29",
+            "code": "688012",
+            "signal_id": "688012_2023-03-29_fb_boundary",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-03-20",
+            "code": "002245",
+            "signal_id": "002245_2024-03-20_fb_boundary",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2024-10-28",
+            "code": "300846",
+            "signal_id": "300846_2024-10-28_fb_boundary",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2025-02-27",
+            "code": "002611",
+            "signal_id": "002611_2025-02-27_fb_boundary",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2025-05-26",
+            "code": "002229",
+            "signal_id": "002229_2025-05-26_fb_boundary",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2025-07-04",
+            "code": "300348",
+            "signal_id": "300348_2025-07-04_fb_boundary",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2025-08-05",
+            "code": "300548",
+            "signal_id": "300548_2025-08-05_fb_boundary",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2025-08-25",
+            "code": "601727",
+            "signal_id": "601727_2025-08-25_fb_boundary",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2025-09-15",
+            "code": "002920",
+            "signal_id": "002920_2025-09-15_fb_boundary",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2025-12-10",
+            "code": "300189",
+            "signal_id": "300189_2025-12-10_fb_boundary",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-26",
+            "code": "603993",
+            "signal_id": "603993_2026-01-26_fb_boundary",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-01-29",
+            "code": "002230",
+            "signal_id": "002230_2026-01-29_fb_boundary",
+            "final_rank": 1
+          },
+          {
+            "signal_date": "2026-02-06",
+            "code": "300666",
+            "signal_id": "300666_2026-02-06_fb_boundary",
+            "final_rank": 1
+          }
+        ]
+      },
+      "introduced_buy_trades_vs_bof_control": {
+        "count": 17,
+        "sample": [
+          {
+            "execute_date": "2023-02-22",
+            "code": "600118",
+            "signal_id": "600118_2023-02-21_fb_boundary",
+            "pattern": "fb_boundary",
+            "quantity": 3900
+          },
+          {
+            "execute_date": "2023-02-28",
+            "code": "300435",
+            "signal_id": "300435_2023-02-27_fb_boundary",
+            "pattern": "fb_boundary",
+            "quantity": 6500
+          },
+          {
+            "execute_date": "2023-03-14",
+            "code": "000063",
+            "signal_id": "000063_2023-03-13_fb_boundary",
+            "pattern": "fb_boundary",
+            "quantity": 3000
+          },
+          {
+            "execute_date": "2023-03-29",
+            "code": "002268",
+            "signal_id": "002268_2023-03-28_fb_boundary",
+            "pattern": "fb_boundary",
+            "quantity": 2600
+          },
+          {
+            "execute_date": "2023-03-30",
+            "code": "688012",
+            "signal_id": "688012_2023-03-29_fb_boundary",
+            "pattern": "fb_boundary",
+            "quantity": 700
+          },
+          {
+            "execute_date": "2024-03-21",
+            "code": "002245",
+            "signal_id": "002245_2024-03-20_fb_boundary",
+            "pattern": "fb_boundary",
+            "quantity": 11400
+          },
+          {
+            "execute_date": "2024-10-29",
+            "code": "300846",
+            "signal_id": "300846_2024-10-28_fb_boundary",
+            "pattern": "fb_boundary",
+            "quantity": 6900
+          },
+          {
+            "execute_date": "2025-02-28",
+            "code": "002611",
+            "signal_id": "002611_2025-02-27_fb_boundary",
+            "pattern": "fb_boundary",
+            "quantity": 7300
+          },
+          {
+            "execute_date": "2025-05-27",
+            "code": "002229",
+            "signal_id": "002229_2025-05-26_fb_boundary",
+            "pattern": "fb_boundary",
+            "quantity": 5800
+          },
+          {
+            "execute_date": "2025-07-07",
+            "code": "300348",
+            "signal_id": "300348_2025-07-04_fb_boundary",
+            "pattern": "fb_boundary",
+            "quantity": 5500
+          },
+          {
+            "execute_date": "2025-08-06",
+            "code": "300548",
+            "signal_id": "300548_2025-08-05_fb_boundary",
+            "pattern": "fb_boundary",
+            "quantity": 1000
+          },
+          {
+            "execute_date": "2025-08-26",
+            "code": "601727",
+            "signal_id": "601727_2025-08-25_fb_boundary",
+            "pattern": "fb_boundary",
+            "quantity": 11100
+          },
+          {
+            "execute_date": "2025-09-16",
+            "code": "002920",
+            "signal_id": "002920_2025-09-15_fb_boundary",
+            "pattern": "fb_boundary",
+            "quantity": 800
+          },
+          {
+            "execute_date": "2025-12-11",
+            "code": "300189",
+            "signal_id": "300189_2025-12-10_fb_boundary",
+            "pattern": "fb_boundary",
+            "quantity": 15300
+          },
+          {
+            "execute_date": "2026-01-27",
+            "code": "603993",
+            "signal_id": "603993_2026-01-26_fb_boundary",
+            "pattern": "fb_boundary",
+            "quantity": 4200
+          },
+          {
+            "execute_date": "2026-01-30",
+            "code": "002230",
+            "signal_id": "002230_2026-01-29_fb_boundary",
+            "pattern": "fb_boundary",
+            "quantity": 1700
+          },
+          {
+            "execute_date": "2026-02-09",
+            "code": "300666",
+            "signal_id": "300666_2026-02-06_fb_boundary",
+            "pattern": "fb_boundary",
+            "quantity": 800
+          }
+        ]
+      },
+      "overlap_rate_vs_bof_control": 0.0,
+      "incremental_buy_trades_vs_bof_control": 17,
+      "best_environment_bucket": {
+        "bucket": "NEUTRAL",
+        "expected_value": 0.040783962268804784,
+        "profit_factor": 3.5618888173719854,
+        "trade_count": 16
+      },
+      "environment_breakdown": {
+        "BULLISH": {
+          "trade_count": 1.0,
+          "win_rate": 0.0,
+          "avg_win": 0.0,
+          "avg_loss": 0.11829153754469611,
+          "profit_factor": 0.0,
+          "expected_value": -0.11829153754469611,
+          "median_pnl_pct": -0.11829153754469611
+        },
+        "NEUTRAL": {
+          "trade_count": 16.0,
+          "win_rate": 0.375,
+          "avg_win": 0.20439881988408148,
+          "avg_loss": 0.05738495230036124,
+          "profit_factor": 3.5618888173719854,
+          "expected_value": 0.040783962268804784,
+          "median_pnl_pct": -0.025611623998661813
+        }
+      }
+    }
+  ],
+  "research_parent": "FB",
+  "research_question": "Which FB branch carries the current edge: cleaner 0/1 touch or boundary 2 touch?",
+  "summary_run_id": "normandy_fb_refinement_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t083246",
+  "upstream_matrix_path": "G:\\EmotionQuant-gamma\\normandy\\03-execution\\evidence\\normandy_volman_alpha_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t001652__volman_alpha_matrix.json"
+}

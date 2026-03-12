@@ -11,6 +11,7 @@
 | 文件 | 角色 |
 |---|---|
 | `bof-firstborn-record-20260312.md` | `BOF` 作为当前 baseline / control 的身份记录 |
+| `bof-pinbar-keylevel-doctrine-note-20260312.md` | `BOF / pinbar / 关键位` 的战役专用来源归纳与 A 股适配边界 |
 | `volman-pas-alpha-screening.md` | `Volman` 结构首轮 alpha 对象筛选 |
 | `volman-pas-v0-research-card-20260312.md` | `Volman PAS` 首轮研究卡 |
 | `volman-rb-sb-fb-minimal-contract-note-20260312.md` | `RB_FAKE / SB / FB` 的最小对象契约 |

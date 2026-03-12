@@ -78,7 +78,7 @@
 1. 不引入新的 `MSS` overlay。
 2. 不继续冻结 `MSS / Broker` 候选。
 3. `IRS` 不作为前置硬过滤进入本轮。
-4. 默认使用最简 Broker或受控最小执行口径。
+4. 默认复用当前统一 `Broker` 内核与既有 `stop_loss + trailing_stop + T+1 Open` 语义，但不让 `MSS / IRS` 进入前置裁决。
 5. 一切 working db、实验缓存和中间产物一律落在 `G:\EmotionQuant-temp`。
 
 ---
@@ -149,4 +149,4 @@
 
 `N1` 当前一句话任务固定为：
 
-`以最简执行口径重跑 PAS 五单形态 + YTC5_ANY 长窗口矩阵，先证明谁更像真实 raw alpha 来源。`
+`以无 MSS / 无 IRS、但同一套 Broker 出场语义的口径重跑 PAS 五单形态 + YTC5_ANY 长窗口矩阵，先证明谁更像真实 raw alpha 来源。`

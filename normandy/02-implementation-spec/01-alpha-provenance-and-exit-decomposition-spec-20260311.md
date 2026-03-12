@@ -55,7 +55,7 @@
 当前实验固定允许：
 
 1. 首轮只比较 `BOF / BPB / PB / TST / CPB / YTC5_ANY`。
-2. 使用最简 Broker或受控最小执行口径。
+2. 复用当前统一 `Broker` 内核与既有 `stop_loss + trailing_stop + T+1 Open` 出场语义，但关闭 `MSS / IRS` 的前置干预。
 3. 在同一窗口中比较 entry edge、trade count、EV、PF、MDD、participation。
 
 这里的：
@@ -108,4 +108,4 @@
 
 当前第二战场的一句话方案可以压缩为：
 
-`先用最简执行口径证明 PAS raw alpha 来自哪里，再对同一批 entry 拆 exit damage，在此之前暂停一切 MSS 微调。`
+`先在无 MSS / 无 IRS、但同一套 Broker 出场语义下证明 PAS raw alpha 来自哪里，再对同一批 entry 拆 exit damage。`

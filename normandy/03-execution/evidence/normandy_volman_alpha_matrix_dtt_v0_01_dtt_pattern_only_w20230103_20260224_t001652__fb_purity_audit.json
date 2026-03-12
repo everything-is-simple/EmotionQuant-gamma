@@ -1,0 +1,265 @@
+{
+  "generated_at": "2026-03-12T08:15:59Z",
+  "matrix_summary_run_id": "normandy_volman_alpha_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t001652",
+  "matrix_path": "G:\\EmotionQuant-gamma\\normandy\\03-execution\\evidence\\normandy_volman_alpha_matrix_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t001652__volman_alpha_matrix.json",
+  "snapshot_status": "available",
+  "snapshot_db_path": "G:\\EmotionQuant-temp\\backtest\\normandy-volman-alpha-matrix-20260312.duckdb",
+  "fb_run_id": "normandy_volman_alpha_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t013256",
+  "candidate_label": "FB",
+  "candidate_summary": {
+    "trade_count": 33,
+    "expected_value": 0.014495274304757104,
+    "profit_factor": 3.4433099405551975,
+    "max_drawdown": 0.05907731617076216,
+    "participation_rate": 1.0,
+    "overlap_rate_vs_bof_control": 0.0,
+    "incremental_buy_trades_vs_bof_control": 33
+  },
+  "selected_summary": {
+    "selected_count": 33,
+    "avg_prior_ema_touches": 1.1818181818181819,
+    "max_prior_ema_touches": 2.0,
+    "avg_pullback_depth": 0.4049128833941559,
+    "avg_trend_gain": 0.3137234609883195,
+    "avg_volume_ratio": 2.244903432528046,
+    "edge_touch_ratio": 0.5151515151515151,
+    "near_floor_trend_ratio": 0.09090909090909091,
+    "edge_depth_ratio": 0.21212121212121213,
+    "strong_volume_ratio": 0.45454545454545453,
+    "min_strength": 0.6319798756842708,
+    "avg_strength": 0.8001014537976218,
+    "max_strength": 1.0
+  },
+  "prior_ema_touches_distribution": [
+    {
+      "prior_ema_touches": 0,
+      "count": 11,
+      "share": 0.3333333333333333
+    },
+    {
+      "prior_ema_touches": 1,
+      "count": 5,
+      "share": 0.15151515151515152
+    },
+    {
+      "prior_ema_touches": 2,
+      "count": 17,
+      "share": 0.5151515151515151
+    }
+  ],
+  "failure_reason_breakdown": [
+    {
+      "reason": "TREND_NOT_EXPLOSIVE",
+      "count": 64894,
+      "share": 0.8761526725802314
+    },
+    {
+      "reason": "NOT_FIRST_PULLBACK",
+      "count": 5202,
+      "share": 0.07023370731904897
+    },
+    {
+      "reason": "PULLBACK_NOT_ORDERLY",
+      "count": 2085,
+      "share": 0.028150188342986757
+    },
+    {
+      "reason": "INSUFFICIENT_HISTORY",
+      "count": 1410,
+      "share": 0.01903681801612054
+    },
+    {
+      "reason": "MA20_NOT_RETESTED",
+      "count": 251,
+      "share": 0.0033888236326569186
+    },
+    {
+      "reason": "NO_FB_CONFIRM",
+      "count": 187,
+      "share": 0.00252474111277627
+    },
+    {
+      "reason": "INVALID_RANGE",
+      "count": 26,
+      "share": 0.00035103352370151347
+    },
+    {
+      "reason": "LOW_VOLUME",
+      "count": 7,
+      "share": 9.450902561194594e-05
+    }
+  ],
+  "performance_by_touch_bucket": [
+    {
+      "touch_bucket": "touch_0_1_cleaner",
+      "trade_count": 16,
+      "avg_gross_return": -0.0018566887478469055,
+      "win_rate": 0.1875,
+      "avg_strength": 0.8552545772829221
+    },
+    {
+      "touch_bucket": "touch_2_boundary",
+      "trade_count": 17,
+      "avg_gross_return": 0.03311028550369902,
+      "win_rate": 0.35294117647058826,
+      "avg_strength": 0.7481926316938096
+    }
+  ],
+  "performance_by_depth_bucket": [
+    {
+      "depth_bucket": "core_depth_band",
+      "trade_count": 26,
+      "avg_gross_return": 0.00404694844360031,
+      "win_rate": 0.2692307692307692
+    },
+    {
+      "depth_bucket": "edge_depth_band",
+      "trade_count": 7,
+      "avg_gross_return": 0.061135310580532114,
+      "win_rate": 0.2857142857142857
+    }
+  ],
+  "performance_by_trend_bucket": [
+    {
+      "trend_bucket": "near_floor_trend",
+      "trade_count": 3,
+      "avg_gross_return": 0.04237922640631487,
+      "win_rate": 0.3333333333333333
+    },
+    {
+      "trend_bucket": "stronger_trend",
+      "trade_count": 30,
+      "avg_gross_return": 0.013534338479279607,
+      "win_rate": 0.26666666666666666
+    }
+  ],
+  "performance_by_volume_bucket": [
+    {
+      "volume_bucket": "base_volume",
+      "trade_count": 18,
+      "avg_gross_return": 0.010643652307989561,
+      "win_rate": 0.2777777777777778
+    },
+    {
+      "volume_bucket": "strong_volume",
+      "trade_count": 15,
+      "avg_gross_return": 0.022772139470234723,
+      "win_rate": 0.26666666666666666
+    }
+  ],
+  "boundary_examples": [
+    {
+      "signal_date": "2023-02-21",
+      "code": "600118",
+      "prior_ema_touches": 2,
+      "trend_gain": 0.084525939177102,
+      "pullback_depth": 0.4119718309859161,
+      "pattern_strength": 0.6866066626198911
+    },
+    {
+      "signal_date": "2023-02-22",
+      "code": "301359",
+      "prior_ema_touches": 1,
+      "trend_gain": 0.08984375000000001,
+      "pullback_depth": 0.5802047781569964,
+      "pattern_strength": 0.6861385678561772
+    },
+    {
+      "signal_date": "2023-02-27",
+      "code": "300435",
+      "prior_ema_touches": 2,
+      "trend_gain": 0.08521126760563387,
+      "pullback_depth": 0.5086705202312142,
+      "pattern_strength": 0.6319798756842708
+    },
+    {
+      "signal_date": "2023-03-13",
+      "code": "000063",
+      "prior_ema_touches": 2,
+      "trend_gain": 0.16379310344827586,
+      "pullback_depth": 0.43246930422919544,
+      "pattern_strength": 0.7260850029578414
+    },
+    {
+      "signal_date": "2023-03-28",
+      "code": "002268",
+      "prior_ema_touches": 2,
+      "trend_gain": 0.10084033613445362,
+      "pullback_depth": 0.4502369668246443,
+      "pattern_strength": 0.7410119671372931
+    },
+    {
+      "signal_date": "2023-03-29",
+      "code": "688012",
+      "prior_ema_touches": 2,
+      "trend_gain": 0.19378892885340834,
+      "pullback_depth": 0.3070769230769235,
+      "pattern_strength": 0.7615878908096383
+    },
+    {
+      "signal_date": "2024-03-20",
+      "code": "002245",
+      "prior_ema_touches": 2,
+      "trend_gain": 0.22390109890109888,
+      "pullback_depth": 0.2364672364672365,
+      "pattern_strength": 0.7484848484848483
+    },
+    {
+      "signal_date": "2024-10-28",
+      "code": "000519",
+      "prior_ema_touches": 1,
+      "trend_gain": 0.33691164327002493,
+      "pullback_depth": 0.2179226069246439,
+      "pattern_strength": 0.8033383688760894
+    },
+    {
+      "signal_date": "2024-10-28",
+      "code": "300846",
+      "prior_ema_touches": 2,
+      "trend_gain": 0.5041493775933609,
+      "pullback_depth": 0.4886561954624783,
+      "pattern_strength": 0.9249999999999999
+    },
+    {
+      "signal_date": "2025-02-27",
+      "code": "002611",
+      "prior_ema_touches": 2,
+      "trend_gain": 0.13959183673469394,
+      "pullback_depth": 0.35,
+      "pattern_strength": 0.7035445211428912
+    },
+    {
+      "signal_date": "2025-05-26",
+      "code": "002229",
+      "prior_ema_touches": 2,
+      "trend_gain": 0.6190476190476191,
+      "pullback_depth": 0.36199575371549897,
+      "pattern_strength": 0.7634077366629586
+    },
+    {
+      "signal_date": "2025-07-04",
+      "code": "300348",
+      "prior_ema_touches": 2,
+      "trend_gain": 0.30434782608695643,
+      "pullback_depth": 0.46676514032496297,
+      "pattern_strength": 0.756551596139569
+    }
+  ],
+  "purity_flags": [
+    "boundary_touch_loaded",
+    "depth_band_boundary_mix",
+    "boundary_samples_carry_edge",
+    "late_pullback_guardrail_active"
+  ],
+  "purity_verdict": "boundary_loaded_detector_refinement_required",
+  "conclusion": "FB 当前并未表现出“大量普通 PB 混入已选集合”的直接证据，但超过一半的已选样本落在 prior_ema_touches=2 的 detector 边界，且边界样本的表现优于更干净的 0/1 touch 子集。这说明当前 alpha 更像 boundary-loaded FB，而不是 textbook-clean first pullback。",
+  "next_actions": [
+    "先把 FB 拆成 cleaner(0/1 touch) 与 boundary(2 touch) 两个子 detector。",
+    "单独复核 boundary-loaded 子集是否才是真正 carrying edge 的对象。",
+    "在 detector 语义未收紧前，不直接把当前 FB 带进 N2 exit decomposition。"
+  ],
+  "notes": [
+    "purity audit 使用 N1.5 run snapshot 的 detector trace + lifecycle pairing proxy，不重跑 Volman matrix。",
+    "performance_by_* 使用 gross_return proxy，只服务 N1.7 purity 排序，不替代上游 formal EV。"
+  ]
+}

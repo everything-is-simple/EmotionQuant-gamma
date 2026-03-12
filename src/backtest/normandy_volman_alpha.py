@@ -26,9 +26,19 @@ from src.report.reporter import generate_backtest_report
 from src.run_metadata import finish_run, start_run
 from src.selector.selector import select_candidates
 from src.strategy.pas_bof import BofDetector
-from src.strategy.ranker import build_dtt_score_frame, finalize_dtt_rank_frame, materialize_ranked_signals
+from src.strategy.ranker import (
+    build_dtt_score_frame,
+    finalize_dtt_rank_frame,
+    materialize_ranked_signals,
+)
 from src.strategy.strategy import _build_pas_trace_row
-from src.strategy.volman_detectors import FbDetector, RbFakeDetector, SbDetector
+from src.strategy.volman_detectors import (
+    FbBoundaryDetector,
+    FbCleanerDetector,
+    FbDetector,
+    RbFakeDetector,
+    SbDetector,
+)
 
 NORMANDY_VOLMAN_ALPHA_DTT_VARIANT = "v0_01_dtt_pattern_only"
 NORMANDY_VOLMAN_CANDIDATE_MIN_TRADES = 20
@@ -194,6 +204,10 @@ def _build_detector(config: Settings, scenario: NormandyVolmanAlphaScenario):
         return SbDetector(config)
     if scenario.detector_key == "fb":
         return FbDetector(config)
+    if scenario.detector_key == "fb_cleaner":
+        return FbCleanerDetector(config)
+    if scenario.detector_key == "fb_boundary":
+        return FbBoundaryDetector(config)
     raise ValueError(f"Unsupported Normandy Volman detector: {scenario.detector_key}")
 
 
@@ -789,13 +803,14 @@ def build_normandy_volman_alpha_scaffold_payload(
     max_positions: int | None = None,
     working_db_path: str | Path | None = None,
     artifact_root: str | Path | None = None,
+    scenarios: list[NormandyVolmanAlphaScenario] | None = None,
 ) -> dict[str, object]:
     source_db = Path(db_path).expanduser().resolve()
     db_file = Path(working_db_path).expanduser().resolve() if working_db_path is not None else source_db
     artifact_root_path = Path(artifact_root).expanduser().resolve() if artifact_root is not None else db_file.parent
-    scenarios = build_normandy_volman_alpha_scenarios(config)
-    pending_detectors = _pending_detector_labels(scenarios)
-    ready_labels = [scenario.label for scenario in scenarios if scenario.detector_ready]
+    active_scenarios = scenarios or build_normandy_volman_alpha_scenarios(config)
+    pending_detectors = _pending_detector_labels(active_scenarios)
+    ready_labels = [scenario.label for scenario in active_scenarios if scenario.detector_ready]
     return {
         "generated_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
         "matrix_status": "detector_contract_only",
@@ -823,7 +838,7 @@ def build_normandy_volman_alpha_scaffold_payload(
                 "backing_pas_pattern": scenario.backing_pas_pattern,
                 "notes": scenario.notes,
             }
-            for scenario in scenarios
+            for scenario in active_scenarios
         ],
         "pending_detectors": pending_detectors,
         "ready_detectors": ready_labels,
@@ -849,6 +864,7 @@ def run_normandy_volman_alpha_matrix(
     dtt_top_n: int | None = None,
     max_positions: int | None = None,
     scaffold_only: bool = False,
+    scenarios: list[NormandyVolmanAlphaScenario] | None = None,
 ) -> dict[str, object]:
     if scaffold_only:
         return build_normandy_volman_alpha_scaffold_payload(
@@ -861,6 +877,7 @@ def run_normandy_volman_alpha_matrix(
             max_positions=max_positions,
             working_db_path=working_db_path,
             artifact_root=artifact_root,
+            scenarios=scenarios,
         )
 
     source_db = Path(db_path).expanduser().resolve()
@@ -875,7 +892,7 @@ def run_normandy_volman_alpha_matrix(
         finally:
             build_store.close()
 
-    scenarios = build_normandy_volman_alpha_scenarios(config)
+    active_scenarios = scenarios or build_normandy_volman_alpha_scenarios(config)
     runs = [
         _run_normandy_volman_scenario(
             db_file=db_file,
@@ -889,7 +906,7 @@ def run_normandy_volman_alpha_matrix(
             dtt_top_n=dtt_top_n,
             max_positions=max_positions,
         )
-        for scenario in scenarios
+        for scenario in active_scenarios
     ]
     bof_control = next(result for result in runs if result.scenario.label == "BOF_CONTROL")
     serialized_results = [
@@ -922,7 +939,7 @@ def run_normandy_volman_alpha_matrix(
                 "control": scenario.control,
                 "backing_pas_pattern": scenario.backing_pas_pattern,
             }
-            for scenario in scenarios
+            for scenario in active_scenarios
         ],
         "matrix_summary": _build_matrix_summary(serialized_results),
         "results": serialized_results,

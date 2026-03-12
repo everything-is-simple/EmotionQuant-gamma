@@ -4,7 +4,8 @@ from __future__ import annotations
 # 1. 仓库根目录只放代码/文档/配置；working DB 与运行缓存固定留在 TEMP_PATH / G:\EmotionQuant-temp。
 # 2. 执行源库默认走 DATA_PATH/emotionquant.duckdb；若窗口缺数据，先按 RAW_DB_PATH / 本地旧库优先补齐，
 #    再按 TUSHARE_PRIMARY_* -> TUSHARE_FALLBACK_* 兜底。
-# 3. 本脚本固定使用 pattern-only DTT + 无 MSS gate + 无 IRS 硬过滤，并继续遵守 T+1 Open 执行语义。
+# 3. 本脚本固定使用 pattern-only DTT + 无 MSS gate + 无 IRS 硬过滤，
+#    但继续复用统一 Broker 内核与既有 stop_loss / trailing_stop / T+1 Open 语义。
 # 4. 当前首轮矩阵只比较五单形态 `BOF/BPB/PB/TST/CPB` 与总集合 `YTC5_ANY`，
 #    不把 `BOF+PB / PB+CPB` 这类组合场景混进 pattern taxonomy 证明。
 

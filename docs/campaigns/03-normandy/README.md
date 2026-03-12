@@ -9,8 +9,8 @@
 ## 当前裁决
 
 1. `BOF` 已固定为 `PAS raw alpha baseline / control`，不再作为待证对象。
-2. `FB` 是当前唯一通过门槛的第二 alpha 候选，但仍带稳定性风险标记。
-3. `SB` 当前保留为 refinement 队列对象；`TACHI_CROWD_FAILURE` 当前固定为 `observation-only`。
+2. `FB_BOUNDARY` 当前只保留为 `watch candidate / not-n2-ready`，不再占主队列第一优先级。
+3. `SB` 当前 full detector 路线已正式 `no-go`，但保留 `SB_SMALL_W_MID_STRENGTH` 为窄 watch branch；`TACHI_CROWD_FAILURE` 当前固定为 `observation-only`。
 4. `Normandy` 当前只负责找胜者，不负责直接宣布主线改写。
 
 ## 正式档案入口
@@ -30,9 +30,9 @@
 
 ## 下一步
 
-1. 第一优先级固定为 `N1.7 / FB stability and purity`。
-2. 第二优先级固定为 `N1.9 / SB refinement or no-go`。
-3. `Tachibana` 当前只保留为延后 refinement / backlog；只有非 `BOF` 候选完成研究线证明后，才允许进入主线升格讨论。
+1. 第一优先级固定为 `N1.11 / BOF pinbar quality provenance`。
+2. 第二优先级固定为 `N1.12 / BOF family stability or no-go`。
+3. `Tachibana` 当前只保留为延后 refinement / backlog；只有 `BOF family` 的 broker-frozen quality gate 跑完后，才允许回到这条线。
 
 ## 相邻入口
 

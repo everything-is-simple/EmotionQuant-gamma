@@ -5,7 +5,6 @@ from datetime import date
 
 from src.config import Settings
 from src.contracts import Signal
-from src.strategy.pattern_base import PatternDetector
 from src.strategy.pas_support import (
     EPS,
     REQUIRED_COLUMNS,
@@ -16,7 +15,7 @@ from src.strategy.pas_support import (
     normalize_history,
     safe_ratio,
 )
-
+from src.strategy.pattern_base import PatternDetector
 
 VOLMAN_REQUIRED_COLUMNS = REQUIRED_COLUMNS | {"ma20"}
 
@@ -157,6 +156,8 @@ class FbParams:
     pullback_min: float = 0.20
     pullback_max: float = 0.60
     ma20_distance_max: float = 0.04
+    prior_ema_touches_min: int = 0
+    prior_ema_touches_max: int = 2
 
 
 class FbDetector(PatternDetector):
@@ -170,12 +171,33 @@ class FbDetector(PatternDetector):
     name = "fb"
     required_window = 31
 
-    def __init__(self, config: Settings):
-        self.params = FbParams(volume_mult=max(1.05, float(config.pas_pb_volume_mult)))
+    def __init__(
+        self,
+        config: Settings,
+        *,
+        prior_ema_touches_min: int = 0,
+        prior_ema_touches_max: int = 2,
+    ):
+        min_touches = max(0, int(prior_ema_touches_min))
+        max_touches = max(0, int(prior_ema_touches_max))
+        if min_touches > max_touches:
+            raise ValueError("FB prior_ema_touches_min must be <= prior_ema_touches_max")
+        self.params = FbParams(
+            volume_mult=max(1.05, float(config.pas_pb_volume_mult)),
+            prior_ema_touches_min=min_touches,
+            prior_ema_touches_max=max_touches,
+        )
 
     def evaluate(self, code: str, asof_date: date, df) -> tuple[Signal | None, dict[str, object]]:
         trace = init_trace(code, asof_date, self.name, len(df))
-        trace.update({"required_window": self.required_window, "required_mult": self.params.volume_mult})
+        trace.update(
+            {
+                "required_window": self.required_window,
+                "required_mult": self.params.volume_mult,
+                "prior_ema_touches_min": self.params.prior_ema_touches_min,
+                "prior_ema_touches_max": self.params.prior_ema_touches_max,
+            }
+        )
         if df.empty or len(df) < self.required_window:
             return fail_trace(trace, "INSUFFICIENT_HISTORY")
 
@@ -219,7 +241,7 @@ class FbDetector(PatternDetector):
             and trend_up_ratio >= 0.55
             and float(trend_window["adj_close"].iloc[-1]) > float(trend_window["ma20"].iloc[-1])
         )
-        first_pullback = prior_ema_touches <= 2
+        first_pullback = self.params.prior_ema_touches_min <= prior_ema_touches <= self.params.prior_ema_touches_max
         pullback_valid = self.params.pullback_min <= pullback_depth <= self.params.pullback_max
         orderly_pullback = pullback_down_ratio >= 0.40 and float(pullback_window["adj_close"].iloc[-1]) <= float(
             pullback_window["adj_close"].iloc[0]
@@ -284,6 +306,24 @@ class FbDetector(PatternDetector):
     def detect(self, code: str, asof_date: date, df) -> Signal | None:
         signal, _ = self.evaluate(code, asof_date, df)
         return signal
+
+
+class FbCleanerDetector(FbDetector):
+    """Cleaner FB branch: only keep 0/1-touch first-pullback samples."""
+
+    name = "fb_cleaner"
+
+    def __init__(self, config: Settings):
+        super().__init__(config, prior_ema_touches_min=0, prior_ema_touches_max=1)
+
+
+class FbBoundaryDetector(FbDetector):
+    """Boundary FB branch: isolate the 2-touch edge bucket for refinement replay."""
+
+    name = "fb_boundary"
+
+    def __init__(self, config: Settings):
+        super().__init__(config, prior_ema_touches_min=2, prior_ema_touches_max=2)
 
 
 @dataclass
