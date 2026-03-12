@@ -96,6 +96,7 @@
 
 - 设计迁移边界：`docs/design-migration-boundary.md`
 - 三大战役总图：`docs/campaigns/README.md`
+- 辅助层保留清单：`docs/spec/common/records/supporting-layers-retention-checklist-20260312.md`
 - 当前治理状态：`docs/spec/common/records/development-status.md`
 - 历史基线：`docs/design-v2/01-system/system-baseline.md`
 - 当前主线设计：`../blueprint/README.md`

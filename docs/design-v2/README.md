@@ -14,6 +14,7 @@
 1. 保存 `v0.01 Frozen` 历史基线
 2. 提供少数必要历史总览，供对照、回退与追溯使用
 3. 为 `docs/spec/` 中的历史治理记录提供只读背景入口
+4. 按正式退场清单持续瘦身，但不做静默删除
 
 它不再承担新版主线设计权威层，也不再保留迁移期桥接稿。
 
@@ -27,6 +28,7 @@
 |---|---|---|
 | 新版设计总入口 | `blueprint/README.md` | 新版设计权威层 |
 | 当前治理入口 | `docs/spec/common/records/development-status.md` | 当前状态、风险与推进判断 |
+| 退场清单 | `docs/spec/common/records/design-v2-retirement-checklist-20260312.md` | 当前保留 / 降级 / 未来删除边界 |
 | v0.01 历史治理归档 | `docs/spec/v0.01/README.md` | `v0.01 Frozen` 的 evidence / records / roadmap |
 | 设计迁移边界声明 | `docs/design-migration-boundary.md` | 说明为何 `design-v2/` 已降级 |
 | v0.01 历史基线 | `01-system/system-baseline.md` | `v0.01 Frozen` 历史执行口径 |
@@ -42,6 +44,7 @@
 3. `design-v2/` 中带 `Frozen` 或历史口径的文档，只承担对照、回退、追溯职责。
 4. 历史实现证据、runbook、release、评审记录统一进入 `docs/spec/`，不要再回填到 `design-v2/` 正文。
 5. 若旧文档与 `blueprint/` 冲突，以 `docs/design-migration-boundary.md` 和 `blueprint/` 为准。
+6. 需要判断某个历史文还能不能继续保留，优先查看 `design-v2-retirement-checklist-20260312.md`。
 
 ---
 
@@ -57,6 +60,7 @@
 ## 相关文档
 
 - `docs/design-migration-boundary.md`
+- `docs/spec/common/records/design-v2-retirement-checklist-20260312.md`
 - `blueprint/README.md`
 - `docs/spec/common/records/development-status.md`
 - `docs/spec/v0.01/README.md`

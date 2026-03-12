@@ -13,6 +13,8 @@
 |---|---|---|
 | 当前状态 | `development-status.md` | 查看当前治理阶段、历史摘要与重启条件 |
 | 系统宪法 | `system-constitution-v1.md` | 查看当前跨线不可违背铁律 |
+| `design-v2` 退场清单 | `design-v2-retirement-checklist-20260312.md` | 查看历史基线包的保留、降级与未来删除边界 |
+| 辅助层保留清单 | `supporting-layers-retention-checklist-20260312.md` | 查看 reference / observatory / workflow / docs 导航层的保留与瘦身边界 |
 | 技术债 | `debts.md` | 查看风险与欠账 |
 | 资产复用 | `reusable-assets.md` | 查看可复用沉淀 |
 | 历史桥接审计 | `../bridge-review-20260304.md` | 查看文档治理转折期的桥接审计 |

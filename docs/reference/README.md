@@ -28,6 +28,7 @@
 3. 当前主线设计看 `blueprint/`，不要把参考资料反向抬成当前正文。
 4. 历史冻结基线看 `docs/design-v2/01-system/system-baseline.md`。
 5. 当前状态看 `docs/spec/common/records/development-status.md`。
+6. 目录是否继续保留或瘦身，以 `docs/spec/common/records/supporting-layers-retention-checklist-20260312.md` 为准。
 
 ## 入口
 
