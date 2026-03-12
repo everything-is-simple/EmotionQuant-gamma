@@ -1,19 +1,25 @@
 # Normandy
 
 **状态**: `Active`  
-**日期**: `2026-03-11`
+**日期**: `2026-03-12`
 
 ---
 
 ## 1. 定位
 
-`normandy/` 是 `EmotionQuant-gamma` 根目录下的第二战场设计空间。
+`normandy/` 是 `EmotionQuant-gamma` 根目录下的第二战场设计空间，也是当前仓库唯一独立研究线。
 
 它的职责只有一个：
 
 `隔离“alpha 来源证明 + exit 伤害拆解”这条新实验主线。`
 
 这里不是 `blueprint/` 的替代品，也不是对当前 `v0.01-plus` 主线的口头修修补补。
+
+这里还必须再写死一条：
+
+`Normandy 不是 v0.01 的子版本号，也不是新的主线版本线。`
+
+它是研究战场，不是版本线。
 
 ---
 
@@ -45,6 +51,7 @@
 2. 不改写 `Phase 4 / Gate = NO-GO` 的结论。
 3. 不继续沿 `Phase 4.1` 做 `MSS / Broker` 微调。
 4. 单独回答“真实 alpha 来自哪里，收益是被谁吞掉”的问题。
+5. 若研究结论未来需要升格，必须先形成正式 record，再迁回 `blueprint/`，不能靠 `normandy/` 直接宣布主线改写。
 
 ---
 
@@ -84,6 +91,7 @@
 
 当前已经落下的入口文件有：
 
+- `../docs/spec/common/records/repo-line-map-20260312.md`
 - `02-implementation-spec/01-alpha-provenance-and-exit-decomposition-spec-20260311.md`
 - `02-implementation-spec/02-volman-second-alpha-search-spec-20260312.md`
 - `03-execution/00-dev-data-baseline-inheritance-20260311.md`
@@ -92,21 +100,23 @@
 
 它们分别负责：
 
-1. 第二战场当前实验范围与对照约束。
-2. 在 `BOF` baseline 固定后，单独搜索第二个自带 alpha 的 `Volman` 候选。
-3. 三目录纪律、执行库 / 旧库候选、`RAW_DB_PATH`、双 TuShare key 的继承规则。
-4. 第一张执行卡：先做 `PAS raw alpha provenance`。
-5. 第二张执行卡：围绕 `RB_FAKE / SB / FB` 搜索第二个自带 alpha 候选。
+1. 仓库层面的历史线 / 主线 / 研究线三分地图。
+2. 第二战场当前实验范围与对照约束。
+3. 在 `BOF` baseline 固定后，单独搜索第二个自带 alpha 的 `Volman` 候选。
+4. 三目录纪律、执行库 / 旧库候选、`RAW_DB_PATH`、双 TuShare key 的继承规则。
+5. 第一张执行卡：先做 `PAS raw alpha provenance`。
+6. 第二张执行卡：围绕 `RB_FAKE / SB / FB` 搜索第二个自带 alpha 候选。
 
 ---
 
 ## 6. 使用规则
 
-1. 先看 `blueprint/README.md`，确认当前主线已经冻结到哪里。
-2. 再看 `normandy/README.md`，确认第二战场的问题边界。
-3. 再看 `02-implementation-spec/`，确认本轮实验允许做什么、不允许做什么。
-4. 再看 `03-execution/00-dev-data-baseline-inheritance-20260311.md`，确认三目录纪律、执行库与双 TuShare key 口径。
-5. 最后才看当前 phase card。
+1. 先看 `docs/spec/common/records/repo-line-map-20260312.md`，确认当前自己站在历史线、主线还是研究线。
+2. 再看 `blueprint/README.md`，确认当前主线已经冻结到哪里。
+3. 再看 `normandy/README.md`，确认第二战场的问题边界。
+4. 再看 `02-implementation-spec/`，确认本轮实验允许做什么、不允许做什么。
+5. 再看 `03-execution/00-dev-data-baseline-inheritance-20260311.md`，确认三目录纪律、执行库与双 TuShare key 口径。
+6. 最后才看当前 phase card。
 
 ---
 
@@ -115,3 +125,7 @@
 第二战场当前一句话基线固定为：
 
 `保持 blueprint 主线结论不变，以 legacy_bof_baseline 为当前默认运行口径，在继承同一套三目录 / 执行库 / 旧库 / TuShare 双通道纪律的前提下，先独立证明 PAS raw alpha，再拆 exit damage。`
+
+再压缩一句：
+
+`Normandy 是研究线，不是版本线；它负责找答案，不负责直接改写主线。`

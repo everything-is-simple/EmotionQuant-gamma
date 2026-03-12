@@ -1,8 +1,8 @@
 # EmotionQuant 开发状态（重启版模板）
 
 **状态**: Active（v0.01 Frozen + v0.01-plus 主线替代切换）  
-**最后更新**: 2026-03-11
-**当前阶段**: Mainline MVP Strengthening（`v0.01` 已冻结为历史尝试；`v0.01-plus` 已升格为当前主开发线；`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 / Phase 4.1` 已完成；`Phase 4 / Gate` 已正式写定 `NO-GO`；`Phase 4.1 / MSS-Broker Remediation` 已完成最终 direct replay，最后一条候选 `size_only_overlay` 仍未推翻 `legacy_bof_baseline`；当前默认路径继续保持 `legacy_bof_baseline`，且 `Phase 4.1` 不再继续冻结新候选；第二战场 `normandy/` 已开启，当前任务转为 `PAS raw alpha provenance + exit damage decomposition`）
+**最后更新**: 2026-03-12
+**当前阶段**: Mainline MVP Strengthening（`v0.01` 已冻结为历史尝试；`v0.01-plus` 已升格为当前主开发线；`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 / Phase 4.1` 已完成；`Phase 4 / Gate` 已正式写定 `NO-GO`；`Phase 4.1 / MSS-Broker Remediation` 已完成最终 direct replay，最后一条候选 `size_only_overlay` 仍未推翻 `legacy_bof_baseline`；当前默认路径继续保持 `legacy_bof_baseline`，且 `Phase 4.1` 不再继续冻结新候选；第二战场 `normandy/` 已完成 `N1 / PAS raw alpha provenance` 与 `N1.5 / Volman second alpha search` 首轮长窗，当前固定结论为 `BOF` 保持 baseline，`FB` 成为第二个自带 alpha 候选）
 
 > 本文件只维护状态、看板、风险与版本记录，不承担当前主线设计正文。新版设计权威层统一查看 `blueprint/`，边界声明见 `docs/design-migration-boundary.md`。
 
@@ -12,8 +12,9 @@
 
 | 类型 | 路径 | 说明 |
 |---|---|---|
+| 仓库三线地图 | `docs/spec/common/records/repo-line-map-20260312.md` | 历史线 / 主线 / 研究线的总拓扑说明 |
 | 新版设计总入口 | `blueprint/README.md` | 新版设计权威层 |
-| 第二战场总入口 | `normandy/README.md` | 独立实验空间；不改写当前主线 SoT |
+| 第二战场总入口 | `normandy/README.md` | 独立研究线入口；不是版本线，不改写当前主线 SoT |
 | 当前完整设计 SoT | `blueprint/01-full-design/` | 新版设计正文 |
 | 当前实现方案 | `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md` | 当前唯一实现方案 |
 | 当前执行拆解 | `blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md` | 当前 phase / task / checklist |
@@ -29,7 +30,27 @@
 
 ---
 
-## 2. 当前总体状态
+## 2. 仓库三线口径
+
+当前仓库的文档与设计空间固定按三条线理解：
+
+1. 历史线：`docs/design-v2/` + `docs/spec/v0.01/`
+   - 只承载 `v0.01 Frozen`
+   - 只保留历史基线、回退参考和历史治理痕迹
+2. 主线：`blueprint/` + `docs/spec/v0.01-plus/`
+   - 只承载当前主开发线
+   - `blueprint/` 负责设计正文与实现方案
+   - `docs/spec/v0.01-plus/` 负责当前主线治理归档
+3. 研究线：`normandy/`
+   - 只承载第二战场的独立研究
+   - 不属于 `v0.01-*` 版本编号体系
+   - 研究结论若要升格，必须先通过 record，再迁回主线 SoT
+
+`docs/spec/common/records/` 的角色固定为跨线状态账本，不承担现行设计正文。
+
+---
+
+## 3. 当前总体状态
 
 | 项目 | 结论 | 备注 |
 |---|---|---|
@@ -49,7 +70,7 @@
 
 ---
 
-## 3. 当前工作看板（2026-03-11）
+## 4. 当前工作看板（2026-03-12）
 
 | 工作项 | 目标 | 主要落点 | 状态 |
 |---|---|---|---|
@@ -73,15 +94,15 @@
 | Phase 3 MSS 最小可交易风控层 | `risk_regime` 正式落库、Broker 消费切换与 regime sensitivity evidence 已收口 | `blueprint/03-execution/05-phase-3-mss-card-20260309.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-3-exit-20260311.md`, `docs/spec/v0.01-plus/evidence/mss_regime_sensitivity_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t020505__mss_regime_sensitivity.json` | completed |
 | Phase 4 全链回归与 Gate 收口 | `legacy` 对照、`PAS + MSS` 首轮归因、重点执行日逐笔归因、`windowed sensitivity`、`idempotency` 与正式 `NO-GO / rollback` 已全部收口 | `blueprint/03-execution/06-phase-4-gate-card-20260309.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4-pas-mss-attribution-20260311.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4-legacy-matrix-and-trade-attribution-20260311.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4-gate-decision-20260311.md` | completed |
 | Phase 4.1 MSS-Broker 专项整改 | `P4.1-A` 已完成容量杠杆拆解并锁定 `max_positions` 为第一主嫌疑；`P4.1-B` 已完成路径归因并确认当前 BOF 默认路径不存在 delayed-entry 补回；`P4.1-C` 已冻结 `carryover_buffer(1)`；`P4.1-D` 已完成 Gate re-entry bundle；后续 direct `Phase 4 Gate replay` 已证明 `carryover_buffer(1)` 仍未通过 `legacy_bof_baseline` 对照 Gate；治理裁决后 `P4.1-E` 已冻结最后一条候选 `size_only_overlay`，最终 `P4.1-F` 已完成 direct replay 并确认它仍未推翻 `legacy_bof_baseline`，因此 `Phase 4.1` 已正式关闭 | `blueprint/03-execution/06.1-phase-4.1-mss-broker-remediation-card-20260311.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4.1-capacity-decomposition-20260311.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4.1-path-dependency-attribution-20260311.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4.1-remediation-candidate-freeze-20260311.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4.1-gate-reentry-bundle-20260311.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4-gate-replay-carryover-buffer1-20260311.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4.1-size-only-candidate-freeze-20260311.md`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4-gate-replay-size-only-overlay-20260311.md`, `docs/spec/v0.01-plus/evidence/mss_capacity_decomposition_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t_phase4_1_a__mss_capacity_decomposition.json`, `docs/spec/v0.01-plus/evidence/mss_path_dependency_attribution_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t_phase4_1_b__mss_path_dependency_attribution.json`, `docs/spec/v0.01-plus/evidence/mss_remediation_candidate_freeze_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t_phase4_1_c__mss_remediation_candidate_freeze.json`, `docs/spec/v0.01-plus/evidence/matrix_summary_dtt_phase4_gate_replay_legacy_vs_carryover_buffer1_w20260105_20260224_t_phase4_replay__dtt_matrix.json`, `docs/spec/v0.01-plus/evidence/idempotency_legacy_legacy_bof_baseline_w20260105_20260224_t_phase4_gate_replay__idempotency_check.json`, `docs/spec/v0.01-plus/evidence/idempotency_dtt_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20260105_20260224_t_phase4_gate_replay__idempotency_check.json`, `docs/spec/v0.01-plus/evidence/trade_attribution_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20260105_20260224_t_phase4_gate_replay__trade_attribution.json`, `docs/spec/v0.01-plus/evidence/rank_decomposition_legacy_bof_baseline_to_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20260105_20260224_t_phase4_gate_replay__rank_decomposition.json`, `docs/spec/v0.01-plus/evidence/windowed_sensitivity_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_carryover_buffer1_w20251222_20260224_t_phase4_gate_replay__windowed_sensitivity.json`, `docs/spec/v0.01-plus/evidence/mss_remediation_candidate_freeze_dtt_v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay_w20260105_20260224_t_phase4_1_e__mss_remediation_candidate_freeze.json`, `docs/spec/v0.01-plus/evidence/matrix_summary_dtt_phase4_gate_replay_legacy_vs_size_only_overlay_w20260105_20260224_t_phase4_replay__dtt_matrix.json`, `docs/spec/v0.01-plus/evidence/idempotency_legacy_legacy_bof_baseline_w20260105_20260224_t_phase4_gate_replay_size_only__idempotency_check.json`, `docs/spec/v0.01-plus/evidence/idempotency_dtt_v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay_w20260105_20260224_t_phase4_gate_replay_size_only__idempotency_check.json`, `docs/spec/v0.01-plus/evidence/trade_attribution_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay_w20260105_20260224_t_phase4_gate_replay_size_only__trade_attribution.json`, `docs/spec/v0.01-plus/evidence/rank_decomposition_legacy_bof_baseline_to_v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay_w20260105_20260224_t_phase4_gate_replay_size_only__rank_decomposition.json`, `docs/spec/v0.01-plus/evidence/windowed_sensitivity_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay_w20251222_20260224_t_phase4_gate_replay_size_only__windowed_sensitivity.json` | completed |
-| 第二战场 Normandy | 独立实验线已开启；当前只允许 `N1 / PAS raw alpha provenance` 先行，不改写当前主线默认路径与 `Phase 4 / Gate` 结论 | `normandy/README.md`, `normandy/02-implementation-spec/01-alpha-provenance-and-exit-decomposition-spec-20260311.md`, `normandy/03-execution/00-dev-data-baseline-inheritance-20260311.md`, `normandy/03-execution/01-phase-n1-pas-alpha-provenance-card-20260311.md` | in_progress |
+| 第二战场 Normandy | 研究线已完成 `N1 / PAS raw alpha provenance` 与 `N1.5 / Volman second alpha search` 首轮长窗；当前固定结论为 `BOF` 保持 baseline、`FB` 成为第二个自带 alpha 候选；下一步应进入 `FB` 第二层 provenance，而不是回写主线 | `normandy/README.md`, `normandy/02-implementation-spec/01-alpha-provenance-and-exit-decomposition-spec-20260311.md`, `normandy/02-implementation-spec/02-volman-second-alpha-search-spec-20260312.md`, `normandy/03-execution/01-phase-n1-pas-alpha-provenance-card-20260311.md`, `normandy/03-execution/02-phase-n1-5-volman-second-alpha-card-20260312.md`, `normandy/03-execution/records/01-phase-n1-bof-conclusion-record-20260312.md`, `normandy/03-execution/records/02-phase-n1-5-second-alpha-record-20260312.md` | in_progress |
 
 ---
 
-## 4. 本周执行区（滚动维护）
+## 5. 本周执行区（滚动维护）
 
 分段说明：`2026-03-07` 起归入“文档治理期”；`2026-03-02` 至 `2026-03-06` 的实现与联调记录归入“旧实现期（历史摘要）”。
 
-### 4.1 本周目标
+### 5.1 本周目标
 
 - [x] 收口旧路径与真实断链
 - [x] 统一当前状态口径
@@ -97,13 +118,13 @@
 - [x] 完成 `Phase 2 / IRS` 长窗口 evidence 与出场记录
 - [x] 完成 `Phase 3 / MSS` 真实 regime sensitivity 与出场记录
 
-### 4.2 进行中任务
+### 5.2 进行中任务
 
 | 任务 | 负责人 | 开始日期 | 状态 | 阻塞 |
 |---|---|---|---|---|
 | `Phase 4.1 / MSS-Broker remediation` | wangweiyun | 2026-03-11 | COMPLETED | `P4.1-A / P4.1-B / P4.1-C / P4.1-D / P4.1-E / P4.1-F` 已完成；最终 direct `Phase 4 Gate replay` 已确认 `size_only_overlay` 仍未推翻 `legacy_bof_baseline`，因此 `Phase 4.1` 已关闭，当前无新的 `MSS / Broker` 候选冻结任务 |
 
-### 4.3 文档治理期（2026-03-07）
+### 5.3 文档治理期（2026-03-07）
 
 | 日期 | 任务 | 结果 | 证据 |
 |---|---|---|---|
@@ -133,7 +154,7 @@
 | 2026-03-11 | `Phase 4.1 / P4.1-A` MSS capacity decomposition | completed | `docs/spec/v0.01-plus/evidence/mss_capacity_decomposition_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t_phase4_1_a__mss_capacity_decomposition.json`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4.1-capacity-decomposition-20260311.md`, `scripts/backtest/run_v001_plus_mss_capacity_decomposition.py`, `tests/unit/broker/test_broker.py` |
 | 2026-03-11 | `Phase 4.1 / P4.1-B` MSS path dependency attribution | completed | `docs/spec/v0.01-plus/evidence/mss_path_dependency_attribution_dtt_v0_01_dtt_pattern_plus_irs_mss_score_w20260105_20260224_t_phase4_1_b__mss_path_dependency_attribution.json`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4.1-path-dependency-attribution-20260311.md`, `scripts/backtest/run_v001_plus_mss_path_dependency_attribution.py`, `tests/unit/backtest/test_mss_path_dependency_attribution.py` |
 
-### 4.4 旧实现期（2026-03-02 ~ 2026-03-06）阶段摘要
+### 5.4 旧实现期（2026-03-02 ~ 2026-03-06）阶段摘要
 
 | 阶段 | 日期 | 摘要 | 关键证据 |
 |---|---|---|---|
@@ -144,7 +165,7 @@
 | 算法 SoT 与口径纠偏 | 2026-03-06 | 将 MSS/IRS/PAS 设计口径收回正式设计层，并完成 SW31 / MSS baseline 收口 | `docs/design-v2/README.md`, `docs/spec/v0.01/records/v0.01-sw31-and-mss-calibration-20260306.md`, `docs/spec/v0.01/records/v0.01-selector-review-and-sw31-decision-20260306.md` |
 | 基线回望与阈值实验 | 2026-03-06 | 完成基线回望、Broker 回望修订与 MSS threshold sweep 短窗消融 | `docs/spec/v0.01/records/v0.01-post-baseline-retrospective-20260306.md`, `docs/spec/v0.01/records/v0.01-threshold-ablation-short-20260306.md` |
 
-### 4.5 旧实现期关键证据索引
+### 5.5 旧实现期关键证据索引
 
 | 类别 | 关键文件 | 用途 |
 |---|---|---|
@@ -161,11 +182,11 @@
 
 ---
 
-## 5. 每次任务收口必填（A6）
+## 6. 每次任务收口必填（A6）
 
 当前按阶段分段维护；旧实现期不再逐条展开流水账，仅保留摘要索引。
 
-### 5.1 文档治理期（2026-03-07）
+### 6.1 文档治理期（2026-03-07）
 
 | 日期 | 任务/PR | run | test | artifact | review | 记录同步 |
 |---|---|---|---|---|---|---|
@@ -190,7 +211,7 @@
 | 2026-03-11 | `Phase 4.1 / P4.1-E` final candidate freeze (`size_only_overlay`) | `python scripts/backtest/run_v001_plus_mss_remediation_candidate_freeze.py --start 2026-01-05 --end 2026-02-24 --patterns bof --candidate-variant v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay --candidate-mode no_maxpos_shrink --candidate-buffer-slots 0 --db-path G:\\EmotionQuant_data\\emotionquant.duckdb --working-db-path G:\\EmotionQuant-temp\\backtest\\mss-size-only-candidate-20260311.duckdb --output docs/spec/v0.01-plus/evidence/mss_remediation_candidate_freeze_dtt_v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay_w20260105_20260224_t_phase4_1_e__mss_remediation_candidate_freeze.json` | `python -m py_compile src/config.py src/broker/risk.py src/strategy/ranker.py src/backtest/ablation.py scripts/backtest/run_v001_plus_mss_remediation_candidate_freeze.py`; `pytest tests/unit/strategy/test_ranker.py tests/unit/backtest/test_replay_variants.py tests/unit/broker/test_broker.py -q`; `powershell -ExecutionPolicy Bypass -File scripts/ops/preflight.ps1 -Profile hook` | `docs/spec/v0.01-plus/evidence/mss_remediation_candidate_freeze_dtt_v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay_w20260105_20260224_t_phase4_1_e__mss_remediation_candidate_freeze.json`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4.1-size-only-candidate-freeze-20260311.md`, `src/config.py`, `src/broker/risk.py`, `src/strategy/ranker.py`, `src/backtest/ablation.py`, `scripts/backtest/run_v001_plus_mss_remediation_candidate_freeze.py`, `tests/unit/strategy/test_ranker.py`, `tests/unit/backtest/test_replay_variants.py`, `tests/unit/broker/test_broker.py` | `P4.1-E` 已冻结最后一条候选 `size_only_overlay`；相对 `current_full_overlay_hard_cap` 同时改善 `EV / PF / MDD`，并把 `buy_reject_maxpos_count` 从 `7` 降到 `0`；相对 `baseline_no_overlay` 则 `trade_set_changed_count=0`、`quantity_changed_count=14`，说明当前已把 `slot shrink` 从 Broker 执行面剥离干净，下一步只允许做最终 direct `Phase 4 Gate replay` | debts=无变化, status=已同步, assets=无变化, roadmap=execution 已同步, spec=phase-4.1 final-candidate/development-status 已同步 |
 | 2026-03-11 | `Phase 4.1 / P4.1-F` final direct Gate replay (`size_only_overlay`) | `python scripts/backtest/run_v001_plus_dtt_matrix.py --start 2026-01-05 --end 2026-02-24 --patterns bof --dtt-variant v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay --db-path G:\\EmotionQuant_data\\emotionquant.duckdb --working-db-path G:\\EmotionQuant-temp\\backtest\\phase4-gate-replay-size-only-20260311.duckdb --output docs/spec/v0.01-plus/evidence/matrix_summary_dtt_phase4_gate_replay_legacy_vs_size_only_overlay_w20260105_20260224_t_phase4_replay__dtt_matrix.json`; `python scripts/backtest/check_idempotency.py --start 2026-01-05 --end 2026-02-24 --patterns bof --pipeline-mode legacy --dtt-variant legacy_bof_baseline --db-path G:\\EmotionQuant_data\\emotionquant.duckdb --working-db-path G:\\EmotionQuant-temp\\backtest\\idempotency-20260311-phase4-sizeonly-legacy.duckdb --output docs/spec/v0.01-plus/evidence/idempotency_legacy_legacy_bof_baseline_w20260105_20260224_t_phase4_gate_replay_size_only__idempotency_check.json`; `python scripts/backtest/check_idempotency.py --start 2026-01-05 --end 2026-02-24 --patterns bof --pipeline-mode dtt --dtt-variant v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay --db-path G:\\EmotionQuant_data\\emotionquant.duckdb --working-db-path G:\\EmotionQuant-temp\\backtest\\idempotency-20260311-phase4-sizeonly-candidate.duckdb --output docs/spec/v0.01-plus/evidence/idempotency_dtt_v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay_w20260105_20260224_t_phase4_gate_replay_size_only__idempotency_check.json`; `python scripts/backtest/run_v001_plus_trade_attribution.py --start 2026-01-05 --end 2026-02-24 --patterns bof --variants \"legacy_bof_baseline,v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay\" --execute-dates 2026-01-06 2026-01-12 2026-01-23 2026-01-30 2026-02-02 2026-02-04 2026-02-05 2026-02-06 2026-02-09 2026-02-24 --db-path G:\\EmotionQuant_data\\emotionquant.duckdb --output docs/spec/v0.01-plus/evidence/trade_attribution_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay_w20260105_20260224_t_phase4_gate_replay_size_only__trade_attribution.json`; `python scripts/backtest/run_v001_plus_rank_decomposition.py --start 2026-01-05 --end 2026-02-24 --patterns bof --variants \"legacy_bof_baseline,v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay\" --db-path G:\\EmotionQuant_data\\emotionquant.duckdb --working-db-path G:\\EmotionQuant-temp\\backtest\\rank-decomp-phase4-sizeonly-20260311.duckdb --output docs/spec/v0.01-plus/evidence/rank_decomposition_legacy_bof_baseline_to_v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay_w20260105_20260224_t_phase4_gate_replay_size_only__rank_decomposition.json`; `python scripts/backtest/run_v001_plus_windowed_sensitivity.py --windows mid_window:2025-12-22:2026-02-24 --variants \"legacy_bof_baseline,v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay\" --patterns bof --db-path G:\\EmotionQuant_data\\emotionquant.duckdb --output docs/spec/v0.01-plus/evidence/windowed_sensitivity_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay_w20251222_20260224_t_phase4_gate_replay_size_only__windowed_sensitivity.json` | `powershell -ExecutionPolicy Bypass -File scripts/ops/preflight.ps1 -Profile hook` | `docs/spec/v0.01-plus/evidence/matrix_summary_dtt_phase4_gate_replay_legacy_vs_size_only_overlay_w20260105_20260224_t_phase4_replay__dtt_matrix.json`, `docs/spec/v0.01-plus/evidence/idempotency_legacy_legacy_bof_baseline_w20260105_20260224_t_phase4_gate_replay_size_only__idempotency_check.json`, `docs/spec/v0.01-plus/evidence/idempotency_dtt_v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay_w20260105_20260224_t_phase4_gate_replay_size_only__idempotency_check.json`, `docs/spec/v0.01-plus/evidence/trade_attribution_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay_w20260105_20260224_t_phase4_gate_replay_size_only__trade_attribution.json`, `docs/spec/v0.01-plus/evidence/rank_decomposition_legacy_bof_baseline_to_v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay_w20260105_20260224_t_phase4_gate_replay_size_only__rank_decomposition.json`, `docs/spec/v0.01-plus/evidence/windowed_sensitivity_legacy_bof_baseline_vs_v0_01_dtt_pattern_plus_irs_mss_score_size_only_overlay_w20251222_20260224_t_phase4_gate_replay_size_only__windowed_sensitivity.json`, `docs/spec/v0.01-plus/records/v0.01-plus-phase-4-gate-replay-size-only-overlay-20260311.md` | final direct Gate replay 已确认 `size_only_overlay` 仍未推翻 `legacy_bof_baseline`；formal `top50_pos10` attribution `net_delta = -9043.4152`，且 `MAX_POSITIONS` 拒单差异已归零，说明当前失败主因不再是 slot shrink，而是 `trade_set + quantity` 路径；因此 `Phase 4.1` 正式关闭 | debts=无变化, status=已同步, assets=无变化, roadmap=execution 已同步, spec=phase-4 gate replay/phase-4.1 close 已同步 |
 
-### 5.2 旧实现期（2026-03-02 ~ 2026-03-06）摘要索引
+### 6.2 旧实现期（2026-03-02 ~ 2026-03-06）摘要索引
 
 | 阶段 | run / test 摘要 | artifact / review 摘要 |
 |---|---|---|
@@ -201,7 +222,7 @@
 
 ---
 
-## 6. 风险与决策
+## 7. 风险与决策
 
 | 日期 | 类型 | 内容 | 处理策略 | 状态 |
 |---|---|---|---|---|
@@ -245,7 +266,7 @@
 
 ---
 
-## 7. 版本记录
+## 8. 版本记录
 
 | 日期 | 版本 | 变更 |
 |---|---|---|
