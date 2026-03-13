@@ -7,7 +7,7 @@
 
 ## 1. 定位
 
-`normandy/` 是 `EmotionQuant-gamma` 根目录下的第二战场设计空间，也是当前仓库唯一独立研究线。
+`normandy/` 是 `EmotionQuant-gamma` 根目录下的第二战场设计空间，也是当前仓库的一条独立研究线。
 
 它的职责只有一个：
 
@@ -133,6 +133,7 @@
 - `03-execution/records/13-phase-n2a-targeted-trailing-stop-follow-up-record-20260313.md`
 - `03-execution/records/14-phase-n2a-2-profit-gated-micro-sweep-record-20260313.md`
 - `03-execution/records/15-phase-n2a-3-two-stage-trailing-probe-record-20260313.md`
+- `03-execution/records/16-phase-normandy-campaign-closeout-record-20260313.md`
 
 它们分别负责：
 
@@ -177,6 +178,7 @@
 39. `N2A` 第一轮 formal readout：固定当前 trailing-stop 伤害更像 `small_cluster_of_outlier_truncation`，而不是普遍存在的 `repeatable trend-premature-exit`，因此不支持当前主线立刻全局取消 trailing-stop。
 40. `N2A-2` profit-gated micro-sweep formal readout：固定 `PROFIT_GATED_TRAIL_25P` 是当前最平衡的 preservation 候选，但它仍然只是 `partial trade-off`，不支持默认 trailing-stop 语义改写，也不解锁 `promotion lane`。
 41. `N2A-3` two-stage trailing probe formal readout：固定 `POST_15P_TRAIL_9P` 是当前更干净的局部机制候选，但整体仍然属于 `no_clean_preservation_candidate_yet`，因此只保留 `N2A` 的 targeted diagnosis，不改默认 trailing-stop 语义，也不解锁 `promotion lane`。
+42. `Normandy campaign closeout` formal readout：固定当前战役所有已定义 cards 均已闭环，当前主队列清空；可迁回主线的是治理边界与负面约束，不是新的默认参数；若未来继续，必须新开 `targeted hypothesis` 或 `mainline migration package`。
 
 ---
 
