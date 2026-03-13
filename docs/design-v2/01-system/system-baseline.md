@@ -68,11 +68,12 @@
 如需回看 `v0.01 Frozen` 的结构补充，请查以下历史参考文档：
 
 1. `docs/design-v2/01-system/architecture-master.md`
-2. `docs/design-v2/02-modules/selector-design.md`
-3. `docs/design-v2/02-modules/strategy-design.md`
-4. `docs/design-v2/02-modules/broker-design.md`
-5. `docs/design-v2/02-modules/data-layer-design.md`
-6. `docs/design-v2/02-modules/backtest-report-design.md`
+2. `docs/design-v2/02-modules/README.md`
+3. `docs/design-v2/02-modules/selector-design.md`
+4. `docs/design-v2/02-modules/strategy-design.md`
+5. `docs/design-v2/02-modules/broker-design.md`
+6. `docs/design-v2/02-modules/data-layer-design.md`
+7. `docs/design-v2/02-modules/backtest-report-design.md`
 
 口径规则：
 

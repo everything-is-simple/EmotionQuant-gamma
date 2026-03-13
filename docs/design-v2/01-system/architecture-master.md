@@ -176,11 +176,12 @@
 ## 8. 相邻文档
 
 1. `docs/design-v2/01-system/system-baseline.md`
-2. `docs/design-v2/02-modules/data-layer-design.md`
-3. `docs/design-v2/02-modules/selector-design.md`
-4. `docs/design-v2/02-modules/strategy-design.md`
-5. `docs/design-v2/02-modules/broker-design.md`
-6. `docs/design-v2/02-modules/backtest-report-design.md`
-7. `blueprint/README.md`
-8. `docs/spec/v0.01/README.md`
-9. `docs/spec/common/records/development-status.md`
+2. `docs/design-v2/02-modules/README.md`
+3. `docs/design-v2/02-modules/data-layer-design.md`
+4. `docs/design-v2/02-modules/selector-design.md`
+5. `docs/design-v2/02-modules/strategy-design.md`
+6. `docs/design-v2/02-modules/broker-design.md`
+7. `docs/design-v2/02-modules/backtest-report-design.md`
+8. `blueprint/README.md`
+9. `docs/spec/v0.01/README.md`
+10. `docs/spec/common/records/development-status.md`

@@ -1,8 +1,8 @@
 # design-v2 目录说明
 
-**版本**: `历史参考入口`  
-**状态**: `Active`  
-**封版日期**: `不适用（Active SoT）`  
+**版本**: `历史基线入口`  
+**状态**: `Frozen`  
+**封版日期**: `2026-03-14`  
 **变更规则**: `仅允许入口、链接、历史说明与边界声明维护；不再新增新版设计正文。`
 
 ---
@@ -18,7 +18,7 @@
 
 它不再承担新版主线设计权威层，也不再保留迁移期桥接稿。
 
-换句话说：这里是**参考层**，不是当前设计层，也不是当前治理层。
+换句话说：这里是**历史基线与兼容桥接层**，不是当前设计层，也不是当前治理层。
 
 ---
 
@@ -33,6 +33,7 @@
 | 设计迁移边界声明 | `docs/design-migration-boundary.md` | 说明为何 `design-v2/` 已降级 |
 | v0.01 历史基线 | `01-system/system-baseline.md` | `v0.01 Frozen` 历史执行口径 |
 | 架构历史总览 | `01-system/architecture-master.md` | 查旧架构与历史映射 |
+| 历史模块导航 | `02-modules/README.md` | 查旧模块边界与模块级冻结正文 |
 | 历史模块设计 | `02-modules/` | 回看旧模块口径与冻结正文 |
 
 ---
@@ -45,6 +46,7 @@
 4. 历史实现证据、runbook、release、评审记录统一进入 `docs/spec/`，不要再回填到 `design-v2/` 正文。
 5. 若旧文档与 `blueprint/` 冲突，以 `docs/design-migration-boundary.md` 和 `blueprint/` 为准。
 6. 需要判断某个历史文还能不能继续保留，优先查看 `design-v2-retirement-checklist-20260312.md`。
+7. 需要回看模块级历史正文时，优先从 `02-modules/README.md` 进入，不直接把单篇模块文档当成现行 SoT。
 
 ---
 
