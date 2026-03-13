@@ -89,12 +89,14 @@
 - `../docs/spec/common/records/repo-line-map-20260312.md`
 - `02-implementation-spec/01-positioning-baseline-and-sizing-spec-20260313.md`
 - `03-execution/01-phase-p0-baseline-freeze-card-20260313.md`
+- `03-execution/records/01-phase-p0-baseline-freeze-record-20260313.md`
 
 它们分别负责：
 
 1. 仓库层面的历史线 / 主线 / 研究线总拓扑说明
 2. 第三战场当前唯一实现方案：先冻结 baseline，再逐类验证 sizing
 3. 第三战场第一张执行卡：把对照组、继承口径和禁止混问写死
+4. `P0` 首轮 formal readout：把 frozen baseline、control 组、首批 sizing register 和下一张执行卡正式写死
 
 ---
 
