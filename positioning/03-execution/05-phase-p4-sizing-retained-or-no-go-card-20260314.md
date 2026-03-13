@@ -3,7 +3,7 @@
 **日期**: `2026-03-14`  
 **阶段**: `Positioning / P4`  
 **对象**: `第三战场第五张执行卡`  
-**状态**: `Active`
+**状态**: `Closed`
 
 ---
 
@@ -46,6 +46,8 @@
 
 ## 5. 下一步出口
 
+`P4` 已完成，下一步执行顺序固定为：
+
 1. `P5 sizing lane closeout / migration boundary`
 2. `P6 partial-exit contract freeze`
 3. `PX1 cross-exit sensitivity` 继续保持条件锁定
@@ -54,4 +56,4 @@
 
 ## 6. 一句话结论
 
-`P4` 的职责是把 P3 的 floor 审判结果正式写成 no-retained-candidate case，而不是再替候选找活路。`
+`P4` 已正式写定：第三战场 sizing lane 当前没有 retained candidate，主队列转入 `P5 sizing lane closeout / migration boundary`。`

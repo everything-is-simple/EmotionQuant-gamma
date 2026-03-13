@@ -3,7 +3,7 @@
 **日期**: `2026-03-14`  
 **阶段**: `Positioning / P5`  
 **对象**: `第三战场第六张执行卡`  
-**状态**: `Draft`
+**状态**: `Active`
 
 ---
 
@@ -18,10 +18,10 @@
 ## 2. 本卡要回答的问题
 
 1. sizing lane 当前到底确认了什么
-2. retained / watch / no-go 各自是谁
-3. 哪些只对当前 frozen exit semantics 成立
-4. 哪些可以作为未来主线 migration package 的候选
-5. partial-exit lane 应以什么前提开工
+2. 在 `no retained candidate case` 下，residual watch / watch / no-go 各自是谁
+3. 哪些结论只对当前 frozen exit semantics 成立
+4. 哪些可以作为未来主线 migration package 的负面约束或治理资产
+5. `P6 / partial-exit contract freeze` 应以什么前提开工
 
 ---
 
@@ -30,6 +30,7 @@
 1. `只读取 P0 ~ P4 formal records`
 2. `不重跑 sizing replay`
 3. `不提前打开 partial-exit family replay`
+4. `P4 conclusion = no retained sizing candidate`
 
 ---
 
