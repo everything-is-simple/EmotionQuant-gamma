@@ -106,6 +106,10 @@ class RiskManager:
             qty -= 100
         return 0
 
+    @staticmethod
+    def _round_to_a_share_lot(quantity: float | int) -> int:
+        return max(int(quantity) // 100 * 100, 0)
+
     def _clamp_target_max_positions(self, multiplier: float) -> int:
         base = int(self.config.max_positions)
         if base <= 0:
@@ -454,10 +458,20 @@ class RiskManager:
         state: BrokerRiskState,
         overlay: MssRiskOverlay,
     ) -> int:
+        sizing_mode = self.config.position_sizing_mode_normalized
+        if sizing_mode == "single_lot":
+            return self._round_to_a_share_lot(max(int(self.config.fixed_lot_size), 100))
+
         # 头寸大小同时受两层约束：
         # - 风险预算：risk_per_trade_pct
         # - 单票容量：max_position_pct
         nav = state.cash + state.portfolio_market_value
+        if sizing_mode == "fixed_notional":
+            target_notional = float(self.config.fixed_notional_amount)
+            if target_notional <= 0:
+                target_notional = nav * float(self.config.max_position_pct)
+            return self._round_to_a_share_lot(target_notional / est_price)
+
         risk_budget = nav * overlay.risk_per_trade_pct
         max_notional = nav * overlay.max_position_pct
 
@@ -465,7 +479,7 @@ class RiskManager:
         est_stop_pct = max(self.config.stop_loss_pct, 0.01)
         qty_by_risk = risk_budget / (est_price * est_stop_pct)
         qty_by_cap = max_notional / est_price
-        quantity = int(min(qty_by_risk, qty_by_cap) / 100) * 100
+        quantity = self._round_to_a_share_lot(min(qty_by_risk, qty_by_cap))
         return max(quantity, 0)
 
     def assess_signal(self, signal: Signal, state: BrokerRiskState) -> RiskDecision:

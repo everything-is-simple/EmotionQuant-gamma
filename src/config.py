@@ -71,6 +71,9 @@ class Settings(BaseSettings):
     risk_per_trade_pct: float = Field(default=0.008, alias="RISK_PER_TRADE_PCT")
     max_position_pct: float = Field(default=0.10, alias="MAX_POSITION_PCT")
     max_positions: int = Field(default=10, alias="MAX_POSITIONS")
+    position_sizing_mode: str = Field(default="risk_budget", alias="POSITION_SIZING_MODE")
+    fixed_lot_size: int = Field(default=100, alias="FIXED_LOT_SIZE")
+    fixed_notional_amount: float = Field(default=0.0, alias="FIXED_NOTIONAL_AMOUNT")
     risk_free_rate: float = Field(default=0.015, alias="RISK_FREE_RATE")
 
     # Build windows
@@ -260,6 +263,13 @@ class Settings(BaseSettings):
         if label in {"hard_cap", "carryover_buffer", "no_maxpos_shrink"}:
             return label
         return "hard_cap"
+
+    @property
+    def position_sizing_mode_normalized(self) -> str:
+        label = self.position_sizing_mode.strip().lower()
+        if label in {"risk_budget", "single_lot", "fixed_notional"}:
+            return label
+        return "risk_budget"
 
     @property
     def db_path(self) -> Path:

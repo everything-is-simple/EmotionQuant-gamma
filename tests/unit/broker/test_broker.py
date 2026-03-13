@@ -2329,3 +2329,113 @@ def test_broker_expires_pending_order_on_next_trade_day_when_max_pending_is_one(
     assert lifecycle.iloc[0]["event_stage"] == "ORDER_EXPIRED"
     assert lifecycle.iloc[0]["origin"] == "UPSTREAM_SIGNAL"
     store.close()
+
+
+def test_risk_manager_single_lot_sizing_uses_fixed_lot_size(tmp_path) -> None:
+    db = tmp_path / "test_single_lot_sizing.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+    _seed_trade_calendar(store, signal_date, exec_date)
+    _seed_adj_daily(
+        store,
+        [
+            {
+                "code": "000001",
+                "date": signal_date,
+                "adj_open": 10.0,
+                "adj_high": 10.2,
+                "adj_low": 9.8,
+                "adj_close": 10.0,
+                "volume": 10000,
+                "amount": 1e8,
+                "pct_chg": 0.0,
+                "ma5": 10.0,
+                "ma10": 10.0,
+                "ma20": 10.0,
+                "ma60": 10.0,
+                "volume_ma5": 10000,
+                "volume_ma20": 10000,
+                "volume_ratio": 1.0,
+            }
+        ],
+    )
+    cfg = Settings(
+        BACKTEST_INITIAL_CASH=1_000_000,
+        POSITION_SIZING_MODE="single_lot",
+        FIXED_LOT_SIZE=300,
+        MAX_POSITION_PCT=0.1,
+        RISK_PER_TRADE_PCT=0.008,
+    )
+    broker = Broker(store, cfg)
+    signal = Signal(
+        signal_id=build_signal_id("000001", signal_date, "single_lot"),
+        code="000001",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.8,
+        pattern="bof",
+        reason_code="PAS_BOF",
+    )
+    state = BrokerRiskState(cash=1_000_000.0, portfolio_market_value=0.0, holdings=set())
+
+    decision = broker.risk.assess_signal(signal, state)
+
+    assert decision.order is not None
+    assert decision.order.quantity == 300
+    store.close()
+
+
+def test_risk_manager_fixed_notional_sizing_uses_configured_notional(tmp_path) -> None:
+    db = tmp_path / "test_fixed_notional_sizing.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+    _seed_trade_calendar(store, signal_date, exec_date)
+    _seed_adj_daily(
+        store,
+        [
+            {
+                "code": "000001",
+                "date": signal_date,
+                "adj_open": 10.0,
+                "adj_high": 10.2,
+                "adj_low": 9.8,
+                "adj_close": 10.0,
+                "volume": 10000,
+                "amount": 1e8,
+                "pct_chg": 0.0,
+                "ma5": 10.0,
+                "ma10": 10.0,
+                "ma20": 10.0,
+                "ma60": 10.0,
+                "volume_ma5": 10000,
+                "volume_ma20": 10000,
+                "volume_ratio": 1.0,
+            }
+        ],
+    )
+    cfg = Settings(
+        BACKTEST_INITIAL_CASH=1_000_000,
+        POSITION_SIZING_MODE="fixed_notional",
+        FIXED_NOTIONAL_AMOUNT=12_000.0,
+        MAX_POSITION_PCT=0.1,
+        RISK_PER_TRADE_PCT=0.008,
+    )
+    broker = Broker(store, cfg)
+    signal = Signal(
+        signal_id=build_signal_id("000001", signal_date, "fixed_notional"),
+        code="000001",
+        signal_date=signal_date,
+        action="BUY",
+        strength=0.8,
+        pattern="bof",
+        reason_code="PAS_BOF",
+    )
+    state = BrokerRiskState(cash=1_000_000.0, portfolio_market_value=0.0, holdings=set())
+
+    decision = broker.risk.assess_signal(signal, state)
+
+    assert decision.order is not None
+    assert decision.order.quantity == 1200
+    store.close()

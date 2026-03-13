@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-03-13T05:26:47Z",
+  "matrix_status": "completed",
+  "research_parent": "positioning_control_baseline",
+  "diagnosis": "fixed_notional_canonical_control",
+  "canonical_control_label": "FIXED_NOTIONAL_CONTROL",
+  "decision": "promote_fixed_notional_as_p2_p8_control",
+  "comparison_summary": {
+    "trade_count_ratio_fixed_notional_vs_single_lot": 0.9819494584837545,
+    "filled_count_ratio_fixed_notional_vs_single_lot": 0.9819494584837545,
+    "avg_notional_scale_ratio_fixed_notional_vs_single_lot": 17.70428835451727,
+    "exposure_rate_delta_fixed_notional_vs_single_lot": 0.0,
+    "fixed_notional_cash_pressure_reject_rate": 0.13953488372093023
+  },
+  "single_lot_summary": {
+    "trade_count": 277,
+    "expected_value": 0.005982810366726134,
+    "profit_factor": 2.3885989567840684,
+    "max_drawdown": 0.035304874582617315,
+    "avg_entry_notional": 4859.447653429603,
+    "exposure_rate": 0.9564068692206077,
+    "cash_pressure_reject_rate": 0.0
+  },
+  "fixed_notional_summary": {
+    "trade_count": 272,
+    "expected_value": 0.010682899576475544,
+    "profit_factor": 2.3987037934002773,
+    "max_drawdown": 0.12067557860654961,
+    "avg_entry_notional": 86033.0625,
+    "exposure_rate": 0.9564068692206077,
+    "cash_pressure_reject_rate": 0.13953488372093023,
+    "configured_fixed_notional_amount": 100000.0
+  },
+  "conclusion": "FIXED_NOTIONAL_CONTROL 在保持交易参与一致性的同时，提供了比 SINGLE_LOT_CONTROL 更有代表性的资金暴露尺度，适合作为后续 sizing family replay 的 canonical control baseline。",
+  "next_actions": [
+    "把 canonical control baseline 写入 P1 formal record。",
+    "后续 P2~P8 sizing family replay 统一对照这条 retained control baseline。",
+    "在 P1 完成前，不提前打开 partial-exit lane。"
+  ],
+  "summary_run_id": "positioning_p1_null_control_digest_dtt_bof_control_no_irs_no_mss_w20230103_20260224_t052647"
+}
