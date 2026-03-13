@@ -93,6 +93,15 @@
 - `03-execution/02-phase-p1-null-control-matrix-card-20260313.md`
 - `03-execution/records/02-phase-p1-null-control-matrix-record-20260313.md`
 - `03-execution/03-phase-p2-sizing-family-replay-card-20260313.md`
+- `03-execution/04-phase-p3-single-lot-sanity-replay-card-20260314.md`
+- `03-execution/05-phase-p4-sizing-retained-or-no-go-card-20260314.md`
+- `03-execution/06-phase-p5-sizing-lane-closeout-migration-boundary-card-20260314.md`
+- `03-execution/07-phase-p6-partial-exit-contract-freeze-card-20260314.md`
+- `03-execution/08-phase-p7-partial-exit-null-control-matrix-card-20260314.md`
+- `03-execution/09-phase-p8-partial-exit-family-replay-card-20260314.md`
+- `03-execution/10-phase-p9-positioning-campaign-closeout-card-20260314.md`
+- `03-execution/11-phase-px1-cross-exit-sensitivity-card-20260314.md`
+- `03-execution/12-phase-px2-targeted-mechanism-follow-up-card-20260314.md`
 
 它们分别负责：
 
@@ -103,6 +112,33 @@
 5. `P1` formal readout：把 `single-lot control / fixed-notional control` 跑成正式 null control matrix，并把 `FIXED_NOTIONAL_CONTROL` 写定为 canonical control baseline
 6. `P2` formal readout：首批 sizing family 已跑出 provisional retained candidate，并已把 `WILLIAMS_FIXED_RISK / FIXED_RATIO` 推进到下一张卡
 7. `P3` 当前 active card：把 provisional retained candidate 拉回 `SINGLE_LOT_CONTROL` 环境做 floor sanity replay
+8. `P4 ~ P9`：把 sizing retained 裁决、sizing closeout、partial-exit lane 和第三战场收官一次性排成主干卡序列
+9. `PX1 / PX2`：只在触发条件满足时打开的条件卡
+
+---
+
+## 5.1 当前全卡序列
+
+第三战场当前已经把后续全卡序列明确为：
+
+1. `P0 baseline freeze`
+2. `P1 null control matrix`
+3. `P2 sizing family replay`
+4. `P3 single-lot sanity replay`
+5. `P4 sizing retained-or-no-go`
+6. `P5 sizing lane closeout / migration boundary`
+7. `P6 partial-exit contract freeze`
+8. `P7 partial-exit null control matrix`
+9. `P8 partial-exit family replay`
+10. `P9 positioning campaign closeout`
+11. `PX1 cross-exit sensitivity`（条件卡）
+12. `PX2 targeted mechanism follow-up`（条件卡）
+
+当前治理规则固定为：
+
+1. `P3` 是唯一 active card
+2. `P4 ~ P9` 已建卡但保持 queued / draft 语义
+3. `PX1 / PX2` 只有在显式触发条件满足后才允许打开
 
 ---
 
