@@ -19,6 +19,11 @@
 
 `在当前 frozen entry / exit 语义下，哪类 sizing family 真正在“买多少”这个问题上带来可保留的改善。`
 
+这里同时写死一条：
+
+`P2` 不把 `single-lot` 和 `fixed-notional` 扩成两套并行大矩阵。  
+`FIXED_NOTIONAL_CONTROL` 负责正式主对照，`SINGLE_LOT_CONTROL` 只保留为 retained candidate 的 floor sanity line。
+
 ---
 
 ## 2. 本卡要回答的问题
@@ -30,6 +35,7 @@
 3. 哪些 family 只是在 current exit 下看起来有效，哪些更像稳健候选
 4. 哪些 family 可以进入下一轮 retained-or-no-go
 5. 哪些 family 应直接裁成 `watch` 或 `no-go`
+6. 哪些 provisional retained candidate 在回到 `SINGLE_LOT_CONTROL` 的低暴露环境后仍然站得住
 
 ---
 
@@ -45,6 +51,12 @@
 6. `exit semantics = current Broker full-exit stop-loss + trailing-stop`
 7. `canonical control baseline = FIXED_NOTIONAL_CONTROL`
 8. `single-lot control = floor sanity line only`
+
+这意味着：
+
+1. `P2` 主矩阵只在 `FIXED_NOTIONAL_CONTROL` 环境下比较 sizing family
+2. 不把 `single-lot` 扩成第二套完整 family matrix
+3. 只有出现 provisional retained candidate 后，才允许补做 `single-lot sanity replay`
 
 ---
 
@@ -68,8 +80,9 @@
 
 1. 把 `STOP_ONLY` 或新的 exit package 混进 sizing matrix
 2. 把 `MSS / IRS` 重新接回仓位决定
-3. 先做 retained candidate 的参数微扫，再补完整 family replay
+3. 在首轮 family replay 完成前，就把所有 sizing family 扩成 `single-lot + fixed-notional` 双环境并行大矩阵
 4. 提前打开 `partial-exit / scale-out lane`
+5. 先做 retained candidate 的参数微扫，再补完整 family replay
 
 ---
 
@@ -80,6 +93,7 @@
 1. 一份 `sizing family matrix`
 2. 一份 `sizing family digest`
 3. 一张 `P2 formal record`
+4. 如出现 provisional retained candidate，则补一份 `single-lot sanity replay note`
 
 矩阵至少要覆盖：
 
@@ -100,11 +114,12 @@
 `P2` 完成后，下一步执行顺序固定为：
 
 1. `P9 retained-or-no-go`
-2. `cross-exit sensitivity`（仅在出现 retained sizing candidate 后才允许打开）
-3. `P10 partial-exit contract lane`
+2. `single-lot sanity replay`（仅对 provisional retained candidate 打开）
+3. `cross-exit sensitivity`（仅在 retained sizing candidate 通过 single-lot sanity 后才允许打开）
+4. `P10 partial-exit contract lane`
 
 ---
 
 ## 8. 一句话结论
 
-`P2` 的职责是把首批 sizing family 真正跑成 retained-or-no-go 候选，不再停留在“书上公式”层。`
+`P2` 的职责是先在更接近真实运营的 fixed-notional 环境下筛出 sizing 候选，再用 single-lot 做 retained candidate 的下限复核。`
