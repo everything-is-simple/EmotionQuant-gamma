@@ -122,14 +122,13 @@ def test_simulate_counterfactual_exit_respects_profit_gated_trailing() -> None:
     assert result["exit_date"] == "2026-01-07"
 
 
-def test_build_normandy_bof_control_fat_tail_preservation_variants_returns_profit_gate_sweep() -> None:
+def test_build_normandy_bof_control_fat_tail_preservation_variants_returns_two_stage_probe() -> None:
     variants = build_normandy_bof_control_fat_tail_preservation_variants(Settings())
 
     assert [variant.label for variant in variants] == [
-        "PROFIT_GATED_TRAIL_22_5P",
-        "PROFIT_GATED_TRAIL_25P",
-        "PROFIT_GATED_TRAIL_27_5P",
-        "PROFIT_GATED_TRAIL_30P",
+        "POST_15P_TRAIL_9P",
+        "POST_17_5P_TRAIL_10P",
+        "POST_20P_TRAIL_10P",
     ]
 
 
@@ -140,7 +139,7 @@ def test_build_normandy_bof_control_fat_tail_preservation_digest_marks_candidate
         "preservation_focus": "fat_tail_preservation_mechanism_research",
         "variants": [
             {
-                "label": "PROFIT_GATED_TRAIL_25P",
+                "label": "POST_15P_TRAIL_9P",
                 "overall_capture_share_vs_stop_only": 0.22,
                 "category_tradeoff": {
                     "fat_tail_winner_cut": {"capture_share_vs_stop_only": 0.48},
@@ -149,7 +148,7 @@ def test_build_normandy_bof_control_fat_tail_preservation_digest_marks_candidate
                 },
             },
             {
-                "label": "PROFIT_GATED_TRAIL_30P",
+                "label": "POST_20P_TRAIL_10P",
                 "overall_capture_share_vs_stop_only": 0.05,
                 "category_tradeoff": {
                     "fat_tail_winner_cut": {"capture_share_vs_stop_only": 0.12},
@@ -164,4 +163,4 @@ def test_build_normandy_bof_control_fat_tail_preservation_digest_marks_candidate
 
     assert digest["diagnosis"] == "targeted_preservation_candidate_found"
     assert digest["decision"] == "continue_mechanism_specific_follow_up"
-    assert digest["best_candidate_label"] == "PROFIT_GATED_TRAIL_25P"
+    assert digest["best_candidate_label"] == "POST_15P_TRAIL_9P"

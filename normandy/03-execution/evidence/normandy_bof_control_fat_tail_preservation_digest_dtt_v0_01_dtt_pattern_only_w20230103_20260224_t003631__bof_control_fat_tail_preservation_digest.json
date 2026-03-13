@@ -1,0 +1,55 @@
+{
+  "generated_at": "2026-03-13T00:36:31Z",
+  "preservation_summary_run_id": "normandy_bof_control_fat_tail_preservation_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t233623",
+  "preservation_status": "completed",
+  "research_parent": "BOF_CONTROL",
+  "preservation_focus": "fat_tail_preservation_mechanism_research",
+  "diagnosis": "partial_preservation_tradeoff_only",
+  "decision": "keep_research_narrow_and_do_not_rewrite_defaults",
+  "best_candidate_label": "PROFIT_GATED_TRAIL_25P",
+  "best_candidate_fat_tail_capture_share_vs_stop_only": 0.17443040038926788,
+  "best_candidate_legitimate_protection_damage_share_vs_stop_only": 0.4683869070376145,
+  "best_candidate_overall_capture_share_vs_stop_only": 0.10458618948160259,
+  "best_candidate_overall_total_pnl_delta_vs_control": 245488.52684000033,
+  "ranked_candidates": [
+    {
+      "label": "PROFIT_GATED_TRAIL_25P",
+      "fat_tail_capture_share_vs_stop_only": 0.17443040038926788,
+      "legitimate_protection_damage_share_vs_stop_only": 0.4683869070376145,
+      "overall_capture_share_vs_stop_only": 0.10458618948160259,
+      "overall_total_pnl_delta_vs_control": 245488.52684000033,
+      "preservation_score": 0.2284058861769751
+    },
+    {
+      "label": "PROFIT_GATED_TRAIL_27_5P",
+      "fat_tail_capture_share_vs_stop_only": 0.17492820894226582,
+      "legitimate_protection_damage_share_vs_stop_only": 0.5101055789195073,
+      "overall_capture_share_vs_stop_only": 0.0901389118761167,
+      "overall_total_pnl_delta_vs_control": 211577.34876000023,
+      "preservation_score": 0.21672412710337396
+    },
+    {
+      "label": "PROFIT_GATED_TRAIL_30P",
+      "fat_tail_capture_share_vs_stop_only": 0.17633580554039796,
+      "legitimate_protection_damage_share_vs_stop_only": 0.572957680204688,
+      "overall_capture_share_vs_stop_only": 0.07877246643994769,
+      "overall_total_pnl_delta_vs_control": 184897.6125600002,
+      "preservation_score": 0.20208627361626824
+    },
+    {
+      "label": "PROFIT_GATED_TRAIL_22_5P",
+      "fat_tail_capture_share_vs_stop_only": 0.07082449046422629,
+      "legitimate_protection_damage_share_vs_stop_only": 0.4371120195276889,
+      "overall_capture_share_vs_stop_only": 0.0,
+      "overall_total_pnl_delta_vs_control": -50648.056199999955,
+      "preservation_score": 0.15153106584978668
+    }
+  ],
+  "conclusion": "当前最好的 preservation 候选 `PROFIT_GATED_TRAIL_25P` 只给出部分 trade-off 改善，值得继续收窄研究，但还不支持把它翻译成默认语义改写。",
+  "next_actions": [
+    "若出现 targeted_preservation_candidate_found，就继续围绕该具体 gate 语义做更细的 path readout。",
+    "若只有 partial trade-off，就保持研究范围收窄，不把结果翻译成全局 trailing-stop 重写。",
+    "若没有 clean candidate，就保留 N2A 的 outlier truncation 结论，等待新的 targeted hypothesis。"
+  ],
+  "summary_run_id": "normandy_bof_control_fat_tail_preservation_digest_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t003631"
+}

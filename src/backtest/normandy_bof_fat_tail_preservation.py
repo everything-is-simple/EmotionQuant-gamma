@@ -22,10 +22,9 @@ from src.config import Settings
 
 NORMANDY_BOF_CONTROL_FAT_TAIL_PRESERVATION_SCOPE = "normandy_bof_control_fat_tail_preservation"
 DEFAULT_FAT_TAIL_PRESERVATION_VARIANT_LABELS = [
-    "PROFIT_GATED_TRAIL_22_5P",
-    "PROFIT_GATED_TRAIL_25P",
-    "PROFIT_GATED_TRAIL_27_5P",
-    "PROFIT_GATED_TRAIL_30P",
+    "POST_15P_TRAIL_9P",
+    "POST_17_5P_TRAIL_10P",
+    "POST_20P_TRAIL_10P",
 ]
 
 
@@ -36,36 +35,28 @@ def build_normandy_bof_control_fat_tail_preservation_variants(
     trailing_stop_pct = float(config.trailing_stop_pct)
     return [
         NormandyBofExitVariant(
-            label="PROFIT_GATED_TRAIL_22_5P",
+            label="POST_15P_TRAIL_9P",
             stop_loss_pct=stop_loss_pct,
             trailing_stop_pct=trailing_stop_pct,
-            trailing_activation_delay_trade_days=None,
-            trailing_activation_profit_pct=0.225,
-            notes="Keep current hard stop and current trail width, but do not activate trailing-stop until the trade has reached +22.5% unrealized profit.",
+            trailing_loosen_profit_pct=0.15,
+            trailing_stop_pct_after_loosen=0.09,
+            notes="Keep the current 8% trailing-stop active early, then widen it to 9% after the trade has first reached +15% unrealized profit.",
         ),
         NormandyBofExitVariant(
-            label="PROFIT_GATED_TRAIL_25P",
+            label="POST_17_5P_TRAIL_10P",
             stop_loss_pct=stop_loss_pct,
             trailing_stop_pct=trailing_stop_pct,
-            trailing_activation_delay_trade_days=None,
-            trailing_activation_profit_pct=0.25,
-            notes="Keep current hard stop and current trail width, but do not activate trailing-stop until the trade has reached +25% unrealized profit.",
+            trailing_loosen_profit_pct=0.175,
+            trailing_stop_pct_after_loosen=0.10,
+            notes="Keep the current 8% trailing-stop active early, then widen it to 10% after the trade has first reached +17.5% unrealized profit.",
         ),
         NormandyBofExitVariant(
-            label="PROFIT_GATED_TRAIL_27_5P",
+            label="POST_20P_TRAIL_10P",
             stop_loss_pct=stop_loss_pct,
             trailing_stop_pct=trailing_stop_pct,
-            trailing_activation_delay_trade_days=None,
-            trailing_activation_profit_pct=0.275,
-            notes="Keep current hard stop and current trail width, but do not activate trailing-stop until the trade has reached +27.5% unrealized profit.",
-        ),
-        NormandyBofExitVariant(
-            label="PROFIT_GATED_TRAIL_30P",
-            stop_loss_pct=stop_loss_pct,
-            trailing_stop_pct=trailing_stop_pct,
-            trailing_activation_delay_trade_days=None,
-            trailing_activation_profit_pct=0.30,
-            notes="Keep current hard stop and current trail width, but do not activate trailing-stop until the trade has reached +30% unrealized profit.",
+            trailing_loosen_profit_pct=0.20,
+            trailing_stop_pct_after_loosen=0.10,
+            notes="Keep the current 8% trailing-stop active early, then widen it to 10% after the trade has first reached +20% unrealized profit.",
         ),
     ]
 

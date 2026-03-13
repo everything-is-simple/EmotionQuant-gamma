@@ -22,7 +22,8 @@
 10. `BOF_CONTROL` 当前继续保持 `Normandy` 唯一 baseline；`N2 baseline lane` 第一轮长窗 formal readout 已完成，当前正式答案是：`不是买错`、`execution friction` 不是主因、当前最可疑的是 `trailing-stop` 的 `mixed / concentrated damage`
 11. `N2A targeted trailing-stop follow-up` 第一轮 formal readout 已完成，当前正式裁决是：`small_cluster_of_outlier_truncation`，而不是 `repeatable trend-premature-exit pattern`
 12. `N2A-2 profit-gated micro-sweep` formal readout 已完成，当前正式裁决是：`PROFIT_GATED_TRAIL_25P` 为最佳 preservation 候选，但整体仍然只有 `partial_preservation_tradeoff_only`
-13. `N2` 的 `promotion lane` 当前仍没有可放行对象，继续锁住；当前不把 baseline diagnosis、`N2A` follow-up 或 `N2A-2` micro-sweep 误读成 branch promotion
+13. `N2A-3 two-stage trailing probe` formal readout 已完成，当前正式裁决是：`POST_15P_TRAIL_9P` 为当前更干净的局部机制候选，但整体仍然属于 `no_clean_preservation_candidate_yet`
+14. `N2` 的 `promotion lane` 当前仍没有可放行对象，继续锁住；当前不把 baseline diagnosis、`N2A` follow-up、`N2A-2` micro-sweep 或 `N2A-3` two-stage probe 误读成 branch promotion
 
 ---
 
@@ -30,7 +31,7 @@
 
 | 对象 | 当前定位 | 当前处理 |
 |---|---|---|
-| `BOF` | 固定 baseline / control | 所有新候选的统一对照尺；并作为 `N2 baseline lane` 的固定 entry set；第一轮 formal readout 已完成，当前结论是 `not buy wrong / trailing-stop mixed damage / friction not material`；`N2A` 已进一步把它细化为 `small_cluster_of_outlier_truncation`，`N2A-2` 又把 preservation 机制收窄到 `PROFIT_GATED_TRAIL_25P = best partial trade-off only` |
+| `BOF` | 固定 baseline / control | 所有新候选的统一对照尺；并作为 `N2 baseline lane` 的固定 entry set；第一轮 formal readout 已完成，当前结论是 `not buy wrong / trailing-stop mixed damage / friction not material`；`N2A` 已进一步把它细化为 `small_cluster_of_outlier_truncation`，`N2A-2` 把 preservation 机制收窄到 `PROFIT_GATED_TRAIL_25P = best partial trade-off only`，`N2A-3` 又把两阶段 trailing probe 固定为 `POST_15P_TRAIL_9P = cleaner local mechanism but still no clean candidate` |
 | `BOF_KEYLEVEL_PINBAR` | `n1_11_retained_but_n1_12_branch_no_go` | 结束当前升格，回到 `BOF_CONTROL` |
 | `BOF_KEYLEVEL_STRICT` | 正向读数存在，但未成为 retained 主位 | 保留为观察分支，不进入主队列 |
 | `BOF_PINBAR_EXPRESSION` | 长窗正式 `no-go` | 退出 `BOF` quality 主队列 |
@@ -74,7 +75,7 @@
 
 当前状态：
 
-`第一轮长窗 formal readout、N2A targeted follow-up，以及 N2A-2 profit-gated micro-sweep formal readout 均已完成。`
+`第一轮长窗 formal readout、N2A targeted follow-up、N2A-2 profit-gated micro-sweep，以及 N2A-3 two-stage trailing probe formal readout 均已完成。`
 
 当前已经可以写死：
 
@@ -83,29 +84,31 @@
 3. `exit damage` 当前确实存在，但 baseline lane 读成 `mixed / concentrated damage`
 4. `N2A` 已进一步把当前最可疑路径固定为：`small_cluster_of_outlier_truncation`
 5. `N2A-2` 已把 preservation 机制继续收窄到：`PROFIT_GATED_TRAIL_25P = best partial trade-off candidate`
-6. 当前没有证据支持 `repeatable trend-premature-exit pattern`
-7. 当前也没有证据支持默认 `trailing-stop` 语义立刻改写
-8. `N2 promotion lane` 继续锁住
+6. `N2A-3` 已把两阶段 trailing probe 固定为：`POST_15P_TRAIL_9P = cleaner local mechanism but still no clean candidate`
+7. 当前没有证据支持 `repeatable trend-premature-exit pattern`
+8. 当前也没有证据支持默认 `trailing-stop` 语义立刻改写
+9. `N2 promotion lane` 继续锁住
 
 当前对应执行卡与 record：
 
 1. `normandy/03-execution/13-phase-n2a-targeted-trailing-stop-follow-up-card-20260313.md`
 2. `normandy/03-execution/records/13-phase-n2a-targeted-trailing-stop-follow-up-record-20260313.md`
 3. `normandy/03-execution/records/14-phase-n2a-2-profit-gated-micro-sweep-record-20260313.md`
+4. `normandy/03-execution/records/15-phase-n2a-3-two-stage-trailing-probe-record-20260313.md`
 
 若继续沿本 lane 前推，研究内容只允许是：
 
-1. 围绕 `PROFIT_GATED_TRAIL_25P` 做更窄的 mechanism-specific follow-up
+1. 只有在出现新的 `targeted mechanism hypothesis` 时，才继续做更窄的 mechanism-specific follow-up
 2. 继续区分 `保护回撤` 与 `错杀 fat-tail winners` 的真实边界
-3. 不把 `STOP_ONLY` 的 uplift 或 `25P` 的局部改善粗暴翻译成“主线现在就该取消 `trailing-stop`”
+3. 不把 `STOP_ONLY` 的 uplift、`25P` 的局部改善，或 `POST_15P_TRAIL_9P` 的更干净形状粗暴翻译成“主线现在就该取消 `trailing-stop`”
 
 预计时间：
 
-`第二轮 mechanism micro-sweep formal readout 已完成；若继续，只剩更窄的 targeted follow-up。`
+`两轮 mechanism follow-up formal readout 已完成；若继续，必须先提出新的 targeted hypothesis。`
 
 要求深度：
 
-`若继续，必须围绕 PROFIT_GATED_TRAIL_25P 做更窄的 path / mechanism readout，而不是重新做宽泛 sweep 或直接全局改写语义。`
+`若继续，必须围绕新的 targeted mechanism hypothesis 做 formal readout，而不是重新做宽泛 sweep 或直接全局改写语义。`
 
 ### 4.2 第二优先级：`Tachibana detector refinement or backlog retention`
 
@@ -250,4 +253,4 @@
 
 ## 8. 当前一句话路线图
 
-BOF 作为尺子固定，BOF family quality gate 已经读完且当前结论是 baseline-only；`N2 baseline lane` 的第一轮长窗 formal readout 已回答“不是买错，主要可疑点在 trailing-stop 的 mixed damage”，`N2A` 又把它进一步读成“少数 fat-tail winners 被提前砍掉”，`N2A-2` 则把 preservation 机制继续收窄到“`PROFIT_GATED_TRAIL_25P` 是当前最佳但仍然只是 partial trade-off”；因此当前主队列若继续前推，只能围绕更窄的 profit-gated follow-up 深挖，而 `N2 promotion lane` 继续锁住。
+BOF 作为尺子固定，BOF family quality gate 已经读完且当前结论是 baseline-only；`N2 baseline lane` 的第一轮长窗 formal readout 已回答“不是买错，主要可疑点在 trailing-stop 的 mixed damage”，`N2A` 又把它进一步读成“少数 fat-tail winners 被提前砍掉”，`N2A-2` 把 preservation 机制收窄到“`PROFIT_GATED_TRAIL_25P` 是当前最佳但仍然只是 partial trade-off”，`N2A-3` 又把两阶段 trailing probe 固定为“`POST_15P_TRAIL_9P` 更干净，但仍然不是 clean candidate”；因此当前主队列若继续前推，只能在出现新的 targeted hypothesis 时再开 follow-up，而 `N2 promotion lane` 继续锁住。

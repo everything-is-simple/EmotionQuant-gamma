@@ -1,0 +1,47 @@
+{
+  "generated_at": "2026-03-13T00:37:03Z",
+  "preservation_summary_run_id": "normandy_bof_control_fat_tail_preservation_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t003631",
+  "preservation_status": "completed",
+  "research_parent": "BOF_CONTROL",
+  "preservation_focus": "fat_tail_preservation_mechanism_research",
+  "diagnosis": "no_clean_preservation_candidate_yet",
+  "decision": "hold_n2a_verdict_and_continue_only_if_new_targeted_hypothesis_exists",
+  "best_candidate_label": "POST_15P_TRAIL_9P",
+  "best_candidate_fat_tail_capture_share_vs_stop_only": 0.0970175391685871,
+  "best_candidate_legitimate_protection_damage_share_vs_stop_only": 0.031896009175660996,
+  "best_candidate_overall_capture_share_vs_stop_only": 0.10986542792337617,
+  "best_candidate_overall_total_pnl_delta_vs_control": 257880.14828000002,
+  "ranked_candidates": [
+    {
+      "label": "POST_15P_TRAIL_9P",
+      "fat_tail_capture_share_vs_stop_only": 0.0970175391685871,
+      "legitimate_protection_damage_share_vs_stop_only": 0.031896009175660996,
+      "overall_capture_share_vs_stop_only": 0.10986542792337617,
+      "overall_total_pnl_delta_vs_control": 257880.14828000002,
+      "preservation_score": 0.2744468016884347
+    },
+    {
+      "label": "POST_20P_TRAIL_10P",
+      "fat_tail_capture_share_vs_stop_only": 0.09268944371874874,
+      "legitimate_protection_damage_share_vs_stop_only": 0.04102461547510514,
+      "overall_capture_share_vs_stop_only": 0.10073142640274449,
+      "overall_total_pnl_delta_vs_control": 236440.48604000008,
+      "preservation_score": 0.2679571275509769
+    },
+    {
+      "label": "POST_17_5P_TRAIL_10P",
+      "fat_tail_capture_share_vs_stop_only": 0.09204572576228587,
+      "legitimate_protection_damage_share_vs_stop_only": 0.04463606152398318,
+      "overall_capture_share_vs_stop_only": 0.09790119638060728,
+      "overall_total_pnl_delta_vs_control": 229797.26668000012,
+      "preservation_score": 0.26617323595961245
+    }
+  ],
+  "conclusion": "当前没有出现足够干净的 fat-tail preservation 候选。N2A 的 outlier-truncation 结论保持成立，但还没有形成可以继续升格的 preservation mechanism。",
+  "next_actions": [
+    "若出现 targeted_preservation_candidate_found，就继续围绕该具体 gate 语义做更细的 path readout。",
+    "若只有 partial trade-off，就保持研究范围收窄，不把结果翻译成全局 trailing-stop 重写。",
+    "若没有 clean candidate，就保留 N2A 的 outlier truncation 结论，等待新的 targeted hypothesis。"
+  ],
+  "summary_run_id": "normandy_bof_control_fat_tail_preservation_digest_dtt_v0_01_dtt_pattern_only_w20230103_20260224_t003703"
+}
