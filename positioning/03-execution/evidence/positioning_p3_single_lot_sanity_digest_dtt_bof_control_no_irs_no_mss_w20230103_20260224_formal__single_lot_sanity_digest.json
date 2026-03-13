@@ -1,0 +1,134 @@
+{
+  "generated_at": "2026-03-13T18:15:23Z",
+  "matrix_status": "completed",
+  "research_parent": "positioning_single_lot_sanity_replay",
+  "diagnosis": "no_candidate_survives_single_lot_sanity",
+  "decision": "write_p3_record_and_prepare_p4_no_retained_case",
+  "canonical_control_label": "SINGLE_LOT_CONTROL",
+  "control_summary": {
+    "trade_count": 277,
+    "expected_value": 0.005982810366726134,
+    "profit_factor": 2.3885989567840684,
+    "max_drawdown": 0.035304874582617315,
+    "net_pnl": -21654.97808,
+    "cash_pressure_reject_rate": 0.0,
+    "trade_sequence_max_drawdown": 0.04662338226805183,
+    "risk_adjusted_ev": 0.16946131199887696
+  },
+  "scorecard": [
+    {
+      "label": "WILLIAMS_FIXED_RISK",
+      "family": "williams-fixed-risk",
+      "verdict": "sanity_watch",
+      "trade_count": 274,
+      "trade_count_ratio_vs_control": 0.9891696750902527,
+      "expected_value": 0.018009093027783724,
+      "expected_value_delta_vs_control": 0.01202628266105759,
+      "profit_factor": 2.7295822568601853,
+      "profit_factor_delta_vs_control": 0.3409833000761169,
+      "max_drawdown": 0.03482145796500133,
+      "max_drawdown_delta_vs_control": -0.00048341661761598653,
+      "trade_sequence_max_drawdown": 0.14064385615252187,
+      "trade_sequence_max_drawdown_delta_vs_control": 0.09402047388447005,
+      "risk_adjusted_ev": 0.5171837734618828,
+      "risk_adjusted_ev_ratio_vs_control": 3.0519282977421436,
+      "net_pnl": 170975.6747,
+      "net_pnl_delta_vs_control": 192630.65278,
+      "cash_pressure_reject_rate": 0.014534883720930232,
+      "cash_pressure_delta_vs_control": 0.014534883720930232,
+      "runtime_overrides": {
+        "position_sizing_mode": "williams_fixed_risk",
+        "williams_risk_per_trade_pct": 0.007,
+        "williams_loss_reference_pct": 0.2
+      }
+    },
+    {
+      "label": "FIXED_RATIO",
+      "family": "fixed-ratio",
+      "verdict": "sanity_watch",
+      "trade_count": 274,
+      "trade_count_ratio_vs_control": 0.9891696750902527,
+      "expected_value": 0.01800914549578697,
+      "expected_value_delta_vs_control": 0.012026335129060838,
+      "profit_factor": 2.729586011471516,
+      "profit_factor_delta_vs_control": 0.3409870546874476,
+      "max_drawdown": 0.04238544800788483,
+      "max_drawdown_delta_vs_control": 0.007080573425267515,
+      "trade_sequence_max_drawdown": 0.15664915606700477,
+      "trade_sequence_max_drawdown_delta_vs_control": 0.11002577379895295,
+      "risk_adjusted_ev": 0.42488982285705196,
+      "risk_adjusted_ev_ratio_vs_control": 2.5072969036134203,
+      "net_pnl": 162710.20507999993,
+      "net_pnl_delta_vs_control": 184365.18315999993,
+      "cash_pressure_reject_rate": 0.014534883720930232,
+      "cash_pressure_delta_vs_control": 0.014534883720930232,
+      "runtime_overrides": {
+        "position_sizing_mode": "fixed_ratio",
+        "fixed_ratio_base_amount": 35000.0,
+        "fixed_ratio_delta_amount": 150000.0
+      }
+    }
+  ],
+  "survivors": [],
+  "watch_candidates": [
+    {
+      "label": "WILLIAMS_FIXED_RISK",
+      "family": "williams-fixed-risk",
+      "verdict": "sanity_watch",
+      "trade_count": 274,
+      "trade_count_ratio_vs_control": 0.9891696750902527,
+      "expected_value": 0.018009093027783724,
+      "expected_value_delta_vs_control": 0.01202628266105759,
+      "profit_factor": 2.7295822568601853,
+      "profit_factor_delta_vs_control": 0.3409833000761169,
+      "max_drawdown": 0.03482145796500133,
+      "max_drawdown_delta_vs_control": -0.00048341661761598653,
+      "trade_sequence_max_drawdown": 0.14064385615252187,
+      "trade_sequence_max_drawdown_delta_vs_control": 0.09402047388447005,
+      "risk_adjusted_ev": 0.5171837734618828,
+      "risk_adjusted_ev_ratio_vs_control": 3.0519282977421436,
+      "net_pnl": 170975.6747,
+      "net_pnl_delta_vs_control": 192630.65278,
+      "cash_pressure_reject_rate": 0.014534883720930232,
+      "cash_pressure_delta_vs_control": 0.014534883720930232,
+      "runtime_overrides": {
+        "position_sizing_mode": "williams_fixed_risk",
+        "williams_risk_per_trade_pct": 0.007,
+        "williams_loss_reference_pct": 0.2
+      }
+    },
+    {
+      "label": "FIXED_RATIO",
+      "family": "fixed-ratio",
+      "verdict": "sanity_watch",
+      "trade_count": 274,
+      "trade_count_ratio_vs_control": 0.9891696750902527,
+      "expected_value": 0.01800914549578697,
+      "expected_value_delta_vs_control": 0.012026335129060838,
+      "profit_factor": 2.729586011471516,
+      "profit_factor_delta_vs_control": 0.3409870546874476,
+      "max_drawdown": 0.04238544800788483,
+      "max_drawdown_delta_vs_control": 0.007080573425267515,
+      "trade_sequence_max_drawdown": 0.15664915606700477,
+      "trade_sequence_max_drawdown_delta_vs_control": 0.11002577379895295,
+      "risk_adjusted_ev": 0.42488982285705196,
+      "risk_adjusted_ev_ratio_vs_control": 2.5072969036134203,
+      "net_pnl": 162710.20507999993,
+      "net_pnl_delta_vs_control": 184365.18315999993,
+      "cash_pressure_reject_rate": 0.014534883720930232,
+      "cash_pressure_delta_vs_control": 0.014534883720930232,
+      "runtime_overrides": {
+        "position_sizing_mode": "fixed_ratio",
+        "fixed_ratio_base_amount": 35000.0,
+        "fixed_ratio_delta_amount": 150000.0
+      }
+    }
+  ],
+  "conclusion": "P2 的 provisional retained candidate 在 SINGLE_LOT_CONTROL floor 环境下未能保住改善；当前只能把 `WILLIAMS_FIXED_RISK` 读成 residual watch 或直接写 no-retained case。",
+  "next_actions": [
+    "把 P3 scorecard 回写进 formal record。",
+    "仅在存在 sanity survivor 时推进 P4 retained-or-no-go。",
+    "在 P4 前不提前打开 cross-exit sensitivity。"
+  ],
+  "summary_run_id": "positioning_p3_single_lot_sanity_digest_dtt_bof_control_no_irs_no_mss_w20230103_20260224_t181523"
+}

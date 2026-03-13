@@ -3,7 +3,7 @@
 **日期**: `2026-03-14`  
 **阶段**: `Positioning / P3`  
 **对象**: `第三战场第四张执行卡`  
-**状态**: `Active`
+**状态**: `Closed`
 
 ---
 
@@ -86,14 +86,14 @@
 
 ## 6. 下一步出口
 
-`P3` 完成后，下一步执行顺序固定为：
+`P3` 已完成，下一步执行顺序固定为：
 
-1. `P4 retained-or-no-go`
-2. `cross-exit sensitivity`（仅在 retained sizing candidate 明确存在后才允许打开）
-3. `P10 partial-exit contract lane`
+1. `P4 retained-or-no-go`，且口径固定为 `no retained candidate case`
+2. `cross-exit sensitivity` 继续保持锁住
+3. `P6 partial-exit contract lane` 继续后置
 
 ---
 
 ## 7. 一句话结论
 
-`P3` 的职责是把 P2 的 provisional retained candidate 拉回 low-exposure floor 环境，检查它们是不是只在 fixed-notional 环境下看起来成立。`
+`P3` 已正式给出“no candidate survives single-lot sanity”的结论，并把第三战场推进到 `P4 no retained candidate case`。`

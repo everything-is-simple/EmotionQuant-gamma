@@ -94,6 +94,7 @@
 - `03-execution/records/02-phase-p1-null-control-matrix-record-20260313.md`
 - `03-execution/03-phase-p2-sizing-family-replay-card-20260313.md`
 - `03-execution/04-phase-p3-single-lot-sanity-replay-card-20260314.md`
+- `03-execution/records/04-phase-p3-single-lot-sanity-replay-record-20260314.md`
 - `03-execution/05-phase-p4-sizing-retained-or-no-go-card-20260314.md`
 - `03-execution/06-phase-p5-sizing-lane-closeout-migration-boundary-card-20260314.md`
 - `03-execution/07-phase-p6-partial-exit-contract-freeze-card-20260314.md`
@@ -111,9 +112,10 @@
 4. `P0` 首轮 formal readout：把 frozen baseline、control 组、首批 sizing register 和下一张执行卡正式写死
 5. `P1` formal readout：把 `single-lot control / fixed-notional control` 跑成正式 null control matrix，并把 `FIXED_NOTIONAL_CONTROL` 写定为 canonical control baseline
 6. `P2` formal readout：首批 sizing family 已跑出 provisional retained candidate，并已把 `WILLIAMS_FIXED_RISK / FIXED_RATIO` 推进到下一张卡
-7. `P3` 当前 active card：把 provisional retained candidate 拉回 `SINGLE_LOT_CONTROL` 环境做 floor sanity replay
-8. `P4 ~ P9`：把 sizing retained 裁决、sizing closeout、partial-exit lane 和第三战场收官一次性排成主干卡序列
-9. `PX1 / PX2`：只在触发条件满足时打开的条件卡
+7. `P3` formal readout：`WILLIAMS_FIXED_RISK / FIXED_RATIO` 拉回 `SINGLE_LOT_CONTROL` 后都没有通过 `sanity_survivor` 门槛，当前正式结论已固定为 `no_candidate_survives_single_lot_sanity`
+8. `P4` 当前 active card：把第三战场 sizing lane 正式裁成 `no retained candidate case`
+9. `P5 ~ P9`：把 sizing closeout、partial-exit lane 和第三战场收官一次性排成主干卡序列
+10. `PX1 / PX2`：只在触发条件满足时打开的条件卡
 
 ---
 
@@ -136,8 +138,8 @@
 
 当前治理规则固定为：
 
-1. `P3` 是唯一 active card
-2. `P4 ~ P9` 已建卡但保持 queued / draft 语义
+1. `P4` 是唯一 active card
+2. `P5 ~ P9` 已建卡但保持 queued / draft 语义
 3. `PX1 / PX2` 只有在显式触发条件满足后才允许打开
 
 ---
