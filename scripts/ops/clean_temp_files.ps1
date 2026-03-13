@@ -110,7 +110,10 @@ $RepoPatterns = @(
     ".ruff_cache", ".mypy_cache", "pytest-tmp", "pytest_temp", "pytest_tmp*", "pytest-cache-files-*",
     "*.log", "logs"
 )
-$TempPatterns = @("backtest", "audit", "pytest", "preflight", "artifacts")
+$TempPatterns = @(
+    "backtest", "audit", "pytest", "preflight", "artifacts",
+    "pdf-inspect", "repo-archives", "pytest_*", "pytest-*", "pas-ablation-smoke*.json"
+)
 
 $TotalDeleted = 0
 $TotalSize = 0

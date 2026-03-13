@@ -3,7 +3,7 @@
 **日期**: `2026-03-13`  
 **阶段**: `Positioning / P0`  
 **对象**: `第三战场 control baseline formalization`  
-**状态**: `Active`
+**状态**: `Closed`
 
 ---
 

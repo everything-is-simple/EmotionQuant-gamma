@@ -90,6 +90,7 @@
 - `02-implementation-spec/01-positioning-baseline-and-sizing-spec-20260313.md`
 - `03-execution/01-phase-p0-baseline-freeze-card-20260313.md`
 - `03-execution/records/01-phase-p0-baseline-freeze-record-20260313.md`
+- `03-execution/02-phase-p1-null-control-matrix-card-20260313.md`
 
 它们分别负责：
 
@@ -97,6 +98,7 @@
 2. 第三战场当前唯一实现方案：先冻结 baseline，再逐类验证 sizing
 3. 第三战场第一张执行卡：把对照组、继承口径和禁止混问写死
 4. `P0` 首轮 formal readout：把 frozen baseline、control 组、首批 sizing register 和下一张执行卡正式写死
+5. `P1` 当前 active card：把 `single-lot control / fixed-notional control` 跑成正式 null control matrix，并选出后续 sizing replay 的 canonical control baseline
 
 ---
 
