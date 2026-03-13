@@ -13,6 +13,7 @@ from src.strategy.pas_sidecar import (
     build_registry_run_label,
     compute_pattern_quality,
     compute_reference_layer,
+    required_volume_mult,
 )
 from src.strategy.ranker import (
     build_dtt_score_frame,
@@ -284,6 +285,10 @@ def _detector_name(detector: object) -> str:
 
 def _detector_min_history_days(detector: object, config: Settings) -> int:
     required_window = getattr(detector, "required_window", None)
+    if required_window is None:
+        required_window = getattr(detector, "required_history_days", None)
+        if callable(required_window):
+            required_window = required_window()
     if required_window is not None:
         return max(1, int(required_window))
     return max(1, int(config.pas_min_history_days))
@@ -490,6 +495,7 @@ def _build_pas_trace_row(
     payload = trace_payload or {}
     signal_id = str(payload.get("signal_id") or build_signal_id(code, asof_date, detector_name))
     strength = payload.get("strength")
+    pattern_strength = payload.get("pattern_strength", strength)
     bof_strength = payload.get("bof_strength")
     triggered = bool(payload.get("triggered", False))
     detect_reason = payload.get("detect_reason") or payload.get("skip_reason")
@@ -517,7 +523,7 @@ def _build_pas_trace_row(
         "detect_reason": detect_reason,
         "reason_code": payload.get("reason_code"),
         "strength": None if strength is None else float(strength),
-        "pattern_strength": None if strength is None else float(strength),
+        "pattern_strength": None if pattern_strength is None else float(pattern_strength),
         "bof_strength": None if bof_strength is None else float(bof_strength),
         "lower_bound": payload.get("lower_bound"),
         "today_low": payload.get("today_low"),
@@ -558,6 +564,9 @@ def _enrich_selected_trace_payload(
     pattern = str(enriched.get("pattern") or "")
     enriched["pattern_group"] = PATTERN_GROUP.get(pattern, pattern.upper())
     enriched["registry_run_label"] = registry_run_label
+    enriched.setdefault("required_window", enriched.get("min_history_days"))
+    if pattern:
+        enriched.setdefault("required_mult", required_volume_mult(pattern, config))
 
     reference: dict[str, object] | None = None
     if config.pas_reference_enabled:

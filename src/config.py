@@ -192,7 +192,7 @@ class Settings(BaseSettings):
     dtt_mss_weight: float = Field(default=0.20, alias="DTT_MSS_WEIGHT")
 
     # PAS parameters (Phase 1 / minimal tradable layer)
-    pas_patterns: str = Field(default="bof", alias="PAS_PATTERNS")
+    pas_patterns: str = Field(default="bof,bpb,pb,tst,cpb", alias="PAS_PATTERNS")
     pas_combination: str = Field(default="ANY", alias="PAS_COMBINATION")
     pas_pattern_priority: str = Field(default="bpb,pb,tst,cpb,bof", alias="PAS_PATTERN_PRIORITY")
     pas_single_pattern_mode: str = Field(default="", alias="PAS_SINGLE_PATTERN_MODE")

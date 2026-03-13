@@ -7,29 +7,18 @@ import pandas as pd
 
 from src.config import Settings
 from src.contracts import Signal
+from src.strategy.pas_common import EPSILON, base_trace, clip, missing_required_columns, sort_history
 from src.strategy.pattern_base import PatternDetector
-from src.strategy.pas_support import REQUIRED_COLUMNS, EPS, build_signal, clip, fail_trace, init_trace, normalize_history, safe_ratio
 
 
 @dataclass
 class TstParams:
     distance_max: float = 0.03
-    volume_mult: float = 1.1
+    volume_mult: float = 1.0
 
 
 class TstDetector(PatternDetector):
-    """
-    TST (Test Support) 支撑测试形态检测器（Phase 1 核心）：
-    
-    形态定义：
-    1. 支撑结构（55日窗口）：历史低点形成支撑位
-    2. 测试接近（5日窗口）：回踩距离支撑位 <= 3%
-    3. 反弹确认（当日）：收盘守住支撑 + 突破测试高点 + 拒绝下影线 + 放量
-    
-    窗口要求：61 日（55日结构 + 5日测试 + 当日）
-    """
     name = "tst"
-    required_window = 61
 
     def __init__(self, config: Settings):
         self.params = TstParams(
@@ -37,96 +26,136 @@ class TstDetector(PatternDetector):
             volume_mult=config.pas_tst_volume_mult,
         )
 
+    @property
+    def required_history_days(self) -> int:
+        return 61
+
     def evaluate(self, code: str, asof_date: date, df: pd.DataFrame) -> tuple[Signal | None, dict[str, object]]:
-        trace = init_trace(code, asof_date, self.name, len(df))
-        trace.update(
-            {
-                "required_window": self.required_window,
-                "required_mult": self.params.volume_mult,
-            }
+        reason_code = "PAS_TST"
+        trace = base_trace(
+            code=code,
+            asof_date=asof_date,
+            pattern=self.name,
+            reason_code=reason_code,
+            history_days=len(df),
+            min_history_days=self.required_history_days,
         )
-        if df.empty or len(df) < self.required_window:
-            return fail_trace(trace, "INSUFFICIENT_HISTORY")
+        if df.empty or len(df) < self.required_history_days:
+            trace["skip_reason"] = "INSUFFICIENT_HISTORY"
+            trace["detect_reason"] = "INSUFFICIENT_HISTORY"
+            return None, trace
 
-        data = normalize_history(df)
-        if not REQUIRED_COLUMNS.issubset(set(data.columns)):
-            return fail_trace(trace, "MISSING_REQUIRED_COLUMNS")
+        data = sort_history(df)
+        if missing_required_columns(data):
+            trace["skip_reason"] = "MISSING_REQUIRED_COLUMNS"
+            trace["detect_reason"] = "MISSING_REQUIRED_COLUMNS"
+            return None, trace
 
-        today = data.iloc[-1]
-        # TST 先找更长窗口里的支撑带，再看最近几天是不是“回踩测试”，最后看今天的拒绝确认。
         structure_window = data.iloc[-61:-6]
         test_window = data.iloc[-6:-1]
-        if len(structure_window) < 55 or len(test_window) < 5:
-            return fail_trace(trace, "INSUFFICIENT_HISTORY")
+        today = data.iloc[-1]
+        if structure_window.empty or test_window.empty:
+            trace["skip_reason"] = "INSUFFICIENT_HISTORY"
+            trace["detect_reason"] = "INSUFFICIENT_HISTORY"
+            return None, trace
 
         today_low = float(today["adj_low"])
         today_close = float(today["adj_close"])
         today_open = float(today["adj_open"])
         today_high = float(today["adj_high"])
-        if today_high <= today_low:
-            return fail_trace(trace, "INVALID_RANGE")
-
         today_volume = float(today["volume"] or 0.0)
         volume_ma20 = float(today["volume_ma20"] or 0.0)
+        if today_high <= today_low:
+            trace["skip_reason"] = "INVALID_RANGE"
+            trace["detect_reason"] = "INVALID_RANGE"
+            return None, trace
+
         support_level = float(structure_window["adj_low"].min())
         structure_high = float(structure_window["adj_high"].max())
         test_low = float(test_window["adj_low"].min())
         test_high_ref = float(test_window["adj_high"].max())
-        test_distance = abs(test_low - support_level) / max(support_level, EPS)
-        lower_shadow_ratio = (min(today_open, today_close) - today_low) / max(today_high - today_low, EPS)
-        volume_ratio = safe_ratio(today_volume, volume_ma20)
-
-        # TST 的核心不是跌不跌，而是“是否真的回到关键支撑附近，并出现拒绝下影线”。
+        test_distance = abs(test_low - support_level) / max(support_level, EPSILON)
+        lower_shadow_ratio = (min(today_open, today_close) - today_low) / max(today_high - today_low, EPSILON)
+        volume_ratio = today_volume / volume_ma20 if volume_ma20 > 0 else 0.0
         near_support = test_distance <= self.params.distance_max
         support_hold = today_close >= support_level
-        bounce_confirm = today_close > test_high_ref or (today_close > today_open and today_close > support_level * 1.01)
+        bounce_confirm = today_close > test_high_ref or (
+            today_close > today_open and today_close > support_level * 1.01
+        )
         rejection_candle = lower_shadow_ratio >= 0.35
         volume_confirm = volume_ma20 > 0 and today_volume >= volume_ma20 * self.params.volume_mult
-        support_closeness = 1.0 - clip(test_distance / max(self.params.distance_max, EPS))
-        bounce_strength = clip((today_close - support_level) / max(0.05 * support_level, EPS))
-        rejection_strength = clip(lower_shadow_ratio)
 
         trace.update(
             {
+                "support_level": support_level,
+                "structure_high": structure_high,
+                "test_low": test_low,
+                "test_high_ref": test_high_ref,
+                "test_distance": float(test_distance),
+                "lower_shadow_ratio": float(lower_shadow_ratio),
                 "today_low": today_low,
                 "today_close": today_close,
                 "today_open": today_open,
                 "today_high": today_high,
                 "volume": today_volume,
                 "volume_ma20": volume_ma20,
-                "volume_ratio": volume_ratio,
-                "support_level": support_level,
-                "structure_high": structure_high,
-                "test_distance": float(test_distance),
-                "lower_shadow_ratio": float(lower_shadow_ratio),
+                "volume_ratio": float(volume_ratio),
+            }
+        )
+
+        if not near_support:
+            trace["skip_reason"] = "SUPPORT_TOO_FAR"
+            trace["detect_reason"] = "SUPPORT_TOO_FAR"
+            return None, trace
+        if not support_hold:
+            trace["skip_reason"] = "SUPPORT_LOST"
+            trace["detect_reason"] = "SUPPORT_LOST"
+            return None, trace
+        if not bounce_confirm:
+            trace["skip_reason"] = "NO_BOUNCE_CONFIRM"
+            trace["detect_reason"] = "NO_BOUNCE_CONFIRM"
+            return None, trace
+        if not rejection_candle:
+            trace["skip_reason"] = "NO_REJECTION_CANDLE"
+            trace["detect_reason"] = "NO_REJECTION_CANDLE"
+            return None, trace
+        if not volume_confirm:
+            trace["skip_reason"] = "LOW_VOLUME"
+            trace["detect_reason"] = "LOW_VOLUME"
+            return None, trace
+
+        support_closeness = 1.0 - clip(test_distance / max(self.params.distance_max, EPSILON))
+        bounce_strength = clip((today_close - support_level) / max(0.05 * support_level, EPSILON))
+        rejection_strength = clip(lower_shadow_ratio)
+        volume_strength = clip(volume_ratio / 1.5)
+        strength = clip(
+            0.35 * support_closeness
+            + 0.30 * bounce_strength
+            + 0.20 * rejection_strength
+            + 0.15 * volume_strength
+        )
+        trace.update(
+            {
+                "triggered": True,
+                "detect_reason": "TRIGGERED",
+                "strength": strength,
+                "pattern_strength": strength,
+                "bof_strength": strength,
                 "support_closeness": support_closeness,
                 "bounce_strength": bounce_strength,
                 "rejection_strength": rejection_strength,
             }
         )
-
-        if not near_support:
-            return fail_trace(trace, "SUPPORT_TOO_FAR")
-        if not support_hold:
-            return fail_trace(trace, "SUPPORT_LOST")
-        if not bounce_confirm:
-            return fail_trace(trace, "NO_BOUNCE_CONFIRM")
-        if not rejection_candle:
-            return fail_trace(trace, "NO_REJECTION_CANDLE")
-        if not volume_confirm:
-            return fail_trace(trace, "LOW_VOLUME")
-
-        # 强度更偏结构质量而不是突破幅度，因为 TST 本质上是“支撑确认”而非 breakout。
-        strength = clip(
-            0.35 * support_closeness
-            + 0.30 * bounce_strength
-            + 0.20 * rejection_strength
-            + 0.15 * min(volume_ratio / 1.5, 1.0)
+        return (
+            Signal(
+                signal_id=str(trace["signal_id"]),
+                code=code,
+                signal_date=asof_date,
+                action="BUY",
+                strength=strength,
+                pattern=self.name,
+                reason_code=reason_code,
+                pattern_strength=strength,
+            ),
+            trace,
         )
-        trace.update({"triggered": True, "strength": strength})
-        signal = build_signal(code, asof_date, self.name, strength)
-        return signal, trace
-
-    def detect(self, code: str, asof_date: date, df: pd.DataFrame) -> Signal | None:
-        signal, _ = self.evaluate(code, asof_date, df)
-        return signal

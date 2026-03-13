@@ -3,7 +3,7 @@
 **日期**: `2026-03-14`  
 **阶段**: `Positioning / P6`  
 **对象**: `第三战场第七张执行卡`  
-**状态**: `Draft`
+**状态**: `Closed`
 
 ---
 
@@ -28,7 +28,7 @@
 ## 3. 冻结输入
 
 1. `entry baseline 不变`
-2. `sizing retained baseline 以 P5 closeout 为准`
+2. `sizing baseline 固定继承 P5 closeout baseline（FIXED_NOTIONAL_CONTROL operating + SINGLE_LOT_CONTROL floor sanity）`
 3. `不在本卡比较任何 exit family`
 
 ---

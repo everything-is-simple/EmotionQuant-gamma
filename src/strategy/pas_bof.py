@@ -3,11 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 
-import numpy as np
 import pandas as pd
 
 from src.config import Settings
-from src.contracts import Signal, build_signal_id
+from src.contracts import Signal
+from src.strategy.pas_common import base_trace, clip, missing_required_columns, sort_history
 from src.strategy.pattern_base import PatternDetector
 
 
@@ -19,7 +19,6 @@ class BofParams:
 
 class BofDetector(PatternDetector):
     name = "bof"
-    required_window = 21
 
     def __init__(self, config: Settings):
         self.params = BofParams(
@@ -28,73 +27,40 @@ class BofDetector(PatternDetector):
         )
 
     def evaluate(self, code: str, asof_date: date, df: pd.DataFrame) -> tuple[Signal | None, dict[str, object]]:
-        """
-        BOF(Spring) v0.01 判定：
-        1) Low < LowerBound * (1-break_pct)
-        2) Close >= LowerBound
-        3) 收盘位于当日振幅上 60%
-        4) Volume >= SMA20(volume) * volume_mult
-        """
-        signal_id = build_signal_id(code, asof_date, self.name)
-        trace: dict[str, object] = {
-            "signal_id": signal_id,
-            "pattern": self.name,
-            "triggered": False,
-            "skip_reason": None,
-            "reason_code": "PAS_BOF",
-            "history_days": int(len(df)),
-            "min_history_days": 21,
-            "required_window": 20,
-            "required_mult": float(self.params.volume_mult),
-            "lower_bound": None,
-            "lookback_high_20": None,
-            "today_low": None,
-            "today_close": None,
-            "today_open": None,
-            "today_high": None,
-            "close_pos": None,
-            "volume": None,
-            "volume_ma20": None,
-            "volume_ratio": None,
-            "cond_break": None,
-            "cond_recover": None,
-            "cond_close_pos": None,
-            "cond_volume": None,
-            "strength": None,
-            "bof_strength": None,
-        }
-
+        reason_code = "PAS_BOF"
+        trace = base_trace(
+            code=code,
+            asof_date=asof_date,
+            pattern=self.name,
+            reason_code=reason_code,
+            history_days=len(df),
+            min_history_days=21,
+        )
         if df.empty or len(df) < 21:
             trace["skip_reason"] = "INSUFFICIENT_HISTORY"
+            trace["detect_reason"] = "INSUFFICIENT_HISTORY"
             return None, trace
 
-        data = df.sort_values("date").reset_index(drop=True)
-        # BOF 用“前 20 根 + 当日”结构：
-        # - lookback 只负责找 lower_bound
-        # - today 负责判断假跌破后的回收质量
-        lookback = data.iloc[-21:-1]
-        if len(lookback) < 20:
-            trace["skip_reason"] = "INSUFFICIENT_HISTORY"
-            return None, trace
-
-        required_cols = {"adj_low", "adj_close", "adj_open", "adj_high", "volume", "volume_ma20"}
-        if not required_cols.issubset(set(data.columns)):
+        data = sort_history(df)
+        if missing_required_columns(data):
             trace["skip_reason"] = "MISSING_REQUIRED_COLUMNS"
+            trace["detect_reason"] = "MISSING_REQUIRED_COLUMNS"
             return None, trace
 
+        lookback = data.iloc[-21:-1]
         today = data.iloc[-1]
         lower_bound = float(lookback["adj_low"].min())
+        lookback_high_20 = float(lookback["adj_high"].max())
         today_low = float(today["adj_low"])
         today_close = float(today["adj_close"])
         today_open = float(today["adj_open"])
         today_high = float(today["adj_high"])
         today_volume = float(today["volume"] or 0.0)
         volume_ma20 = float(today["volume_ma20"] or 0.0)
-
         trace.update(
             {
                 "lower_bound": lower_bound,
-                "lookback_high_20": float(lookback["adj_high"].max()),
+                "lookback_high_20": lookback_high_20,
                 "today_low": today_low,
                 "today_close": today_close,
                 "today_open": today_open,
@@ -106,18 +72,20 @@ class BofDetector(PatternDetector):
 
         if today_high <= today_low:
             trace["skip_reason"] = "INVALID_RANGE"
+            trace["detect_reason"] = "INVALID_RANGE"
             return None, trace
 
         cond_break = today_low < lower_bound * (1 - self.params.break_pct)
         cond_recover = today_close >= lower_bound
         close_pos = (today_close - today_low) / (today_high - today_low)
+        body_ratio = abs(today_close - today_open) / (today_high - today_low)
         cond_close_pos = close_pos >= 0.6
         volume_ratio = today_volume / volume_ma20 if volume_ma20 > 0 else 0.0
         cond_volume = volume_ma20 > 0 and today_volume >= volume_ma20 * self.params.volume_mult
-
         trace.update(
             {
                 "close_pos": float(close_pos),
+                "body_ratio": float(body_ratio),
                 "volume_ratio": float(volume_ratio),
                 "cond_break": bool(cond_break),
                 "cond_recover": bool(cond_recover),
@@ -128,42 +96,41 @@ class BofDetector(PatternDetector):
 
         if not cond_break:
             trace["skip_reason"] = "NO_BREAK"
+            trace["detect_reason"] = "NO_BREAK"
             return None, trace
         if not cond_recover:
             trace["skip_reason"] = "NO_RECOVERY"
+            trace["detect_reason"] = "NO_RECOVERY"
             return None, trace
         if not cond_close_pos:
             trace["skip_reason"] = "LOW_CLOSE_POSITION"
+            trace["detect_reason"] = "LOW_CLOSE_POSITION"
             return None, trace
         if not cond_volume:
             trace["skip_reason"] = "LOW_VOLUME"
+            trace["detect_reason"] = "LOW_VOLUME"
             return None, trace
 
-        # 强度仍只服务于 PAS / DTT 排序解释，不直接携带止损/目标等执行语义。
-        body_ratio = abs(today_close - today_open) / (today_high - today_low)
-        strength = float(np.clip(0.4 * close_pos + 0.3 * min(volume_ratio / 2, 1) + 0.3 * body_ratio, 0, 1))
+        strength = clip(0.4 * close_pos + 0.3 * min(volume_ratio / 2.0, 1.0) + 0.3 * body_ratio)
         trace.update(
             {
                 "triggered": True,
+                "detect_reason": "TRIGGERED",
                 "strength": strength,
+                "pattern_strength": strength,
                 "bof_strength": strength,
-                "body_ratio": float(body_ratio),
             }
         )
-
         return (
             Signal(
-                signal_id=signal_id,
+                signal_id=str(trace["signal_id"]),
                 code=code,
                 signal_date=asof_date,
                 action="BUY",
                 strength=strength,
                 pattern=self.name,
-                reason_code="PAS_BOF",
+                reason_code=reason_code,
+                pattern_strength=strength,
             ),
             trace,
         )
-
-    def detect(self, code: str, asof_date: date, df: pd.DataFrame) -> Signal | None:
-        signal, _ = self.evaluate(code, asof_date, df)
-        return signal

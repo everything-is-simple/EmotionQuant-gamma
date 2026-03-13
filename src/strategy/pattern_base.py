@@ -14,7 +14,7 @@ class PatternDetector(ABC):
     name: str
 
     @abstractmethod
-    def detect(self, code: str, asof_date: date, df: pd.DataFrame) -> Signal | None:
+    def evaluate(self, code: str, asof_date: date, df: pd.DataFrame) -> tuple[Signal | None, dict[str, object]]:
         """
         输入:
         - code: 6 位股票代码
@@ -27,3 +27,6 @@ class PatternDetector(ABC):
         """
         raise NotImplementedError
 
+    def detect(self, code: str, asof_date: date, df: pd.DataFrame) -> Signal | None:
+        signal, _ = self.evaluate(code, asof_date, df)
+        return signal

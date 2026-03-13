@@ -88,6 +88,7 @@
 
 - `../docs/spec/common/records/repo-line-map-20260312.md`
 - `02-implementation-spec/01-positioning-baseline-and-sizing-spec-20260313.md`
+- `02-implementation-spec/02-partial-exit-contract-spec-20260314.md`
 - `03-execution/01-phase-p0-baseline-freeze-card-20260313.md`
 - `03-execution/records/01-phase-p0-baseline-freeze-record-20260313.md`
 - `03-execution/02-phase-p1-null-control-matrix-card-20260313.md`
@@ -98,7 +99,12 @@
 - `03-execution/05-phase-p4-sizing-retained-or-no-go-card-20260314.md`
 - `03-execution/records/05-phase-p4-sizing-retained-or-no-go-record-20260314.md`
 - `03-execution/06-phase-p5-sizing-lane-closeout-migration-boundary-card-20260314.md`
+- `03-execution/records/06-phase-p5-sizing-lane-closeout-record-20260314.md`
+- `03-execution/records/sizing-lane-migration-boundary-table-20260314.md`
+- `03-execution/records/partial-exit-lane-opening-note-20260314.md`
 - `03-execution/07-phase-p6-partial-exit-contract-freeze-card-20260314.md`
+- `03-execution/records/07-phase-p6-partial-exit-contract-freeze-record-20260314.md`
+- `03-execution/records/partial-exit-control-definition-note-20260314.md`
 - `03-execution/08-phase-p7-partial-exit-null-control-matrix-card-20260314.md`
 - `03-execution/09-phase-p8-partial-exit-family-replay-card-20260314.md`
 - `03-execution/10-phase-p9-positioning-campaign-closeout-card-20260314.md`
@@ -109,15 +115,18 @@
 
 1. 仓库层面的历史线 / 主线 / 研究线总拓扑说明
 2. 第三战场当前唯一实现方案：先冻结 baseline，再逐类验证 sizing
-3. 第三战场第一张执行卡：把对照组、继承口径和禁止混问写死
-4. `P0` 首轮 formal readout：把 frozen baseline、control 组、首批 sizing register 和下一张执行卡正式写死
-5. `P1` formal readout：把 `single-lot control / fixed-notional control` 跑成正式 null control matrix，并把 `FIXED_NOTIONAL_CONTROL` 写定为 canonical control baseline
-6. `P2` formal readout：首批 sizing family 已跑出 provisional retained candidate，并已把 `WILLIAMS_FIXED_RISK / FIXED_RATIO` 推进到下一张卡
-7. `P3` formal readout：`WILLIAMS_FIXED_RISK / FIXED_RATIO` 拉回 `SINGLE_LOT_CONTROL` 后都没有通过 `sanity_survivor` 门槛，当前正式结论已固定为 `no_candidate_survives_single_lot_sanity`
-8. `P4` formal readout：第三战场 sizing lane 已被正式裁成 `no retained candidate case`
-9. `P5` 当前 active card：把 sizing lane 的阶段性结论压成 closeout / migration boundary
-10. `P6 ~ P9`：把 partial-exit lane 和第三战场收官一次性排成主干卡序列
-11. `PX1 / PX2`：只在触发条件满足时打开的条件卡
+3. `P6` partial-exit 契约 spec：把多腿 SELL、状态机、report 和兼容边界正式写死
+4. 第三战场第一张执行卡：把对照组、继承口径和禁止混问写死
+5. `P0` 首轮 formal readout：把 frozen baseline、control 组、首批 sizing register 和下一张执行卡正式写死
+6. `P1` formal readout：把 `single-lot control / fixed-notional control` 跑成正式 null control matrix，并把 `FIXED_NOTIONAL_CONTROL` 写定为 canonical control baseline
+7. `P2` formal readout：首批 sizing family 已跑出 provisional retained candidate，并已把 `WILLIAMS_FIXED_RISK / FIXED_RATIO` 推进到下一张卡
+8. `P3` formal readout：`WILLIAMS_FIXED_RISK / FIXED_RATIO` 拉回 `SINGLE_LOT_CONTROL` 后都没有通过 `sanity_survivor` 门槛，当前正式结论已固定为 `no_candidate_survives_single_lot_sanity`
+9. `P4` formal readout：第三战场 sizing lane 已被正式裁成 `no retained candidate case`
+10. `P5` formal closeout：已把 sizing lane 收口成 `closeout record + migration boundary table + partial-exit opening note`
+11. `P6` formal freeze：已把 partial-exit lane 的 contract、状态机和 control baseline 正式写死
+12. `P7` 当前 active card：先跑 partial-exit null control matrix
+13. `P8 ~ P9`：把 partial-exit family replay 和第三战场收官排成后续主干卡序列
+14. `PX1 / PX2`：只在触发条件满足时打开的条件卡
 
 ---
 
@@ -140,8 +149,8 @@
 
 当前治理规则固定为：
 
-1. `P5` 是唯一 active card
-2. `P6 ~ P9` 已建卡但保持 queued / draft 语义
+1. `P7` 是唯一 active card
+2. `P8 ~ P9` 已建卡但保持 queued / draft 语义
 3. `PX1 / PX2` 只有在显式触发条件满足后才允许打开
 
 ---

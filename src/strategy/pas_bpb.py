@@ -7,127 +7,170 @@ import pandas as pd
 
 from src.config import Settings
 from src.contracts import Signal
+from src.strategy.pas_common import EPSILON, base_trace, clip, missing_required_columns, sort_history
 from src.strategy.pattern_base import PatternDetector
-from src.strategy.pas_support import REQUIRED_COLUMNS, EPS, build_signal, clip, fail_trace, init_trace, normalize_history, safe_ratio
 
 
 @dataclass
 class BpbParams:
+    breakout_window: int = 20
+    pullback_min: float = 0.25
+    pullback_max: float = 0.80
     volume_mult: float = 1.2
 
 
 class BpbDetector(PatternDetector):
-    """
-    BPB (Breakout-Pullback-Breakout) 形态检测器（Phase 1 核心）：
-    
-    形态定义：
-    1. 前期突破（20日窗口）：有效突破 + 放量确认
-    2. 回踩整理（5日窗口）：回踩不破突破位，深度 25-80%
-    3. 二次突破（当日）：收盘突破回踩高点 + 放量 + 不过度延伸
-    
-    窗口要求：26 日（20日基准 + 5日回踩 + 当日）
-    """
     name = "bpb"
-    required_window = 26
 
     def __init__(self, config: Settings):
-        self.params = BpbParams(volume_mult=config.pas_bpb_volume_mult)
+        self.params = BpbParams(
+            breakout_window=config.pas_bpb_breakout_window,
+            pullback_min=config.pas_bpb_pullback_min,
+            pullback_max=config.pas_bpb_pullback_max,
+            volume_mult=config.pas_bpb_volume_mult,
+        )
+
+    @property
+    def required_history_days(self) -> int:
+        return self.params.breakout_window + 6
 
     def evaluate(self, code: str, asof_date: date, df: pd.DataFrame) -> tuple[Signal | None, dict[str, object]]:
-        trace = init_trace(code, asof_date, self.name, len(df))
-        trace.update({"required_window": self.required_window, "required_mult": self.params.volume_mult})
-        if df.empty or len(df) < self.required_window:
-            return fail_trace(trace, "INSUFFICIENT_HISTORY")
+        reason_code = "PAS_BPB"
+        trace = base_trace(
+            code=code,
+            asof_date=asof_date,
+            pattern=self.name,
+            reason_code=reason_code,
+            history_days=len(df),
+            min_history_days=self.required_history_days,
+        )
+        if df.empty or len(df) < self.required_history_days:
+            trace["skip_reason"] = "INSUFFICIENT_HISTORY"
+            trace["detect_reason"] = "INSUFFICIENT_HISTORY"
+            return None, trace
 
-        data = normalize_history(df)
-        if not REQUIRED_COLUMNS.issubset(set(data.columns)):
-            return fail_trace(trace, "MISSING_REQUIRED_COLUMNS")
+        data = sort_history(df)
+        if missing_required_columns(data):
+            trace["skip_reason"] = "MISSING_REQUIRED_COLUMNS"
+            trace["detect_reason"] = "MISSING_REQUIRED_COLUMNS"
+            return None, trace
 
-        today = data.iloc[-1]
-        # BPB 拆成三段结构：突破腿 -> 回踩段 -> 当日确认。
-        # 这样 trace 既能回答“有没有前置 breakout”，也能回答“回踩是否过深”。
-        setup_window = data.iloc[-26:-6]
+        setup_window = data.iloc[-(self.params.breakout_window + 6) : -6]
         pullback_window = data.iloc[-6:-1]
-        if len(setup_window) < 20 or len(pullback_window) < 5:
-            return fail_trace(trace, "INSUFFICIENT_HISTORY")
+        today = data.iloc[-1]
+        if setup_window.empty or pullback_window.empty:
+            trace["skip_reason"] = "INSUFFICIENT_HISTORY"
+            trace["detect_reason"] = "INSUFFICIENT_HISTORY"
+            return None, trace
 
         today_low = float(today["adj_low"])
         today_close = float(today["adj_close"])
         today_open = float(today["adj_open"])
         today_high = float(today["adj_high"])
-        if today_high <= today_low:
-            return fail_trace(trace, "INVALID_RANGE")
-
         today_volume = float(today["volume"] or 0.0)
         volume_ma20 = float(today["volume_ma20"] or 0.0)
+        if today_high <= today_low:
+            trace["skip_reason"] = "INVALID_RANGE"
+            trace["detect_reason"] = "INVALID_RANGE"
+            return None, trace
+
         breakout_ref = float(setup_window["adj_high"].max())
+        base_low = float(setup_window["adj_low"].min())
         breakout_peak = float(pullback_window["adj_high"].max())
         pullback_low = float(pullback_window["adj_low"].min())
-        volume_ratio = safe_ratio(today_volume, volume_ma20)
-        # 先确认“此前真的发生过一次有效 breakout”，否则今天的上冲不算 BPB 的二次确认。
-        breakout_leg_exists = bool(
-            (
-                (pullback_window["adj_close"] > breakout_ref)
-                & (
-                    pullback_window["volume"]
-                    >= pullback_window["volume_ma20"].replace(0, float("inf")) * 1.2
-                )
-            ).any()
-        )
+        breakout_mask = (
+            (pullback_window["adj_close"] > breakout_ref)
+            & (pullback_window["volume"] / pullback_window["volume_ma20"].replace(0, pd.NA) >= 1.2)
+        ).fillna(False)
+        breakout_leg_exists = bool(breakout_mask.any())
         support_hold = pullback_low >= breakout_ref * (1 - 0.03)
-        pullback_depth = (breakout_peak - pullback_low) / max(breakout_peak - breakout_ref, EPS)
-        pullback_depth_valid = 0.25 <= pullback_depth <= 0.80
-        confirmation = today_close > breakout_peak and today_close >= breakout_ref
-        volume_confirm = volume_ma20 > 0 and today_volume >= volume_ma20 * self.params.volume_mult
+        pullback_depth = (breakout_peak - pullback_low) / max(breakout_peak - breakout_ref, EPSILON)
+        pullback_depth_valid = self.params.pullback_min <= pullback_depth <= self.params.pullback_max
+        pullback_high = float(pullback_window["adj_high"].max())
+        volume_ratio = today_volume / volume_ma20 if volume_ma20 > 0 else 0.0
+        confirmation = (
+            today_close > pullback_high
+            and today_close >= breakout_ref
+            and today_volume >= volume_ma20 * self.params.volume_mult
+        )
         not_overextended = today_close <= breakout_peak * 1.03
-        body_ratio = abs(today_close - today_open) / max(today_high - today_low, EPS)
-        confirm_strength = clip((today_close - breakout_ref) / max(0.10 * breakout_ref, EPS))
-        depth_quality = 1.0 if 0.40 <= pullback_depth <= 0.60 else 0.7 if 0.25 <= pullback_depth <= 0.80 else 0.0
-        support_hold_score = clip((pullback_low - breakout_ref * 0.97) / max(0.03 * breakout_ref, EPS))
-        depth_score = float(depth_quality)
+        body_ratio = abs(today_close - today_open) / (today_high - today_low)
 
         trace.update(
             {
-                "today_low": today_low,
-                "today_close": today_close,
-                "today_open": today_open,
-                "today_high": today_high,
-                "volume": today_volume,
-                "volume_ma20": volume_ma20,
-                "volume_ratio": volume_ratio,
+                "base_low": base_low,
                 "breakout_ref": breakout_ref,
                 "breakout_peak": breakout_peak,
                 "pullback_low": pullback_low,
                 "pullback_depth": float(pullback_depth),
-                "body_ratio": body_ratio,
-                "confirm_strength": confirm_strength,
-                "depth_quality": depth_quality,
-                "support_hold_score": support_hold_score,
-                "depth_score": depth_score,
+                "today_low": today_low,
+                "today_close": today_close,
+                "today_open": today_open,
+                "today_high": today_high,
+                "body_ratio": float(body_ratio),
+                "volume": today_volume,
+                "volume_ma20": volume_ma20,
+                "volume_ratio": float(volume_ratio),
             }
         )
 
         if not breakout_leg_exists:
-            return fail_trace(trace, "NO_BREAKOUT_LEG")
+            trace["skip_reason"] = "NO_BREAKOUT_LEG"
+            trace["detect_reason"] = "NO_BREAKOUT_LEG"
+            return None, trace
         if not support_hold:
-            return fail_trace(trace, "SUPPORT_LOST")
+            trace["skip_reason"] = "SUPPORT_LOST"
+            trace["detect_reason"] = "SUPPORT_LOST"
+            return None, trace
         if not pullback_depth_valid:
-            return fail_trace(trace, "PULLBACK_TOO_DEEP")
+            trace["skip_reason"] = "PULLBACK_NOT_VALID"
+            trace["detect_reason"] = "PULLBACK_NOT_VALID"
+            return None, trace
         if not confirmation:
-            return fail_trace(trace, "NO_CONFIRMATION")
-        if not volume_confirm:
-            return fail_trace(trace, "LOW_VOLUME")
+            trace["skip_reason"] = "NO_CONFIRMATION"
+            trace["detect_reason"] = "NO_CONFIRMATION"
+            return None, trace
         if not not_overextended:
-            return fail_trace(trace, "OVEREXTENDED_CONFIRM")
+            trace["skip_reason"] = "OVEREXTENDED_CONFIRM"
+            trace["detect_reason"] = "OVEREXTENDED_CONFIRM"
+            return None, trace
 
-        # strength 仍只表达“这次 BPB 触发有多干净”，不直接转成执行规则。
+        confirm_strength = clip((today_close - breakout_ref) / max(0.10 * breakout_ref, EPSILON))
+        volume_strength = clip(volume_ratio / 2.0)
+        if 0.40 <= pullback_depth <= 0.60:
+            depth_quality = 1.0
+        elif self.params.pullback_min <= pullback_depth <= self.params.pullback_max:
+            depth_quality = 0.7
+        else:
+            depth_quality = 0.0
         strength = clip(
-            0.40 * confirm_strength + 0.25 * min(volume_ratio / 2.0, 1.0) + 0.20 * depth_quality + 0.15 * body_ratio
+            0.40 * confirm_strength
+            + 0.25 * volume_strength
+            + 0.20 * depth_quality
+            + 0.15 * body_ratio
         )
-        trace.update({"triggered": True, "strength": strength})
-        signal = build_signal(code, asof_date, self.name, strength)
-        return signal, trace
-
-    def detect(self, code: str, asof_date: date, df: pd.DataFrame) -> Signal | None:
-        signal, _ = self.evaluate(code, asof_date, df)
-        return signal
+        trace.update(
+            {
+                "triggered": True,
+                "detect_reason": "TRIGGERED",
+                "strength": strength,
+                "pattern_strength": strength,
+                "bof_strength": strength,
+                "confirm_strength": confirm_strength,
+                "support_hold_score": 1.0 - clip(max(breakout_ref - pullback_low, 0.0) / max(0.03 * breakout_ref, EPSILON)),
+                "depth_score": depth_quality,
+            }
+        )
+        return (
+            Signal(
+                signal_id=str(trace["signal_id"]),
+                code=code,
+                signal_date=asof_date,
+                action="BUY",
+                strength=strength,
+                pattern=self.name,
+                reason_code=reason_code,
+                pattern_strength=strength,
+            ),
+            trace,
+        )
