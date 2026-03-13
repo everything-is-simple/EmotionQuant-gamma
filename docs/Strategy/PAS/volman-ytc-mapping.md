@@ -11,7 +11,7 @@
 > v0.01 的交易触发以 `strategy-design.md` 中 BOF 量化规则为准。
 > 文中关于 `PAS_BPB`、Week2/Week4 的实现节奏均属历史研究草案，执行计划以 `system-baseline.md` 与 `docs/spec` 为准。
 
-> **2026-03-09 当前主线说明**：本文件继续保留为 `PAS` 的高价值映射参考，但不再承担当前主线实现说明。当前主线 `PAS` 的正式设计与采用边界，以 `blueprint/01-full-design/02-pas-trigger-registry-contract-annex-20260308.md` 与 `blueprint/01-full-design/06-pas-minimal-tradable-design-20260309.md` 为准；文中所有历史实施节奏、模块落点和周计划均只作为研究痕迹保留。
+> **2026-03-14 当前定位说明**：本文件继续保留为 `PAS` 的高价值映射参考，但不再承担当前主线实现说明。当前主线 `PAS` 的正式设计与采用边界，以 `blueprint/01-full-design/02-pas-trigger-registry-contract-annex-20260308.md` 与 `blueprint/01-full-design/06-pas-minimal-tradable-design-20260309.md` 为准；文中所有历史实施节奏、模块落点、代码草案和周计划均已降级为研究痕迹，不再视为现行实现方案。
 
 ---
 
@@ -587,285 +587,27 @@ if score < 0:
 
 ---
 
-## 6. EmotionQuant 具体适配方案
+## 6. 当前仍值得保留的映射结论
 
-### 6.1 在PAS模块中增强信号识别
+从今天回看，这份材料真正仍有价值的部分主要只有四类：
 
-#### pas_bpb.py 增强
-```python
-from typing import Optional, Tuple
-import pandas as pd
-from datetime import date
-
-class BpbDetector(PatternDetector):
-    name = "bpb"
-    
-    def detect(self, df: pd.DataFrame, code: str, signal_date: date) -> Optional[Signal]:
-        """
-        BPB检测，融合Volman的FB+IRB思想
-        """
-        # === 原有BPB观测 ===
-        close = df.loc[signal_date, 'adj_close']
-        high_Nd = df.iloc[:-1].tail(config.PAS_BPB_LOOKBACK)['adj_high'].max()
-        low_Nd = df.iloc[:-1].tail(config.PAS_BPB_LOOKBACK)['adj_low'].min()
-        
-        price_position = (close - low_Nd) / (high_Nd - low_Nd)
-        volume_ratio = df.loc[signal_date, 'volume'] / df.loc[signal_date, 'volume_ma20']
-        breakout_strength = (close - high_Nd) / high_Nd
-        
-        # === Volman增强 ===
-        # 1. FB首次回撤检测
-        is_first_pullback = self._check_first_pullback(df, signal_date)
-        
-        # 2. IRB杯柄形态检测
-        has_cup_handle, handle_strength = self._detect_cup_handle(df, signal_date)
-        
-        # 3. 市场条件评估
-        market_score, _ = self._evaluate_market_conditions(df, direction='long')
-        
-        # === 触发条件（Volman的40-60%回撤） ===
-        pullback_depth = 1 - price_position  # 0.4~0.6为佳
-        
-        if not (price_position > 0.8 and volume_ratio > 1.5 and breakout_strength > 0):
-            return None
-        
-        # 放弃不利市场条件
-        if market_score < -1:
-            return None
-        
-        # === strength计算（融合Volman的K线质量） ===
-        # 原始strength
-        base_strength = (
-            0.4 * self._normalize(breakout_strength, 0, 0.1) +
-            0.3 * self._normalize(volume_ratio, 1.0, 3.0) +
-            0.3 * self._body_ratio(df, signal_date)
-        )
-        
-        # Volman增强系数
-        multiplier = 1.0
-        if is_first_pullback:
-            multiplier *= 1.2  # 首次回撤+20%
-        if has_cup_handle:
-            multiplier *= 1.3  # 杯柄形态+30%
-        if 0.4 <= pullback_depth <= 0.6:
-            multiplier *= 1.1  # 理想回撤深度+10%
-        if market_score > 1:
-            multiplier *= 1.1  # 有利市场条件+10%
-        
-        final_strength = min(base_strength * multiplier, 1.0)
-        
-        return Signal(
-            code=code,
-            date=signal_date,
-            direction='BUY',
-            reason_code='PAS_BPB',
-            strength=final_strength,
-            observations={
-                'price_position': price_position,
-                'volume_ratio': volume_ratio,
-                'breakout_strength': breakout_strength,
-                'pullback_depth': pullback_depth,
-                'is_first_pullback': is_first_pullback,
-                'has_cup_handle': has_cup_handle,
-                'market_score': market_score
-            }
-        )
-    
-    def _check_first_pullback(self, df, signal_date) -> bool:
-        """检测是否首次回撤（Volman FB条件3）"""
-        # 简化版：检查前20日是否有过ma20下方→上方的穿越
-        recent = df.tail(20)
-        crossovers = (recent['adj_close'] > recent['ma20']).diff()
-        return crossovers.sum() <= 1  # 只有1次穿越=首次回撤
-    
-    def _detect_cup_handle(self, df, signal_date) -> Tuple[bool, float]:
-        """检测杯柄形态（Volman IRB核心）"""
-        recent = df.tail(20)
-        
-        # 茶杯：先跌后涨
-        cup_low = recent['adj_low'].min()
-        cup_left = recent.iloc[:10]['adj_close'].mean()
-        cup_right = recent.iloc[-5:]['adj_close'].mean()
-        is_cup = (cup_right > cup_low * 1.02) and (cup_left > cup_low * 1.02)
-        
-        # 手柄：最后3-5根K线的窄幅震荡
-        handle = recent.tail(5)
-        handle_width = (handle['adj_high'].max() - handle['adj_low'].min()) / handle['adj_low'].min()
-        is_handle = handle_width < 0.03
-        
-        # 手柄在ma20附近
-        near_ma20 = abs(handle['adj_close'].iloc[-1] - handle['ma20'].iloc[-1]) / handle['ma20'].iloc[-1] < 0.02
-        
-        if is_cup and is_handle and near_ma20:
-            return True, 0.3  # 返回强度加成
-        return False, 0.0
-    
-    def _evaluate_market_conditions(self, df, direction) -> Tuple[int, list]:
-        """评估市场条件（Volman第15章）"""
-        score = 0
-        details = []
-        
-        recent = df.tail(10)
-        lows = recent['adj_low'].values
-        
-        # 底部抬高检测
-        if all(lows[i] >= lows[i-1] * 0.99 for i in range(1, len(lows))):
-            score += 2
-            details.append("Higher Lows +2")
-        
-        # 前方阻力检测（简化：检查前高）
-        current = df['adj_close'].iloc[-1]
-        prev_high = df.iloc[-20:-1]['adj_high'].max()
-        if current > prev_high * 0.97:  # 接近前高
-            score -= 2
-            details.append("Near Resistance -2")
-        
-        return score, details
-```
-
-### 6.2 在Broker模块实现临界点管理
-
-#### broker/risk.py
-```python
-class CriticalPointManager:
-    """
-    临界点管理器（Volman第14章适配）
-    由于A股T+1，只能在收盘后更新，次日开盘执行
-    """
-    
-    def __init__(self):
-        self.positions = {}  # {code: PositionInfo}
-    
-    def set_initial_critical_point(self, position):
-        """
-        设置初始临界点（入场时）
-        """
-        if position.signal_type == 'PAS_BPB':
-            # BPB：临界点在回调低点-1%
-            lookback_low = position.entry_data['pullback_low']
-            position.critical_point = lookback_low * 0.99
-        
-        elif position.signal_type == 'PAS_TST':
-            # TST：临界点在support_level-1%
-            position.critical_point = position.entry_data['support_level'] * 0.99
-        
-        position.initial_stop_loss = position.critical_point
-        return position.critical_point
-    
-    def update_critical_point(self, position, latest_bar):
-        """
-        更新临界点（收盘后每日执行）
-        Volman规则：只能朝盈利方向移动
-        """
-        if position.direction == 'LONG':
-            current_price = latest_bar['adj_close']
-            
-            # 规则1：价格回撤后反弹，形成更高低点
-            if current_price > position.entry_price * 1.05:  # 盈利>5%
-                recent_low = self._get_recent_pullback_low(position, latest_bar)
-                
-                if recent_low and recent_low > position.critical_point:
-                    # 等待反弹确认（Volman技术确认）
-                    if self._confirm_reversal(position, latest_bar):
-                        old_cp = position.critical_point
-                        position.critical_point = recent_low * 0.99  # 低点-1%
-                        
-                        logging.info(
-                            f"临界点移动: {position.code} "
-                            f"{old_cp:.2f} -> {position.critical_point:.2f}"
-                        )
-        
-        return position.critical_point
-    
-    def check_breach(self, position, current_price) -> bool:
-        """
-        检测是否突破临界点（次日开盘检查）
-        """
-        if position.direction == 'LONG':
-            return current_price < position.critical_point
-        else:
-            return current_price > position.critical_point
-    
-    def _confirm_reversal(self, position, latest_bar) -> bool:
-        """
-        确认反转（Volman规则：回撤低点必须被向上突破）
-        """
-        # 简化版：检查最新K线是否突破前一根K线高点
-        prev_high = position.price_history[-2]['adj_high']
-        current_close = latest_bar['adj_close']
-        return current_close > prev_high
-```
-
-### 6.3 在Reporter模块增加不利条件预警
-
-#### reporter/warnings.py
-```python
-def generate_adverse_condition_warnings(positions, market_data):
-    """
-    生成不利市场条件预警（Volman第15章）
-    """
-    warnings = []
-    
-    for pos in positions:
-        df = market_data[pos.code]
-        current_price = df['adj_close'].iloc[-1]
-        
-        # 1. 前方阻力位预警
-        resistance = find_nearest_resistance(df, current_price)
-        if resistance and (resistance - current_price) / current_price < 0.03:
-            warnings.append({
-                'level': 'WARNING',
-                'code': pos.code,
-                'type': 'RESISTANCE_AHEAD',
-                'message': f'接近阻力位 {resistance:.2f}，距离 {(resistance/current_price-1)*100:.1f}%',
-                'action': 'CONSIDER_TAKE_PROFIT'
-            })
-        
-        # 2. 冲击效应预警（连续大阳线后）
-        momentum_spike = detect_momentum_spike(df)
-        if momentum_spike and pos.holding_days < 3:
-            warnings.append({
-                'level': 'CAUTION',
-                'code': pos.code,
-                'type': 'MOMENTUM_SPIKE',
-                'message': '入场前存在冲击效应，回撤风险高',
-                'action': 'TIGHTEN_STOP_LOSS'
-            })
-        
-        # 3. 真空效应预警
-        if has_vacuum_below(df, current_price):
-            warnings.append({
-                'level': 'INFO',
-                'code': pos.code,
-                'type': 'VACUUM_EFFECT',
-                'message': '下方存在未测试整数位，缺乏支撑',
-                'action': 'MONITOR_CLOSELY'
-            })
-    
-    return warnings
-```
+1. `FB / IRB / RB / SB` 与 `BPB / PB / TST / BOF / CPB` 的结构映射关系。
+2. `杯柄 / 假突破 / 二次测试 / 复杂回调` 这些微观结构如何为 `PAS` 提供语义补充。
+3. `临界点技术` 与 `不利市场条件识别` 对风险解释层的启发。
+4. `Volman` 的微观结构思想在 A 股日线下必须经过重写，不能直接照搬成代码或执行规则。
 
 ---
 
-## 7. 实施优先级与时间表
+## 7. 已降级的历史研究痕迹
 
-### MVP阶段（Week 2）：PAS_BPB + Volman核心
-- [x] FB结构逻辑（首次回撤判断）
-- [x] IRB杯柄形态检测（基础版）
-- [x] 市场条件评估（简化版：阻力位+底部排列）
-- [ ] strength加权系数
+本次整理后，以下内容统一降级，不再作为当前主线或当前实现说明：
 
-### 2nd迭代（Week 3）：PAS_PB + BB增强
-- [ ] FB变种（非首次回撤）
-- [ ] BB箱体检测（用于所有形态的信号强化）
-- [ ] 不利条件预警（阻力位、冲击效应）
+1. 文内所有 `pas_bpb.py / broker/risk.py / reporter/warnings.py` 代码草案。
+2. `Week 2 / Week 3 / Week 4` 的历史实施节奏。
+3. “下一步写入某文档某章节” 这类迁移期动作项。
+4. 把 `Volman` 结构直接翻译成当前 A 股日线量化阈值的写法。
 
-### 3rd迭代（Week 4）：TST/BOF/CPB + 临界点技术
-- [ ] DD结构（双十字星识别）
-- [ ] SB结构（M/W形态检测）
-- [ ] RB假突破识别（BOF入场）
-- [ ] 临界点动态管理（在Broker模块）
-- [ ] ARB高级形态（头肩底等）
+这些内容最多只代表当时的研究思路，不再承担现行设计职责。
 
 ---
 
@@ -881,12 +623,8 @@ def generate_adverse_condition_warnings(positions, market_data):
    - 卷3：五种架构（TST/BOF/BPB/PB/CPB）
    - 卷4：资金管理
 
-3. **EmotionQuant-gamma 设计文档**:
-   - `docs/design-v2/01-system/architecture-master.md` §4.3 PAS模块
-   - `plans/7f7d1b26-e7b6-444d-a6f2-607720c2488c` PAS+Strategy实现计划
-
----
-
-**文档状态**：已完成  
-**下一步行动**：将此映射关系写入 `architecture-master.md` §4.3.8
+3. **EmotionQuant-gamma 相关文档**:
+   - `docs/Strategy/PAS/lance-beggs-ytc-analysis.md`
+   - `blueprint/01-full-design/02-pas-trigger-registry-contract-annex-20260308.md`
+   - `blueprint/01-full-design/06-pas-minimal-tradable-design-20260309.md`
 

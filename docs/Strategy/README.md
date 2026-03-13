@@ -1,5 +1,12 @@
 # Strategy
 
+**版本**：`理论来源入口`  
+**状态**：`Active`  
+**封版日期**：`不适用（Active）`  
+**变更规则**：`允许补充来源索引、目录导航与采用边界；不直接定义当前执行口径。`
+
+---
+
 ## 定位
 
 `docs/Strategy/` 是旧设计世界退场后保留下来的共享理论层，只保留跨战役共享的理论来源、方法论映射和经验补充。
@@ -15,6 +22,9 @@
 | 目录/文件 | 角色 |
 |---|---|
 | `theoretical-foundations.md` | 策略理论总览与跨模块索引 |
+| `MSS/README.md` | `MSS` 理论来源与经验补充导航 |
+| `IRS/README.md` | `IRS` 行业口径与分类资料导航 |
+| `PAS/README.md` | `PAS` 价格行为来源与映射导航 |
 | `MSS/` | 市场情绪理论来源与经验补充 |
 | `IRS/` | 行业分类与行业口径来源 |
 | `PAS/` | 价格行为、形态来源与映射 |
@@ -42,7 +52,7 @@
 
 | 文件 | 处理结论 | 说明 |
 |---|---|---|
-| `normandy/01-full-design/90-research-assets/tachibana-yoshimasa-analysis.md` | 迁出至 `Normandy` 研究资产层 | `Tachibana` 当前只服务 `Normandy contrary alpha` 研究，不再留在 `Strategy/PAS` 中伪装成共享来源。 |
+| `tachibana-yoshimasa-analysis.md` | 已迁出 `Strategy/` | 该材料不再属于共享理论来源，后续只在对应战役研究资产层维护。 |
 
 ### 合并规则
 
@@ -63,9 +73,12 @@
 
 ## 相邻入口
 
-1. `PAS/volman-ytc-mapping.md`
-2. `../observatory/README.md`
-3. `../spec/README.md`
-4. `../../blueprint/README.md`
-5. `../design-v2/01-system/system-baseline.md`
-6. `../spec/common/records/development-status.md`
+1. `theoretical-foundations.md`
+2. `PAS/README.md`
+3. `MSS/README.md`
+4. `IRS/README.md`
+5. `../observatory/README.md`
+6. `../spec/README.md`
+7. `../../blueprint/README.md`
+8. `../design-v2/01-system/system-baseline.md`
+9. `../spec/common/records/development-status.md`

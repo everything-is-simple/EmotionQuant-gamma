@@ -162,9 +162,12 @@
 ## 6. 相关文档
 
 1. `docs/Strategy/README.md`
-2. `docs/Strategy/MSS/market-sentiment-system-2024-analysis.md`
-3. `docs/Strategy/IRS/shenwan-industry-classification.md`
-4. `docs/Strategy/PAS/lance-beggs-ytc-analysis.md`
-5. `docs/Strategy/PAS/volman-ytc-mapping.md`
-6. `docs/Strategy/PAS/xu-jiachong-naked-kline-analysis.md`
-7. `blueprint/README.md`
+2. `docs/Strategy/MSS/README.md`
+3. `docs/Strategy/IRS/README.md`
+4. `docs/Strategy/PAS/README.md`
+5. `docs/Strategy/MSS/market-sentiment-system-2024-analysis.md`
+6. `docs/Strategy/IRS/shenwan-industry-classification.md`
+7. `docs/Strategy/PAS/lance-beggs-ytc-analysis.md`
+8. `docs/Strategy/PAS/volman-ytc-mapping.md`
+9. `docs/Strategy/PAS/xu-jiachong-naked-kline-analysis.md`
+10. `blueprint/README.md`
