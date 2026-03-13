@@ -3,7 +3,7 @@
 **日期**: `2026-03-13`  
 **阶段**: `Positioning / P2`  
 **对象**: `第三战场第三张执行卡`  
-**状态**: `Active`
+**状态**: `Closed`
 
 ---
 
@@ -113,8 +113,8 @@
 
 `P2` 完成后，下一步执行顺序固定为：
 
-1. `P9 retained-or-no-go`
-2. `single-lot sanity replay`（仅对 provisional retained candidate 打开）
+1. `P3 single-lot sanity replay`（仅对 provisional retained candidate 打开）
+2. `P4 retained-or-no-go`
 3. `cross-exit sensitivity`（仅在 retained sizing candidate 通过 single-lot sanity 后才允许打开）
 4. `P10 partial-exit contract lane`
 

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-13T10:57:23Z",
+  "generated_at": "2026-03-13T16:13:37Z",
   "matrix_status": "completed",
   "research_parent": "positioning_sizing_family_replay",
   "diagnosis": "provisional_retained_sizing_candidate_found",
@@ -12,7 +12,7 @@
     "max_drawdown": 0.12228540748315359,
     "net_pnl": 388254.93015999993,
     "cash_pressure_reject_rate": 0.0029069767441860465,
-    "trade_sequence_max_drawdown": 0.3576654010438808
+    "trade_sequence_max_drawdown": 0.3729246661228638
   },
   "scorecard": [
     {
@@ -31,8 +31,8 @@
       "net_pnl_delta_vs_control": -217279.25545999993,
       "cash_pressure_reject_rate": 0.014534883720930232,
       "cash_pressure_delta_vs_control": 0.011627906976744186,
-      "trade_sequence_max_drawdown": 258.1807963138526,
-      "trade_sequence_max_drawdown_delta_vs_control": 257.8231309128087,
+      "trade_sequence_max_drawdown": 0.14064385615252187,
+      "trade_sequence_max_drawdown_delta_vs_control": -0.23228080997034192,
       "max_consecutive_loss_count": 19,
       "runtime_overrides": {
         "position_sizing_mode": "williams_fixed_risk",
@@ -56,8 +56,8 @@
       "net_pnl_delta_vs_control": -225544.72508,
       "cash_pressure_reject_rate": 0.014534883720930232,
       "cash_pressure_delta_vs_control": 0.011627906976744186,
-      "trade_sequence_max_drawdown": 313.59440347821607,
-      "trade_sequence_max_drawdown_delta_vs_control": 313.23673807717216,
+      "trade_sequence_max_drawdown": 0.15664915606700477,
+      "trade_sequence_max_drawdown_delta_vs_control": -0.21627551005585902,
       "max_consecutive_loss_count": 19,
       "runtime_overrides": {
         "position_sizing_mode": "fixed_ratio",
@@ -81,8 +81,8 @@
       "net_pnl_delta_vs_control": -76899.78483999992,
       "cash_pressure_reject_rate": 0.0029069767441860465,
       "cash_pressure_delta_vs_control": 0.0,
-      "trade_sequence_max_drawdown": 0.203499675911465,
-      "trade_sequence_max_drawdown_delta_vs_control": -0.15416572513241578,
+      "trade_sequence_max_drawdown": 0.27480933205193997,
+      "trade_sequence_max_drawdown_delta_vs_control": -0.09811533407092382,
       "max_consecutive_loss_count": 20,
       "runtime_overrides": {
         "position_sizing_mode": "fixed_risk",
@@ -105,8 +105,8 @@
       "net_pnl_delta_vs_control": -126586.22696,
       "cash_pressure_reject_rate": 0.005813953488372093,
       "cash_pressure_delta_vs_control": 0.0029069767441860465,
-      "trade_sequence_max_drawdown": 0.3250604873659597,
-      "trade_sequence_max_drawdown_delta_vs_control": -0.032604913677921066,
+      "trade_sequence_max_drawdown": 0.26016279556720523,
+      "trade_sequence_max_drawdown_delta_vs_control": -0.11276187055565856,
       "max_consecutive_loss_count": 20,
       "runtime_overrides": {
         "position_sizing_mode": "fixed_volatility",
@@ -132,8 +132,8 @@
       "net_pnl_delta_vs_control": -132551.26543999996,
       "cash_pressure_reject_rate": 0.005813953488372093,
       "cash_pressure_delta_vs_control": 0.0029069767441860465,
-      "trade_sequence_max_drawdown": 0.13697508601020275,
-      "trade_sequence_max_drawdown_delta_vs_control": -0.22069031503367803,
+      "trade_sequence_max_drawdown": 0.2675215042393574,
+      "trade_sequence_max_drawdown_delta_vs_control": -0.1054031618835064,
       "max_consecutive_loss_count": 20,
       "runtime_overrides": {
         "position_sizing_mode": "fixed_capital",
@@ -156,8 +156,8 @@
       "net_pnl_delta_vs_control": -194958.54215999998,
       "cash_pressure_reject_rate": 0.005813953488372093,
       "cash_pressure_delta_vs_control": 0.0029069767441860465,
-      "trade_sequence_max_drawdown": 0.2119848827136694,
-      "trade_sequence_max_drawdown_delta_vs_control": -0.1456805183302114,
+      "trade_sequence_max_drawdown": 0.19100264637546618,
+      "trade_sequence_max_drawdown_delta_vs_control": -0.1819220197473976,
       "max_consecutive_loss_count": 20,
       "runtime_overrides": {
         "position_sizing_mode": "fixed_percentage",
@@ -180,8 +180,8 @@
       "net_pnl_delta_vs_control": -477048.34858,
       "cash_pressure_reject_rate": 0.020348837209302327,
       "cash_pressure_delta_vs_control": 0.017441860465116282,
-      "trade_sequence_max_drawdown": 0.0,
-      "trade_sequence_max_drawdown_delta_vs_control": -0.3576654010438808,
+      "trade_sequence_max_drawdown": 0.3027403289509605,
+      "trade_sequence_max_drawdown_delta_vs_control": -0.07018433717190331,
       "max_consecutive_loss_count": 20,
       "runtime_overrides": {
         "position_sizing_mode": "fixed_unit",
@@ -206,8 +206,8 @@
       "net_pnl_delta_vs_control": -217279.25545999993,
       "cash_pressure_reject_rate": 0.014534883720930232,
       "cash_pressure_delta_vs_control": 0.011627906976744186,
-      "trade_sequence_max_drawdown": 258.1807963138526,
-      "trade_sequence_max_drawdown_delta_vs_control": 257.8231309128087,
+      "trade_sequence_max_drawdown": 0.14064385615252187,
+      "trade_sequence_max_drawdown_delta_vs_control": -0.23228080997034192,
       "max_consecutive_loss_count": 19,
       "runtime_overrides": {
         "position_sizing_mode": "williams_fixed_risk",
@@ -231,8 +231,8 @@
       "net_pnl_delta_vs_control": -225544.72508,
       "cash_pressure_reject_rate": 0.014534883720930232,
       "cash_pressure_delta_vs_control": 0.011627906976744186,
-      "trade_sequence_max_drawdown": 313.59440347821607,
-      "trade_sequence_max_drawdown_delta_vs_control": 313.23673807717216,
+      "trade_sequence_max_drawdown": 0.15664915606700477,
+      "trade_sequence_max_drawdown_delta_vs_control": -0.21627551005585902,
       "max_consecutive_loss_count": 19,
       "runtime_overrides": {
         "position_sizing_mode": "fixed_ratio",
@@ -258,8 +258,8 @@
       "net_pnl_delta_vs_control": -76899.78483999992,
       "cash_pressure_reject_rate": 0.0029069767441860465,
       "cash_pressure_delta_vs_control": 0.0,
-      "trade_sequence_max_drawdown": 0.203499675911465,
-      "trade_sequence_max_drawdown_delta_vs_control": -0.15416572513241578,
+      "trade_sequence_max_drawdown": 0.27480933205193997,
+      "trade_sequence_max_drawdown_delta_vs_control": -0.09811533407092382,
       "max_consecutive_loss_count": 20,
       "runtime_overrides": {
         "position_sizing_mode": "fixed_risk",
@@ -282,8 +282,8 @@
       "net_pnl_delta_vs_control": -126586.22696,
       "cash_pressure_reject_rate": 0.005813953488372093,
       "cash_pressure_delta_vs_control": 0.0029069767441860465,
-      "trade_sequence_max_drawdown": 0.3250604873659597,
-      "trade_sequence_max_drawdown_delta_vs_control": -0.032604913677921066,
+      "trade_sequence_max_drawdown": 0.26016279556720523,
+      "trade_sequence_max_drawdown_delta_vs_control": -0.11276187055565856,
       "max_consecutive_loss_count": 20,
       "runtime_overrides": {
         "position_sizing_mode": "fixed_volatility",
@@ -309,8 +309,8 @@
       "net_pnl_delta_vs_control": -132551.26543999996,
       "cash_pressure_reject_rate": 0.005813953488372093,
       "cash_pressure_delta_vs_control": 0.0029069767441860465,
-      "trade_sequence_max_drawdown": 0.13697508601020275,
-      "trade_sequence_max_drawdown_delta_vs_control": -0.22069031503367803,
+      "trade_sequence_max_drawdown": 0.2675215042393574,
+      "trade_sequence_max_drawdown_delta_vs_control": -0.1054031618835064,
       "max_consecutive_loss_count": 20,
       "runtime_overrides": {
         "position_sizing_mode": "fixed_capital",
@@ -333,8 +333,8 @@
       "net_pnl_delta_vs_control": -194958.54215999998,
       "cash_pressure_reject_rate": 0.005813953488372093,
       "cash_pressure_delta_vs_control": 0.0029069767441860465,
-      "trade_sequence_max_drawdown": 0.2119848827136694,
-      "trade_sequence_max_drawdown_delta_vs_control": -0.1456805183302114,
+      "trade_sequence_max_drawdown": 0.19100264637546618,
+      "trade_sequence_max_drawdown_delta_vs_control": -0.1819220197473976,
       "max_consecutive_loss_count": 20,
       "runtime_overrides": {
         "position_sizing_mode": "fixed_percentage",
@@ -358,8 +358,8 @@
     "net_pnl_delta_vs_control": -217279.25545999993,
     "cash_pressure_reject_rate": 0.014534883720930232,
     "cash_pressure_delta_vs_control": 0.011627906976744186,
-    "trade_sequence_max_drawdown": 258.1807963138526,
-    "trade_sequence_max_drawdown_delta_vs_control": 257.8231309128087,
+    "trade_sequence_max_drawdown": 0.14064385615252187,
+    "trade_sequence_max_drawdown_delta_vs_control": -0.23228080997034192,
     "max_consecutive_loss_count": 19,
     "runtime_overrides": {
       "position_sizing_mode": "williams_fixed_risk",
@@ -373,5 +373,5 @@
     "在 sanity replay 通过前，不提前打开 cross-exit sensitivity。",
     "把 P2 scorecard 回写进 formal record。"
   ],
-  "summary_run_id": "positioning_p2_sizing_family_digest_dtt_bof_control_no_irs_no_mss_w20230103_20260224_t105723"
+  "summary_run_id": "positioning_p2_sizing_family_digest_dtt_bof_control_no_irs_no_mss_w20230103_20260224_t161337"
 }

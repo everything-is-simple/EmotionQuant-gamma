@@ -1,7 +1,7 @@
 # Positioning
 
 **状态**: `Active`  
-**日期**: `2026-03-13`
+**日期**: `2026-03-14`
 
 ---
 
@@ -101,7 +101,8 @@
 3. 第三战场第一张执行卡：把对照组、继承口径和禁止混问写死
 4. `P0` 首轮 formal readout：把 frozen baseline、control 组、首批 sizing register 和下一张执行卡正式写死
 5. `P1` formal readout：把 `single-lot control / fixed-notional control` 跑成正式 null control matrix，并把 `FIXED_NOTIONAL_CONTROL` 写定为 canonical control baseline
-6. `P2` 当前 active card：把首批 sizing family 统一对照 `FIXED_NOTIONAL_CONTROL` 跑成 retained-or-no-go 候选
+6. `P2` formal readout：首批 sizing family 已跑出 provisional retained candidate，并已把 `WILLIAMS_FIXED_RISK / FIXED_RATIO` 推进到下一张卡
+7. `P3` 当前 active card：把 provisional retained candidate 拉回 `SINGLE_LOT_CONTROL` 环境做 floor sanity replay
 
 ---
 
