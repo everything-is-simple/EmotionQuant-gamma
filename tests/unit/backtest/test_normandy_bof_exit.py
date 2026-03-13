@@ -164,6 +164,104 @@ def test_simulate_counterfactual_exit_force_closes_at_window_end() -> None:
     assert result["exit_stage"] == "FORCE_CLOSE_FILLED"
 
 
+def test_simulate_counterfactual_exit_can_loosen_trailing_after_profit_switch() -> None:
+    matcher = Matcher(Settings(SLIPPAGE_BPS=0.0))
+    trade_days = [date(2026, 1, 2), date(2026, 1, 5), date(2026, 1, 6), date(2026, 1, 7), date(2026, 1, 8)]
+    next_trade_day = {
+        date(2026, 1, 2): date(2026, 1, 5),
+        date(2026, 1, 5): date(2026, 1, 6),
+        date(2026, 1, 6): date(2026, 1, 7),
+        date(2026, 1, 7): date(2026, 1, 8),
+        date(2026, 1, 8): None,
+    }
+    trade_day_index = {day: index for index, day in enumerate(trade_days)}
+    entry = {
+        "signal_id": "000001_2026-01-02_bof",
+        "code": "000001",
+        "entry_date": "2026-01-02",
+        "entry_price": 10.0,
+        "quantity": 100,
+    }
+    bars = {
+        date(2026, 1, 2): _make_bar(10.0, 12.0),
+        date(2026, 1, 5): _make_bar(11.8, 11.0),
+        date(2026, 1, 6): _make_bar(10.3, 10.1),
+        date(2026, 1, 7): _make_bar(10.0, 10.0),
+        date(2026, 1, 8): _make_bar(10.0, 10.0),
+    }
+    variant = NormandyBofExitVariant(
+        label="TEST_TWO_STAGE_TRAIL",
+        stop_loss_pct=1.00,
+        trailing_stop_pct=0.05,
+        notes="",
+        trailing_loosen_profit_pct=0.20,
+        trailing_stop_pct_after_loosen=0.15,
+    )
+
+    result = _simulate_counterfactual_exit(
+        entry=entry,
+        bars_by_date=bars,
+        trade_days=trade_days,
+        next_trade_day=next_trade_day,
+        trade_day_index=trade_day_index,
+        matcher=matcher,
+        variant=variant,
+        end=date(2026, 1, 8),
+    )
+
+    assert result["exit_reason"] == "TRAILING_STOP"
+    assert result["exit_date"] == "2026-01-07"
+    assert result["exit_stage"] == "MATCH_FILLED"
+
+
+def test_simulate_counterfactual_exit_keeps_early_trailing_before_profit_switch() -> None:
+    matcher = Matcher(Settings(SLIPPAGE_BPS=0.0))
+    trade_days = [date(2026, 1, 2), date(2026, 1, 5), date(2026, 1, 6), date(2026, 1, 7)]
+    next_trade_day = {
+        date(2026, 1, 2): date(2026, 1, 5),
+        date(2026, 1, 5): date(2026, 1, 6),
+        date(2026, 1, 6): date(2026, 1, 7),
+        date(2026, 1, 7): None,
+    }
+    trade_day_index = {day: index for index, day in enumerate(trade_days)}
+    entry = {
+        "signal_id": "000001_2026-01-02_bof",
+        "code": "000001",
+        "entry_date": "2026-01-02",
+        "entry_price": 10.0,
+        "quantity": 100,
+    }
+    bars = {
+        date(2026, 1, 2): _make_bar(10.0, 10.6),
+        date(2026, 1, 5): _make_bar(10.2, 10.0),
+        date(2026, 1, 6): _make_bar(9.9, 9.8),
+        date(2026, 1, 7): _make_bar(9.7, 9.7),
+    }
+    variant = NormandyBofExitVariant(
+        label="TEST_TWO_STAGE_TRAIL_EARLY",
+        stop_loss_pct=1.00,
+        trailing_stop_pct=0.05,
+        notes="",
+        trailing_loosen_profit_pct=0.20,
+        trailing_stop_pct_after_loosen=0.15,
+    )
+
+    result = _simulate_counterfactual_exit(
+        entry=entry,
+        bars_by_date=bars,
+        trade_days=trade_days,
+        next_trade_day=next_trade_day,
+        trade_day_index=trade_day_index,
+        matcher=matcher,
+        variant=variant,
+        end=date(2026, 1, 7),
+    )
+
+    assert result["exit_reason"] == "TRAILING_STOP"
+    assert result["exit_date"] == "2026-01-06"
+    assert result["exit_stage"] == "MATCH_FILLED"
+
+
 def test_build_normandy_bof_control_exit_digest_marks_material_exit_damage() -> None:
     digest = build_normandy_bof_control_exit_digest(
         {

@@ -30,6 +30,8 @@ class NormandyBofExitVariant:
     notes: str
     trailing_activation_delay_trade_days: int | None = None
     trailing_activation_profit_pct: float | None = None
+    trailing_loosen_profit_pct: float | None = None
+    trailing_stop_pct_after_loosen: float | None = None
 
 
 def build_normandy_bof_control_exit_variants(_config: Settings | None = None) -> list[NormandyBofExitVariant]:
@@ -471,7 +473,6 @@ def _simulate_counterfactual_exit(
             continue
 
         stop_loss_price = float(entry_price) * (1.0 - float(variant.stop_loss_pct))
-        trailing_price = float(max_price) * (1.0 - float(variant.trailing_stop_pct))
         hold_trade_days = _count_trade_days_between(entry_date, trade_day, trade_day_index)
         delay_gate_ready = (
             variant.trailing_activation_delay_trade_days is None
@@ -482,6 +483,15 @@ def _simulate_counterfactual_exit(
             or max_price >= float(entry_price) * (1.0 + float(variant.trailing_activation_profit_pct))
         )
         trailing_gate_ready = bool(delay_gate_ready and profit_gate_ready)
+        active_trailing_stop_pct = float(variant.trailing_stop_pct)
+        loosen_gate_ready = (
+            variant.trailing_loosen_profit_pct is not None
+            and variant.trailing_stop_pct_after_loosen is not None
+            and max_price >= float(entry_price) * (1.0 + float(variant.trailing_loosen_profit_pct))
+        )
+        if loosen_gate_ready:
+            active_trailing_stop_pct = float(variant.trailing_stop_pct_after_loosen)
+        trailing_price = float(max_price) * (1.0 - active_trailing_stop_pct)
         trigger_reason: str | None = None
         if float(close_price) <= stop_loss_price:
             trigger_reason = "STOP_LOSS"
@@ -688,6 +698,8 @@ def _build_result_payload(
     trailing_stop_pct: float | None = None,
     trailing_activation_delay_trade_days: int | None = None,
     trailing_activation_profit_pct: float | None = None,
+    trailing_loosen_profit_pct: float | None = None,
+    trailing_stop_pct_after_loosen: float | None = None,
 ) -> dict[str, object]:
     summary = _summarize_exit_rows(rows)
     payload: dict[str, object] = {
@@ -698,6 +710,8 @@ def _build_result_payload(
         "trailing_stop_pct": trailing_stop_pct,
         "trailing_activation_delay_trade_days": trailing_activation_delay_trade_days,
         "trailing_activation_profit_pct": trailing_activation_profit_pct,
+        "trailing_loosen_profit_pct": trailing_loosen_profit_pct,
+        "trailing_stop_pct_after_loosen": trailing_stop_pct_after_loosen,
         **summary,
         "sample_rows": _normalize_rows(rows[:5]),
     }
@@ -821,6 +835,8 @@ def run_normandy_bof_control_exit_matrix(
                 trailing_stop_pct=float(variant.trailing_stop_pct),
                 trailing_activation_delay_trade_days=variant.trailing_activation_delay_trade_days,
                 trailing_activation_profit_pct=variant.trailing_activation_profit_pct,
+                trailing_loosen_profit_pct=variant.trailing_loosen_profit_pct,
+                trailing_stop_pct_after_loosen=variant.trailing_stop_pct_after_loosen,
             )
         )
 
