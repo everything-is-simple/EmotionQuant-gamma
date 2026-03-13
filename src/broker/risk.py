@@ -77,6 +77,7 @@ class RiskManager:
         self.store = store
         self.config = config
         self._mss_overlay_cache: dict[date, MssRiskOverlay] = {}
+        self._volatility_cache: dict[tuple[str, date, int], float | None] = {}
 
     def _next_trade_date(self, d: date) -> date | None:
         return self.store.next_trade_date(d)
@@ -109,6 +110,52 @@ class RiskManager:
     @staticmethod
     def _round_to_a_share_lot(quantity: float | int) -> int:
         return max(int(quantity) // 100 * 100, 0)
+
+    @staticmethod
+    def _clamp_position_pct(raw_pct: float, min_pct: float, max_pct: float) -> float:
+        lower = max(float(min_pct), 0.0)
+        upper = max(float(max_pct), lower)
+        return min(max(float(raw_pct), lower), upper)
+
+    def _estimate_realized_volatility_pct(
+        self,
+        code: str,
+        signal_date: date,
+        lookback_days: int,
+    ) -> float | None:
+        safe_lookback = max(int(lookback_days), 5)
+        cache_key = (code, signal_date, safe_lookback)
+        if cache_key in self._volatility_cache:
+            return self._volatility_cache[cache_key]
+
+        history = self.store.read_df(
+            """
+            SELECT date, adj_close
+            FROM l2_stock_adj_daily
+            WHERE code = ? AND date <= ?
+            ORDER BY date DESC
+            LIMIT ?
+            """,
+            (code, signal_date, safe_lookback + 1),
+        )
+        if history.empty or len(history) < 6:
+            self._volatility_cache[cache_key] = None
+            return None
+
+        ordered = history.sort_values("date")
+        closes = pd.to_numeric(ordered["adj_close"], errors="coerce")
+        returns = closes.pct_change().dropna()
+        if returns.empty:
+            self._volatility_cache[cache_key] = None
+            return None
+
+        realized_volatility = float(returns.std(ddof=0))
+        if realized_volatility <= 0:
+            self._volatility_cache[cache_key] = None
+            return None
+
+        self._volatility_cache[cache_key] = realized_volatility
+        return realized_volatility
 
     def _clamp_target_max_positions(self, multiplier: float) -> int:
         base = int(self.config.max_positions)
@@ -454,6 +501,7 @@ class RiskManager:
 
     def _calculate_position_size(
         self,
+        signal: Signal,
         est_price: float,
         state: BrokerRiskState,
         overlay: MssRiskOverlay,
@@ -466,14 +514,69 @@ class RiskManager:
         # - 风险预算：risk_per_trade_pct
         # - 单票容量：max_position_pct
         nav = state.cash + state.portfolio_market_value
+        max_notional = nav * overlay.max_position_pct
         if sizing_mode == "fixed_notional":
             target_notional = float(self.config.fixed_notional_amount)
             if target_notional <= 0:
                 target_notional = nav * float(self.config.max_position_pct)
-            return self._round_to_a_share_lot(target_notional / est_price)
+            return self._round_to_a_share_lot(min(target_notional, max_notional) / est_price)
+
+        if sizing_mode == "fixed_capital":
+            target_notional = float(self.config.fixed_capital_amount)
+            if target_notional <= 0:
+                target_notional = float(self.config.backtest_initial_cash) * 0.075
+            return self._round_to_a_share_lot(min(target_notional, max_notional) / est_price)
+
+        if sizing_mode == "fixed_ratio":
+            base_amount = float(self.config.fixed_ratio_base_amount)
+            if base_amount <= 0:
+                base_amount = float(self.config.backtest_initial_cash) * 0.05
+            delta_amount = max(float(self.config.fixed_ratio_delta_amount), base_amount)
+            equity_gain = max(nav - float(self.config.backtest_initial_cash), 0.0)
+            units = int(equity_gain // delta_amount) + 1
+            target_notional = base_amount * units
+            return self._round_to_a_share_lot(min(target_notional, max_notional) / est_price)
+
+        if sizing_mode == "fixed_unit":
+            return self._round_to_a_share_lot(max(int(self.config.fixed_unit_quantity), 100))
+
+        if sizing_mode == "williams_fixed_risk":
+            risk_budget = nav * max(float(self.config.williams_risk_per_trade_pct), 0.0)
+            loss_reference = max(
+                float(self.config.williams_loss_reference_pct),
+                float(self.config.stop_loss_pct),
+                0.01,
+            )
+            target_notional = risk_budget / loss_reference
+            return self._round_to_a_share_lot(min(target_notional, max_notional) / est_price)
+
+        if sizing_mode == "fixed_percentage":
+            target_position_pct = self._clamp_position_pct(
+                float(self.config.fixed_percentage_position_pct),
+                0.0,
+                float(self.config.max_position_pct),
+            )
+            return self._round_to_a_share_lot((nav * target_position_pct) / est_price)
+
+        if sizing_mode == "fixed_volatility":
+            realized_volatility = self._estimate_realized_volatility_pct(
+                signal.code,
+                signal.signal_date,
+                self.config.fixed_volatility_lookback_days,
+            )
+            if realized_volatility is None:
+                return self._round_to_a_share_lot(max_notional / est_price)
+            target_position_pct = self._clamp_position_pct(
+                float(self.config.fixed_volatility_target_pct) / max(realized_volatility, 0.005),
+                float(self.config.fixed_volatility_min_position_pct),
+                min(
+                    float(self.config.fixed_volatility_max_position_pct),
+                    float(self.config.max_position_pct),
+                ),
+            )
+            return self._round_to_a_share_lot((nav * target_position_pct) / est_price)
 
         risk_budget = nav * overlay.risk_per_trade_pct
-        max_notional = nav * overlay.max_position_pct
 
         # 用最小止损宽度估算风险仓位，避免分母接近 0。
         est_stop_pct = max(self.config.stop_loss_pct, 0.01)
@@ -537,7 +640,7 @@ class RiskManager:
                 overlay=overlay,
             )
 
-        target_quantity = self._calculate_position_size(float(est_price), state, overlay)
+        target_quantity = self._calculate_position_size(signal, float(est_price), state, overlay)
         if target_quantity < 100:
             min_lot_cost = self._estimate_buy_cost(float(est_price), 100)
             if min_lot_cost > state.cash + 1e-6:

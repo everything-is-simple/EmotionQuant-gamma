@@ -74,6 +74,23 @@ class Settings(BaseSettings):
     position_sizing_mode: str = Field(default="risk_budget", alias="POSITION_SIZING_MODE")
     fixed_lot_size: int = Field(default=100, alias="FIXED_LOT_SIZE")
     fixed_notional_amount: float = Field(default=0.0, alias="FIXED_NOTIONAL_AMOUNT")
+    fixed_capital_amount: float = Field(default=0.0, alias="FIXED_CAPITAL_AMOUNT")
+    fixed_ratio_base_amount: float = Field(default=0.0, alias="FIXED_RATIO_BASE_AMOUNT")
+    fixed_ratio_delta_amount: float = Field(default=250_000.0, alias="FIXED_RATIO_DELTA_AMOUNT")
+    fixed_unit_quantity: int = Field(default=1_000, alias="FIXED_UNIT_QUANTITY")
+    williams_risk_per_trade_pct: float = Field(default=0.005, alias="WILLIAMS_RISK_PER_TRADE_PCT")
+    williams_loss_reference_pct: float = Field(default=0.10, alias="WILLIAMS_LOSS_REFERENCE_PCT")
+    fixed_percentage_position_pct: float = Field(default=0.08, alias="FIXED_PERCENTAGE_POSITION_PCT")
+    fixed_volatility_lookback_days: int = Field(default=20, alias="FIXED_VOLATILITY_LOOKBACK_DAYS")
+    fixed_volatility_target_pct: float = Field(default=0.003, alias="FIXED_VOLATILITY_TARGET_PCT")
+    fixed_volatility_min_position_pct: float = Field(
+        default=0.03,
+        alias="FIXED_VOLATILITY_MIN_POSITION_PCT",
+    )
+    fixed_volatility_max_position_pct: float = Field(
+        default=0.10,
+        alias="FIXED_VOLATILITY_MAX_POSITION_PCT",
+    )
     risk_free_rate: float = Field(default=0.015, alias="RISK_FREE_RATE")
 
     # Build windows
@@ -267,8 +284,20 @@ class Settings(BaseSettings):
     @property
     def position_sizing_mode_normalized(self) -> str:
         label = self.position_sizing_mode.strip().lower()
-        if label in {"risk_budget", "single_lot", "fixed_notional"}:
-            return label
+        aliases = {
+            "risk_budget": "risk_budget",
+            "fixed_risk": "risk_budget",
+            "single_lot": "single_lot",
+            "fixed_notional": "fixed_notional",
+            "fixed_capital": "fixed_capital",
+            "fixed_ratio": "fixed_ratio",
+            "fixed_unit": "fixed_unit",
+            "williams_fixed_risk": "williams_fixed_risk",
+            "fixed_percentage": "fixed_percentage",
+            "fixed_volatility": "fixed_volatility",
+        }
+        if label in aliases:
+            return aliases[label]
         return "risk_budget"
 
     @property

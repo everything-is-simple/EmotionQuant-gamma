@@ -1,0 +1,85 @@
+from __future__ import annotations
+
+import argparse
+import sys
+from datetime import date
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from src.backtest.positioning_sizing_family import (
+    POSITIONING_SIZING_FAMILY_SCOPE,
+    build_positioning_sizing_family_digest,
+    read_positioning_sizing_family_payload,
+    write_positioning_sizing_family_evidence,
+)
+from src.run_metadata import build_artifact_name, build_run_id, sanitize_label
+
+
+def _parse_date(text: str) -> date:
+    return date.fromisoformat(text)
+
+
+def _resolve_latest_matrix_path(output_root: Path) -> Path:
+    candidates = sorted(
+        output_root.glob("*__sizing_family_matrix.json"),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    if not candidates:
+        raise FileNotFoundError(f"No sizing_family_matrix evidence found under {output_root}")
+    return candidates[0]
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Build Positioning P2 sizing family digest")
+    parser.add_argument(
+        "--matrix-path",
+        default=None,
+        help="Matrix JSON path; default resolves the latest positioning/03-execution/evidence/*__sizing_family_matrix.json",
+    )
+    parser.add_argument(
+        "--output",
+        default=None,
+        help="Output JSON path; default positioning/03-execution/evidence/<run_id>__sizing_family_digest.json",
+    )
+    return parser
+
+
+def main() -> int:
+    args = build_parser().parse_args()
+    output_root = REPO_ROOT / "positioning" / "03-execution" / "evidence"
+    matrix_path = (
+        Path(args.matrix_path).expanduser().resolve()
+        if args.matrix_path
+        else _resolve_latest_matrix_path(output_root)
+    )
+    matrix_payload = read_positioning_sizing_family_payload(matrix_path)
+    matrix_payload["matrix_path"] = str(matrix_path)
+    start = _parse_date(str(matrix_payload["start"]))
+    end = _parse_date(str(matrix_payload["end"]))
+    variant = sanitize_label("bof_control_no_irs_no_mss")
+    summary_run_id = build_run_id(
+        scope=f"{POSITIONING_SIZING_FAMILY_SCOPE}_digest",
+        mode="dtt",
+        variant=variant,
+        start=start,
+        end=end,
+    )
+    output_path = (
+        Path(args.output).expanduser().resolve()
+        if args.output
+        else output_root / build_artifact_name(summary_run_id, "sizing_family_digest", "json")
+    )
+
+    payload = build_positioning_sizing_family_digest(matrix_payload)
+    payload["summary_run_id"] = summary_run_id
+    path = write_positioning_sizing_family_evidence(output_path, payload)
+    print(f"positioning_sizing_family_digest={path}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
