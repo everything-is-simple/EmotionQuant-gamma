@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+from datetime import date
+
+import pandas as pd
+
 from src.backtest.positioning_sizing_family import (
+    _build_trade_path_metrics,
     build_positioning_sizing_family_digest,
     build_positioning_sizing_family_scenarios,
 )
 from src.config import Settings
+from src.data.store import Store
 
 
 def test_build_positioning_sizing_family_scenarios_covers_control_and_first_batch_families() -> None:
@@ -105,3 +111,76 @@ def test_build_positioning_sizing_family_digest_keeps_watch_when_improvement_is_
     assert digest["diagnosis"] == "watch_only_no_retained_candidate_yet"
     assert digest["leader"]["label"] == "FIXED_RATIO"
     assert digest["scorecard"][0]["verdict"] == "watch_candidate"
+
+
+def test_build_trade_path_metrics_uses_equity_curve_not_raw_pnl_curve(tmp_path) -> None:
+    db = tmp_path / "positioning-path-metrics.duckdb"
+    store = Store(db)
+    try:
+        store.bulk_upsert(
+            "l4_trades",
+            pd.DataFrame(
+                [
+                    {
+                        "trade_id": "t1",
+                        "order_id": "o1",
+                        "code": "000001",
+                        "execute_date": date(2026, 3, 3),
+                        "action": "BUY",
+                        "price": 10.0,
+                        "quantity": 100,
+                        "fee": 0.0,
+                        "pattern": "bof",
+                        "is_paper": False,
+                    },
+                    {
+                        "trade_id": "t2",
+                        "order_id": "o2",
+                        "code": "000001",
+                        "execute_date": date(2026, 3, 4),
+                        "action": "SELL",
+                        "price": 9.0,
+                        "quantity": 100,
+                        "fee": 0.0,
+                        "pattern": "bof",
+                        "is_paper": False,
+                    },
+                    {
+                        "trade_id": "t3",
+                        "order_id": "o3",
+                        "code": "000002",
+                        "execute_date": date(2026, 3, 5),
+                        "action": "BUY",
+                        "price": 10.0,
+                        "quantity": 100,
+                        "fee": 0.0,
+                        "pattern": "bof",
+                        "is_paper": False,
+                    },
+                    {
+                        "trade_id": "t4",
+                        "order_id": "o4",
+                        "code": "000002",
+                        "execute_date": date(2026, 3, 6),
+                        "action": "SELL",
+                        "price": 12.0,
+                        "quantity": 100,
+                        "fee": 0.0,
+                        "pattern": "bof",
+                        "is_paper": False,
+                    },
+                ]
+            ),
+        )
+
+        metrics = _build_trade_path_metrics(
+            store,
+            start=date(2026, 3, 3),
+            end=date(2026, 3, 6),
+            initial_cash=1_000_000.0,
+        )
+    finally:
+        store.close()
+
+    assert metrics["trade_sequence_max_drawdown"] is not None
+    assert float(metrics["trade_sequence_max_drawdown"]) < 0.001

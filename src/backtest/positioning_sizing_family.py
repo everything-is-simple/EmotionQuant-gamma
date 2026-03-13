@@ -66,7 +66,7 @@ def build_positioning_sizing_family_scenarios(
             notes="Fixed per-trade risk budget with stop-width anchor.",
             runtime_overrides={
                 "position_sizing_mode": "fixed_risk",
-                "risk_per_trade_pct": 0.004,
+                "risk_per_trade_pct": 0.0035,
             },
         ),
         PositioningSizingScenario(
@@ -75,7 +75,7 @@ def build_positioning_sizing_family_scenarios(
             notes="Fixed nominal capital allocation, independent from current NAV drift.",
             runtime_overrides={
                 "position_sizing_mode": "fixed_capital",
-                "fixed_capital_amount": starting_cash * 0.075,
+                "fixed_capital_amount": starting_cash * 0.055,
             },
         ),
         PositioningSizingScenario(
@@ -84,8 +84,8 @@ def build_positioning_sizing_family_scenarios(
             notes="Stepwise unit expansion as account equity rises above the baseline.",
             runtime_overrides={
                 "position_sizing_mode": "fixed_ratio",
-                "fixed_ratio_base_amount": starting_cash * 0.05,
-                "fixed_ratio_delta_amount": 250_000.0,
+                "fixed_ratio_base_amount": starting_cash * 0.035,
+                "fixed_ratio_delta_amount": 150_000.0,
             },
         ),
         PositioningSizingScenario(
@@ -94,7 +94,7 @@ def build_positioning_sizing_family_scenarios(
             notes="Fixed number of A-share lots per accepted BUY signal.",
             runtime_overrides={
                 "position_sizing_mode": "fixed_unit",
-                "fixed_unit_quantity": 1_000,
+                "fixed_unit_quantity": 800,
             },
         ),
         PositioningSizingScenario(
@@ -103,8 +103,8 @@ def build_positioning_sizing_family_scenarios(
             notes="Williams-style fixed risk using a wider loss reference than the current hard stop.",
             runtime_overrides={
                 "position_sizing_mode": "williams_fixed_risk",
-                "williams_risk_per_trade_pct": 0.005,
-                "williams_loss_reference_pct": 0.10,
+                "williams_risk_per_trade_pct": 0.007,
+                "williams_loss_reference_pct": 0.20,
             },
         ),
         PositioningSizingScenario(
@@ -113,7 +113,7 @@ def build_positioning_sizing_family_scenarios(
             notes="Fixed account percentage allocated to each BUY signal.",
             runtime_overrides={
                 "position_sizing_mode": "fixed_percentage",
-                "fixed_percentage_position_pct": 0.08,
+                "fixed_percentage_position_pct": 0.045,
             },
         ),
         PositioningSizingScenario(
@@ -123,9 +123,9 @@ def build_positioning_sizing_family_scenarios(
             runtime_overrides={
                 "position_sizing_mode": "fixed_volatility",
                 "fixed_volatility_lookback_days": 20,
-                "fixed_volatility_target_pct": 0.003,
-                "fixed_volatility_min_position_pct": 0.03,
-                "fixed_volatility_max_position_pct": float(config.max_position_pct),
+                "fixed_volatility_target_pct": 0.0020,
+                "fixed_volatility_min_position_pct": 0.025,
+                "fixed_volatility_max_position_pct": min(float(config.max_position_pct), 0.07),
             },
         ),
     ]
@@ -153,7 +153,12 @@ def _load_trades_for_path_metrics(store: Store, start: date, end: date) -> pd.Da
     return _load_trades(store, start, end)
 
 
-def _build_trade_path_metrics(store: Store, start: date, end: date) -> dict[str, float | int | None]:
+def _build_trade_path_metrics(
+    store: Store,
+    start: date,
+    end: date,
+    initial_cash: float,
+) -> dict[str, float | int | None]:
     trades = _load_trades_for_path_metrics(store, start, end)
     paired = _pair_trades(trades)
     if paired.empty:
@@ -167,9 +172,9 @@ def _build_trade_path_metrics(store: Store, start: date, end: date) -> dict[str,
         }
 
     ordered = paired.sort_values(["exit_date", "code", "entry_date"])
-    curve = ordered["pnl"].cumsum()
-    running_peak = curve.cummax()
-    drawdown = (running_peak - curve) / running_peak.replace(0, pd.NA)
+    equity_curve = float(initial_cash) + ordered["pnl"].cumsum()
+    running_peak = equity_curve.cummax()
+    drawdown = (running_peak - equity_curve) / running_peak.replace(0, pd.NA)
     drawdown = drawdown.fillna(0.0)
 
     max_consecutive_loss_count = 0
@@ -223,7 +228,7 @@ def _build_result_payload(
     order_metrics = _buy_order_diagnostics(orders)
     buy_metrics = _buy_trade_metrics(buys, initial_cash)
     trace_metrics = _overlay_diagnostics(trace)
-    path_metrics = _build_trade_path_metrics(store, start, end)
+    path_metrics = _build_trade_path_metrics(store, start, end, initial_cash)
 
     avg_entry_notional_pct_initial_cash = buy_metrics.get("avg_entry_notional_pct_initial_cash")
     exposure_utilization = None
