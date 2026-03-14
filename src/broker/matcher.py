@@ -87,6 +87,11 @@ class Matcher:
             fee=fee,
             pattern=order.pattern,
             is_paper=order.is_paper,
+            position_id=order.position_id,
+            exit_plan_id=order.exit_plan_id,
+            exit_leg_id=order.exit_leg_id,
+            exit_leg_seq=order.exit_leg_seq,
+            exit_reason_code=order.exit_reason_code,
+            is_partial_exit=order.is_partial_exit,
         )
         return trade, None
-

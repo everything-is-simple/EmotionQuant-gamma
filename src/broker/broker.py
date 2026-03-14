@@ -13,7 +13,9 @@ from src.contracts import (
     Order,
     Signal,
     Trade,
+    build_exit_leg_id,
     build_exit_order_id,
+    build_exit_plan_id,
     build_exit_signal_id,
     build_order_id,
     resolve_order_origin,
@@ -31,6 +33,30 @@ class Position:
     max_price: float
     pattern: str
     is_paper: bool = False
+    position_id: str | None = None
+    entry_signal_id: str | None = None
+    entry_order_id: str | None = None
+    entry_trade_id: str | None = None
+    initial_quantity: int | None = None
+    exit_leg_filled_count: int = 0
+    last_exit_date: date | None = None
+    last_exit_reason: str | None = None
+    state: str = "OPEN"
+    active_exit_plan_id: str | None = None
+    active_exit_leg_count: int = 0
+
+    def __post_init__(self) -> None:
+        if self.initial_quantity is None:
+            self.initial_quantity = int(self.quantity)
+
+    @property
+    def remaining_quantity(self) -> int:
+        # `quantity` 仍是当前持仓的兼容存储位；P6 起显式暴露 remaining_quantity 语义。
+        return int(self.quantity)
+
+    @remaining_quantity.setter
+    def remaining_quantity(self, value: int) -> None:
+        self.quantity = int(value)
 
 
 class Broker:
@@ -51,7 +77,7 @@ class Broker:
         self.matcher = Matcher(config)
 
     def _portfolio_market_value(self) -> float:
-        return sum(pos.current_price * pos.quantity for pos in self.portfolio.values() if not pos.is_paper)
+        return sum(pos.current_price * pos.remaining_quantity for pos in self.portfolio.values() if not pos.is_paper)
 
     def record_lifecycle_events(self, rows: list[dict[str, object]]) -> None:
         if not rows:
@@ -96,6 +122,15 @@ class Broker:
                     "quantity": int(order.quantity),
                     "price": price,
                     "is_paper": order.is_paper,
+                    "position_id": order.position_id,
+                    "exit_plan_id": order.exit_plan_id,
+                    "exit_leg_id": order.exit_leg_id,
+                    "exit_leg_seq": order.exit_leg_seq,
+                    "exit_leg_count": order.exit_leg_count,
+                    "exit_reason_code": order.exit_reason_code,
+                    "is_partial_exit": bool(order.is_partial_exit),
+                    "remaining_qty_before": order.remaining_qty_before,
+                    "remaining_qty_after": None if trade is None else trade.remaining_qty_after,
                 }
             ]
         )
@@ -305,9 +340,154 @@ class Broker:
         value = float(row.iloc[0]["adj_close"] or 0.0)
         return value if value > 0 else None
 
-    def _has_pending_sell(self, code: str) -> bool:
+    def _has_pending_sell(self, position: Position) -> bool:
         return any(
-            o.status == "PENDING" and o.action == "SELL" and o.code == code for o in self.pending_orders
+            o.status == "PENDING"
+            and o.action == "SELL"
+            and (
+                (position.position_id is not None and o.position_id == position.position_id)
+                or (o.position_id is None and o.code == position.code)
+            )
+            for o in self.pending_orders
+        )
+
+    def _resolve_partial_exit_quantity(self, remaining_qty: int) -> int | None:
+        ratio = float(self.config.partial_exit_scale_out_ratio)
+        ratio = min(max(ratio, 0.0), 1.0)
+        target_qty = int(remaining_qty * ratio)
+        partial_qty = (target_qty // 100) * 100
+        if partial_qty <= 0:
+            return None
+        remaining_after = remaining_qty - partial_qty
+        if remaining_after < 100:
+            return None
+        return partial_qty
+
+    def _build_exit_order(self, position: Position, signal_date: date, execute_date: date, exit_reason: str) -> Order:
+        remaining_before = int(position.remaining_quantity)
+        control_mode = self.config.exit_control_mode_normalized
+        exit_plan_id: str | None = None
+        exit_leg_id: str | None = None
+        exit_leg_seq: int | None = None
+        exit_leg_count: int | None = None
+        is_partial_exit = False
+        quantity = remaining_before
+        target_qty_after = 0
+
+        if (
+            exit_reason == "TRAILING_STOP"
+            and control_mode == "naive_trail_scale_out_50_50_control"
+            and position.exit_leg_filled_count == 0
+        ):
+            partial_qty = self._resolve_partial_exit_quantity(remaining_before)
+            if partial_qty is not None:
+                quantity = partial_qty
+                target_qty_after = remaining_before - partial_qty
+                exit_plan_id = position.active_exit_plan_id or build_exit_plan_id(
+                    position.position_id or position.code,
+                    signal_date,
+                    exit_reason,
+                )
+                exit_leg_seq = 1
+                exit_leg_count = 2
+                is_partial_exit = True
+        elif (
+            exit_reason == "TRAILING_STOP"
+            and control_mode == "naive_trail_scale_out_50_50_control"
+            and position.exit_leg_filled_count > 0
+            and position.active_exit_plan_id is not None
+        ):
+            exit_plan_id = position.active_exit_plan_id
+            exit_leg_seq = position.exit_leg_filled_count + 1
+            exit_leg_count = max(int(position.active_exit_leg_count), int(exit_leg_seq))
+            is_partial_exit = True
+        if exit_plan_id is not None and exit_leg_seq is not None:
+            exit_leg_id = build_exit_leg_id(exit_plan_id, exit_leg_seq)
+
+        order_id = build_exit_order_id(
+            position.code,
+            signal_date,
+            exit_reason,
+            exit_plan_id=exit_plan_id,
+            exit_leg_seq=exit_leg_seq,
+        )
+        return Order(
+            order_id=order_id,
+            signal_id=build_exit_signal_id(position.code, signal_date, exit_reason),
+            code=position.code,
+            action="SELL",
+            quantity=int(quantity),
+            execute_date=execute_date,
+            pattern=position.pattern,
+            status="PENDING",
+            position_id=position.position_id,
+            exit_plan_id=exit_plan_id,
+            exit_leg_id=exit_leg_id,
+            exit_leg_seq=exit_leg_seq,
+            exit_leg_count=exit_leg_count,
+            exit_reason_code=exit_reason,
+            is_partial_exit=is_partial_exit,
+            remaining_qty_before=remaining_before,
+            target_qty_after=target_qty_after,
+        )
+
+    def _mark_position_exit_pending(self, order: Order) -> None:
+        if order.action != "SELL":
+            return
+        position = self.portfolio.get(order.code)
+        if position is None:
+            return
+        if position.position_id is not None and order.position_id != position.position_id:
+            return
+        if order.is_partial_exit and (order.target_qty_after or 0) > 0:
+            position.state = "PARTIAL_EXIT_PENDING"
+            position.active_exit_plan_id = order.exit_plan_id
+            position.active_exit_leg_count = int(order.exit_leg_count or 0)
+        else:
+            position.state = "FULL_EXIT_PENDING"
+        self.portfolio[order.code] = position
+
+    def _restore_position_after_sell_cancel(self, order: Order) -> None:
+        if order.action != "SELL":
+            return
+        position = self.portfolio.get(order.code)
+        if position is None:
+            return
+        if position.position_id is not None and order.position_id != position.position_id:
+            return
+        if int(position.remaining_quantity) < int(position.initial_quantity or position.remaining_quantity):
+            position.state = "OPEN_REDUCED"
+        else:
+            position.state = "OPEN"
+        if position.exit_leg_filled_count <= 0:
+            position.active_exit_plan_id = None
+            position.active_exit_leg_count = 0
+        self.portfolio[order.code] = position
+
+    def _bind_trade_identity(self, order: Order, trade: Trade) -> Trade:
+        if order.action == "BUY":
+            position_id = order.position_id or order.order_id
+            return trade.model_copy(
+                update={
+                    "position_id": position_id,
+                    "remaining_qty_after": int(order.quantity),
+                }
+            )
+
+        position = self.portfolio.get(order.code)
+        remaining_after = None
+        if position is not None and (order.position_id is None or position.position_id == order.position_id):
+            remaining_after = max(0, int(position.remaining_quantity) - int(trade.quantity))
+        return trade.model_copy(
+            update={
+                "position_id": order.position_id,
+                "exit_plan_id": order.exit_plan_id,
+                "exit_leg_id": order.exit_leg_id,
+                "exit_leg_seq": order.exit_leg_seq,
+                "exit_reason_code": order.exit_reason_code,
+                "is_partial_exit": bool(order.is_partial_exit),
+                "remaining_qty_after": remaining_after,
+            }
         )
 
     def _pending_trade_days_elapsed(self, execute_date: date, today: date) -> int:
@@ -353,7 +533,7 @@ class Broker:
 
         orders: list[Order] = []
         for code, pos in list(self.portfolio.items()):
-            if self._has_pending_sell(code):
+            if self._has_pending_sell(pos):
                 continue
 
             close_price = self._resolve_adj_close(code, signal_date)
@@ -382,20 +562,10 @@ class Broker:
             if exit_reason is None:
                 continue
 
-            signal_id = build_exit_signal_id(code, signal_date, exit_reason)
-            order_id = build_exit_order_id(code, signal_date, exit_reason)
-            order = Order(
-                order_id=order_id,
-                signal_id=signal_id,
-                code=code,
-                action="SELL",
-                quantity=int(pos.quantity),
-                execute_date=execute_date,
-                pattern=pos.pattern,
-                status="PENDING",
-            )
+            order = self._build_exit_order(pos, signal_date, execute_date, exit_reason)
             orders.append(order)
             self.add_pending_order(order)
+            self._mark_position_exit_pending(order)
             self._record_lifecycle_event(
                 order,
                 event_stage="EXIT_ORDER_CREATED",
@@ -419,22 +589,33 @@ class Broker:
                 max_price=trade.price,
                 pattern=trade.pattern,
                 is_paper=trade.is_paper,
+                position_id=trade.position_id or trade.order_id,
+                entry_signal_id=trade.order_id,
+                entry_order_id=trade.order_id,
+                entry_trade_id=trade.trade_id,
+                initial_quantity=trade.quantity,
+                state="OPEN",
             )
             return
 
-        # v0.01 SELL 简化：默认全平，后续可扩展部分减仓。
         pos = self.portfolio.get(trade.code)
         if pos is None:
             return
-        qty = min(pos.quantity, trade.quantity)
+        if pos.position_id is not None and trade.position_id != pos.position_id:
+            return
+        qty = min(pos.remaining_quantity, trade.quantity)
         self.cash += trade.price * qty - trade.fee
-        remain = pos.quantity - qty
+        remain = pos.remaining_quantity - qty
+        pos.exit_leg_filled_count += 1
+        pos.last_exit_date = trade.execute_date
+        pos.last_exit_reason = trade.exit_reason_code
         if remain <= 0:
             self.portfolio.pop(trade.code, None)
         else:
-            pos.quantity = remain
+            pos.remaining_quantity = remain
             pos.current_price = trade.price
             pos.max_price = max(pos.max_price, trade.price)
+            pos.state = "OPEN_REDUCED"
             self.portfolio[trade.code] = pos
 
     def execute_pending_orders(self, trade_date: date) -> list[Trade]:
@@ -470,6 +651,7 @@ class Broker:
             trade, reject_reason = self.matcher.execute(order, bar or {}, trade_date)
             if trade is None:
                 rejected = self._mark_order_status(order, "REJECTED", reject_reason)
+                self._restore_position_after_sell_cancel(rejected)
                 self._record_lifecycle_event(
                     rejected,
                     event_stage="MATCH_REJECTED",
@@ -491,6 +673,9 @@ class Broker:
                     )
                     continue
 
+            if order.action == "BUY":
+                order = order.model_copy(update={"position_id": order.position_id or order.order_id})
+            trade = self._bind_trade_identity(order, trade)
             filled = self._mark_order_status(order, "FILLED")
             self._record_lifecycle_event(
                 filled,
@@ -499,7 +684,7 @@ class Broker:
                 reason_code="FILLED",
                 trade=trade,
                 price=float(trade.price),
-            )
+                )
             trades.append(trade)
             self._apply_position_trade(trade)
 
@@ -522,6 +707,7 @@ class Broker:
             elapsed_trade_days = self._pending_trade_days_elapsed(order.execute_date, today)
             if elapsed_trade_days >= max_pending_trade_days:
                 expired_order = self._mark_order_status(order, "EXPIRED", "ORDER_TIMEOUT")
+                self._restore_position_after_sell_cancel(expired_order)
                 self._record_lifecycle_event(
                     expired_order,
                     event_stage="ORDER_EXPIRED",

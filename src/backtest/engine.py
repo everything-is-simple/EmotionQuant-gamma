@@ -93,7 +93,7 @@ def _force_close_all(store: Store, broker: Broker, trade_date: date) -> int:
         # 强平卖出也计入卖出侧滑点与交易成本。
         slip = broker.config.slippage_bps / 10000.0
         sell_price = close_price * (1 - slip)
-        fee = broker.matcher._calculate_fee(sell_price * pos.quantity, "SELL")
+        fee = broker.matcher._calculate_fee(sell_price * pos.remaining_quantity, "SELL")
 
         order_id = build_force_close_order_id(code, trade_date)
         order = Order(
@@ -101,11 +101,16 @@ def _force_close_all(store: Store, broker: Broker, trade_date: date) -> int:
             signal_id=order_id,
             code=code,
             action="SELL",
-            quantity=int(pos.quantity),
+            quantity=int(pos.remaining_quantity),
             execute_date=trade_date,
             pattern=pos.pattern,
             is_paper=pos.is_paper,
             status="FILLED",
+            position_id=pos.position_id,
+            exit_reason_code="FORCE_CLOSE",
+            is_partial_exit=False,
+            remaining_qty_before=int(pos.remaining_quantity),
+            target_qty_after=0,
         )
         trade = Trade(
             trade_id=build_trade_id(order_id),
@@ -114,10 +119,14 @@ def _force_close_all(store: Store, broker: Broker, trade_date: date) -> int:
             execute_date=trade_date,
             action="SELL",
             price=sell_price,
-            quantity=int(pos.quantity),
+            quantity=int(pos.remaining_quantity),
             fee=fee,
             pattern=pos.pattern,
             is_paper=pos.is_paper,
+            position_id=pos.position_id,
+            exit_reason_code="FORCE_CLOSE",
+            is_partial_exit=False,
+            remaining_qty_after=0,
         )
         orders.append(order)
         trades.append(trade)
@@ -139,6 +148,15 @@ def _force_close_all(store: Store, broker: Broker, trade_date: date) -> int:
                 "quantity": int(order.quantity),
                 "price": float(trade.price),
                 "is_paper": order.is_paper,
+                "position_id": order.position_id,
+                "exit_plan_id": order.exit_plan_id,
+                "exit_leg_id": order.exit_leg_id,
+                "exit_leg_seq": order.exit_leg_seq,
+                "exit_leg_count": order.exit_leg_count,
+                "exit_reason_code": order.exit_reason_code,
+                "is_partial_exit": bool(order.is_partial_exit),
+                "remaining_qty_before": order.remaining_qty_before,
+                "remaining_qty_after": trade.remaining_qty_after,
             }
         )
 

@@ -2439,3 +2439,253 @@ def test_risk_manager_fixed_notional_sizing_uses_configured_notional(tmp_path) -
     assert decision.order is not None
     assert decision.order.quantity == 1200
     store.close()
+
+
+def test_broker_trailing_stop_naive_scale_out_50_50_creates_partial_exit_leg(tmp_path) -> None:
+    db = tmp_path / "test_partial_exit_first_leg.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+    cfg = Settings(
+        BACKTEST_INITIAL_CASH=1_000_000,
+        STOP_LOSS_PCT=0.05,
+        TRAILING_STOP_PCT=0.10,
+        EXIT_CONTROL_MODE="naive_trail_scale_out_50_50_control",
+    )
+    broker = Broker(store, cfg, run_id="partial_exit_first_leg")
+
+    _seed_trade_calendar(store, signal_date, exec_date)
+    store.bulk_upsert(
+        "l2_stock_adj_daily",
+        pd.DataFrame(
+            [
+                {
+                    "code": "000001",
+                    "date": signal_date,
+                    "adj_open": 10.8,
+                    "adj_high": 10.9,
+                    "adj_low": 10.7,
+                    "adj_close": 10.8,
+                    "volume": 10000,
+                    "amount": 1e8,
+                    "pct_chg": -0.04,
+                    "ma5": 10.0,
+                    "ma10": 10.0,
+                    "ma20": 10.0,
+                    "ma60": 10.0,
+                    "volume_ma5": 10000,
+                    "volume_ma20": 10000,
+                    "volume_ratio": 1.0,
+                },
+                {
+                    "code": "000001",
+                    "date": exec_date,
+                    "adj_open": 10.7,
+                    "adj_high": 10.8,
+                    "adj_low": 10.6,
+                    "adj_close": 10.7,
+                    "volume": 11000,
+                    "amount": 1e8,
+                    "pct_chg": -0.01,
+                    "ma5": 10.0,
+                    "ma10": 10.0,
+                    "ma20": 10.0,
+                    "ma60": 10.0,
+                    "volume_ma5": 10000,
+                    "volume_ma20": 10000,
+                    "volume_ratio": 1.0,
+                },
+            ]
+        ),
+    )
+    store.bulk_upsert(
+        "l1_stock_daily",
+        pd.DataFrame(
+            [
+                {
+                    "ts_code": "000001.SZ",
+                    "date": exec_date,
+                    "open": 10.7,
+                    "high": 10.8,
+                    "low": 10.6,
+                    "close": 10.7,
+                    "pre_close": 10.8,
+                    "volume": 10000,
+                    "amount": 1e8,
+                    "pct_chg": -0.01,
+                    "adj_factor": 1.0,
+                    "is_halt": False,
+                    "up_limit": 11.88,
+                    "down_limit": 9.72,
+                    "total_mv": 1e6,
+                    "circ_mv": 8e5,
+                }
+            ]
+        ),
+    )
+    broker.portfolio["000001"] = Position(
+        code="000001",
+        entry_date=date(2026, 3, 1),
+        entry_price=10.0,
+        quantity=200,
+        current_price=12.0,
+        max_price=12.0,
+        pattern="bof",
+        position_id="BUY_000001",
+        entry_signal_id="BUY_000001",
+        entry_order_id="BUY_000001",
+        entry_trade_id="BUY_000001_T",
+        initial_quantity=200,
+    )
+
+    orders = broker.generate_exit_orders(signal_date)
+
+    assert len(orders) == 1
+    order = orders[0]
+    assert order.exit_reason_code == "TRAILING_STOP"
+    assert order.is_partial_exit is True
+    assert order.exit_leg_id == "BUY_000001_2026-03-03_trailing_stop_L01"
+    assert order.exit_leg_seq == 1
+    assert order.exit_leg_count == 2
+    assert order.quantity == 100
+    assert order.target_qty_after == 100
+
+    trades = broker.execute_pending_orders(exec_date)
+
+    assert len(trades) == 1
+    trade = trades[0]
+    assert trade.position_id == "BUY_000001"
+    assert trade.exit_leg_id == "BUY_000001_2026-03-03_trailing_stop_L01"
+    assert trade.exit_leg_seq == 1
+    assert trade.exit_reason_code == "TRAILING_STOP"
+    assert trade.is_partial_exit is True
+    assert trade.remaining_qty_after == 100
+    assert broker.portfolio["000001"].quantity == 100
+    assert broker.portfolio["000001"].remaining_quantity == 100
+    assert broker.portfolio["000001"].state == "OPEN_REDUCED"
+
+    trace = store.get_broker_lifecycle_trace("partial_exit_first_leg", order.order_id)
+    assert set(trace["event_stage"].tolist()) == {"EXIT_ORDER_CREATED", "MATCH_FILLED"}
+    assert trace.iloc[0]["position_id"] == "BUY_000001"
+    assert trace.iloc[0]["exit_leg_id"] == "BUY_000001_2026-03-03_trailing_stop_L01"
+    store.close()
+
+
+def test_broker_naive_scale_out_degrades_to_full_exit_when_lot_split_invalid(tmp_path) -> None:
+    db = tmp_path / "test_partial_exit_degenerate.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+    cfg = Settings(
+        BACKTEST_INITIAL_CASH=1_000_000,
+        STOP_LOSS_PCT=0.05,
+        TRAILING_STOP_PCT=0.10,
+        EXIT_CONTROL_MODE="naive_trail_scale_out_50_50_control",
+    )
+    broker = Broker(store, cfg)
+
+    _seed_trade_calendar(store, signal_date, exec_date)
+    _seed_adj_daily(
+        store,
+        [
+            {
+                "code": "000001",
+                "date": signal_date,
+                "adj_open": 10.8,
+                "adj_high": 10.9,
+                "adj_low": 10.7,
+                "adj_close": 10.8,
+                "volume": 10000,
+                "amount": 1e8,
+                "pct_chg": -0.04,
+                "ma5": 10.0,
+                "ma10": 10.0,
+                "ma20": 10.0,
+                "ma60": 10.0,
+                "volume_ma5": 10000,
+                "volume_ma20": 10000,
+                "volume_ratio": 1.0,
+            }
+        ],
+    )
+    broker.portfolio["000001"] = Position(
+        code="000001",
+        entry_date=date(2026, 3, 1),
+        entry_price=10.0,
+        quantity=100,
+        current_price=12.0,
+        max_price=12.0,
+        pattern="bof",
+        position_id="BUY_000001",
+        initial_quantity=100,
+    )
+
+    orders = broker.generate_exit_orders(signal_date)
+
+    assert len(orders) == 1
+    order = orders[0]
+    assert order.exit_reason_code == "TRAILING_STOP"
+    assert order.is_partial_exit is False
+    assert order.quantity == 100
+    assert order.target_qty_after == 0
+    store.close()
+
+
+def test_broker_stop_loss_remains_hard_full_exit_under_partial_exit_control(tmp_path) -> None:
+    db = tmp_path / "test_stop_loss_full_exit.duckdb"
+    store = Store(db)
+    signal_date = date(2026, 3, 3)
+    exec_date = date(2026, 3, 4)
+    cfg = Settings(
+        BACKTEST_INITIAL_CASH=1_000_000,
+        STOP_LOSS_PCT=0.05,
+        TRAILING_STOP_PCT=0.10,
+        EXIT_CONTROL_MODE="naive_trail_scale_out_50_50_control",
+    )
+    broker = Broker(store, cfg)
+
+    _seed_trade_calendar(store, signal_date, exec_date)
+    _seed_adj_daily(
+        store,
+        [
+            {
+                "code": "000001",
+                "date": signal_date,
+                "adj_open": 9.4,
+                "adj_high": 9.5,
+                "adj_low": 9.3,
+                "adj_close": 9.4,
+                "volume": 10000,
+                "amount": 1e8,
+                "pct_chg": -0.06,
+                "ma5": 10.0,
+                "ma10": 10.0,
+                "ma20": 10.0,
+                "ma60": 10.0,
+                "volume_ma5": 10000,
+                "volume_ma20": 10000,
+                "volume_ratio": 1.0,
+            }
+        ],
+    )
+    broker.portfolio["000001"] = Position(
+        code="000001",
+        entry_date=date(2026, 3, 1),
+        entry_price=10.0,
+        quantity=200,
+        current_price=10.0,
+        max_price=12.0,
+        pattern="bof",
+        position_id="BUY_000001",
+        initial_quantity=200,
+    )
+
+    orders = broker.generate_exit_orders(signal_date)
+
+    assert len(orders) == 1
+    order = orders[0]
+    assert order.exit_reason_code == "STOP_LOSS"
+    assert order.is_partial_exit is False
+    assert order.quantity == 200
+    assert order.target_qty_after == 0
+    store.close()

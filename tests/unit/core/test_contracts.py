@@ -7,7 +7,9 @@ from src.contracts import (
     Signal,
     StockCandidate,
     Trade,
+    build_exit_leg_id,
     build_exit_order_id,
+    build_exit_plan_id,
     build_exit_signal_id,
     build_force_close_order_id,
     build_order_id,
@@ -79,3 +81,53 @@ def test_resolve_order_origin_distinguishes_upstream_exit_and_force_close() -> N
         == "EXIT_TRAILING_STOP"
     )
     assert resolve_order_origin(force_close_order_id, force_close_order_id) == "FORCE_CLOSE"
+
+
+def test_partial_exit_identity_builders_and_contract_fields_roundtrip() -> None:
+    d = date(2026, 3, 4)
+    position_id = "BUY_000001"
+    exit_plan_id = build_exit_plan_id(position_id, d, "TRAILING_STOP")
+    exit_leg_id = build_exit_leg_id(exit_plan_id, 1)
+    order_id = build_exit_order_id("000001", d, "TRAILING_STOP", exit_plan_id=exit_plan_id, exit_leg_seq=1)
+
+    order = Order(
+        order_id=order_id,
+        signal_id=build_exit_signal_id("000001", d, "TRAILING_STOP"),
+        code="000001",
+        action="SELL",
+        quantity=100,
+        execute_date=d,
+        pattern="bof",
+        position_id=position_id,
+        exit_plan_id=exit_plan_id,
+        exit_leg_id=exit_leg_id,
+        exit_leg_seq=1,
+        exit_leg_count=2,
+        exit_reason_code="TRAILING_STOP",
+        is_partial_exit=True,
+        remaining_qty_before=200,
+        target_qty_after=100,
+    )
+    trade = Trade(
+        trade_id=build_trade_id(order_id),
+        order_id=order_id,
+        code="000001",
+        execute_date=d,
+        action="SELL",
+        price=10.0,
+        quantity=100,
+        fee=5.0,
+        pattern="bof",
+        position_id=position_id,
+        exit_plan_id=exit_plan_id,
+        exit_leg_id=exit_leg_id,
+        exit_leg_seq=1,
+        exit_reason_code="TRAILING_STOP",
+        is_partial_exit=True,
+        remaining_qty_after=100,
+    )
+
+    assert exit_plan_id == "BUY_000001_2026-03-04_trailing_stop"
+    assert exit_leg_id == "BUY_000001_2026-03-04_trailing_stop_L01"
+    assert order.exit_leg_id == exit_leg_id
+    assert trade.exit_leg_id == exit_leg_id

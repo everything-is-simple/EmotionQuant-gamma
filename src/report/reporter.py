@@ -14,7 +14,24 @@ from src.logging_utils import logger
 def _load_trades(store: Store, start: date, end: date) -> pd.DataFrame:
     return store.read_df(
         """
-        SELECT trade_id, order_id, code, execute_date, action, price, quantity, fee, pattern, is_paper
+        SELECT
+            trade_id,
+            order_id,
+            code,
+            execute_date,
+            action,
+            price,
+            quantity,
+            fee,
+            pattern,
+            is_paper,
+            position_id,
+            exit_plan_id,
+            exit_leg_id,
+            exit_leg_seq,
+            exit_reason_code,
+            is_partial_exit,
+            remaining_qty_after
         FROM l4_trades
         WHERE execute_date BETWEEN ? AND ?
         ORDER BY execute_date, trade_id
@@ -38,13 +55,30 @@ def _pair_trades(trades_df: pd.DataFrame) -> pd.DataFrame:
                 "quantity",
                 "pnl",
                 "pnl_pct",
+                "position_id",
+                "entry_leg_id",
+                "exit_leg_id",
+                "exit_leg_seq",
+                "exit_reason",
+                "is_partial_exit",
             ]
         )
 
     pairs: list[dict] = []
-    for code, group in trades_df.groupby("code"):
+    normalized = trades_df.copy()
+    for column, default in (
+        ("position_id", None),
+        ("exit_leg_id", None),
+        ("exit_leg_seq", None),
+        ("exit_reason_code", None),
+        ("is_partial_exit", False),
+    ):
+        if column not in normalized.columns:
+            normalized[column] = default
+    normalized["position_key"] = normalized["position_id"].fillna(normalized["code"])
+    for position_key, group in normalized.groupby("position_key"):
         ordered = group.sort_values(["execute_date", "trade_id"])
-        buy_queue: deque[dict] = deque()
+        buy_queue: deque[dict[str, object]] = deque()
 
         for row in ordered.itertuples(index=False):
             qty = int(row.quantity)
@@ -60,6 +94,8 @@ def _pair_trades(trades_df: pd.DataFrame) -> pd.DataFrame:
                         "fee": float(row.fee or 0.0),
                         "entry_date": row.execute_date,
                         "pattern": row.pattern,
+                        "position_id": row.position_id,
+                        "entry_trade_id": row.trade_id,
                     }
                 )
                 continue
@@ -79,13 +115,21 @@ def _pair_trades(trades_df: pd.DataFrame) -> pd.DataFrame:
 
                 pairs.append(
                     {
-                        "code": code,
+                        "code": row.code,
                         "entry_date": buy["entry_date"],
                         "exit_date": row.execute_date,
                         "pattern": buy["pattern"],
                         "quantity": matched_qty,
                         "pnl": pnl,
                         "pnl_pct": pnl_pct,
+                        "position_id": buy["position_id"] or row.position_id or position_key,
+                        "entry_leg_id": buy["entry_trade_id"],
+                        "entry_trade_id": buy["entry_trade_id"],
+                        "exit_trade_id": row.trade_id,
+                        "exit_leg_id": row.exit_leg_id,
+                        "exit_leg_seq": row.exit_leg_seq,
+                        "exit_reason": row.exit_reason_code,
+                        "is_partial_exit": bool(row.is_partial_exit),
                     }
                 )
 
@@ -96,7 +140,21 @@ def _pair_trades(trades_df: pd.DataFrame) -> pd.DataFrame:
 
     if not pairs:
         return pd.DataFrame(
-            columns=["code", "entry_date", "exit_date", "pattern", "quantity", "pnl", "pnl_pct"]
+            columns=[
+                "code",
+                "entry_date",
+                "exit_date",
+                "pattern",
+                "quantity",
+                "pnl",
+                "pnl_pct",
+                "position_id",
+                "entry_leg_id",
+                "exit_leg_id",
+                "exit_leg_seq",
+                "exit_reason",
+                "is_partial_exit",
+            ]
         )
     return pd.DataFrame(pairs)
 

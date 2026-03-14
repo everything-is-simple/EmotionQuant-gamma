@@ -72,6 +72,8 @@ class Settings(BaseSettings):
     max_position_pct: float = Field(default=0.10, alias="MAX_POSITION_PCT")
     max_positions: int = Field(default=10, alias="MAX_POSITIONS")
     position_sizing_mode: str = Field(default="risk_budget", alias="POSITION_SIZING_MODE")
+    exit_control_mode: str = Field(default="full_exit_control", alias="EXIT_CONTROL_MODE")
+    partial_exit_scale_out_ratio: float = Field(default=0.50, alias="PARTIAL_EXIT_SCALE_OUT_RATIO")
     fixed_lot_size: int = Field(default=100, alias="FIXED_LOT_SIZE")
     fixed_notional_amount: float = Field(default=0.0, alias="FIXED_NOTIONAL_AMOUNT")
     fixed_capital_amount: float = Field(default=0.0, alias="FIXED_CAPITAL_AMOUNT")
@@ -299,6 +301,20 @@ class Settings(BaseSettings):
         if label in aliases:
             return aliases[label]
         return "risk_budget"
+
+    @property
+    def exit_control_mode_normalized(self) -> str:
+        label = self.exit_control_mode.strip().lower()
+        aliases = {
+            "full_exit": "full_exit_control",
+            "full_exit_control": "full_exit_control",
+            "naive_trail_scale_out": "naive_trail_scale_out_50_50_control",
+            "naive_trail_scale_out_50_50": "naive_trail_scale_out_50_50_control",
+            "naive_trail_scale_out_50_50_control": "naive_trail_scale_out_50_50_control",
+        }
+        if label in aliases:
+            return aliases[label]
+        return "full_exit_control"
 
     @property
     def db_path(self) -> Path:

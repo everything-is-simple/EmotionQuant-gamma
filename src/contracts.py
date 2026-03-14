@@ -14,6 +14,7 @@ ActionType = Literal["BUY", "SELL"]
 SignalActionType = Literal["BUY"]
 # v0.01 勘误：订单生命周期允许 EXPIRED，避免 PENDING 无穷挂单。
 OrderStatusType = Literal["PENDING", "FILLED", "REJECTED", "EXPIRED"]
+PositionStateType = Literal["OPEN", "PARTIAL_EXIT_PENDING", "OPEN_REDUCED", "FULL_EXIT_PENDING", "CLOSED"]
 # origin 与 event_stage 正交：
 #   event_stage = 生命周期阶段（接受/撮合/过期）
 #   origin      = 业务来源（上游信号 / 止损退出 / 末日强平）
@@ -45,8 +46,27 @@ def build_exit_signal_id(code: str, signal_date: date, reason: str) -> str:
     return f"{code}_{signal_date.isoformat()}_{reason.strip().lower()}"
 
 
-def build_exit_order_id(code: str, signal_date: date, reason: str) -> str:
-    """退出订单 ID，带 EXIT_ 前缀供 resolve_order_origin 识别。"""
+def build_exit_plan_id(position_id: str, signal_date: date, reason: str) -> str:
+    """退出计划 ID：同一 position 下一次退出计划的稳定身份。"""
+    return f"{position_id}_{signal_date.isoformat()}_{reason.strip().lower()}"
+
+
+def build_exit_leg_id(exit_plan_id: str, exit_leg_seq: int) -> str:
+    """退出腿 ID：同一退出计划下的稳定腿身份。"""
+    return f"{exit_plan_id}_L{int(exit_leg_seq):02d}"
+
+
+def build_exit_order_id(
+    code: str,
+    signal_date: date,
+    reason: str,
+    *,
+    exit_plan_id: str | None = None,
+    exit_leg_seq: int | None = None,
+) -> str:
+    """退出订单 ID，partial-exit 时升级为 leg-aware 格式。"""
+    if exit_plan_id is not None and exit_leg_seq is not None:
+        return f"EXIT_{exit_plan_id}_L{int(exit_leg_seq):02d}"
     return f"EXIT_{build_exit_signal_id(code, signal_date, reason)}"
 
 
@@ -181,6 +201,15 @@ class Order(ContractBase):
     is_paper: bool = False
     status: OrderStatusType = "PENDING"
     reject_reason: str | None = None
+    position_id: str | None = None
+    exit_plan_id: str | None = None
+    exit_leg_id: str | None = None
+    exit_leg_seq: int | None = None
+    exit_leg_count: int | None = None
+    exit_reason_code: str | None = None
+    is_partial_exit: bool = False
+    remaining_qty_before: int | None = None
+    target_qty_after: int | None = None
 
 
 # Broker 内部成交契约：由 Matcher.execute 产生，写入 l4_trades。
@@ -196,3 +225,10 @@ class Trade(ContractBase):
     fee: float
     pattern: str
     is_paper: bool = False
+    position_id: str | None = None
+    exit_plan_id: str | None = None
+    exit_leg_id: str | None = None
+    exit_leg_seq: int | None = None
+    exit_reason_code: str | None = None
+    is_partial_exit: bool = False
+    remaining_qty_after: int | None = None

@@ -10,7 +10,7 @@ from typing import Any
 import duckdb
 import pandas as pd
 
-CURRENT_SCHEMA_VERSION = 1
+CURRENT_SCHEMA_VERSION = 3
 
 
 @dataclass(frozen=True)
@@ -43,6 +43,64 @@ class Store:
         for ddl in self._all_ddls():
             self.conn.execute(ddl)
         self._ensure_optional_columns()
+
+    def _apply_schema_migrations(self, db_version: int, current_version: int) -> None:
+        version = int(db_version)
+        while version < current_version:
+            next_version = version + 1
+            migrate = getattr(self, f"_migrate_schema_v{version}_to_v{next_version}", None)
+            if migrate is None:
+                raise RuntimeError(
+                    "Schema migration required. Rebuild DB or provide migration script "
+                    f"(db={db_version}, code={current_version})."
+                )
+            migrate()
+            self.conn.execute(
+                """
+                UPDATE _meta_schema_version
+                SET schema_version = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = 1
+                """,
+                [next_version],
+            )
+            version = next_version
+
+    def _migrate_schema_v1_to_v2(self) -> None:
+        statements = [
+            "ALTER TABLE l4_orders ADD COLUMN IF NOT EXISTS position_id VARCHAR",
+            "ALTER TABLE l4_orders ADD COLUMN IF NOT EXISTS exit_plan_id VARCHAR",
+            "ALTER TABLE l4_orders ADD COLUMN IF NOT EXISTS exit_leg_seq INTEGER",
+            "ALTER TABLE l4_orders ADD COLUMN IF NOT EXISTS exit_leg_count INTEGER",
+            "ALTER TABLE l4_orders ADD COLUMN IF NOT EXISTS exit_reason_code VARCHAR",
+            "ALTER TABLE l4_orders ADD COLUMN IF NOT EXISTS is_partial_exit BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE l4_orders ADD COLUMN IF NOT EXISTS remaining_qty_before INTEGER",
+            "ALTER TABLE l4_orders ADD COLUMN IF NOT EXISTS target_qty_after INTEGER",
+            "ALTER TABLE l4_trades ADD COLUMN IF NOT EXISTS position_id VARCHAR",
+            "ALTER TABLE l4_trades ADD COLUMN IF NOT EXISTS exit_plan_id VARCHAR",
+            "ALTER TABLE l4_trades ADD COLUMN IF NOT EXISTS exit_leg_seq INTEGER",
+            "ALTER TABLE l4_trades ADD COLUMN IF NOT EXISTS exit_reason_code VARCHAR",
+            "ALTER TABLE l4_trades ADD COLUMN IF NOT EXISTS is_partial_exit BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE l4_trades ADD COLUMN IF NOT EXISTS remaining_qty_after INTEGER",
+            "ALTER TABLE broker_order_lifecycle_trace_exp ADD COLUMN IF NOT EXISTS position_id VARCHAR",
+            "ALTER TABLE broker_order_lifecycle_trace_exp ADD COLUMN IF NOT EXISTS exit_plan_id VARCHAR",
+            "ALTER TABLE broker_order_lifecycle_trace_exp ADD COLUMN IF NOT EXISTS exit_leg_seq INTEGER",
+            "ALTER TABLE broker_order_lifecycle_trace_exp ADD COLUMN IF NOT EXISTS exit_leg_count INTEGER",
+            "ALTER TABLE broker_order_lifecycle_trace_exp ADD COLUMN IF NOT EXISTS exit_reason_code VARCHAR",
+            "ALTER TABLE broker_order_lifecycle_trace_exp ADD COLUMN IF NOT EXISTS is_partial_exit BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE broker_order_lifecycle_trace_exp ADD COLUMN IF NOT EXISTS remaining_qty_before INTEGER",
+            "ALTER TABLE broker_order_lifecycle_trace_exp ADD COLUMN IF NOT EXISTS remaining_qty_after INTEGER",
+        ]
+        for sql in statements:
+            self.conn.execute(sql)
+
+    def _migrate_schema_v2_to_v3(self) -> None:
+        statements = [
+            "ALTER TABLE l4_orders ADD COLUMN IF NOT EXISTS exit_leg_id VARCHAR",
+            "ALTER TABLE l4_trades ADD COLUMN IF NOT EXISTS exit_leg_id VARCHAR",
+            "ALTER TABLE broker_order_lifecycle_trace_exp ADD COLUMN IF NOT EXISTS exit_leg_id VARCHAR",
+        ]
+        for sql in statements:
+            self.conn.execute(sql)
 
     def _ensure_optional_columns(self) -> None:
         """
@@ -647,6 +705,15 @@ class Store:
                 is_paper      BOOLEAN DEFAULT FALSE,
                 status        VARCHAR DEFAULT 'PENDING',
                 reject_reason VARCHAR,
+                position_id   VARCHAR,
+                exit_plan_id  VARCHAR,
+                exit_leg_id   VARCHAR,
+                exit_leg_seq  INTEGER,
+                exit_leg_count INTEGER,
+                exit_reason_code VARCHAR,
+                is_partial_exit BOOLEAN DEFAULT FALSE,
+                remaining_qty_before INTEGER,
+                target_qty_after INTEGER,
                 created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """,
@@ -663,6 +730,13 @@ class Store:
                 fee           DOUBLE,
                 slippage_bps  DOUBLE DEFAULT 0,
                 is_paper      BOOLEAN DEFAULT FALSE,
+                position_id   VARCHAR,
+                exit_plan_id  VARCHAR,
+                exit_leg_id   VARCHAR,
+                exit_leg_seq  INTEGER,
+                exit_reason_code VARCHAR,
+                is_partial_exit BOOLEAN DEFAULT FALSE,
+                remaining_qty_after INTEGER,
                 created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """,
@@ -685,6 +759,15 @@ class Store:
                 quantity     INTEGER,
                 price        DOUBLE,
                 is_paper     BOOLEAN DEFAULT FALSE,
+                position_id  VARCHAR,
+                exit_plan_id VARCHAR,
+                exit_leg_id  VARCHAR,
+                exit_leg_seq INTEGER,
+                exit_leg_count INTEGER,
+                exit_reason_code VARCHAR,
+                is_partial_exit BOOLEAN DEFAULT FALSE,
+                remaining_qty_before INTEGER,
+                remaining_qty_after INTEGER,
                 created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (run_id, order_id, event_stage)
             )
@@ -799,10 +882,7 @@ class Store:
             raise RuntimeError(
                 f"Schema version {db_version} is newer than code version {current_version}."
             )
-        raise RuntimeError(
-            "Schema migration required. Rebuild DB or provide migration script "
-            f"(db={db_version}, code={current_version})."
-        )
+        self._apply_schema_migrations(db_version, current_version)
 
     def get_schema_version(self) -> SchemaVersion:
         row = self.conn.execute(
