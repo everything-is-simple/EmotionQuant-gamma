@@ -6,7 +6,16 @@ param(
 $ErrorActionPreference = "Stop"
 $RepoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 
-$MarkdownFiles = Get-ChildItem -Path $RepoRoot -Recurse -File -Include *.md -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch 'pytest-cache-files-' }
+$IgnoredRelativePathPatterns = @(
+    '(^|\\)\.venv(\\|$)',
+    '(^|\\)\.git(\\|$)',
+    'pytest-cache-files-'
+)
+
+$MarkdownFiles = Get-ChildItem -Path $RepoRoot -Recurse -File -Include *.md -ErrorAction SilentlyContinue | Where-Object {
+    $RelativePath = $_.FullName.Substring($RepoRoot.Length + 1)
+    -not ($IgnoredRelativePathPatterns | Where-Object { $RelativePath -match $_ })
+}
 $LegacyPatterns = @(
     'docs/design-v2/system-baseline.md',
     'docs/design-v2/architecture-master.md',
