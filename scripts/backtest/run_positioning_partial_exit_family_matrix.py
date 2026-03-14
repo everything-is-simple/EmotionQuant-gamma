@@ -13,6 +13,7 @@ from src.backtest.positioning_partial_exit_family import (
     POSITIONING_PARTIAL_EXIT_FAMILY_SCOPE,
     build_positioning_partial_exit_family_scenarios,
     run_positioning_partial_exit_family_matrix,
+    select_positioning_partial_exit_family_scenarios,
     write_positioning_partial_exit_family_evidence,
 )
 from src.config import get_settings
@@ -44,6 +45,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Output JSON path; default positioning/03-execution/evidence/<run_id>__partial_exit_family_matrix.json",
     )
+    parser.add_argument(
+        "--labels",
+        nargs="+",
+        default=None,
+        help="Optional scenario labels to run, for example FULL_EXIT_CONTROL TRAIL_SCALE_OUT_50_50",
+    )
     return parser
 
 
@@ -60,7 +67,10 @@ def main() -> int:
         else cfg.resolved_temp_path / "backtest" / f"positioning-partial-exit-family-{date.today():%Y%m%d}.duckdb"
     )
     output_root = REPO_ROOT / "positioning" / "03-execution" / "evidence"
-    scenarios = build_positioning_partial_exit_family_scenarios(cfg, initial_cash=initial_cash)
+    scenarios = select_positioning_partial_exit_family_scenarios(
+        build_positioning_partial_exit_family_scenarios(cfg, initial_cash=initial_cash),
+        args.labels,
+    )
     variant_slug = sanitize_label("bof_control_no_irs_no_mss_partial_exit_family")
     summary_run_id = build_run_id(
         scope=POSITIONING_PARTIAL_EXIT_FAMILY_SCOPE,
@@ -84,6 +94,7 @@ def main() -> int:
         rebuild_l3=not args.skip_rebuild_l3,
         working_db_path=working_db_path,
         artifact_root=cfg.resolved_temp_path / "artifacts",
+        scenario_labels=args.labels,
     )
     payload["summary_run_id"] = summary_run_id
     payload["scenario_labels"] = [scenario.label for scenario in scenarios]

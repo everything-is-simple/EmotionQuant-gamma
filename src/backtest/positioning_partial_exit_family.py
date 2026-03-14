@@ -84,6 +84,21 @@ def build_positioning_partial_exit_family_scenarios(
     return [control, *families]
 
 
+def select_positioning_partial_exit_family_scenarios(
+    scenarios: list[PartialExitFamilyScenario],
+    labels: list[str] | None,
+) -> list[PartialExitFamilyScenario]:
+    if not labels:
+        return scenarios
+
+    normalized = {label.strip().upper() for label in labels if label.strip()}
+    selected = [scenario for scenario in scenarios if scenario.label.upper() in normalized]
+    missing = sorted(normalized - {scenario.label.upper() for scenario in selected})
+    if missing:
+        raise ValueError(f"unknown partial-exit family labels: {', '.join(missing)}")
+    return selected
+
+
 def _normalize_runtime_for_partial_exit_family(
     config: Settings,
     scenario: PartialExitFamilyScenario,
@@ -219,6 +234,7 @@ def run_positioning_partial_exit_family_matrix(
     rebuild_l3: bool = True,
     working_db_path: str | Path | None = None,
     artifact_root: str | Path | None = None,
+    scenario_labels: list[str] | None = None,
 ) -> dict[str, object]:
     starting_cash = float(initial_cash if initial_cash is not None else config.backtest_initial_cash)
     source_db = Path(db_path).expanduser().resolve()
@@ -233,7 +249,10 @@ def run_positioning_partial_exit_family_matrix(
         finally:
             build_store.close()
 
-    scenarios = build_positioning_partial_exit_family_scenarios(config, initial_cash=starting_cash)
+    scenarios = select_positioning_partial_exit_family_scenarios(
+        build_positioning_partial_exit_family_scenarios(config, initial_cash=starting_cash),
+        scenario_labels,
+    )
     results: list[dict[str, object]] = []
     for scenario in scenarios:
         cfg = _normalize_runtime_for_partial_exit_family(config, scenario)

@@ -3,6 +3,7 @@ from __future__ import annotations
 from src.backtest.positioning_partial_exit_family import (
     build_positioning_partial_exit_family_digest,
     build_positioning_partial_exit_family_scenarios,
+    select_positioning_partial_exit_family_scenarios,
 )
 from src.config import Settings
 
@@ -26,6 +27,25 @@ def test_build_positioning_partial_exit_family_scenarios_covers_control_and_firs
     ]
     assert scenarios[0].fixed_notional_amount == 100_000.0
     assert scenarios[3].partial_exit_scale_out_ratio == 0.50
+
+
+def test_select_positioning_partial_exit_family_scenarios_filters_by_label() -> None:
+    cfg = Settings(
+        BACKTEST_INITIAL_CASH=1_000_000,
+        MAX_POSITION_PCT=0.10,
+        FIXED_NOTIONAL_AMOUNT=0.0,
+    )
+
+    scenarios = build_positioning_partial_exit_family_scenarios(cfg)
+    selected = select_positioning_partial_exit_family_scenarios(
+        scenarios,
+        ["FULL_EXIT_CONTROL", "TRAIL_SCALE_OUT_67_33"],
+    )
+
+    assert [scenario.label for scenario in selected] == [
+        "FULL_EXIT_CONTROL",
+        "TRAIL_SCALE_OUT_67_33",
+    ]
 
 
 def test_build_positioning_partial_exit_family_digest_marks_retained_candidate() -> None:
