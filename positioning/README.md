@@ -124,9 +124,10 @@
 9. `P4` formal readout：第三战场 sizing lane 已被正式裁成 `no retained candidate case`
 10. `P5` formal closeout：已把 sizing lane 收口成 `closeout record + migration boundary table + partial-exit opening note`
 11. `P6` formal freeze：已把 partial-exit lane 的 contract、状态机和 control baseline 正式写死
-12. `P7` 当前 active card：先跑 partial-exit null control matrix
-13. `P8 ~ P9`：把 partial-exit family replay 和第三战场收官排成后续主干卡序列
-14. `PX1 / PX2`：只在触发条件满足时打开的条件卡
+12. `P7` formal readout：`FULL_EXIT_CONTROL` 保持 partial-exit lane 的 canonical control baseline，naive 50/50 scale-out 只保留为 operating-side 局部改善
+13. `P8` 当前 active card：展开 partial-exit family replay
+14. `P9`：把第三战场收官排成后续主干卡
+15. `PX1 / PX2`：只在触发条件满足时打开的条件卡
 
 ---
 
@@ -149,8 +150,8 @@
 
 当前治理规则固定为：
 
-1. `P7` 是唯一 active card
-2. `P8 ~ P9` 已建卡但保持 queued / draft 语义
+1. `P8` 是唯一 active card
+2. `P9` 已建卡但保持 queued / draft 语义
 3. `PX1 / PX2` 只有在显式触发条件满足后才允许打开
 
 ---

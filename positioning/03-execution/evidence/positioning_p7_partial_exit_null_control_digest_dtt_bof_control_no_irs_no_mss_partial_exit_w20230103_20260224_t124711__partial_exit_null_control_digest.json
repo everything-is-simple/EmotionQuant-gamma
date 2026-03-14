@@ -1,0 +1,59 @@
+{
+  "generated_at": "2026-03-14T12:47:11Z",
+  "matrix_status": "completed",
+  "research_parent": "positioning_partial_exit_control_baseline",
+  "diagnosis": "full_exit_retained_control",
+  "canonical_control_label": "FULL_EXIT_CONTROL",
+  "decision": "keep_full_exit_as_p8_control",
+  "operating_comparison": {
+    "full_exit": {
+      "trade_count": 275,
+      "expected_value": 0.016708073857266068,
+      "profit_factor": 2.6162590564045365,
+      "max_drawdown": 0.11832221273722784,
+      "buy_filled_count": 275,
+      "paired_trade_count": 275,
+      "avg_hold_days": 23.643636363636364
+    },
+    "naive_scale_out": {
+      "trade_count": 400,
+      "expected_value": 0.049191467472027954,
+      "profit_factor": 3.4096613306990577,
+      "max_drawdown": 0.10911553328640769,
+      "buy_filled_count": 268,
+      "paired_trade_count": 400,
+      "partial_exit_pair_count": 248,
+      "avg_hold_days": 29.0225
+    },
+    "buy_fill_ratio_scale_out_vs_full": 0.9745454545454545
+  },
+  "floor_comparison": {
+    "full_exit": {
+      "trade_count": 275,
+      "expected_value": 0.006573188915124123,
+      "profit_factor": 2.391569503800175,
+      "max_drawdown": 0.035191085549320246,
+      "buy_filled_count": 275,
+      "paired_trade_count": 275,
+      "avg_hold_days": 23.70909090909091
+    },
+    "naive_scale_out": {
+      "trade_count": 275,
+      "expected_value": 0.006573188915124123,
+      "profit_factor": 2.391569503800175,
+      "max_drawdown": 0.035191085549320246,
+      "buy_filled_count": 275,
+      "paired_trade_count": 275,
+      "partial_exit_pair_count": 0,
+      "avg_hold_days": 23.70909090909091
+    },
+    "buy_fill_ratio_scale_out_vs_full": 1.0
+  },
+  "conclusion": "Naive 50/50 trailing scale-out 当前尚未在 operating/floor 两组 control 下形成足够稳的对照优势，P8 应继续以 FULL_EXIT_CONTROL 作为 formal control baseline。",
+  "next_actions": [
+    "把 canonical control baseline 写入 P7 formal record。",
+    "后续 P8 partial-exit family replay 统一对照这条 retained control baseline。",
+    "未经 P7 formal record，不提前打开 PX1 cross-exit sensitivity。"
+  ],
+  "summary_run_id": "positioning_p7_partial_exit_null_control_digest_dtt_bof_control_no_irs_no_mss_partial_exit_w20230103_20260224_t124711"
+}
