@@ -166,6 +166,7 @@
 10. `07-phase-5-research-line-migration-package-card-20260315.md`
 11. `08-phase-5a-normandy-migration-boundary-absorption-card-20260315.md`
 12. `09-phase-5b-positioning-migration-boundary-absorption-card-20260315.md`
+13. `10-phase-5c-mainline-no-fake-governance-patch-card-20260315.md`
 
 当前冻结后的使用顺序固定为：
 

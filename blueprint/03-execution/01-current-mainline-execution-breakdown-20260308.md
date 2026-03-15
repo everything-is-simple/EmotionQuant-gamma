@@ -138,12 +138,13 @@
 8. `blueprint/03-execution/07-phase-5-research-line-migration-package-card-20260315.md`
 9. `blueprint/03-execution/08-phase-5a-normandy-migration-boundary-absorption-card-20260315.md`
 10. `blueprint/03-execution/09-phase-5b-positioning-migration-boundary-absorption-card-20260315.md`
+11. `blueprint/03-execution/10-phase-5c-mainline-no-fake-governance-patch-card-20260315.md`
 
 ---
 
 ## 5. Phase 摘要
 
-### 5.1 当前 10 张卡
+### 5.1 当前 11 张卡
 
 1. `Phase 0`：
    - `blueprint/03-execution/02-phase-0-contract-trace-card-20260309.md`
@@ -163,6 +164,7 @@
    - `blueprint/03-execution/07-phase-5-research-line-migration-package-card-20260315.md`
    - `blueprint/03-execution/08-phase-5a-normandy-migration-boundary-absorption-card-20260315.md`
    - `blueprint/03-execution/09-phase-5b-positioning-migration-boundary-absorption-card-20260315.md`
+   - `blueprint/03-execution/10-phase-5c-mainline-no-fake-governance-patch-card-20260315.md`
 
 ### 5.2 使用规则
 
@@ -217,7 +219,7 @@
 5. 当前 active mainline package：
    - `Phase 5 / research-line migration package`
 6. 当前 next Phase 5 sub-card：
-   - `Phase 5C / mainline no-fake governance patch`
+   - `Phase 5 closeout / research-line migration package record`
 
 后续顺序固定为：
 

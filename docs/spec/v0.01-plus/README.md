@@ -1,7 +1,7 @@
 # v0.01-plus 阶段材料（治理归档入口）
 
 **状态**: `Active`  
-**最后更新**: `2026-03-08`
+**最后更新**: `2026-03-15`
 
 ---
 
@@ -32,6 +32,7 @@
 | 路线图主入口 | `docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md` | 当前路线图归档 |
 | 主线实现卡 | `docs/spec/v0.01-plus/roadmap/v0.01-plus-spec-01-selector-strategy.md` | 当前实现卡归档 |
 | 主线切换 Gate | `docs/spec/v0.01-plus/governance/v0.01-plus-gate-checklist.md` | Gate 规则归档 |
+| 主线反冒充治理 | `docs/spec/v0.01-plus/governance/v0.01-plus-mainline-no-fake-rules.md` | 当前默认口径、禁止误用层、条件卡开启规则 |
 | 契约补充 | `docs/spec/v0.01-plus/governance/v0.01-plus-data-contract-table.md` | 运行期契约归档 |
 | 战役后续废案 | `docs/spec/v0.01-plus/90-archive/README.md` | 已退场修复路线与临时方案归档 |
 
