@@ -137,12 +137,13 @@
 7. `blueprint/03-execution/06.1-phase-4.1-mss-broker-remediation-card-20260311.md`
 8. `blueprint/03-execution/07-phase-5-research-line-migration-package-card-20260315.md`
 9. `blueprint/03-execution/08-phase-5a-normandy-migration-boundary-absorption-card-20260315.md`
+10. `blueprint/03-execution/09-phase-5b-positioning-migration-boundary-absorption-card-20260315.md`
 
 ---
 
 ## 5. Phase 摘要
 
-### 5.1 当前 8 张卡
+### 5.1 当前 10 张卡
 
 1. `Phase 0`：
    - `blueprint/03-execution/02-phase-0-contract-trace-card-20260309.md`
@@ -161,6 +162,7 @@
 8. `Phase 5`：
    - `blueprint/03-execution/07-phase-5-research-line-migration-package-card-20260315.md`
    - `blueprint/03-execution/08-phase-5a-normandy-migration-boundary-absorption-card-20260315.md`
+   - `blueprint/03-execution/09-phase-5b-positioning-migration-boundary-absorption-card-20260315.md`
 
 ### 5.2 使用规则
 
@@ -214,8 +216,8 @@
    - `legacy_bof_baseline`
 5. 当前 active mainline package：
    - `Phase 5 / research-line migration package`
-6. 当前 active Phase 5 sub-card：
-   - `Phase 5A / Normandy migration boundary absorption`
+6. 当前 next Phase 5 sub-card：
+   - `Phase 5C / mainline no-fake governance patch`
 
 后续顺序固定为：
 

@@ -344,6 +344,21 @@ flowchart LR
 8. `Phase 5A` 只吸收 Normandy 边界，不在这里重写 `FIXED_NOTIONAL_CONTROL / SINGLE_LOT_CONTROL / FULL_EXIT_CONTROL`；这些 control baseline 的主线吸收留给 `Phase 5B`。
 9. `R2 / R3 / R8 / R9` 与所有仍受 `ALREADY_HOLDING` 阻塞的机制段继续冻结；若未来要继续，只能新开 explicit migration package 或 targeted mechanism hypothesis。
 
+### 10.5 Phase 5B / Positioning absorption boundary
+
+`Phase 5B` 生效后，主线对第三战场的吸收边界固定为：
+
+1. 主线默认运行路径继续保持 `legacy_bof_baseline`；`Positioning` 结论只迁治理边界，不直接改写默认 sizing / exit 参数。
+2. `FIXED_NOTIONAL_CONTROL` 进入主线的正式身份是 `current operating control baseline`，不是新的默认仓位公式。
+3. `SINGLE_LOT_CONTROL` 进入主线的正式身份是 `floor sanity baseline`，不是第二 operating lane。
+4. `FULL_EXIT_CONTROL` 进入主线的正式身份是 `partial-exit canonical control baseline`；在没有新 formal record 前，不得把 retained queue 误写成 canonical replacement。
+5. `TRAIL_SCALE_OUT_25_75` 当前在主线里只能保留为 `partial-exit provisional leader`；若在 Tachibana 语境下被引用，也继续只能叫 `reduce_to_core engineering proxy`。
+6. `TRAIL_SCALE_OUT_33_67 / TRAIL_SCALE_OUT_50_50` 继续只保留为 retained queue；`TRAIL_SCALE_OUT_67_33 / TRAIL_SCALE_OUT_75_25` 继续只保留为 watch queue。
+7. `WILLIAMS_FIXED_RISK / FIXED_RATIO`、`FIXED_RISK / FIXED_VOLATILITY / FIXED_CAPITAL / FIXED_PERCENTAGE`、`FIXED_UNIT` 继续只保留为 sizing lane residual-watch / watch / no-go 身份，不迁为主线默认 sizing。
+8. `partial-exit lane` 不能替 `sizing lane` 擦屁股；主线不允许把 sizing residual watch 偷渡成 partial-exit baseline。
+9. `PX1` 继续保持 `locked`，`PX2` 继续保持 `conditional_only`；二者都不能因为 retained queue 已存在就自动打开。
+10. `Phase 5B` 只吸收 Positioning 边界，不在这里提升任何 retained / watch 对象；统一的禁止误用层补丁留给 `Phase 5C`。
+
 ---
 
 ## 11. 冻结结语

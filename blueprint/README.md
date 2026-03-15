@@ -165,6 +165,7 @@
 9. `06.1-phase-4.1-mss-broker-remediation-card-20260311.md`
 10. `07-phase-5-research-line-migration-package-card-20260315.md`
 11. `08-phase-5a-normandy-migration-boundary-absorption-card-20260315.md`
+12. `09-phase-5b-positioning-migration-boundary-absorption-card-20260315.md`
 
 当前冻结后的使用顺序固定为：
 

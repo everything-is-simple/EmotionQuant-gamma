@@ -495,3 +495,23 @@ Selector 初选
    - noncanonical side references
    - `reduced_unit_scale` executable sizing
 5. `Phase 5A` 只吸收 Normandy 边界，不改写当前 Broker / Risk 默认 control；`FIXED_NOTIONAL_CONTROL / SINGLE_LOT_CONTROL / FULL_EXIT_CONTROL` 的主线吸收留到 `Phase 5B`。
+
+---
+
+## 12. Phase 5B 继承的 Positioning 实现约束
+
+`Phase 5B` 生效后，当前实现方案新增继承以下 Positioning 边界：
+
+1. 当前实现层允许把 `FIXED_NOTIONAL_CONTROL` 写成 `current operating control baseline`，但不允许把它写成主线默认仓位公式。
+2. 当前实现层允许把 `SINGLE_LOT_CONTROL` 写成 `floor sanity baseline`，但不允许把它写成第二 operating lane 或新的部署默认值。
+3. 当前实现层允许把 `FULL_EXIT_CONTROL` 写成 `partial-exit canonical control baseline`，但不允许把 retained queue 误写成 formal control promotion。
+4. 当前实现层若引用 `TRAIL_SCALE_OUT_25_75`，必须同时满足两条：
+   - 在 Positioning 语境下，它只能叫 `partial-exit provisional leader`
+   - 在 Tachibana 语境下，它继续只能叫 `reduce_to_core engineering proxy`
+5. 当前实现层明确不实现：
+   - `WILLIAMS_FIXED_RISK / FIXED_RATIO` 的主线 promotion
+   - `TRAIL_SCALE_OUT_33_67 / 50_50 / 67_33 / 75_25` 的主线 promotion
+   - `PX1` 自动打开
+   - `PX2` 自动打开
+   - 任何“partial-exit 替 sizing lane 补救”的隐含 baseline
+6. `Phase 5B` 只吸收 Positioning 边界，不改写当前 Broker 默认执行语义，不切换主线默认 exit formula；统一的 no-fake governance patch 留到 `Phase 5C`。
