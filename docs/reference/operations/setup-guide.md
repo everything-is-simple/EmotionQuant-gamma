@@ -174,6 +174,27 @@ pip install -e .
 python -c "from src.config import get_settings; cfg = get_settings(); print(f'DATA_PATH: {cfg.data_path}'); print(f'DB_PATH: {cfg.db_path}'); print(f'LOG_PATH: {cfg.log_path}')"
 ```
 
+### 文件操作扩展环境
+
+如果当前系统需要直接处理 `Word / Excel / PowerPoint / PDF / PS / DuckDB` 文件，额外安装：
+
+```powershell
+pip install -e .[fileops]
+```
+
+安装后可运行统一探针：
+
+```powershell
+python scripts/ops/file_ops_probe.py --output G:\EmotionQuant-temp\artifacts\file-ops-probe\probe-report.json
+```
+
+探针会验证：
+
+1. `docx / xlsx / pptx / pdf / duckdb` 的创建与回读
+2. `ps` 的 Ghostscript 运行时是否就绪
+3. `psd` 模块是否可用
+4. Windows 下 `Word / Excel / PowerPoint / Acrobat` 的 COM 自动化入口是否存在
+
 **预期输出**：
 ```
 DATA_PATH: G:\EmotionQuant_data
