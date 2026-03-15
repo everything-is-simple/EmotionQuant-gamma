@@ -31,6 +31,7 @@ CANONICAL_CONTROL_LABEL = "FULL_EXIT_CONTROL__FIXED_NOTIONAL_CONTROL__CD0"
 OPERATING_PROXY_LABEL = "TRAIL_SCALE_OUT_25_75__FIXED_NOTIONAL_CONTROL__CD0"
 FLOOR_CONTROL_LABEL = "FULL_EXIT_CONTROL__SINGLE_LOT_CONTROL__CD0"
 FLOOR_PROXY_LABEL = "TRAIL_SCALE_OUT_25_75__SINGLE_LOT_CONTROL__CD0"
+CANONICAL_AGGREGATE_LABELS = (CANONICAL_CONTROL_LABEL, OPERATING_PROXY_LABEL)
 
 
 @dataclass(frozen=True)
@@ -571,17 +572,24 @@ def _normalize_to_e1_label(label: str) -> str:
     return label
 
 
+def _is_canonical_aggregate_label(label: str) -> bool:
+    return label in CANONICAL_AGGREGATE_LABELS
+
+
 def _build_e1_digest_payload(results: list[dict[str, object]]) -> dict[str, object]:
     e1_results = []
     for item in results:
         if not isinstance(item, dict):
             continue
+        label = str(item.get("label") or "")
         if str(item.get("position_sizing_mode") or "") != "fixed_notional":
             continue
         if int(item.get("entry_cooldown_trade_days") or 0) != 0:
             continue
+        if not _is_canonical_aggregate_label(label):
+            continue
         cloned = dict(item)
-        cloned["label"] = _normalize_to_e1_label(str(item.get("label") or ""))
+        cloned["label"] = _normalize_to_e1_label(label)
         e1_results.append(cloned)
 
     if not e1_results:
@@ -689,6 +697,85 @@ def _build_floor_sanity_summary(
     }
 
 
+def _build_experimental_segment_isolation_summary(
+    matrix_payload: dict[str, object],
+    results_by_label: dict[str, dict[str, object]],
+) -> dict[str, object]:
+    baseline_runtime = matrix_payload.get("baseline_runtime")
+    baseline_policy = ""
+    if isinstance(baseline_runtime, dict):
+        baseline_policy = str(baseline_runtime.get("experimental_segment_policy") or "").strip()
+
+    declared_policy_values = sorted(
+        {
+            str(item.get("experimental_segment_policy") or "").strip() or "isolate_from_canonical_aggregate"
+            for item in results_by_label.values()
+            if isinstance(item, dict)
+        }
+    )
+
+    canonical_aggregate_labels: list[str] = []
+    cooldown_sidecar_labels: list[str] = []
+    unit_regime_sidecar_labels: list[str] = []
+    noncanonical_fixed_notional_reference_labels: list[str] = []
+
+    for label, item in results_by_label.items():
+        if _is_canonical_aggregate_label(label):
+            canonical_aggregate_labels.append(label)
+            continue
+
+        if str(item.get("position_sizing_mode") or "") != "fixed_notional":
+            unit_regime_sidecar_labels.append(label)
+            continue
+
+        if int(item.get("entry_cooldown_trade_days") or 0) > 0:
+            cooldown_sidecar_labels.append(label)
+            continue
+
+        noncanonical_fixed_notional_reference_labels.append(label)
+
+    canonical_aggregate_labels.sort(
+        key=lambda label: 0 if label == CANONICAL_CONTROL_LABEL else 1,
+    )
+    cooldown_sidecar_labels.sort()
+    unit_regime_sidecar_labels.sort()
+    noncanonical_fixed_notional_reference_labels.sort()
+
+    experimental_sidecar_labels = (
+        cooldown_sidecar_labels
+        + unit_regime_sidecar_labels
+        + noncanonical_fixed_notional_reference_labels
+    )
+    policy = baseline_policy or (
+        declared_policy_values[0] if declared_policy_values else "isolate_from_canonical_aggregate"
+    )
+
+    return {
+        "policy": policy,
+        "declared_policy_values": declared_policy_values,
+        "canonical_aggregate_labels": canonical_aggregate_labels,
+        "experimental_sidecar_labels": experimental_sidecar_labels,
+        "cooldown_sidecar_labels": cooldown_sidecar_labels,
+        "unit_regime_sidecar_labels": unit_regime_sidecar_labels,
+        "noncanonical_fixed_notional_reference_labels": noncanonical_fixed_notional_reference_labels,
+        "forbidden_canonical_merge_groups": [
+            "e1_formal_entry_digest",
+            "canonical_control_baseline",
+            "operating_proxy_baseline",
+        ],
+        "allowed_sidecar_views": [
+            "cooldown_scorecard",
+            "floor_sanity_summary",
+            "side_reference_comparison",
+        ],
+        "isolation_status": (
+            "experimental_sidecar_active"
+            if experimental_sidecar_labels
+            else "canonical_only_matrix"
+        ),
+    }
+
+
 def build_normandy_tachibana_pilot_pack_digest(matrix_payload: dict[str, object]) -> dict[str, object]:
     matrix_status = str(matrix_payload.get("matrix_status") or "completed")
     if matrix_status != "completed":
@@ -715,6 +802,10 @@ def build_normandy_tachibana_pilot_pack_digest(matrix_payload: dict[str, object]
     e1_digest = _build_e1_digest_payload(results)
     cooldown_scorecard = _build_cooldown_scorecard(results, canonical_control)
     floor_sanity_summary = _build_floor_sanity_summary(results_by_label)
+    experimental_segment_isolation = _build_experimental_segment_isolation_summary(
+        matrix_payload,
+        results_by_label,
+    )
 
     proxy_cooldown_rows = [item for item in cooldown_scorecard if item["scenario_kind"] == "proxy"]
     control_cooldown_rows = [item for item in cooldown_scorecard if item["scenario_kind"] == "control"]
@@ -756,6 +847,8 @@ def build_normandy_tachibana_pilot_pack_digest(matrix_payload: dict[str, object]
         )
     if floor_sanity_summary is not None:
         conclusion_parts.append(f"Floor line currently reads `{floor_line_status}`.")
+    if experimental_segment_isolation["isolation_status"] == "experimental_sidecar_active":
+        conclusion_parts.append("Experimental sidecar remains isolated from the canonical aggregate.")
 
     return {
         "generated_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
@@ -773,10 +866,12 @@ def build_normandy_tachibana_pilot_pack_digest(matrix_payload: dict[str, object]
         "control_cooldown_leader": control_cooldown_leader,
         "floor_sanity_summary": floor_sanity_summary,
         "floor_line_status": floor_line_status,
+        "experimental_segment_isolation": experimental_segment_isolation,
         "conclusion": " ".join(conclusion_parts),
         "next_actions": [
             "Use the Normandy pilot-pack matrix runner as the formal E1 entry point.",
             "Inspect cooldown scorecard rows before promoting any cooldown setting beyond the current baseline.",
+            "Keep cooldown rows, floor lines, and noncanonical proxy references in the experimental sidecar.",
             "Keep unit-regime tags in the payload layer until a dedicated per-trade slicing need appears.",
         ],
     }
