@@ -472,69 +472,54 @@ def bootstrap_l1_from_raw_duckdb(
                 [start, end],
             )
 
-        store.conn.execute(
+        stock_info_frame = store.conn.execute(
             f"""
-            INSERT INTO l1_stock_info(
-              ts_code, name, industry, market, list_status, is_st, list_date, effective_from
-            )
-            WITH base AS (
-              SELECT
-                ts_code,
-                name,
-                industry,
-                market,
-                COALESCE(list_status, 'L') AS list_status,
-                list_date,
-                STRPTIME(trade_date, '%Y%m%d')::DATE AS effective_from
-              FROM {_RAW_ATTACH_ALIAS}.raw_stock_basic
-              WHERE STRPTIME(trade_date, '%Y%m%d')::DATE BETWEEN ? AND ?
-            ),
-            dedup_day AS (
-              SELECT *,
-                     ROW_NUMBER() OVER (
-                       PARTITION BY ts_code, effective_from
-                       ORDER BY effective_from DESC
-                     ) AS rn
-              FROM base
-            ),
-            clean AS (
-              SELECT ts_code, name, industry, market, list_status, list_date, effective_from
-              FROM dedup_day
-              WHERE rn = 1
-            ),
-            with_prev AS (
-              SELECT
-                *,
-                LAG(name) OVER (PARTITION BY ts_code ORDER BY effective_from) AS prev_name,
-                LAG(industry) OVER (PARTITION BY ts_code ORDER BY effective_from) AS prev_industry,
-                LAG(market) OVER (PARTITION BY ts_code ORDER BY effective_from) AS prev_market,
-                LAG(list_status) OVER (PARTITION BY ts_code ORDER BY effective_from) AS prev_list_status,
-                LAG(list_date) OVER (PARTITION BY ts_code ORDER BY effective_from) AS prev_list_date
-              FROM clean
-            ),
-            changed AS (
-              SELECT *
-              FROM with_prev
-              WHERE prev_name IS NULL
-                 OR COALESCE(name, '') <> COALESCE(prev_name, '')
-                 OR COALESCE(industry, '') <> COALESCE(prev_industry, '')
-                 OR COALESCE(market, '') <> COALESCE(prev_market, '')
-                 OR COALESCE(list_status, '') <> COALESCE(prev_list_status, '')
-                 OR COALESCE(list_date, '') <> COALESCE(prev_list_date, '')
-            )
             SELECT
               ts_code,
               name,
               industry,
               market,
-              list_status,
-              (name LIKE '%ST%') AS is_st,
-              STRPTIME(list_date, '%Y%m%d')::DATE AS list_date,
-              effective_from
-            FROM changed
+              COALESCE(list_status, 'L') AS list_status,
+              list_date,
+              STRPTIME(trade_date, '%Y%m%d')::DATE AS effective_from
+            FROM {_RAW_ATTACH_ALIAS}.raw_stock_basic
+            WHERE STRPTIME(trade_date, '%Y%m%d')::DATE BETWEEN ? AND ?
+            ORDER BY ts_code ASC, effective_from ASC
             """,
             [start, end],
-        )
+        ).df()
+        if not stock_info_frame.empty:
+            stock_info_frame = stock_info_frame.copy()
+            stock_info_frame["effective_from"] = pd.to_datetime(stock_info_frame["effective_from"]).dt.date
+            stock_info_frame["list_status"] = stock_info_frame["list_status"].fillna("L").astype(str)
+            stock_info_frame["list_date"] = pd.to_datetime(
+                stock_info_frame["list_date"],
+                format="%Y%m%d",
+                errors="coerce",
+            ).dt.date
+            stock_info_frame = (
+                stock_info_frame.sort_values(["ts_code", "effective_from"], ascending=[True, True])
+                .drop_duplicates(subset=["ts_code", "effective_from"], keep="last")
+                .reset_index(drop=True)
+            )
+            for column in ["name", "industry", "market", "list_status", "list_date"]:
+                stock_info_frame[f"prev_{column}"] = stock_info_frame.groupby("ts_code")[column].shift(1)
+
+            change_mask = stock_info_frame["prev_name"].isna()
+            for column in ["name", "industry", "market", "list_status", "list_date"]:
+                current = stock_info_frame[column].astype("string").fillna("")
+                previous = stock_info_frame[f"prev_{column}"].astype("string").fillna("")
+                change_mask |= current != previous
+
+            changed_stock_info = stock_info_frame.loc[
+                change_mask,
+                ["ts_code", "name", "industry", "market", "list_status", "list_date", "effective_from"],
+            ].copy()
+            changed_stock_info["is_st"] = changed_stock_info["name"].fillna("").str.contains("ST", regex=False)
+            changed_stock_info = changed_stock_info[
+                ["ts_code", "name", "industry", "market", "list_status", "is_st", "list_date", "effective_from"]
+            ]
+            store.bulk_upsert("l1_stock_info", changed_stock_info)
 
         try:
             store.conn.execute(

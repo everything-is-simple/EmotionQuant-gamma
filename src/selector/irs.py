@@ -323,6 +323,50 @@ def _weighted_score(components: list[tuple[float, float]], fallback: float) -> f
     return sum(score * weight for score, weight in positive) / total_weight
 
 
+def _has_observable_industry_inputs(industry_row: pd.Series) -> bool:
+    for field in [
+        "pct_chg",
+        "amount",
+        "amount_ma20",
+        "amount_10d_ago",
+        "return_5d",
+        "return_20d",
+        "strong_up_count",
+        "new_high_count",
+        "leader_count",
+        "leader_strength",
+        "strong_stock_ratio",
+        "strong_stock_amount_share",
+        "leader_follow_through",
+        "bof_hit_density_5d",
+    ]:
+        value = pd.to_numeric(industry_row.get(field), errors="coerce")
+        if pd.notna(value):
+            return True
+    return False
+
+
+def _zero_score_components(industry_row: pd.Series) -> dict[str, float]:
+    return {
+        "rs_1d_raw": 0.0,
+        "rs_5d_raw": 0.0,
+        "rs_20d_raw": 0.0,
+        "rank_stability_raw": 0.0,
+        "rs_score": 0.0,
+        "amount": _safe_float(industry_row.get("amount"), 0.0),
+        "market_total_amount": _safe_float(industry_row.get("market_total_amount"), 0.0),
+        "amount_delta_10d": 0.0,
+        "flow_share": 0.0,
+        "amount_vs_self_20d": 0.0,
+        "strong_amount_share": 0.0,
+        "cf_raw": 0.0,
+        "cf_score": 0.0,
+        "rv_score": 0.0,
+        "bd_score": 0.0,
+        "gn_score": 0.0,
+    }
+
+
 def _pre_rt_score_for_mode(
     rs_score: float,
     cf_score: float,
@@ -467,6 +511,8 @@ def compute_irs_single(
     seeded["market_total_amount"] = _safe_float(industry_row.get("market_total_amount"), _safe_float(industry_row.get("amount"), 0.0))
     seeded["stock_count"] = max(int(_safe_float(industry_row.get("stock_count"), 1.0)), 1)
     seeded["structure_available"] = bool(industry_row.get("structure_available", False))
+    if not _has_observable_industry_inputs(seeded):
+        return 0.0, 0.0, 0.0
     rs = _compute_rs_components(
         seeded,
         {"pct_chg": float(benchmark_pct), "return_5d": 0.0, "return_20d": 0.0, "filled": False},
@@ -619,6 +665,19 @@ def compute_irs(
         day_components: list[dict[str, object]] = []
         for _, row in known_df.iterrows():
             industry = str(row["industry"])
+            if not _has_observable_industry_inputs(row):
+                day_components.append(
+                    {
+                        "industry": industry,
+                        "industry_row": row,
+                        "rank_history": list(rank_history_by_industry.get(industry, [])),
+                        "score_history": list(score_history_by_industry.get(industry, [])),
+                        "has_observable_inputs": False,
+                        "provisional_score": 0.0,
+                        **_zero_score_components(row),
+                    }
+                )
+                continue
             rs = _compute_rs_components(
                 row,
                 benchmark_snapshot,
@@ -637,6 +696,7 @@ def compute_irs(
                     "industry_row": row,
                     "rank_history": list(rank_history_by_industry.get(industry, [])),
                     "score_history": list(score_history_by_industry.get(industry, [])),
+                    "has_observable_inputs": True,
                     "provisional_score": _pre_rt_score_for_mode(
                         rs["rs_score"],
                         legacy_cf["cf_score"],
@@ -667,28 +727,38 @@ def compute_irs(
 
         day_results: list[dict[str, object]] = []
         for item in day_components:
-            rt = _compute_rt_components(
-                provisional_rank_map[item["industry"]],
-                float(item["provisional_score"]),
-                item["rank_history"],
-                item["score_history"],
-                top_rank_threshold,
-                rt_lookback_days,
-            )
-            total_score = _total_score_for_mode(
-                float(item["rs_score"]),
-                float(item["cf_score"]),
-                float(item["rv_score"]),
-                float(rt["rt_score"]),
-                float(item["bd_score"]),
-                float(item["gn_score"]),
-                normalized_factor_mode,
-                factor_weight_rs,
-                factor_weight_rv,
-                factor_weight_rt,
-                factor_weight_bd,
-                factor_weight_gn,
-            )
+            if not bool(item.get("has_observable_inputs", True)):
+                rt = {
+                    "rt_score": 0.0,
+                    "rotation_status": "NEUTRAL",
+                    "rotation_slope": 0.0,
+                    "top_rank_streak_5d": 0,
+                    "momentum_consistency": 0.0,
+                }
+                total_score = 0.0
+            else:
+                rt = _compute_rt_components(
+                    provisional_rank_map[item["industry"]],
+                    float(item["provisional_score"]),
+                    item["rank_history"],
+                    item["score_history"],
+                    top_rank_threshold,
+                    rt_lookback_days,
+                )
+                total_score = _total_score_for_mode(
+                    float(item["rs_score"]),
+                    float(item["cf_score"]),
+                    float(item["rv_score"]),
+                    float(rt["rt_score"]),
+                    float(item["bd_score"]),
+                    float(item["gn_score"]),
+                    normalized_factor_mode,
+                    factor_weight_rs,
+                    factor_weight_rv,
+                    factor_weight_rt,
+                    factor_weight_bd,
+                    factor_weight_gn,
+                )
             day_results.append({**item, **rt, "score": float(total_score), "industry_count_today": industry_count_today})
 
         if len(day_results) < max(1, min_industries_per_day):
