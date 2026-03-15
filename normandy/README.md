@@ -166,6 +166,7 @@
 - `03-execution/records/28-phase-n3k-tachibana-pilot-pack-formal-cooldown-matrix-record-20260315.md`
 - `03-execution/records/29-phase-n3l-tachibana-pilot-pack-unit-regime-overlay-record-20260315.md`
 - `03-execution/records/30-phase-n3m-tachibana-pilot-pack-experimental-segment-isolation-record-20260315.md`
+- `03-execution/records/31-phase-n3n-tachibana-pilot-pack-migration-boundary-record-20260315.md`
 
 它们分别负责：
 
@@ -226,6 +227,7 @@
 55. `N3k` formal cooldown matrix：把 `CD0 / CD2 / CD5 / CD10` 在正式窗口下跑成 cooldown scorecard，写死 `CD2 = no-op`、`CD5 = first effective cooldown`、`CD10 = provisional cooldown leader`。
 56. `N3l` unit-regime overlay：把正式窗口下的 `fixed_notional` operating pair 与 `single_lot` floor pair 并排写定，正式收窄为 `FIXED_NOTIONAL_CONTROL` 仍是唯一 operating regime、`SINGLE_LOT_CONTROL` 只保留为 floor sanity、`TRAIL_SCALE_OUT_25_75` 在 floor 下退化、`reduced_unit_scale` 仍只是 payload tag。
 57. `N3m` experimental-segment isolation：把 `experimental_segment_policy = isolate_from_canonical_aggregate` 落成 digest 级 aggregate 隔离规则，正式写死 canonical aggregate 只保留 canonical control/proxy pair，而 cooldown、floor 与 noncanonical side references 全部只配做 experimental sidecar。
+58. `N3n` migration boundary：把当前 pilot-pack 的阶段性战果压成 mainline migration boundary，正式写死主线当前只能继承 executable boundary、BOF stack wrapper 与 governance constraints，不能继承 cooldown winners、floor sanity、noncanonical side references 与 sizing 幻觉。
 
 ---
 
