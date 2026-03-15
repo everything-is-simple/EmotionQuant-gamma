@@ -136,6 +136,9 @@
 - `03-execution/27-phase-n3j-tachibana-pilot-pack-runner-implementation-card-20260315.md`
 - `03-execution/28-phase-n3k-tachibana-pilot-pack-formal-cooldown-matrix-card-20260315.md`
 - `03-execution/29-phase-n3l-tachibana-pilot-pack-unit-regime-overlay-card-20260315.md`
+- `03-execution/30-phase-n3m-tachibana-pilot-pack-experimental-segment-isolation-card-20260315.md`
+- `03-execution/31-phase-n3n-tachibana-pilot-pack-migration-boundary-card-20260315.md`
+- `03-execution/32-phase-n3o-tachibana-pilot-pack-campaign-closeout-card-20260315.md`
 - `03-execution/records/05-phase-n1-7-fb-stability-and-purity-record-20260312.md`
 - `03-execution/records/09-phase-n1-11-bof-pinbar-quality-provenance-record-20260313.md`
 - `03-execution/records/10-phase-n1-12-bof-pinbar-stability-or-no-go-record-20260313.md`
