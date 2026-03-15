@@ -10,31 +10,33 @@ EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
 - 当前主线设计权威层：[`blueprint/README.md`](blueprint/README.md)
 - 研究线 `Normandy`：[`normandy/README.md`](normandy/README.md)
 - 研究线 `Positioning`：[`positioning/README.md`](positioning/README.md)
+- 研究线 `Gene`：[`gene/README.md`](gene/README.md)
 - 当前治理状态：[`docs/spec/common/records/development-status.md`](docs/spec/common/records/development-status.md)
 
 当前主线执行链路：
-
-`Selector 初选 -> BOF 触发 -> IRS 排序 -> MSS 控仓位 -> Broker 执行`
+`Selector 初选 -> BOF 触发 -> IRS 排序 -> MSS 控仓 -> Broker 执行`
 
 说明：
 - `v0.01` 已冻结为历史尝试，仅作对照、回退与回归验证。
-- `v0.01-plus` 是当前主开发线。
-- `normandy/` 是独立研究线，用于证明 `PAS raw alpha` 与拆解 `exit damage`；它不是新的版本号分支。
-- `positioning/` 是独立研究线，用于在不依赖 `MSS / IRS` 的前提下验证“买多少 / 卖多少”；它也不是新的版本号分支。
-- `backtrader` 仅负责交易日历推进与数据喂入；风控、撮合、仓位和状态机由自研 `Broker` 内核实现。
+- `v0.01-plus` 是当前治理主线，但默认运行路径仍保持 `legacy_bof_baseline`。
+- `normandy/` 是独立研究线，用于回答 `为什么打 / alpha 来自哪里`。
+- `positioning/` 是独立研究线，用于回答 `打多大 / 怎么退`。
+- `gene/` 是独立研究线，用于回答 `当前这段走势在它自己的历史里算什么级别`。
+- 三条研究线都不是新的版本号分支，也不直接改写当前主线 SoT。
 
 ## 仓库三线
 
 - 历史线：`docs/design-v2/` + `docs/spec/v0.01/`，只承载 `v0.01 Frozen` 历史基线。
 - 主线：`blueprint/` + `docs/spec/v0.01-plus/`，只承载当前默认开发线的设计正文、实现方案和治理归档。
-- 研究线：`normandy/` + `positioning/`，分别承载 `alpha / exit diagnosis` 与 `position sizing / partial-exit` 的独立研究，不直接改写主线 SoT。
-- 状态账本：`docs/spec/common/records/`，负责跨版本、跨战场的状态、债务和资产索引，不承担现行设计正文。
+- 研究线：`normandy/` + `positioning/` + `gene/`，分别承载 `alpha / exit diagnosis`、`position sizing / partial-exit` 与 `historical wave ruler` 的独立研究，不直接改写主线 SoT。
+- 状态账本：`docs/spec/common/records/`，负责跨版本、跨战场的状态、债务和资产索引，不承担当期设计正文。
 
 ## 快速开始
 
 ### 环境配置
 
-**推荐目录结构**：
+推荐目录结构：
+
 ```text
 G:\
 ├── EmotionQuant-gamma\      # 代码 + 文档（本仓库）
@@ -42,7 +44,7 @@ G:\
 └── EmotionQuant-temp\       # 临时文件（不进 Git）
 ```
 
-**配置步骤**：
+配置步骤：
 1. 复制 `.env.example` 为 `.env`
 2. 填写 `TUSHARE_TOKEN`
 3. 设置 `DATA_PATH=G:\EmotionQuant_data`
@@ -74,12 +76,13 @@ EmotionQuant-gamma/
 ├── blueprint/              # 主线设计权威层（full design / implementation spec / execution）
 ├── normandy/               # 研究线 / 第二战场（alpha / exit diagnosis）
 ├── positioning/            # 研究线 / 第三战场（buy-size / sell-size）
-├── src/                    # 实现代码（6 模块）
+├── gene/                   # 研究线 / 第四战场（historical wave ruler）
+├── src/                    # 实现代码（模块）
 ├── tests/                  # 自动化测试（unit/integration/patches）
 ├── scripts/                # 工具脚本（data/backtest/report/ops/setup）
 ├── docs/                   # 文档总入口（见 docs/README.md）
-│   ├── design-v2/          # 历史基线与历史总览（不再承载现行设计正文）
-│   ├── Strategy/           # 理论母本与方法论溯源
+│   ├── design-v2/          # 历史基线与历史总览
+│   ├── Strategy/           # 理论母本与方法论来源
 │   ├── observatory/        # 观察、评审与复盘
 │   ├── spec/               # 治理归档、状态账本与版本记录
 │   ├── reference/          # 外部规则与运维参考

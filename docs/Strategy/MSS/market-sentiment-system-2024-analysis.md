@@ -199,6 +199,6 @@
 ## 9. 参考文献
 
 1. 《2024.大盘情绪交易系统》原始资料
-2. `docs/Strategy/MSS/manual-sentiment-tracking-experience.md`
+2. `docs/Strategy/MSS/90-archive/manual-sentiment-tracking-experience.md`
 3. `blueprint/01-full-design/04-mss-lite-contract-annex-20260308.md`
 4. `blueprint/01-full-design/08-mss-minimal-tradable-design-20260309.md`

@@ -149,7 +149,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         fetch_incremental(store, fetcher, "index_daily", "l1_index_daily", signal_date, trade_date)
         fetch_incremental(store, fetcher, "stock_daily", "l1_stock_daily", signal_date, trade_date)
 
-        # 3) 构建 L2/L3（MSS/IRS），信号仍由运行时 Strategy 产生。
+        # 3) 构建 L2/L3（MSS/IRS/Gene），信号仍由运行时 Strategy 产生。
         build_layers(store, cfg, layers=["l2", "l3"], start=signal_date, end=trade_date, force=False)
 
         # 4) 在 T 日收盘后（signal_date）选股并生成信号。

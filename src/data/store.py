@@ -10,7 +10,7 @@ from typing import Any
 import duckdb
 import pandas as pd
 
-CURRENT_SCHEMA_VERSION = 3
+CURRENT_SCHEMA_VERSION = 4
 
 
 @dataclass(frozen=True)
@@ -99,6 +99,104 @@ class Store:
             "ALTER TABLE l4_trades ADD COLUMN IF NOT EXISTS exit_leg_id VARCHAR",
             "ALTER TABLE broker_order_lifecycle_trace_exp ADD COLUMN IF NOT EXISTS exit_leg_id VARCHAR",
         ]
+        for sql in statements:
+            self.conn.execute(sql)
+
+    def _migrate_schema_v3_to_v4(self) -> None:
+        statements = [
+            """
+            CREATE TABLE IF NOT EXISTS l3_gene_wave (
+                code                        VARCHAR NOT NULL,
+                wave_id                     VARCHAR NOT NULL,
+                direction                   VARCHAR,
+                start_date                  DATE,
+                end_date                    DATE,
+                start_price                 DOUBLE,
+                end_price                   DOUBLE,
+                signed_return_pct           DOUBLE,
+                magnitude_pct               DOUBLE,
+                duration_trade_days         INTEGER,
+                extreme_count               INTEGER,
+                extreme_density             DOUBLE,
+                last_extreme_date           DATE,
+                last_extreme_price          DOUBLE,
+                two_b_failure_count         INTEGER,
+                end_confirm_index           INTEGER,
+                trend_direction_before      VARCHAR,
+                trend_direction_after       VARCHAR,
+                wave_role                   VARCHAR,
+                reversal_tag                VARCHAR,
+                history_sample_size         INTEGER,
+                magnitude_rank              INTEGER,
+                duration_rank               INTEGER,
+                extreme_density_rank        INTEGER,
+                magnitude_percentile        DOUBLE,
+                duration_percentile         DOUBLE,
+                extreme_density_percentile  DOUBLE,
+                magnitude_zscore            DOUBLE,
+                duration_zscore             DOUBLE,
+                extreme_density_zscore      DOUBLE,
+                created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (code, wave_id)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l3_gene_event (
+                code                    VARCHAR NOT NULL,
+                wave_id                 VARCHAR NOT NULL,
+                event_date              DATE    NOT NULL,
+                event_seq               INTEGER NOT NULL,
+                direction               VARCHAR,
+                event_type              VARCHAR,
+                event_price             DOUBLE,
+                previous_extreme_price  DOUBLE,
+                spacing_trade_days      INTEGER,
+                density_after_event     DOUBLE,
+                is_two_b_failure        BOOLEAN,
+                failure_date            DATE,
+                created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (code, wave_id, event_seq)
+            )
+            """,
+        ]
+        gene_snapshot_columns = [
+            ("trend_direction", "VARCHAR"),
+            ("current_wave_id", "VARCHAR"),
+            ("current_wave_direction", "VARCHAR"),
+            ("current_wave_role", "VARCHAR"),
+            ("reversal_state", "VARCHAR"),
+            ("latest_completed_reversal_tag", "VARCHAR"),
+            ("current_wave_start_date", "DATE"),
+            ("current_wave_reference_price", "DOUBLE"),
+            ("current_wave_terminal_price", "DOUBLE"),
+            ("current_wave_age_trade_days", "INTEGER"),
+            ("current_wave_signed_return_pct", "DOUBLE"),
+            ("current_wave_magnitude_pct", "DOUBLE"),
+            ("current_wave_extreme_count", "INTEGER"),
+            ("current_wave_extreme_density", "DOUBLE"),
+            ("current_wave_last_extreme_seq", "INTEGER"),
+            ("current_wave_last_extreme_date", "DATE"),
+            ("current_wave_last_extreme_price", "DOUBLE"),
+            ("current_wave_two_b_failure_count", "INTEGER"),
+            ("current_wave_history_sample_size", "INTEGER"),
+            ("current_wave_magnitude_rank", "INTEGER"),
+            ("current_wave_duration_rank", "INTEGER"),
+            ("current_wave_extreme_density_rank", "INTEGER"),
+            ("current_wave_magnitude_percentile", "DOUBLE"),
+            ("current_wave_duration_percentile", "DOUBLE"),
+            ("current_wave_extreme_density_percentile", "DOUBLE"),
+            ("current_wave_magnitude_zscore", "DOUBLE"),
+            ("current_wave_duration_zscore", "DOUBLE"),
+            ("current_wave_extreme_density_zscore", "DOUBLE"),
+            ("cross_section_magnitude_rank", "INTEGER"),
+            ("cross_section_magnitude_percentile", "DOUBLE"),
+            ("cross_section_duration_rank", "INTEGER"),
+            ("cross_section_duration_percentile", "DOUBLE"),
+            ("cross_section_extreme_density_rank", "INTEGER"),
+            ("cross_section_extreme_density_percentile", "DOUBLE"),
+        ]
+        for column, definition in gene_snapshot_columns:
+            statements.append(f"ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS {column} {definition}")
         for sql in statements:
             self.conn.execute(sql)
 
@@ -688,7 +786,95 @@ class Store:
                 new_low_freq    DOUBLE,
                 weakness_ratio  DOUBLE,
                 fragility       DOUBLE,
+                trend_direction VARCHAR,
+                current_wave_id VARCHAR,
+                current_wave_direction VARCHAR,
+                current_wave_role VARCHAR,
+                reversal_state VARCHAR,
+                latest_completed_reversal_tag VARCHAR,
+                current_wave_start_date DATE,
+                current_wave_reference_price DOUBLE,
+                current_wave_terminal_price DOUBLE,
+                current_wave_age_trade_days INTEGER,
+                current_wave_signed_return_pct DOUBLE,
+                current_wave_magnitude_pct DOUBLE,
+                current_wave_extreme_count INTEGER,
+                current_wave_extreme_density DOUBLE,
+                current_wave_last_extreme_seq INTEGER,
+                current_wave_last_extreme_date DATE,
+                current_wave_last_extreme_price DOUBLE,
+                current_wave_two_b_failure_count INTEGER,
+                current_wave_history_sample_size INTEGER,
+                current_wave_magnitude_rank INTEGER,
+                current_wave_duration_rank INTEGER,
+                current_wave_extreme_density_rank INTEGER,
+                current_wave_magnitude_percentile DOUBLE,
+                current_wave_duration_percentile DOUBLE,
+                current_wave_extreme_density_percentile DOUBLE,
+                current_wave_magnitude_zscore DOUBLE,
+                current_wave_duration_zscore DOUBLE,
+                current_wave_extreme_density_zscore DOUBLE,
+                cross_section_magnitude_rank INTEGER,
+                cross_section_magnitude_percentile DOUBLE,
+                cross_section_duration_rank INTEGER,
+                cross_section_duration_percentile DOUBLE,
+                cross_section_extreme_density_rank INTEGER,
+                cross_section_extreme_density_percentile DOUBLE,
                 PRIMARY KEY (code, calc_date)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l3_gene_wave (
+                code                        VARCHAR NOT NULL,
+                wave_id                     VARCHAR NOT NULL,
+                direction                   VARCHAR,
+                start_date                  DATE,
+                end_date                    DATE,
+                start_price                 DOUBLE,
+                end_price                   DOUBLE,
+                signed_return_pct           DOUBLE,
+                magnitude_pct               DOUBLE,
+                duration_trade_days         INTEGER,
+                extreme_count               INTEGER,
+                extreme_density             DOUBLE,
+                last_extreme_date           DATE,
+                last_extreme_price          DOUBLE,
+                two_b_failure_count         INTEGER,
+                end_confirm_index           INTEGER,
+                trend_direction_before      VARCHAR,
+                trend_direction_after       VARCHAR,
+                wave_role                   VARCHAR,
+                reversal_tag                VARCHAR,
+                history_sample_size         INTEGER,
+                magnitude_rank              INTEGER,
+                duration_rank               INTEGER,
+                extreme_density_rank        INTEGER,
+                magnitude_percentile        DOUBLE,
+                duration_percentile         DOUBLE,
+                extreme_density_percentile  DOUBLE,
+                magnitude_zscore            DOUBLE,
+                duration_zscore             DOUBLE,
+                extreme_density_zscore      DOUBLE,
+                created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (code, wave_id)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l3_gene_event (
+                code                    VARCHAR NOT NULL,
+                wave_id                 VARCHAR NOT NULL,
+                event_date              DATE    NOT NULL,
+                event_seq               INTEGER NOT NULL,
+                direction               VARCHAR,
+                event_type              VARCHAR,
+                event_price             DOUBLE,
+                previous_extreme_price  DOUBLE,
+                spacing_trade_days      INTEGER,
+                density_after_event     DOUBLE,
+                is_two_b_failure        BOOLEAN,
+                failure_date            DATE,
+                created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (code, wave_id, event_seq)
             )
             """,
             # L4

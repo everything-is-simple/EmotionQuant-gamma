@@ -7,6 +7,7 @@ from src.config import Settings
 from src.data.cleaner import clean_industry_daily, clean_industry_structure_daily, clean_market_snapshot, clean_stock_adj_daily
 from src.data.store import Store
 from src.logging_utils import logger
+from src.selector.gene import compute_gene
 from src.selector.irs import compute_irs
 from src.selector.mss_experiments import compute_mss_variant
 
@@ -24,6 +25,12 @@ def _next_trade_day_or_fallback(store: Store, last: date | None, fallback_start:
     return last
 
 
+def _date_column_for_table(table: str) -> str:
+    if table == "l3_stock_gene":
+        return "calc_date"
+    return "date"
+
+
 def _resolve_window(
     store: Store,
     target_table: str,
@@ -35,7 +42,11 @@ def _resolve_window(
     if force and start is None:
         start = config.history_start
     if start is None:
-        start = _next_trade_day_or_fallback(store, store.get_max_date(target_table), config.history_start)
+        start = _next_trade_day_or_fallback(
+            store,
+            store.get_max_date(target_table, date_col=_date_column_for_table(target_table)),
+            config.history_start,
+        )
     if end is None:
         end = _today()
     if start > end:
@@ -45,7 +56,7 @@ def _resolve_window(
 
 def build_l2(store: Store, config: Settings, start: date | None, end: date | None, force: bool) -> int:
     if force:
-        # force 只清 L2 自己的产物，不连坐上层，避免为了重做加工层把 L3/L4 一起冲掉。
+        # Only clear L2 outputs on forced rebuild.
         store.conn.execute("DELETE FROM l2_stock_adj_daily")
         store.conn.execute("DELETE FROM l2_industry_daily")
         store.conn.execute("DELETE FROM l2_industry_structure_daily")
@@ -67,15 +78,18 @@ def build_l3(store: Store, config: Settings, start: date | None, end: date | Non
     if force:
         store.conn.execute("DELETE FROM l3_mss_daily")
         store.conn.execute("DELETE FROM l3_irs_daily")
+        store.conn.execute("DELETE FROM l3_stock_gene")
+        store.conn.execute("DELETE FROM l3_gene_wave")
+        store.conn.execute("DELETE FROM l3_gene_event")
 
-    # MSS / IRS 进度锚必须各自独立推进，避免其中一层已追平时把另一层的缺口静默跳过。
+    # Keep each L3 product on its own rebuild window.
     mss_window = _resolve_window(store, "l3_mss_daily", config, start, end, force)
     irs_window = _resolve_window(store, "l3_irs_daily", config, start, end, force)
-    if mss_window is None and irs_window is None:
+    gene_window = _resolve_window(store, "l3_stock_gene", config, start, end, force)
+    if mss_window is None and irs_window is None and gene_window is None:
         logger.info("L3 already up-to-date, skip.")
         return 0
 
-    # L3 在 v0.01 只构建 MSS/IRS；signal 仍由 Strategy 运行时写入。
     n1 = 0
     if mss_window is not None:
         mss_begin, mss_finish = mss_window
@@ -91,8 +105,6 @@ def build_l3(store: Store, config: Settings, start: date | None, end: date | Non
     n2 = 0
     if irs_window is not None:
         irs_begin, irs_finish = irs_window
-        # Phase 2 起，IRS 的正式窗口/阈值/权重都从 config 注入；
-        # build_l3 只负责把配置传透，不在这里再藏第二份硬编码。
         n2 = compute_irs(
             store,
             irs_begin,
@@ -107,7 +119,12 @@ def build_l3(store: Store, config: Settings, start: date | None, end: date | Non
             factor_weight_bd=config.irs_factor_weight_bd,
             factor_weight_gn=config.irs_factor_weight_gn,
         )
-    return n1 + n2
+
+    n3 = 0
+    if gene_window is not None:
+        gene_begin, gene_finish = gene_window
+        n3 = compute_gene(store, gene_begin, gene_finish)
+    return n1 + n2 + n3
 
 
 def build_layers(

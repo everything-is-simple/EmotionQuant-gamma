@@ -13,7 +13,7 @@
 5. `docs/Strategy/PAS/lance-beggs-ytc-analysis.md`
 6. `docs/Strategy/PAS/volman-ytc-mapping.md`
 7. `docs/Strategy/PAS/xu-jiachong-naked-kline-analysis.md`
-8. `docs/observatory/god_view_8_perspectives_report_v0.01.md`
+8. `docs/spec/v0.01/90-archive/god_view_8_perspectives_report_v0.01.md`
 9. `docs/observatory/sandbox-review-standard.md`
 10. `G:\EmotionQuant\EmotionQuant-beta\docs\design\core-algorithms\pas\pas-algorithm.md`
 11. `G:\EmotionQuant\EmotionQuant-beta\docs\design\core-algorithms\pas\pas-data-models.md`

@@ -207,7 +207,7 @@
 
 ### 8.2 研究附录入口（非约束）
 
-`docs/observatory/god_view_8_perspectives_report_v0.01.md` 作为系统观察框架与版本演进研究附录保留。
+`docs/spec/v0.01/90-archive/god_view_8_perspectives_report_v0.01.md` 作为系统观察框架与版本演进研究附录保留。
 
 口径约束：
 

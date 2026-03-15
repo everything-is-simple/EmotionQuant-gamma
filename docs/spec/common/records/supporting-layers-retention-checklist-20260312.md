@@ -50,7 +50,7 @@
 | 对象 | 当前角色 | 最小保留形态 |
 |---|---|---|
 | `docs/reference/` | 参考层 | 只保留 `README.md`、`a-stock-rules/` 和 `operations/`；不回长外部方法论综述。 |
-| `docs/observatory/` | 方法层 | 只保留 `sandbox-review-standard.md` 和少量历史观察附录；不再回收战役专属计划或临时路线。 |
+| `docs/observatory/` | 方法层 | 只保留 `README.md` 与 `sandbox-review-standard.md`；历史观察附录与战场早期草案全部迁回对应归档层。 |
 
 ### 3.3 未来可并入 / 退场
 
@@ -79,18 +79,18 @@
 
 | 文件 | 当前定位 | 后续动作 |
 |---|---|---|
-| `docs/reference/operations/temp-files-guide.md` | 运维补充说明 | 若 `setup-guide.md` 后续已完整吸收，可考虑并回单一运维入口。 |
-| `docs/reference/operations/data-source-and-migration.md.template` | 脱敏模板 | 若模板后续稳定迁入脚本或独立模板仓，可继续降级。 |
-| `docs/observatory/god_view_8_perspectives_report_v0.01.md` | 历史观察附录 | 当前可保留，但只作为观察与路线思考附录，不得再抬升为现行策略设计依据。 |
-| `docs/workflow/README.md` | 单目录导航页 | 目录仍存在时保留；若未来流程层只剩一个单文件直链入口，可再评估并入上级导航。 |
+| `docs/reference/operations/setup-guide.md` | 运维总入口 | 已吸收临时文件清理说明；`operations/` 当前只保留单一总入口。 |
+| `docs/Strategy/MSS/90-archive/manual-sentiment-tracking-experience.md` | 历史经验补充 | 已降到 `MSS` 归档层，不再占用主入口位。 |
+| `docs/spec/v0.01/90-archive/god_view_8_perspectives_report_v0.01.md` | 历史观察附录 | 已并入 `v0.01` 历史归档层，只作为观察与路线思考附录，不得再抬升为现行策略设计依据。 |
+| `docs/workflow/6A-WORKFLOW.md` | 流程层唯一 SoT | `workflow/` 已瘦到单文件直链入口。 |
 
 ### 4.2 未来可并入 / 退场
 
 | 文件 | 未来条件 | 目标方向 |
 |---|---|---|
-| `docs/observatory/god_view_8_perspectives_report_v0.01.md` | `blueprint/` 与 `v0.01` roadmap 不再直接引用时 | 可并入 `v0.01` 历史归档层 |
-| `docs/reference/operations/data-source-and-migration.md.template` | 若模板改为脚本生成或仓库外维护时 | 可移出 `docs/reference/operations/` |
-| `docs/workflow/README.md` | 若 `docs/README.md` 和根 `README.md` 均直链 `6A-WORKFLOW.md` 且流程层不再扩展时 | 可评估移除目录级 README |
+| `docs/spec/v0.01/90-archive/god_view_8_perspectives_report_v0.01.md` | 已完成归档 | 继续留在 `v0.01` 历史归档层，不再回流 `docs/observatory/` |
+| `docs/reference/operations/setup-guide.md` | 若后续运维说明稳定迁入脚本或外部模板仓 | 可继续保持单文件入口，不再拆分子页 |
+| `docs/workflow/6A-WORKFLOW.md` | 若流程层长期不再扩展 | 保持单文件直链入口即可，无需恢复目录级 README |
 
 ---
 

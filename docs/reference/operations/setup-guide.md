@@ -387,7 +387,7 @@ VACUUM;
 - 当前状态：`docs/spec/common/records/development-status.md`
 - 历史基线：`docs/design-v2/01-system/system-baseline.md`
 - 开发工作流：`docs/workflow/6A-WORKFLOW.md`
-- 临时文件指南：`docs/reference/operations/temp-files-guide.md`
+- 临时文件清理：见本文第 3 节与 `scripts/ops/clean_temp_files.ps1`
 
 ---
 

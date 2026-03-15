@@ -1,23 +1,20 @@
 # MSS 理论来源导航
 
-**版本**：`MSS 理论参考入口`  
-**状态**：`Active`  
-**封版日期**：`不适用（Active）`  
-**变更规则**：`允许补充来源索引、经验边界与勘误；不直接定义当前 MSS 执行口径。`
+**版本**: `MSS 理论参考入口`  
+**状态**: `Active`
 
 ---
 
 ## 定位
 
-`docs/Strategy/MSS/` 是 `MSS` 的理论来源与经验补充层。
+`docs/Strategy/MSS/` 只保留 `MSS` 仍然有效的共享理论来源。
 
 这里负责：
 
-1. 保存市场情绪框架的一级来源。
-2. 保存手工盯盘与人工复核的经验补充。
-3. 说明哪些经验被当前主线吸收为市场级风险调节背景。
+1. 保存 `MSS` 的一级理论来源
+2. 说明哪些经验已被主线吸收，哪些只保留为历史补充
 
-这里不是当前 `MSS` 的正式设计正文。
+这里不再保留散落的经验随记入口。
 
 ---
 
@@ -26,24 +23,22 @@
 | 文件 | 角色 |
 |---|---|
 | `market-sentiment-system-2024-analysis.md` | `MSS` 的一级理论来源 |
-| `manual-sentiment-tracking-experience.md` | 手工情绪记录的经验补充 |
+| `90-archive/README.md` | `MSS` 的历史经验补充归档 |
 
 ---
 
 ## 使用边界
 
-1. 这里解释情绪观测框架、经验背景和采用边界。
-2. 这里不定义当前 `phase / risk_regime / overlay` 的正式字段与状态机。
-3. 当前主线 `MSS` 的正式正文，以 `blueprint/01-full-design/04-mss-lite-contract-annex-20260308.md` 与 `blueprint/01-full-design/08-mss-minimal-tradable-design-20260309.md` 为准。
+1. 这里解释情绪观察框架与来源边界，不定义当前 `MSS` 的正式执行口径
+2. 当前主线 `MSS` 的正式正文，以 `blueprint/01-full-design/04-mss-lite-contract-annex-20260308.md` 和 `blueprint/01-full-design/08-mss-minimal-tradable-design-20260309.md` 为准
+3. 历史经验材料已降到 `90-archive/`，只用于回看与补充，不再作为一级来源入口
 
 ---
 
 ## 相关文档
 
 1. `docs/Strategy/README.md`
-2. `docs/Strategy/theoretical-foundations.md`
-3. `docs/design-v2/01-system/system-baseline.md`
-4. `docs/spec/`
-5. `docs/spec/common/records/development-status.md`
-6. `blueprint/01-full-design/04-mss-lite-contract-annex-20260308.md`
-7. `blueprint/01-full-design/08-mss-minimal-tradable-design-20260309.md`
+2. `docs/design-v2/01-system/system-baseline.md`
+3. `docs/spec/common/records/development-status.md`
+4. `blueprint/01-full-design/04-mss-lite-contract-annex-20260308.md`
+5. `blueprint/01-full-design/08-mss-minimal-tradable-design-20260309.md`

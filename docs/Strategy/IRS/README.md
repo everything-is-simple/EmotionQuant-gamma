@@ -40,9 +40,8 @@
 ## 相关文档
 
 1. `docs/Strategy/README.md`
-2. `docs/Strategy/theoretical-foundations.md`
-3. `docs/design-v2/01-system/system-baseline.md`
-4. `docs/spec/`
-5. `docs/spec/common/records/development-status.md`
-6. `blueprint/01-full-design/03-irs-lite-contract-annex-20260308.md`
-7. `blueprint/01-full-design/07-irs-minimal-tradable-design-20260309.md`
+2. `docs/design-v2/01-system/system-baseline.md`
+3. `docs/spec/`
+4. `docs/spec/common/records/development-status.md`
+5. `blueprint/01-full-design/03-irs-lite-contract-annex-20260308.md`
+6. `blueprint/01-full-design/07-irs-minimal-tradable-design-20260309.md`
