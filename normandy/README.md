@@ -148,6 +148,7 @@
 - `03-execution/records/26-phase-n3i-tachibana-pilot-pack-implementation-scaffold-record-20260315.md`
 - `03-execution/records/27-phase-n3j-tachibana-pilot-pack-runner-implementation-record-20260315.md`
 - `03-execution/records/28-phase-n3k-tachibana-pilot-pack-formal-cooldown-matrix-record-20260315.md`
+- `03-execution/records/29-phase-n3l-tachibana-pilot-pack-unit-regime-overlay-record-20260315.md`
 
 它们分别负责：
 
@@ -206,6 +207,7 @@
 53. `N3i` implementation scaffold：把 `E1` 固定成 Normandy thin runner、把 `E2` 固定成 engine `signal_filter hook`、把 `E3` 固定成 payload-level tag glue。
 54. `N3j` runner implementation：把 pilot-pack matrix/digest runner、same-code cooldown hook 与最小 smoke evidence 正式落库，并把默认运行路径对齐到 `docs/reference/operations` 的三目录纪律。
 55. `N3k` formal cooldown matrix：把 `CD0 / CD2 / CD5 / CD10` 在正式窗口下跑成 cooldown scorecard，写死 `CD2 = no-op`、`CD5 = first effective cooldown`、`CD10 = provisional cooldown leader`。
+56. `N3l` unit-regime overlay：把正式窗口下的 `fixed_notional` operating pair 与 `single_lot` floor pair 并排写定，正式收窄为 `FIXED_NOTIONAL_CONTROL` 仍是唯一 operating regime、`SINGLE_LOT_CONTROL` 只保留为 floor sanity、`TRAIL_SCALE_OUT_25_75` 在 floor 下退化、`reduced_unit_scale` 仍只是 payload tag。
 
 ---
 
