@@ -103,6 +103,7 @@ markers = [
     "unit: Unit tests",
     "integration: Integration tests",
     "slow: Slow running tests",
+    "smoke: Minimal runtime smoke tests",
 ]
 
 

@@ -102,6 +102,7 @@
 5. `Phase 3 = P3 MSS 最小可交易风控层`
 6. `Phase 4 = P4 全链回归与 Gate 收口`
 7. `Phase 4.1 = P4.1 MSS / Broker 整改`
+8. `Phase 5 = 研究线 migration package`
 
 当前不允许跳步：
 
@@ -120,6 +121,7 @@
 | `Phase 3` | `04 + 08` | `04` 定 contract 边界，`08` 定 MSS 算法面 |
 | `Phase 4` | `01-08` | 只重跑、归因、给出主线结论，不再改写正文 |
 | `Phase 4.1` | `04 / 05 / 08 + Phase 4 records` | 只拆 `MSS / Broker` 执行层，不重开 `PAS / IRS` 正文，也不改写 `P3 exit / P4 NO-GO` |
+| `Phase 5` | `Normandy / Positioning closeout records + 09 + current implementation spec` | 只做 migration absorption 与 governance patch，不新增 replay |
 
 ### 4.2 当前 Phase Card 入口
 
@@ -133,6 +135,7 @@
 5. `blueprint/03-execution/05-phase-3-mss-card-20260309.md`
 6. `blueprint/03-execution/06-phase-4-gate-card-20260309.md`
 7. `blueprint/03-execution/06.1-phase-4.1-mss-broker-remediation-card-20260311.md`
+8. `blueprint/03-execution/07-phase-5-research-line-migration-package-card-20260315.md`
 
 ---
 
@@ -154,6 +157,8 @@
    - `blueprint/03-execution/06-phase-4-gate-card-20260309.md`
 7. `Phase 4.1`：
    - `blueprint/03-execution/06.1-phase-4.1-mss-broker-remediation-card-20260311.md`
+8. `Phase 5`：
+   - `blueprint/03-execution/07-phase-5-research-line-migration-package-card-20260315.md`
 
 ### 5.2 使用规则
 
@@ -205,14 +210,17 @@
 3. `Phase 4.1 = Completed (remediation exhausted, NO-GO persists)`
 4. rollback target 保持：
    - `legacy_bof_baseline`
+5. 当前 active mainline package：
+   - `Phase 5 / research-line migration package`
 
 后续顺序固定为：
 
 1. 当前不再在 `Phase 4.1` 内冻结新的 `MSS / Broker` 候选
 2. 正式默认路径继续保持：
    - `legacy_bof_baseline`
-3. 若未来继续整改，必须新开治理段和新证据链，不再沿 `P4.1` 做局部微调
+3. 当前先做 `Phase 5`，把第二、第三战场已收官结论迁回主线治理
+4. 若未来继续新实验，必须新开治理段和新证据链
 
 也就是：
 
-`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 / Phase 4.1 已收口；Phase 4.1 的最终候选 size_only_overlay 已完成 final direct Gate replay，但仍未推翻 legacy_bof_baseline，因此当前默认路径继续保持 legacy，且不再沿 P4.1 继续冻结新候选。`
+`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 / Phase 4.1 已收口；当前主线先不开新实验，而是进入 Phase 5，把研究线结论迁回主线 SoT。`

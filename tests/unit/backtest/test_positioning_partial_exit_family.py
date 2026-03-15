@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from src.backtest.positioning_partial_exit_family import (
     build_positioning_partial_exit_family_digest,
     build_positioning_partial_exit_family_scenarios,
@@ -8,6 +10,7 @@ from src.backtest.positioning_partial_exit_family import (
 from src.config import Settings
 
 
+@pytest.mark.smoke
 def test_build_positioning_partial_exit_family_scenarios_covers_control_and_first_batch_ratios() -> None:
     cfg = Settings(
         BACKTEST_INITIAL_CASH=1_000_000,

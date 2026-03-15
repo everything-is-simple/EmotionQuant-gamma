@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from datetime import date
 
+import pytest
+
 from src.backtest.normandy_tachibana_pilot_pack import (
     FLOOR_CONTROL_LABEL,
     FLOOR_PROXY_LABEL,
@@ -75,6 +77,7 @@ def _build_digest_result(
     }
 
 
+@pytest.mark.smoke
 def test_build_normandy_tachibana_pilot_pack_scenarios_respects_pilot_boundaries() -> None:
     scenarios = build_normandy_tachibana_pilot_pack_scenarios(Settings())
     by_label = {scenario.label: scenario for scenario in scenarios}

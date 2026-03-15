@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from src.config import Settings
 
 
@@ -94,6 +96,7 @@ def test_pas_priority_and_single_pattern_override() -> None:
     assert cfg.pas_effective_patterns == ["tst"]
 
 
+@pytest.mark.smoke
 def test_default_paths_follow_operations_directory_discipline() -> None:
     cfg = Settings(DATA_PATH="", TEMP_PATH="", LOG_PATH="")
     repo_drive = Path(__file__).resolve().drive

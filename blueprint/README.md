@@ -163,6 +163,7 @@
 7. `05-phase-3-mss-card-20260309.md`
 8. `06-phase-4-gate-card-20260309.md`
 9. `06.1-phase-4.1-mss-broker-remediation-card-20260311.md`
+10. `07-phase-5-research-line-migration-package-card-20260315.md`
 
 当前冻结后的使用顺序固定为：
 
