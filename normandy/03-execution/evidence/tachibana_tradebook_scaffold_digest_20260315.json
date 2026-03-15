@@ -1,0 +1,143 @@
+{
+  "source_workbook": "G:\\《股市浮沉二十载》\\2012.(Japan)【立花义正】\\丽花义正-交易谱（1975.01-1976.12）\\你也能成为股票操作高手立花义正-Pioneer交易记录19751976.xlsx",
+  "source_sheet": "股票-价位表+部位记录表",
+  "rows_total": 731,
+  "rows_with_close": 569,
+  "rows_with_holiday_tag": 162,
+  "months_total": 24,
+  "month_stats": {
+    "1975-01": {
+      "calendar_rows": 31,
+      "close_rows": 22,
+      "holiday_rows": 7
+    },
+    "1975-02": {
+      "calendar_rows": 28,
+      "close_rows": 22,
+      "holiday_rows": 6
+    },
+    "1975-03": {
+      "calendar_rows": 31,
+      "close_rows": 24,
+      "holiday_rows": 7
+    },
+    "1975-04": {
+      "calendar_rows": 30,
+      "close_rows": 24,
+      "holiday_rows": 6
+    },
+    "1975-05": {
+      "calendar_rows": 31,
+      "close_rows": 24,
+      "holiday_rows": 7
+    },
+    "1975-06": {
+      "calendar_rows": 30,
+      "close_rows": 24,
+      "holiday_rows": 6
+    },
+    "1975-07": {
+      "calendar_rows": 31,
+      "close_rows": 26,
+      "holiday_rows": 5
+    },
+    "1975-08": {
+      "calendar_rows": 31,
+      "close_rows": 25,
+      "holiday_rows": 6
+    },
+    "1975-09": {
+      "calendar_rows": 30,
+      "close_rows": 23,
+      "holiday_rows": 8
+    },
+    "1975-10": {
+      "calendar_rows": 31,
+      "close_rows": 25,
+      "holiday_rows": 6
+    },
+    "1975-11": {
+      "calendar_rows": 30,
+      "close_rows": 22,
+      "holiday_rows": 8
+    },
+    "1975-12": {
+      "calendar_rows": 31,
+      "close_rows": 23,
+      "holiday_rows": 8
+    },
+    "1976-01": {
+      "calendar_rows": 31,
+      "close_rows": 22,
+      "holiday_rows": 9
+    },
+    "1976-02": {
+      "calendar_rows": 29,
+      "close_rows": 22,
+      "holiday_rows": 7
+    },
+    "1976-03": {
+      "calendar_rows": 31,
+      "close_rows": 26,
+      "holiday_rows": 5
+    },
+    "1976-04": {
+      "calendar_rows": 30,
+      "close_rows": 24,
+      "holiday_rows": 6
+    },
+    "1976-05": {
+      "calendar_rows": 31,
+      "close_rows": 22,
+      "holiday_rows": 9
+    },
+    "1976-06": {
+      "calendar_rows": 30,
+      "close_rows": 25,
+      "holiday_rows": 5
+    },
+    "1976-07": {
+      "calendar_rows": 31,
+      "close_rows": 26,
+      "holiday_rows": 5
+    },
+    "1976-08": {
+      "calendar_rows": 31,
+      "close_rows": 25,
+      "holiday_rows": 6
+    },
+    "1976-09": {
+      "calendar_rows": 30,
+      "close_rows": 23,
+      "holiday_rows": 8
+    },
+    "1976-10": {
+      "calendar_rows": 31,
+      "close_rows": 24,
+      "holiday_rows": 7
+    },
+    "1976-11": {
+      "calendar_rows": 30,
+      "close_rows": 23,
+      "holiday_rows": 7
+    },
+    "1976-12": {
+      "calendar_rows": 31,
+      "close_rows": 23,
+      "holiday_rows": 8
+    }
+  },
+  "machine_readable_trade_markers": false,
+  "trade_marker_boundary": "Price/calendar data is cell-readable, but trade and open-position markers are not present as machine-readable workbook cell values.",
+  "drawing_files": [
+    "xl/drawings/_rels/drawing1.xml.rels",
+    "xl/drawings/drawing1.xml"
+  ],
+  "chart_files": [
+    "xl/charts/chart4.xml",
+    "xl/charts/chart5.xml",
+    "xl/charts/chart2.xml",
+    "xl/charts/chart1.xml",
+    "xl/charts/chart3.xml"
+  ]
+}

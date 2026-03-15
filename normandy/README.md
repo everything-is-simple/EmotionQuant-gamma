@@ -1,7 +1,7 @@
 # Normandy
 
 **状态**: `Active`  
-**日期**: `2026-03-13`
+**日期**: `2026-03-15`
 
 ---
 
@@ -75,15 +75,16 @@
 
 ## 4. 当前目标
 
-第二战场的当前目标固定为三件事：
+第二战场的当前目标固定为四件事：
 
 1. 先证明 `PAS raw alpha` 到底来自哪类 entry。
 2. 再在 `BOF / pinbar` family 内部，用同一套 Broker 出场语义做 quality split。
 3. 最后才拆 `exit damage`，确认问题是在“买错”还是“卖坏”。
+4. 在不伪装“完整复刻立花系统”的前提下，把 `Tachibana` 收成可回放、可迁移的 execution subset。
 
 一句话说：
 
-`Normandy 不是为了继续救当前 plus 默认路径，而是为了先把 alpha 来源、BOF family quality 和 exit / execution 伤害拆干净。`
+`Normandy 不是为了继续救当前 plus 默认路径，而是为了先把 alpha 来源、BOF family quality、exit / execution 伤害，以及 Tachibana 可迁移执行子集拆干净。`
 
 ---
 
@@ -105,6 +106,7 @@
 - `02-implementation-spec/07-fb-boundary-stability-follow-up-spec-20260312.md`
 - `02-implementation-spec/08-sb-refinement-or-no-go-spec-20260312.md`
 - `02-implementation-spec/09-bof-pinbar-broker-frozen-go-spec-20260312.md`
+- `02-implementation-spec/10-tachibana-quantifiable-execution-system-spec-20260315.md`
 - `01-full-design/90-research-assets/README.md`
 - `01-full-design/90-research-assets/tachibana-crowd-failure-minimal-contract-note-20260312.md`
 - `03-execution/00-dev-data-baseline-inheritance-20260311.md`
@@ -134,6 +136,13 @@
 - `03-execution/records/14-phase-n2a-2-profit-gated-micro-sweep-record-20260313.md`
 - `03-execution/records/15-phase-n2a-3-two-stage-trailing-probe-record-20260313.md`
 - `03-execution/records/16-phase-normandy-campaign-closeout-record-20260313.md`
+- `03-execution/records/17-phase-n3-tachibana-tradebook-contract-record-20260315.md`
+- `03-execution/records/18-phase-n3a-tachibana-january-sample-blocker-record-20260315.md`
+- `03-execution/records/19-phase-n3b-tachibana-rear-pages-source-correction-record-20260315.md`
+- `03-execution/records/20-phase-n3c-tachibana-semantics-and-replay-ledger-record-20260315.md`
+- `03-execution/records/21-phase-n3d-emotionquant-module-reuse-triage-record-20260315.md`
+- `03-execution/records/22-phase-n3e-tachibana-state-transition-candidate-table-record-20260315.md`
+- `03-execution/records/23-phase-n3f-tachibana-validation-rule-candidate-matrix-record-20260315.md`
 
 它们分别负责：
 
@@ -179,6 +188,14 @@
 40. `N2A-2` profit-gated micro-sweep formal readout：固定 `PROFIT_GATED_TRAIL_25P` 是当前最平衡的 preservation 候选，但它仍然只是 `partial trade-off`，不支持默认 trailing-stop 语义改写，也不解锁 `promotion lane`。
 41. `N2A-3` two-stage trailing probe formal readout：固定 `POST_15P_TRAIL_9P` 是当前更干净的局部机制候选，但整体仍然属于 `no_clean_preservation_candidate_yet`，因此只保留 `N2A` 的 targeted diagnosis，不改默认 trailing-stop 语义，也不解锁 `promotion lane`。
 42. `Normandy campaign closeout` formal readout：固定当前战役所有已定义 cards 均已闭环，当前主队列清空；可迁回主线的是治理边界与负面约束，不是新的默认参数；若未来继续，必须新开 `targeted hypothesis` 或 `mainline migration package`。
+43. `Tachibana quantifiable execution system` implementation spec：把立花方法从单一 contrary alpha 假说重新整理为可量化的执行 doctrine。
+44. `N3` formal record：固定交易谱第一轮正确入口是 `ledger scaffold`，而不是直接声称“原始交易账已经可机读”。
+45. `N3a` formal blocker：写死 `1975-01` 当前只能作为 manual backfill sample，不能冒充事实真值页。
+46. `N3b` formal source correction：写死后页月表才是真实事实源，并正式承认 `long / short` 双侧未平仓语义。
+47. `N3c` formal record：固定执行语义证据表与 replay ledger，确认立花方法已可被回放为 state-transition-aware ledger。
+48. `N3d` formal triage：把 `EmotionQuant-gamma` 内对立花验证的直接复用、改造复用、退出主线资产正式分流。
+49. `N3e` formal record：把立花方法冻结为 `9` 个状态迁移候选簇，并明确哪些可迁回主线、哪些只能保留为结构类对象。
+50. `N3f` formal record：把候选簇进一步压成 `R1-R10` 规则候选矩阵，并写死当前可诚实开跑的 pilot subset。
 
 ---
 
@@ -197,7 +214,7 @@
 
 第二战场当前一句话基线固定为：
 
-`保持 blueprint 主线结论不变，以 legacy_bof_baseline 为当前默认运行口径，在继承同一套三目录 / 执行库 / 旧库 / TuShare 双通道纪律的前提下，先独立证明 PAS raw alpha，再在同一套 Broker 下把 BOF family quality 读干净，最后才拆 exit damage。`
+`保持 blueprint 主线结论不变，以 legacy_bof_baseline 为当前默认运行口径，在继承同一套三目录 / 执行库 / 旧库 / TuShare 双通道纪律的前提下，先独立证明 PAS raw alpha，再在同一套 Broker 下把 BOF family quality 和 exit damage 读干净，同时把 Tachibana doctrine 收成可回放、可迁移的 execution subset。`
 
 再压缩一句：
 

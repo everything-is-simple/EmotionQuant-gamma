@@ -84,6 +84,7 @@ src/data/**/__pycache__/
 src/data/**/__pycache__/**
 !docs/reference/**/*.xlsx
 !docs/reference/**/*.xls
+!normandy/03-execution/evidence/*tachibana*.csv
 
 # ========================================
 # Logs & Cache
