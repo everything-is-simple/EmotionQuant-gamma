@@ -12,6 +12,26 @@ from pathlib import Path
 from typing import Any
 
 
+COMMON_BINARY_CANDIDATES = {
+    "gswin64c": [
+        Path(r"C:\Program Files\gs\gs10.06.0\bin\gswin64c.exe"),
+        Path(r"C:\Program Files\gs\gs10.05.1\bin\gswin64c.exe"),
+    ],
+    "latexmk": [
+        Path(r"C:\Users\Administrator\AppData\Local\Programs\MiKTeX\miktex\bin\x64\latexmk.exe"),
+    ],
+    "pdflatex": [
+        Path(r"C:\Users\Administrator\AppData\Local\Programs\MiKTeX\miktex\bin\x64\pdflatex.exe"),
+    ],
+    "xelatex": [
+        Path(r"C:\Users\Administrator\AppData\Local\Programs\MiKTeX\miktex\bin\x64\xelatex.exe"),
+    ],
+    "lualatex": [
+        Path(r"C:\Users\Administrator\AppData\Local\Programs\MiKTeX\miktex\bin\x64\lualatex.exe"),
+    ],
+}
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Probe local file-operation capabilities for Office, PDF, PS, PSD, and DuckDB."
@@ -45,11 +65,21 @@ def _module_status(name: str) -> dict[str, Any]:
 
 
 def _binary_status(name: str) -> dict[str, Any]:
-    resolved = shutil.which(name)
+    resolved = _resolve_binary(name)
     return {
         "available": resolved is not None,
         "path": resolved,
     }
+
+
+def _resolve_binary(name: str) -> str | None:
+    resolved = shutil.which(name)
+    if resolved:
+        return resolved
+    for candidate in COMMON_BINARY_CANDIDATES.get(name, []):
+        if candidate.exists():
+            return str(candidate)
+    return None
 
 
 def _probe_word(temp_root: Path) -> dict[str, Any]:
@@ -202,6 +232,59 @@ def _probe_postscript(temp_root: Path) -> dict[str, Any]:
     }
 
 
+def _probe_tex(temp_root: Path) -> dict[str, Any]:
+    tex_path = temp_root / "probe.tex"
+    pdf_path = temp_root / "probe-tex.pdf"
+    log_path = temp_root / "probe-tex.log"
+    tex_path.write_text(
+        r"\documentclass{article}"
+        "\n"
+        r"\begin{document}"
+        "\n"
+        r"tex-ready"
+        "\n"
+        r"\end{document}"
+        "\n",
+        encoding="utf-8",
+    )
+
+    engine = _resolve_binary("pdflatex") or _resolve_binary("xelatex") or _resolve_binary("lualatex")
+    if not engine:
+        return {
+            "available": False,
+            "path": str(tex_path),
+            "reason": "No TeX engine found.",
+        }
+
+    command = [
+        engine,
+        "-interaction=nonstopmode",
+        "-halt-on-error",
+        f"-jobname={pdf_path.stem}",
+        f"-output-directory={temp_root}",
+        str(tex_path),
+    ]
+    completed = subprocess.run(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    if completed.stdout:
+        log_path.write_text(completed.stdout, encoding="utf-8", errors="ignore")
+
+    return {
+        "available": completed.returncode == 0 and pdf_path.exists(),
+        "path": str(tex_path),
+        "engine": engine,
+        "rendered_pdf_path": str(pdf_path) if pdf_path.exists() else None,
+        "log_path": str(log_path) if log_path.exists() else None,
+        "returncode": completed.returncode,
+        "stderr_tail": completed.stderr[-400:],
+    }
+
+
 def _probe_psd(temp_root: Path) -> dict[str, Any]:
     try:
         from psd_tools import PSDImage
@@ -305,7 +388,20 @@ def run_probe(temp_root: Path) -> dict[str, Any]:
         },
         "binaries": {
             name: _binary_status(name)
-            for name in ["WINWORD", "EXCEL", "POWERPNT", "Acrobat", "Photoshop", "gswin64c", "pdftoppm"]
+            for name in [
+                "WINWORD",
+                "EXCEL",
+                "POWERPNT",
+                "Acrobat",
+                "Photoshop",
+                "gswin64c",
+                "pdftoppm",
+                "latexmk",
+                "pdflatex",
+                "xelatex",
+                "lualatex",
+                "tectonic",
+            ]
         },
         "format_probes": {},
         "desktop_apps": {},
@@ -317,6 +413,7 @@ def run_probe(temp_root: Path) -> dict[str, Any]:
     payload["format_probes"]["pdf"] = _probe_pdf(temp_root)
     payload["format_probes"]["duckdb"] = _probe_duckdb(temp_root)
     payload["format_probes"]["postscript_ps"] = _probe_postscript(temp_root)
+    payload["format_probes"]["tex"] = _probe_tex(temp_root)
     payload["format_probes"]["photoshop_psd"] = _probe_psd(temp_root)
 
     if os.name == "nt":

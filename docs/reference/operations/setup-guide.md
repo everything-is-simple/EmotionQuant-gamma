@@ -176,7 +176,7 @@ python -c "from src.config import get_settings; cfg = get_settings(); print(f'DA
 
 ### 文件操作扩展环境
 
-如果当前系统需要直接处理 `Word / Excel / PowerPoint / PDF / PS / DuckDB` 文件，额外安装：
+如果当前系统需要直接处理 `Word / Excel / PowerPoint / PDF / PS / TeX / DuckDB` 文件，额外安装：
 
 ```powershell
 pip install -e .[fileops]
@@ -188,12 +188,18 @@ pip install -e .[fileops]
 python scripts/ops/file_ops_probe.py --output G:\EmotionQuant-temp\artifacts\file-ops-probe\probe-report.json
 ```
 
+如果要彻底打通 `.ps` 与 `.tex`，还需要系统级工具：
+
+1. `Ghostscript`：用于 `.ps/.eps` 渲染与转换
+2. `MiKTeX` 或其他 TeX 发行版：用于 `.tex` 编译
+
 探针会验证：
 
 1. `docx / xlsx / pptx / pdf / duckdb` 的创建与回读
 2. `ps` 的 Ghostscript 运行时是否就绪
-3. `psd` 模块是否可用
-4. Windows 下 `Word / Excel / PowerPoint / Acrobat` 的 COM 自动化入口是否存在
+3. `tex` 是否可编译成 PDF
+4. `psd` 模块是否可用
+5. Windows 下 `Word / Excel / PowerPoint / Acrobat` 的 COM 自动化入口是否存在
 
 **预期输出**：
 ```
