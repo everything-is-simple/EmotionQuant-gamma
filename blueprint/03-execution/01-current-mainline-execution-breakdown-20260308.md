@@ -207,28 +207,30 @@
 
 ## 7. 下一步
 
-从 `2026-03-11` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3`、`Phase 4` 与 `Phase 4.1` 都已完成当前轮次收口。`Phase 4.1` 内部先后完成了 `P4.1-A / P4.1-B / P4.1-C / P4.1-D / P4.1-E / P4.1-F`，其中 `carryover_buffer(1)` 已完成一次 direct `Phase 4 Gate replay`，随后治理裁决冻结最后一条 `size_only_overlay` 候选，但 final replay 仍未推翻 `legacy_bof_baseline`。
+从 `2026-03-15` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3`、`Phase 4`、`Phase 4.1` 与 `Phase 5` 都已完成当前轮次收口。`Phase 4.1` 内部先后完成了 `P4.1-A / P4.1-B / P4.1-C / P4.1-D / P4.1-E / P4.1-F`，其中 `carryover_buffer(1)` 已完成一次 direct `Phase 4 Gate replay`，随后治理裁决冻结最后一条 `size_only_overlay` 候选，但 final replay 仍未推翻 `legacy_bof_baseline`；`Phase 5` 则已把第二、第三战场可迁回主线的边界正式吸收回主线 SoT 与治理层。
 
 其中：
 
 1. `Phase 3 = Completed`
 2. `Phase 4 = Completed (NO-GO)`
 3. `Phase 4.1 = Completed (remediation exhausted, NO-GO persists)`
-4. rollback target 保持：
+4. `Phase 5 = Completed (research-line migration package closed)`
+5. rollback target 保持：
    - `legacy_bof_baseline`
-5. 当前 active mainline package：
-   - `Phase 5 / research-line migration package`
-6. 当前 next Phase 5 sub-card：
-   - `Phase 5 closeout / research-line migration package record`
+6. 当前 active mainline package：
+   - `none`
+7. 最近收官 record：
+   - `docs/spec/v0.01-plus/records/v0.01-plus-phase-5-research-line-migration-package-closeout-20260315.md`
 
 后续顺序固定为：
 
 1. 当前不再在 `Phase 4.1` 内冻结新的 `MSS / Broker` 候选
-2. 正式默认路径继续保持：
+2. `Phase 5` 已闭环，不再继续补旧 sub-card
+3. 正式默认路径继续保持：
    - `legacy_bof_baseline`
-3. 当前先做 `Phase 5`，把第二、第三战场已收官结论迁回主线治理
-4. 若未来继续新实验，必须新开治理段和新证据链
+4. 当前主线已吸收第二、第三战场可迁回的治理边界，但没有任何 parameter promotion
+5. 若未来继续，无论是主线默认切换还是研究线新实验，都必须新开 formal package 与新证据链
 
 也就是：
 
-`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 / Phase 4.1 已收口；当前主线先不开新实验，而是进入 Phase 5，把研究线结论迁回主线 SoT。`
+`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 / Phase 4.1 / Phase 5 都已收口；当前主线没有 active migration package，默认运行路径继续保持 legacy_bof_baseline。`

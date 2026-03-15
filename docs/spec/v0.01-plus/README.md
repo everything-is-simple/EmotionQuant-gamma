@@ -34,6 +34,7 @@
 | 主线切换 Gate | `docs/spec/v0.01-plus/governance/v0.01-plus-gate-checklist.md` | Gate 规则归档 |
 | 主线反冒充治理 | `docs/spec/v0.01-plus/governance/v0.01-plus-mainline-no-fake-rules.md` | 当前默认口径、禁止误用层、条件卡开启规则 |
 | 契约补充 | `docs/spec/v0.01-plus/governance/v0.01-plus-data-contract-table.md` | 运行期契约归档 |
+| 研究线迁回收官 | `docs/spec/v0.01-plus/records/v0.01-plus-phase-5-research-line-migration-package-closeout-20260315.md` | 第一战场对第二、第三战场吸收包的正式收官裁决 |
 | 战役后续废案 | `docs/spec/v0.01-plus/90-archive/README.md` | 已退场修复路线与临时方案归档 |
 
 ---
