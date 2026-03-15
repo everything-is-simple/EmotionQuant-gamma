@@ -8,6 +8,20 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+def _default_external_root(kind: str) -> Path:
+    repo_root = Path(__file__).resolve().parents[1]
+    if repo_root.drive:
+        label = "EmotionQuant_data" if kind == "data" else "EmotionQuant-temp"
+        return Path(repo_root.anchor) / label
+
+    external_candidate = Path("/data/emotionquant") if kind == "data" else Path("/tmp/emotionquant")
+    if external_candidate.exists():
+        return external_candidate
+
+    suffix = "data" if kind == "data" else "temp"
+    return Path.home() / ".emotionquant" / suffix
+
+
 class Settings(BaseSettings):
     """Runtime configuration loaded from environment variables."""
 
@@ -76,6 +90,14 @@ class Settings(BaseSettings):
     partial_exit_scale_out_ratio: float = Field(default=0.50, alias="PARTIAL_EXIT_SCALE_OUT_RATIO")
     fixed_lot_size: int = Field(default=100, alias="FIXED_LOT_SIZE")
     fixed_notional_amount: float = Field(default=0.0, alias="FIXED_NOTIONAL_AMOUNT")
+    entry_cooldown_trade_days: int = Field(default=0, alias="ENTRY_COOLDOWN_TRADE_DAYS")
+    tachibana_pilot_mode: bool = Field(default=False, alias="TACHIBANA_PILOT_MODE")
+    tachibana_unit_regime_tag: str = Field(default="", alias="TACHIBANA_UNIT_REGIME_TAG")
+    tachibana_reduced_unit_scale: float = Field(default=1.0, alias="TACHIBANA_REDUCED_UNIT_SCALE")
+    tachibana_experimental_segment_policy: str = Field(
+        default="isolate_from_canonical_aggregate",
+        alias="TACHIBANA_EXPERIMENTAL_SEGMENT_POLICY",
+    )
     fixed_capital_amount: float = Field(default=0.0, alias="FIXED_CAPITAL_AMOUNT")
     fixed_ratio_base_amount: float = Field(default=0.0, alias="FIXED_RATIO_BASE_AMOUNT")
     fixed_ratio_delta_amount: float = Field(default=250_000.0, alias="FIXED_RATIO_DELTA_AMOUNT")
@@ -232,7 +254,7 @@ class Settings(BaseSettings):
         if self.data_path.strip():
             path = Path(self.data_path.strip()).expanduser().resolve()
         else:
-            path = Path.home() / ".emotionquant" / "data"
+            path = _default_external_root("data")
         path.mkdir(parents=True, exist_ok=True)
         return path
 
@@ -241,7 +263,7 @@ class Settings(BaseSettings):
         if self.temp_path.strip():
             path = Path(self.temp_path.strip()).expanduser().resolve()
         else:
-            path = Path.home() / ".emotionquant" / "temp"
+            path = _default_external_root("temp")
         path.mkdir(parents=True, exist_ok=True)
         return path
 

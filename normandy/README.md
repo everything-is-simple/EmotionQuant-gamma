@@ -143,6 +143,10 @@
 - `03-execution/records/21-phase-n3d-emotionquant-module-reuse-triage-record-20260315.md`
 - `03-execution/records/22-phase-n3e-tachibana-state-transition-candidate-table-record-20260315.md`
 - `03-execution/records/23-phase-n3f-tachibana-validation-rule-candidate-matrix-record-20260315.md`
+- `03-execution/records/24-phase-n3g-tachibana-pilot-pack-opening-note-20260315.md`
+- `03-execution/records/25-phase-n3h-tachibana-pilot-pack-executable-matrix-record-20260315.md`
+- `03-execution/records/26-phase-n3i-tachibana-pilot-pack-implementation-scaffold-record-20260315.md`
+- `03-execution/records/27-phase-n3j-tachibana-pilot-pack-runner-implementation-record-20260315.md`
 
 它们分别负责：
 
@@ -196,6 +200,10 @@
 48. `N3d` formal triage：把 `EmotionQuant-gamma` 内对立花验证的直接复用、改造复用、退出主线资产正式分流。
 49. `N3e` formal record：把立花方法冻结为 `9` 个状态迁移候选簇，并明确哪些可迁回主线、哪些只能保留为结构类对象。
 50. `N3f` formal record：把候选簇进一步压成 `R1-R10` 规则候选矩阵，并写死当前可诚实开跑的 pilot subset。
+51. `N3g` opening note：把 `R4 + R5 + R6 + R7 + R10` pilot-pack 的正式边界、control baseline、第三战场复用链与禁止偷带项写死，并把下一步收敛到 `reduce-to-core + cooldown` executable pilot。
+52. `N3h` executable matrix：把 pilot-pack 正式拆成 `E1/E2/E3/E4` 四个执行包，并写死哪些现在可跑、哪些只差轻量扩展。
+53. `N3i` implementation scaffold：把 `E1` 固定成 Normandy thin runner、把 `E2` 固定成 engine `signal_filter hook`、把 `E3` 固定成 payload-level tag glue。
+54. `N3j` runner implementation：把 pilot-pack matrix/digest runner、same-code cooldown hook 与最小 smoke evidence 正式落库，并把默认运行路径对齐到 `docs/reference/operations` 的三目录纪律。
 
 ---
 

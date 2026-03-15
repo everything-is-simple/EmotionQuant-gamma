@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from src.config import Settings
 
 
@@ -90,3 +92,25 @@ def test_pas_priority_and_single_pattern_override() -> None:
     )
     assert cfg.pas_pattern_priority_list == ["pb", "bpb", "tst", "cpb", "bof"]
     assert cfg.pas_effective_patterns == ["tst"]
+
+
+def test_default_paths_follow_operations_directory_discipline() -> None:
+    cfg = Settings(DATA_PATH="", TEMP_PATH="", LOG_PATH="")
+    repo_drive = Path(__file__).resolve().drive
+
+    if repo_drive:
+        assert cfg.resolved_data_path == Path(f"{repo_drive}\\EmotionQuant_data").resolve()
+        assert cfg.resolved_temp_path == Path(f"{repo_drive}\\EmotionQuant-temp").resolve()
+    else:
+        data_candidates = {
+            Path("/data/emotionquant").resolve(),
+            (Path.home() / ".emotionquant" / "data").resolve(),
+        }
+        temp_candidates = {
+            Path("/tmp/emotionquant").resolve(),
+            (Path.home() / ".emotionquant" / "temp").resolve(),
+        }
+        assert cfg.resolved_data_path in data_candidates
+        assert cfg.resolved_temp_path in temp_candidates
+
+    assert cfg.db_path == cfg.resolved_data_path / "emotionquant.duckdb"

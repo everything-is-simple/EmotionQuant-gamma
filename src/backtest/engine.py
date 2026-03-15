@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -9,12 +10,14 @@ import pandas as pd
 
 from src.broker.broker import Broker
 from src.config import Settings
-from src.contracts import Order, Trade, build_force_close_order_id, build_trade_id, resolve_order_origin
+from src.contracts import Order, Signal, Trade, build_force_close_order_id, build_trade_id, resolve_order_origin
 from src.data.store import Store
 from src.logging_utils import logger
 from src.report.reporter import generate_backtest_report
 from src.selector.selector import select_candidates
 from src.strategy.strategy import generate_signals
+
+SignalFilterHook = Callable[[list[Signal], date, list[Trade], Broker, Store], list[Signal]]
 
 
 @dataclass(frozen=True)
@@ -38,6 +41,7 @@ class BacktestResult:
     skip_maxpos_count: float
     participation_rate: float
     environment_breakdown: dict[str, dict[str, Any]]
+    signal_filter_metrics: dict[str, Any] | None = None
 
 
 def _iter_trade_days(store: Store, start: date, end: date) -> list[date]:
@@ -73,24 +77,19 @@ def _resolve_close_price(store: Store, code: str, trade_date: date) -> float | N
 
 
 def _force_close_all(store: Store, broker: Broker, trade_date: date) -> int:
-    """
-    回测终止结算例外：末日收盘强平未平仓位，确保 BUY/SELL 可配对。
-    这里不改变交易决策语义，仅用于回测边界收口。
-    """
+    """Force-close any remaining positions on the final bar for pairing completeness."""
     if not broker.portfolio:
         return 0
 
     orders: list[Order] = []
     trades: list[Trade] = []
     lifecycle_rows: list[dict[str, object]] = []
-    # 遍历副本，避免在卖出后修改原 dict 导致迭代异常。
     for code, pos in list(broker.portfolio.items()):
         close_price = _resolve_close_price(store, code, trade_date)
         if close_price is None:
             logger.warning(f"force_close skipped: {code} has no close price on {trade_date}")
             continue
 
-        # 强平卖出也计入卖出侧滑点与交易成本。
         slip = broker.config.slippage_bps / 10000.0
         sell_price = close_price * (1 - slip)
         fee = broker.matcher._calculate_fee(sell_price * pos.remaining_quantity, "SELL")
@@ -167,7 +166,6 @@ def _force_close_all(store: Store, broker: Broker, trade_date: date) -> int:
     store.bulk_upsert("l4_trades", pd.DataFrame([t.model_dump() for t in trades]))
     broker.record_lifecycle_events(lifecycle_rows)
 
-    # 与正常撮合路径保持一致，统一复用 Broker 的持仓/现金更新逻辑。
     for trade in trades:
         broker._apply_position_trade(trade)
 
@@ -182,14 +180,9 @@ def run_backtest(
     patterns: list[str] | None = None,
     initial_cash: float | None = None,
     run_id: str | None = None,
+    signal_filter: SignalFilterHook | None = None,
 ) -> BacktestResult:
-    """
-    最小回测闭环（v0.01 实验前版本）：
-    1) 按交易日历推进
-    2) 先执行今日待成交订单，再生成今日收盘信号
-    3) 信号由 Broker 挂成 T+1 订单（固定时序语义）
-    4) 末日强平并输出最小指标
-    """
+    """Run the minimal BOF backtest loop with an optional pre-broker signal filter."""
     cfg = config.model_copy(deep=True)
     if patterns:
         cfg.pas_patterns = ",".join(patterns)
@@ -204,16 +197,15 @@ def run_backtest(
             raise RuntimeError("No trade days available in l1_trade_calendar for given range.")
 
         for trade_day in trade_days:
-            # Step 1: 执行前一交易日产生、在今日到期的订单（T+1 Open + 成本）。
-            broker.execute_pending_orders(trade_day)
+            filled_trades = broker.execute_pending_orders(trade_day)
             broker.expire_orders(trade_day)
-
-            # Step 2: 用当日收盘数据先评估退出触发（止损/回撤），挂成 T+1 SELL。
             broker.generate_exit_orders(trade_day)
 
-            # Step 3: 再生成 BOF 买入信号；订单 execute_date 由 Broker 推到 next_trade_date。
             candidates = select_candidates(store, trade_day, cfg, run_id=run_id)
             signals = generate_signals(store, candidates, trade_day, cfg, run_id=run_id)
+            if signal_filter is not None:
+                filtered_signals = signal_filter(signals, trade_day, filled_trades, broker, store)
+                signals = list(filtered_signals) if filtered_signals is not None else []
             broker.process_signals(signals)
 
         force_closed = _force_close_all(store, broker, trade_days[-1])
@@ -221,6 +213,14 @@ def run_backtest(
             logger.info(f"force_close completed: {force_closed} positions on {trade_days[-1]}")
 
         metrics = generate_backtest_report(store, cfg, start, end, starting_cash)
+        signal_filter_metrics: dict[str, Any] | None = None
+        if signal_filter is not None:
+            build_metrics = getattr(signal_filter, "build_metrics", None)
+            if callable(build_metrics):
+                payload = build_metrics()
+                if isinstance(payload, dict):
+                    signal_filter_metrics = payload
+
         return BacktestResult(
             start=start,
             end=end,
@@ -241,6 +241,7 @@ def run_backtest(
             skip_maxpos_count=float(metrics["skip_maxpos_count"]),
             participation_rate=float(metrics["participation_rate"]),
             environment_breakdown=dict(metrics["environment_breakdown"]),
+            signal_filter_metrics=signal_filter_metrics,
         )
     finally:
         store.close()
