@@ -108,6 +108,7 @@
 - `03-execution/08-phase-p7-partial-exit-null-control-matrix-card-20260314.md`
 - `03-execution/09-phase-p8-partial-exit-family-replay-card-20260314.md`
 - `03-execution/records/09-phase-p8-partial-exit-family-replay-record-20260315.md`
+- `03-execution/records/10-phase-p9-positioning-campaign-closeout-record-20260315.md`
 - `03-execution/10-phase-p9-positioning-campaign-closeout-card-20260314.md`
 - `03-execution/11-phase-px1-cross-exit-sensitivity-card-20260314.md`
 - `03-execution/12-phase-px2-targeted-mechanism-follow-up-card-20260314.md`
@@ -127,8 +128,8 @@
 11. `P6` formal freeze：已把 partial-exit lane 的 contract、状态机和 control baseline 正式写死
 12. `P7` formal readout：`FULL_EXIT_CONTROL` 保持 partial-exit lane 的 canonical control baseline，naive 50/50 scale-out 只保留为 operating-side 局部改善
 13. `P8` formal readout：首批 partial-exit family 已跑出 retained queue，当前 provisional leader = `TRAIL_SCALE_OUT_25_75`
-14. `P9` 当前 active card：把第三战场收官排成后续主干卡
-15. `PX1 / PX2`：只在触发条件满足时打开的条件卡，`PX2` 仅在显式 targeted mechanism hypothesis 下允许打开
+14. `P9` formal closeout：已把第三战场这一轮正式收口为 `closeout record + migration boundary + future backlog gate`
+15. `PX1 / PX2`：继续只保留为条件卡，`PX1` 不自动打开，`PX2` 仅在显式 targeted mechanism hypothesis 下允许打开
 
 ---
 
@@ -151,8 +152,8 @@
 
 当前治理规则固定为：
 
-1. `P9` 是唯一 active card
-2. `PX1` 继续保持 locked，未被 `P8` 自动打开
+1. 当前 active positioning main queue = none
+2. `PX1` 继续保持 locked，未被 `P8` 或 `P9` 自动打开
 3. `PX2` 只有在显式 targeted mechanism hypothesis 满足后才允许打开
 
 ---
