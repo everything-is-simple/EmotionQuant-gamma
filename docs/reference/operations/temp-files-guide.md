@@ -139,7 +139,12 @@ powershell -ExecutionPolicy Bypass -File scripts/ops/clean_temp_files.ps1 -DryRu
 
 # 执行实际删除
 powershell -ExecutionPolicy Bypass -File scripts/ops/clean_temp_files.ps1
+
+# 如需连 TEMP_PATH/logs 一起清，再显式打开
+powershell -ExecutionPolicy Bypass -File scripts/ops/clean_temp_files.ps1 -IncludeTempLogs
 ```
+
+脚本当前默认会跳过 `.git`、`.venv`、`.vscode`、`docs/reference/`、`TEMP_PATH/codex-home/` 和 `TEMP_PATH/logs/`，避免误删主环境、编辑器配置、权威文档和本地工具配置。
 
 **方法 2：手动删除**
 ```powershell

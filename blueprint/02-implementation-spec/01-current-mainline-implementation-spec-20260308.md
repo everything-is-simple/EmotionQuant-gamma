@@ -471,3 +471,27 @@ Selector 初选
 
 1. 把后续 roadmap / phase / task 只从本文往下拆
 2. 再把 `docs/spec/v0.01-plus/` 收口成只承担实现职责的正式入口
+
+---
+
+## 11. Phase 5A 继承的 Normandy 实现约束
+
+`Phase 5A` 生效后，当前实现方案新增继承以下 Normandy 边界：
+
+1. 当前默认运行口径仍然是 `legacy_bof_baseline`；实现层不把 `BOF_CONTROL` 改写成主线默认运行标签。
+2. 当前主线只允许以 3 种形态复用 Normandy 产物：
+   - `baseline governance conclusion`
+   - `existing BOF stack wrapper / optional hook scaffold`
+   - `Tachibana pilot-pack negative constraints`
+3. 当前主线允许引用的 Tachibana 面，只限于：
+   - `R4 + R5 + R6 + R7 + R10 only`
+   - `existing BOF stack + thin runner`
+   - `same-code cooldown signal_filter hook` 作为 `off-by-default` 的可选挂点
+   - `TRAIL_SCALE_OUT_25_75` 作为 `reduce_to_core engineering proxy`
+4. `Phase 5A` 明确不实现：
+   - `R2 / R3 / R8 / R9`
+   - 完整 Tachibana system 叙事
+   - `CD5 / CD10` 默认 cooldown
+   - noncanonical side references
+   - `reduced_unit_scale` executable sizing
+5. `Phase 5A` 只吸收 Normandy 边界，不改写当前 Broker / Risk 默认 control；`FIXED_NOTIONAL_CONTROL / SINGLE_LOT_CONTROL / FULL_EXIT_CONTROL` 的主线吸收留到 `Phase 5B`。

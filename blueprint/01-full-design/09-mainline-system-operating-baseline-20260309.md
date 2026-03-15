@@ -330,6 +330,20 @@ flowchart LR
 3. 在没有 rollback condition 的情况下宣布切主线
 4. 为了过 Gate 临时改默认参数掩盖系统路径问题
 
+### 10.4 Phase 5A / Normandy absorption boundary
+
+`Phase 5A` 生效后，主线对第二战场的吸收边界固定为：
+
+1. 正式默认运行路径继续保持 `legacy_bof_baseline`；`BOF_CONTROL` 只保留为 Normandy 研究线 baseline 名称，不迁成主线默认标签。
+2. `baseline diagnosis lane` 与 `promotion lane` 的分离升格为主线治理约束：允许先围绕稳定 baseline 做 exit diagnosis，但不允许因此提前打开 promotion lane。
+3. `N2 / N2A` 产出的正式结论只支持“trailing-stop 存在局部 fat-tail truncation 风险”，不支持全局取消或重写主线 trailing-stop 语义。
+4. `N1.11 / N1.12` 产出的质量分支结论只迁负面约束：在没有新的长窗稳定性 record 之前，不得把任何 `BOF` quality branch 升格为新主位。
+5. `Tachibana pilot-pack` 只允许以 `existing BOF stack + thin runner + optional hook scaffold` 的形式进入主线叙述；主线当前只承认 `R4 + R5 + R6 + R7 + R10` 的 executable boundary。
+6. `TRAIL_SCALE_OUT_25_75` 在主线里只能叫 `reduce_to_core engineering proxy`；`pilot-pack != full Tachibana system` 继续作为正式负面约束。
+7. `CD5 / CD10`、`single_lot floor`、`noncanonical side references`、`reduced_unit_scale` 继续隔离在研究线 sidecar，不进入主线默认 aggregate。
+8. `Phase 5A` 只吸收 Normandy 边界，不在这里重写 `FIXED_NOTIONAL_CONTROL / SINGLE_LOT_CONTROL / FULL_EXIT_CONTROL`；这些 control baseline 的主线吸收留给 `Phase 5B`。
+9. `R2 / R3 / R8 / R9` 与所有仍受 `ALREADY_HOLDING` 阻塞的机制段继续冻结；若未来要继续，只能新开 explicit migration package 或 targeted mechanism hypothesis。
+
 ---
 
 ## 11. 冻结结语

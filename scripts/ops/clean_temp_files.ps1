@@ -1,8 +1,8 @@
-# 清理仓库内缓存与 TEMP_PATH 运行时产物。
 [CmdletBinding()]
 param(
     [switch]$DryRun,
-    [string]$TempRoot
+    [string]$TempRoot,
+    [switch]$IncludeTempLogs
 )
 
 $ErrorActionPreference = "Stop"
@@ -12,6 +12,7 @@ function Get-ConfiguredTempPath {
     if ($TempRoot) {
         return $TempRoot
     }
+
     if ($env:TEMP_PATH) {
         return $env:TEMP_PATH
     }
@@ -21,17 +22,101 @@ function Get-ConfiguredTempPath {
         return $null
     }
 
-    $line = Get-Content $envFile | Where-Object { $_ -match '^TEMP_PATH=' } | Select-Object -First 1
+    $line = Get-Content -LiteralPath $envFile |
+        Where-Object { $_ -match '^TEMP_PATH=' } |
+        Select-Object -First 1
+
     if (-not $line) {
         return $null
     }
+
     return ($line -replace '^TEMP_PATH=', '').Trim()
+}
+
+function Normalize-Path {
+    param([string]$Path)
+
+    return [System.IO.Path]::GetFullPath($Path).TrimEnd('\').ToLowerInvariant()
+}
+
+function Test-IsProtectedPath {
+    param(
+        [string]$Path,
+        [string[]]$ProtectedRoots
+    )
+
+    $normalizedPath = Normalize-Path $Path
+    foreach ($root in $ProtectedRoots) {
+        if (-not $root) {
+            continue
+        }
+
+        $normalizedRoot = Normalize-Path $root
+        if ($normalizedPath -eq $normalizedRoot -or
+            $normalizedPath.StartsWith($normalizedRoot + "\")) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
+function Get-ScopedItems {
+    param(
+        [string]$Root,
+        [string[]]$ProtectedRoots
+    )
+
+    if (-not $Root -or -not (Test-Path -LiteralPath $Root)) {
+        return @()
+    }
+
+    $items = New-Object System.Collections.Generic.List[object]
+    $pending = New-Object System.Collections.Generic.Queue[string]
+    $pending.Enqueue((Normalize-Path $Root))
+
+    while ($pending.Count -gt 0) {
+        $current = $pending.Dequeue()
+
+        foreach ($item in Get-ChildItem -LiteralPath $current -Force -ErrorAction SilentlyContinue) {
+            if (Test-IsProtectedPath -Path $item.FullName -ProtectedRoots $ProtectedRoots) {
+                continue
+            }
+
+            $items.Add($item)
+            if ($item.PSIsContainer) {
+                $pending.Enqueue($item.FullName)
+            }
+        }
+    }
+
+    return $items
+}
+
+function Get-ItemSizeBytes {
+    param([System.IO.FileSystemInfo]$Item)
+
+    if (-not $Item) {
+        return 0
+    }
+
+    if ($Item.PSIsContainer) {
+        $size = (Get-ChildItem -LiteralPath $Item.FullName -Recurse -Force -File -ErrorAction SilentlyContinue |
+            Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue).Sum
+        if ($null -eq $size) {
+            return 0
+        }
+        return $size
+    }
+
+    return $Item.Length
 }
 
 function Remove-MatchedItems {
     param(
         [string]$Root,
         [string[]]$Patterns,
+        [string[]]$ProtectedRoots,
         [ref]$DeletedCount,
         [ref]$DeletedSize
     )
@@ -40,100 +125,155 @@ function Remove-MatchedItems {
         return
     }
 
-    foreach ($Pattern in $Patterns) {
-        $Items = Get-ChildItem -Path $Root -Recurse -Force -ErrorAction SilentlyContinue |
-            Where-Object {
-                $_.Name -like $Pattern -and
-                $_.FullName -notlike "*\.git\*" -and
-                $_.FullName -notlike "*\docs\reference\*"
-            }
+    $candidates = Get-ScopedItems -Root $Root -ProtectedRoots $ProtectedRoots
+    $seen = @{}
+    $matchedItems = @()
 
-        foreach ($Item in $Items) {
-            $Size = 0
-            if ($Item.PSIsContainer) {
-                $Size = (Get-ChildItem -Path $Item.FullName -Recurse -Force -ErrorAction SilentlyContinue |
-                    Measure-Object -Property Length -Sum -ErrorAction SilentlyContinue).Sum
-            } else {
-                $Size = $Item.Length
-            }
-            if ($null -eq $Size) {
-                $Size = 0
-            }
-
-            $SizeMB = [math]::Round($Size / 1MB, 2)
-            $RelPath = $Item.FullName.Replace($Root + "\", "")
-
-            if ($DryRun) {
-                Write-Host "  [将删除] $RelPath ($SizeMB MB)" -ForegroundColor Yellow
-                $DeletedCount.Value++
-                $DeletedSize.Value += $Size
-                continue
-            }
-
-            try {
-                if ($Item.PSIsContainer) {
-                    Remove-Item -Path $Item.FullName -Recurse -Force -ErrorAction Stop
-                } else {
-                    Remove-Item -Path $Item.FullName -Force -ErrorAction Stop
+    foreach ($item in $candidates) {
+        foreach ($pattern in $Patterns) {
+            if ($item.Name -like $pattern) {
+                if (-not $seen.ContainsKey($item.FullName)) {
+                    $seen[$item.FullName] = $true
+                    $matchedItems += $item
                 }
-                Write-Host "  [已删除] $RelPath ($SizeMB MB)" -ForegroundColor Gray
-                $DeletedCount.Value++
-                $DeletedSize.Value += $Size
-            } catch {
-                Write-Host "  [失败] $RelPath - $($_.Exception.Message)" -ForegroundColor Red
+                break
             }
+        }
+    }
+
+    $selectedItems = New-Object System.Collections.Generic.List[object]
+    $selectedContainerRoots = New-Object System.Collections.Generic.List[string]
+
+    foreach ($item in ($matchedItems | Sort-Object { $_.FullName.Length })) {
+        $normalizedItemPath = Normalize-Path $item.FullName
+        $isNestedUnderSelectedContainer = $false
+
+        foreach ($selectedContainerRoot in $selectedContainerRoots) {
+            if ($normalizedItemPath.StartsWith($selectedContainerRoot + "\")) {
+                $isNestedUnderSelectedContainer = $true
+                break
+            }
+        }
+
+        if ($isNestedUnderSelectedContainer) {
+            continue
+        }
+
+        $selectedItems.Add($item)
+        if ($item.PSIsContainer) {
+            $selectedContainerRoots.Add($normalizedItemPath)
+        }
+    }
+
+    $matchedItems = $selectedItems | Sort-Object { $_.FullName.Length } -Descending
+
+    foreach ($item in $matchedItems) {
+        $size = Get-ItemSizeBytes -Item $item
+        $sizeMB = [math]::Round($size / 1MB, 2)
+        $normalizedRoot = Normalize-Path $Root
+        $normalizedItemPath = Normalize-Path $item.FullName
+        if ($normalizedItemPath.StartsWith($normalizedRoot + "\")) {
+            $relPath = $normalizedItemPath.Substring($normalizedRoot.Length + 1)
+        } else {
+            $relPath = $normalizedItemPath
+        }
+
+        if ($DryRun) {
+            Write-Host "  [planned] $relPath ($sizeMB MB)" -ForegroundColor Yellow
+            $DeletedCount.Value++
+            $DeletedSize.Value += $size
+            continue
+        }
+
+        try {
+            if ($item.PSIsContainer) {
+                Remove-Item -LiteralPath $item.FullName -Recurse -Force -ErrorAction Stop
+            } else {
+                Remove-Item -LiteralPath $item.FullName -Force -ErrorAction Stop
+            }
+
+            Write-Host "  [removed] $relPath ($sizeMB MB)" -ForegroundColor Gray
+            $DeletedCount.Value++
+            $DeletedSize.Value += $size
+        } catch {
+            Write-Host "  [failed] $relPath - $($_.Exception.Message)" -ForegroundColor Red
         }
     }
 }
 
 $ConfiguredTempRoot = Get-ConfiguredTempPath
 
-Write-Host "EmotionQuant 临时文件清理工具" -ForegroundColor Cyan
-Write-Host "================================" -ForegroundColor Cyan
-Write-Host "仓库根目录: $RepoRoot" -ForegroundColor Cyan
-if ($ConfiguredTempRoot) {
-    Write-Host "临时目录: $ConfiguredTempRoot" -ForegroundColor Cyan
-}
-Write-Host ""
-
-if ($DryRun) {
-    Write-Host "[DRY RUN 模式] 仅显示将要删除的内容，不实际删除" -ForegroundColor Yellow
-    Write-Host ""
-}
-
 $RepoPatterns = @(
-    "__pycache__", "*.pyc", "*.pyo", "*.pyd", "*.so", "*.egg-info",
+    "__pycache__", "*.pyc", "*.pyo", "*.egg-info",
     ".pytest_cache", ".coverage", "htmlcov", ".tox", ".nox", ".hypothesis",
-    ".vscode", ".idea", "*.swp", "*.swo",
     ".tmp", "*.tmp", "*.temp", "*.bak", "*.backup",
     ".specstory", ".claude",
-    ".ruff_cache", ".mypy_cache", "pytest-tmp", "pytest_temp", "pytest_tmp*", "pytest-cache-files-*",
-    "*.log", "logs"
+    ".ruff_cache", ".mypy_cache",
+    "pytest-tmp", "pytest_temp", "pytest_tmp*", "pytest-cache-files-*"
 )
+
 $TempPatterns = @(
     "backtest", "audit", "pytest", "preflight", "artifacts",
-    "pdf-inspect", "repo-archives", "pytest_*", "pytest-*", "pas-ablation-smoke*.json"
+    "pdf-inspect", "pdf_work", "repo-archives",
+    "pytest_*", "pytest-*", "pas-ablation-smoke*.json",
+    ".reports", "cache", "tachibana", "python-shims", "gs*.exe"
 )
+
+if ($IncludeTempLogs) {
+    $TempPatterns += "logs"
+}
+
+$RepoProtectedRoots = @(
+    (Join-Path $RepoRoot ".git"),
+    (Join-Path $RepoRoot ".venv"),
+    (Join-Path $RepoRoot ".vscode"),
+    (Join-Path $RepoRoot "docs\reference")
+)
+
+$TempProtectedRoots = @()
+if ($ConfiguredTempRoot) {
+    $TempProtectedRoots += Join-Path $ConfiguredTempRoot "codex-home"
+    if (-not $IncludeTempLogs) {
+        $TempProtectedRoots += Join-Path $ConfiguredTempRoot "logs"
+    }
+}
 
 $TotalDeleted = 0
 $TotalSize = 0
 
-Write-Host "[开始扫描...]" -ForegroundColor Green
+Write-Host "EmotionQuant temp cleanup tool" -ForegroundColor Cyan
+Write-Host "================================" -ForegroundColor Cyan
+Write-Host "Repo root: $RepoRoot" -ForegroundColor Cyan
+if ($ConfiguredTempRoot) {
+    Write-Host "Temp root: $ConfiguredTempRoot" -ForegroundColor Cyan
+}
+Write-Host "Protected roots: .git / .venv / .vscode / docs\\reference / codex-home" -ForegroundColor Cyan
+if (-not $IncludeTempLogs) {
+    Write-Host "TEMP_PATH/logs is kept by default. Use -IncludeTempLogs to remove it." -ForegroundColor Cyan
+}
 Write-Host ""
 
-Remove-MatchedItems -Root $RepoRoot -Patterns $RepoPatterns -DeletedCount ([ref]$TotalDeleted) -DeletedSize ([ref]$TotalSize)
-Remove-MatchedItems -Root $ConfiguredTempRoot -Patterns $TempPatterns -DeletedCount ([ref]$TotalDeleted) -DeletedSize ([ref]$TotalSize)
+if ($DryRun) {
+    Write-Host "[DRY RUN] Preview only. Nothing will be removed." -ForegroundColor Yellow
+    Write-Host ""
+}
+
+Write-Host "[Scanning...]" -ForegroundColor Green
+Write-Host ""
+
+Remove-MatchedItems -Root $RepoRoot -Patterns $RepoPatterns -ProtectedRoots $RepoProtectedRoots -DeletedCount ([ref]$TotalDeleted) -DeletedSize ([ref]$TotalSize)
+Remove-MatchedItems -Root $ConfiguredTempRoot -Patterns $TempPatterns -ProtectedRoots $TempProtectedRoots -DeletedCount ([ref]$TotalDeleted) -DeletedSize ([ref]$TotalSize)
 
 Write-Host ""
 Write-Host "================================" -ForegroundColor Cyan
 $TotalSizeMB = [math]::Round($TotalSize / 1MB, 2)
 
 if ($DryRun) {
-    Write-Host "预计删除: $TotalDeleted 项，释放空间: $TotalSizeMB MB" -ForegroundColor Yellow
+    Write-Host "Planned removals: $TotalDeleted items, reclaim: $TotalSizeMB MB" -ForegroundColor Yellow
     Write-Host ""
-    Write-Host "提示: 使用不带 -DryRun 参数执行实际删除" -ForegroundColor Cyan
+    Write-Host "Tip: rerun without -DryRun to execute cleanup." -ForegroundColor Cyan
 } else {
-    Write-Host "已删除: $TotalDeleted 项，释放空间: $TotalSizeMB MB" -ForegroundColor Green
+    Write-Host "Removed: $TotalDeleted items, reclaimed: $TotalSizeMB MB" -ForegroundColor Green
     Write-Host ""
-    Write-Host "提示: 运行时缓存会在后续开发中按 TEMP_PATH 重新生成" -ForegroundColor Cyan
+    Write-Host "Tip: runtime caches will be recreated under TEMP_PATH as needed." -ForegroundColor Cyan
 }
