@@ -7,7 +7,7 @@ from src.config import Settings
 from src.data.cleaner import clean_industry_daily, clean_industry_structure_daily, clean_market_snapshot, clean_stock_adj_daily
 from src.data.store import Store
 from src.logging_utils import logger
-from src.selector.gene import compute_gene, compute_gene_mirror
+from src.selector.gene import compute_gene, compute_gene_conditioning, compute_gene_mirror
 from src.selector.irs import compute_irs
 from src.selector.mss_experiments import compute_mss_variant
 
@@ -85,6 +85,7 @@ def build_l3(store: Store, config: Settings, start: date | None, end: date | Non
         store.conn.execute("DELETE FROM l3_gene_distribution_eval")
         store.conn.execute("DELETE FROM l3_gene_validation_eval")
         store.conn.execute("DELETE FROM l3_gene_mirror")
+        store.conn.execute("DELETE FROM l3_gene_conditioning_eval")
 
     # Keep each L3 product on its own rebuild window.
     mss_window = _resolve_window(store, "l3_mss_daily", config, start, end, force)
@@ -129,6 +130,7 @@ def build_l3(store: Store, config: Settings, start: date | None, end: date | Non
         gene_begin, gene_finish = gene_window
         n3 = compute_gene(store, gene_begin, gene_finish)
         n3 += compute_gene_mirror(store, gene_finish)
+        n3 += compute_gene_conditioning(store, gene_finish)
     return n1 + n2 + n3
 
 

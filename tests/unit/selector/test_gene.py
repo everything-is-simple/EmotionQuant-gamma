@@ -5,7 +5,7 @@ from datetime import date, timedelta
 import pandas as pd
 
 from src.data.store import Store
-from src.selector.gene import compute_gene, compute_gene_mirror
+from src.selector.gene import compute_gene, compute_gene_conditioning, compute_gene_mirror
 
 
 def _trade_calendar(start: date, days: int) -> pd.DataFrame:
@@ -40,6 +40,35 @@ def _adj_daily_rows(base: date, code: str, closes: list[float]) -> list[dict[str
                 "pct_chg": 0.0,
             }
         )
+    return rows
+
+
+def _adj_daily_rows_from_specs(base: date, code: str, specs: list[dict[str, float]]) -> list[dict[str, object]]:
+    rows: list[dict[str, object]] = []
+    previous_close = float(specs[0]["close"])
+    for index, spec in enumerate(specs):
+        day = base + timedelta(days=index)
+        close = float(spec["close"])
+        open_price = float(spec.get("open", close if index == 0 else previous_close))
+        high_price = float(spec.get("high", max(open_price, close) + 0.15))
+        low_price = float(spec.get("low", min(open_price, close) - 0.15))
+        volume = float(spec.get("volume", 1_000.0))
+        volume_ma20 = float(spec.get("volume_ma20", 900.0))
+        rows.append(
+            {
+                "code": code,
+                "date": day,
+                "adj_open": open_price,
+                "adj_high": high_price,
+                "adj_low": low_price,
+                "adj_close": close,
+                "volume": volume,
+                "volume_ma20": volume_ma20,
+                "amount": close * volume,
+                "pct_chg": ((close - previous_close) / previous_close) * 100.0 if index > 0 else 0.0,
+            }
+        )
+        previous_close = close
     return rows
 
 
@@ -465,5 +494,217 @@ def test_compute_gene_mirror_writes_market_and_industry_rows(tmp_path) -> None:
         assert set(industry_rows["mirror_gene_rank"].tolist()) == {1, 2}
         assert industry_rows["support_amount_vs_ma20"].notna().all()
         assert industry_rows["support_follow_through"].notna().all()
+    finally:
+        store.close()
+
+
+def test_compute_gene_conditioning_writes_pattern_conditioning_rows(tmp_path) -> None:
+    db = tmp_path / "gene_conditioning.duckdb"
+    store = Store(db)
+    try:
+        base = date(2026, 1, 5)
+
+        def bof_specs() -> list[dict[str, float]]:
+            specs: list[dict[str, float]] = []
+            for _ in range(20):
+                specs.append(
+                    {
+                        "open": 9.95,
+                        "high": 10.4,
+                        "low": 9.8,
+                        "close": 10.0,
+                        "volume": 1_000.0,
+                        "volume_ma20": 900.0,
+                    }
+                )
+            specs.append(
+                {
+                    "open": 9.7,
+                    "high": 10.5,
+                    "low": 9.5,
+                    "close": 10.3,
+                    "volume": 1_300.0,
+                    "volume_ma20": 900.0,
+                }
+            )
+            for close in [10.5, 10.7, 10.9, 11.1, 11.0, 11.3, 11.5, 11.7, 11.8, 12.0, 12.2, 12.1]:
+                specs.append({"close": close, "volume": 1_100.0, "volume_ma20": 900.0})
+            return specs
+
+        def pb_specs() -> list[dict[str, float]]:
+            specs: list[dict[str, float]] = []
+            for index in range(20):
+                close = 10.0 + index * 0.25
+                specs.append(
+                    {
+                        "close": close,
+                        "open": close - 0.08,
+                        "high": close + 0.18,
+                        "low": close - 0.18,
+                        "volume": 1_000.0,
+                        "volume_ma20": 900.0,
+                    }
+                )
+            for index in range(15):
+                close = 15.2 + index * 0.32
+                specs.append(
+                    {
+                        "close": close,
+                        "open": close - 0.08,
+                        "high": close + 0.2,
+                        "low": close - 0.18,
+                        "volume": 1_030.0,
+                        "volume_ma20": 900.0,
+                    }
+                )
+            for close in [19.0, 18.5, 18.0, 17.5, 18.8]:
+                specs.append(
+                    {
+                        "close": close,
+                        "open": close - 0.08,
+                        "high": close + 0.18,
+                        "low": close - 0.18,
+                        "volume": 980.0,
+                        "volume_ma20": 900.0,
+                    }
+                )
+            specs.append(
+                {
+                    "open": 18.9,
+                    "high": 19.8,
+                    "low": 18.7,
+                    "close": 19.6,
+                    "volume": 1_200.0,
+                    "volume_ma20": 900.0,
+                }
+            )
+            for close in [19.8, 20.0, 20.2, 20.5, 20.3, 20.6, 20.8, 21.0, 21.2, 21.5, 21.3, 21.4]:
+                specs.append({"close": close, "volume": 1_050.0, "volume_ma20": 900.0})
+            return specs
+
+        def cpb_specs() -> list[dict[str, float]]:
+            specs: list[dict[str, float]] = []
+            for close in [
+                10.1,
+                10.2,
+                10.15,
+                10.25,
+                10.2,
+                10.18,
+                10.22,
+                10.16,
+                10.24,
+                10.19,
+                10.23,
+                10.17,
+                10.25,
+                10.2,
+                10.24,
+                10.18,
+                10.26,
+                10.21,
+                10.25,
+                10.2,
+            ]:
+                specs.append(
+                    {
+                        "open": close - 0.05,
+                        "high": close + 0.15,
+                        "low": close - 0.15,
+                        "close": close,
+                        "volume": 1_000.0,
+                        "volume_ma20": 900.0,
+                    }
+                )
+            for index in range(20):
+                close = 10.2 + (index % 3) * 0.03
+                specs.append(
+                    {
+                        "open": close - 0.05,
+                        "high": close + 0.12,
+                        "low": close - 0.12,
+                        "close": close,
+                        "volume": 1_020.0,
+                        "volume_ma20": 900.0,
+                    }
+                )
+            specs.append(
+                {
+                    "open": 10.4,
+                    "high": 10.8,
+                    "low": 10.35,
+                    "close": 10.75,
+                    "volume": 1_300.0,
+                    "volume_ma20": 900.0,
+                }
+            )
+            for close in [10.82, 10.88, 10.95, 11.0, 10.98, 11.05, 11.12, 11.2, 11.18, 11.26, 11.3, 11.28]:
+                specs.append({"close": close, "volume": 1_040.0, "volume_ma20": 900.0})
+            return specs
+
+        spec_map = {
+            "BOF": bof_specs(),
+            "PB": pb_specs(),
+            "CPB": cpb_specs(),
+        }
+        max_len = max(len(specs) for specs in spec_map.values())
+        for specs in spec_map.values():
+            while len(specs) < max_len:
+                specs.append(
+                    {
+                        "close": float(specs[-1]["close"]) + 0.05,
+                        "volume": 1_040.0,
+                        "volume_ma20": 900.0,
+                    }
+                )
+        end = base + timedelta(days=max_len - 1)
+
+        store.bulk_upsert("l1_trade_calendar", _trade_calendar(base, max_len))
+        stock_rows: list[dict[str, object]] = []
+        for code, specs in spec_map.items():
+            stock_rows.extend(_adj_daily_rows_from_specs(base, code, specs))
+        store.bulk_upsert("l2_stock_adj_daily", pd.DataFrame(stock_rows))
+
+        compute_gene(store, base, end)
+        written = compute_gene_conditioning(store, end)
+
+        conditioning_rows = store.read_df(
+            """
+            SELECT
+                signal_pattern,
+                sample_scope,
+                conditioning_key,
+                conditioning_value,
+                sample_size,
+                hit_rate,
+                avg_forward_return_pct,
+                edge_tag
+            FROM l3_gene_conditioning_eval
+            WHERE calc_date = ?
+            ORDER BY signal_pattern, conditioning_key, conditioning_value
+            """,
+            (end,),
+        )
+        baseline_rows = conditioning_rows.loc[conditioning_rows["conditioning_key"] == "ALL"].reset_index(drop=True)
+
+        assert written > 0
+        assert not conditioning_rows.empty
+        assert set(conditioning_rows["signal_pattern"].tolist()) == {"bof", "pb", "cpb"}
+        assert conditioning_rows["sample_scope"].eq("PAS_DETECTOR_TRIGGER").all()
+        assert set(conditioning_rows["conditioning_key"].tolist()) >= {
+            "ALL",
+            "current_wave_age_band",
+            "current_wave_direction",
+            "current_wave_magnitude_band",
+            "latest_confirmed_turn_type",
+            "latest_two_b_confirm_type",
+            "streak_bucket",
+        }
+        assert len(baseline_rows) == 3
+        assert baseline_rows["conditioning_value"].eq("ALL").all()
+        assert baseline_rows["edge_tag"].eq("BASELINE").all()
+        assert baseline_rows["sample_size"].gt(0).all()
+        assert conditioning_rows["hit_rate"].between(0.0, 1.0).all()
+        assert conditioning_rows["avg_forward_return_pct"].notna().all()
     finally:
         store.close()

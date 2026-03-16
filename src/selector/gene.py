@@ -7,6 +7,7 @@ from typing import Literal
 import numpy as np
 import pandas as pd
 
+from src.config import get_settings
 from src.data.store import Store
 
 PivotKind = Literal["HIGH", "LOW"]
@@ -49,6 +50,10 @@ G5_SCOPE_MARKET = "MARKET"
 G5_SCOPE_INDUSTRY = "INDUSTRY"
 G5_PRICE_SOURCE_OHLC = "OHLC_NATIVE"
 G5_PRICE_SOURCE_SYNTHETIC = "SYNTHETIC_CLOSE_ONLY"
+G6_CONDITIONING_SAMPLE_SCOPE = "PAS_DETECTOR_TRIGGER"
+G6_EDGE_BETTER = "BETTER"
+G6_EDGE_MIXED = "MIXED"
+G6_EDGE_WORSE = "WORSE"
 
 
 @dataclass(frozen=True)
@@ -1734,6 +1739,394 @@ def compute_gene_mirror(store: Store, calc_date: date) -> int:
         "support_follow_through",
     ]
     return store.bulk_upsert("l3_gene_mirror", mirror_df[output_columns].copy())
+
+
+def _future_window_extreme(series: pd.Series, horizon: int, fn: str) -> pd.Series:
+    shifted = series.shift(-1)
+    window = shifted.iloc[::-1].rolling(horizon, min_periods=horizon)
+    if fn == "max":
+        return window.max().iloc[::-1]
+    return window.min().iloc[::-1]
+
+
+def _compute_streak_buckets(close_series: pd.Series) -> pd.Series:
+    deltas = pd.to_numeric(close_series, errors="coerce").diff()
+    signs = np.where(deltas > 0.0, 1, np.where(deltas < 0.0, -1, 0))
+    buckets: list[str] = []
+    current_sign = 0
+    current_length = 0
+    for sign in signs:
+        if sign == 0:
+            current_sign = 0
+            current_length = 0
+            buckets.append("FLAT")
+            continue
+        if sign == current_sign:
+            current_length += 1
+        else:
+            current_sign = int(sign)
+            current_length = 1
+        if current_sign > 0:
+            if current_length >= 4:
+                buckets.append("UP_4P")
+            elif current_length >= 2:
+                buckets.append("UP_2_3")
+            else:
+                buckets.append("UP_1")
+        else:
+            if current_length >= 4:
+                buckets.append("DOWN_4P")
+            elif current_length >= 2:
+                buckets.append("DOWN_2_3")
+            else:
+                buckets.append("DOWN_1")
+    return pd.Series(buckets, index=close_series.index, dtype="object")
+
+
+def _cpb_retest_count(window: np.ndarray) -> float:
+    finite = window[np.isfinite(window)]
+    if len(finite) == 0:
+        return 0.0
+    support_band_low = float(np.min(finite))
+    support_band_high = float(np.quantile(finite, 0.35))
+    return float(np.sum((finite >= support_band_low) & (finite <= support_band_high)))
+
+
+def _scan_conditioning_samples_for_code(frame: pd.DataFrame) -> pd.DataFrame:
+    if frame.empty:
+        return pd.DataFrame()
+
+    cfg = get_settings()
+    horizon = FACTOR_EVAL_FORWARD_HORIZON_TRADE_DAYS
+    data = frame.sort_values("date").copy()
+    for column in ["adj_open", "adj_high", "adj_low", "adj_close", "volume", "volume_ma20"]:
+        data[column] = pd.to_numeric(data[column], errors="coerce")
+
+    close_series = data["adj_close"]
+    high_series = data["adj_high"]
+    low_series = data["adj_low"]
+    open_series = data["adj_open"]
+    volume_series = data["volume"].fillna(0.0)
+    volume_ma20_series = data["volume_ma20"].fillna(0.0)
+
+    data["entry_price"] = close_series
+    data["future_terminal_close"] = close_series.shift(-horizon)
+    data["future_max_high"] = _future_window_extreme(high_series, horizon, "max")
+    data["future_min_low"] = _future_window_extreme(low_series, horizon, "min")
+    valid_range = (high_series > low_series) & data["entry_price"].gt(0.0)
+    valid_future = (
+        data["future_terminal_close"].notna()
+        & data["future_max_high"].notna()
+        & data["future_min_low"].notna()
+    )
+    data["forward_return_pct"] = (
+        (data["future_terminal_close"] - data["entry_price"]) / data["entry_price"]
+    ) * 100.0
+    data["mfe_pct"] = np.maximum(
+        ((data["future_max_high"] - data["entry_price"]) / data["entry_price"]) * 100.0,
+        0.0,
+    )
+    data["mae_pct"] = np.maximum(
+        ((data["entry_price"] - data["future_min_low"]) / data["entry_price"]) * 100.0,
+        0.0,
+    )
+    data["hit_flag"] = data["forward_return_pct"] > 0.0
+    data["streak_bucket"] = _compute_streak_buckets(close_series)
+
+    volume_ratio = pd.Series(
+        np.where(volume_ma20_series > 0.0, volume_series / volume_ma20_series, 0.0),
+        index=data.index,
+        dtype=float,
+    )
+
+    lookback_low = low_series.shift(1).rolling(20, min_periods=20).min()
+    close_pos = (close_series - low_series) / (high_series - low_series)
+    body_ratio = (close_series - open_series).abs() / (high_series - low_series)
+    bof_strength = np.clip(
+        0.4 * close_pos + 0.3 * np.minimum(volume_ratio / 2.0, 1.0) + 0.3 * body_ratio,
+        0.0,
+        1.0,
+    )
+    bof_trigger = (
+        valid_range
+        & valid_future
+        & lookback_low.notna()
+        & (low_series < lookback_low * (1.0 - float(cfg.pas_bof_break_pct)))
+        & (close_series >= lookback_low)
+        & (close_pos >= 0.6)
+        & (volume_ma20_series > 0.0)
+        & (volume_series >= volume_ma20_series * float(cfg.pas_bof_volume_mult))
+    )
+
+    trend_a_high = high_series.shift(21).rolling(20, min_periods=20).max()
+    trend_floor = low_series.shift(21).rolling(20, min_periods=20).min()
+    trend_peak = high_series.shift(6).rolling(15, min_periods=15).max()
+    mid_floor = low_series.shift(6).rolling(15, min_periods=15).min()
+    pullback_low = low_series.shift(1).rolling(5, min_periods=5).min()
+    rebound_ref = high_series.shift(1).rolling(5, min_periods=5).max()
+    trend_established = (trend_peak > trend_a_high) & (mid_floor > trend_floor)
+    pullback_depth = (trend_peak - pullback_low) / np.maximum(trend_peak - trend_floor, 1e-9)
+    pullback_depth_valid = (
+        pullback_depth >= float(cfg.pas_pb_pullback_min)
+    ) & (pullback_depth <= float(cfg.pas_pb_pullback_max))
+    support_hold = pullback_low >= mid_floor * 0.98
+    rebound_confirm = (close_series > rebound_ref) & (close_series <= trend_peak * 1.03)
+    rebound_strength = np.clip((close_series - rebound_ref) / np.maximum(0.08 * rebound_ref, 1e-9), 0.0, 1.0)
+    depth_quality = np.where(
+        (pullback_depth >= 0.25) & (pullback_depth <= 0.40),
+        1.0,
+        np.where(pullback_depth_valid, 0.7, 0.0),
+    )
+    trend_quality = np.clip((mid_floor - trend_floor) / np.maximum(0.10 * trend_floor, 1e-9), 0.0, 1.0)
+    volume_strength = np.clip(volume_ratio / 2.0, 0.0, 1.0)
+    pb_strength = np.clip(
+        0.35 * rebound_strength + 0.25 * depth_quality + 0.20 * trend_quality + 0.20 * volume_strength,
+        0.0,
+        1.0,
+    )
+    pb_trigger = (
+        valid_range
+        & valid_future
+        & trend_a_high.notna()
+        & trend_floor.notna()
+        & trend_peak.notna()
+        & mid_floor.notna()
+        & pullback_low.notna()
+        & rebound_ref.notna()
+        & trend_established
+        & pullback_depth_valid
+        & support_hold
+        & rebound_confirm
+        & (volume_ma20_series > 0.0)
+        & (volume_series >= volume_ma20_series * float(cfg.pas_pb_volume_mult))
+    )
+
+    support_band_low = low_series.shift(1).rolling(20, min_periods=20).min()
+    support_band_high = low_series.shift(1).rolling(20, min_periods=20).quantile(0.35)
+    neckline_ref = high_series.shift(1).rolling(20, min_periods=20).max()
+    retest_count = low_series.shift(1).rolling(20, min_periods=20).apply(_cpb_retest_count, raw=True)
+    compression_width = (neckline_ref - support_band_low) / np.maximum(support_band_low, 1e-9)
+    retest_enough = retest_count >= float(cfg.pas_cpb_retest_min)
+    support_band_valid = (support_band_high / np.maximum(support_band_low, 1e-9)) <= 1.03
+    compression_valid = compression_width <= 0.12
+    neckline_break = close_series > neckline_ref * (1.0 + float(cfg.pas_cpb_neckline_break_pct))
+    neckline_strength = np.clip((close_series - neckline_ref) / np.maximum(0.10 * neckline_ref, 1e-9), 0.0, 1.0)
+    retest_quality = np.clip(retest_count / 3.0, 0.0, 1.0)
+    compression_quality = 1.0 - np.clip(compression_width / 0.12, 0.0, 1.0)
+    cpb_strength = np.clip(
+        0.35 * neckline_strength
+        + 0.25 * retest_quality
+        + 0.20 * compression_quality
+        + 0.20 * volume_strength,
+        0.0,
+        1.0,
+    )
+    cpb_trigger = (
+        valid_range
+        & valid_future
+        & support_band_low.notna()
+        & support_band_high.notna()
+        & neckline_ref.notna()
+        & retest_count.notna()
+        & retest_enough
+        & support_band_valid
+        & compression_valid
+        & neckline_break
+        & (volume_ma20_series > 0.0)
+        & (volume_series >= volume_ma20_series * float(cfg.pas_cpb_volume_mult))
+    )
+
+    pattern_specs = [
+        ("bof", bof_trigger, bof_strength),
+        ("pb", pb_trigger, pb_strength),
+        ("cpb", cpb_trigger, cpb_strength),
+    ]
+    output_frames: list[pd.DataFrame] = []
+    for pattern, trigger_mask, strength_series in pattern_specs:
+        selected = data.loc[
+            trigger_mask,
+            ["code", "date", "entry_price", "forward_return_pct", "mae_pct", "mfe_pct", "hit_flag", "streak_bucket"],
+        ].copy()
+        if selected.empty:
+            continue
+        selected["signal_pattern"] = pattern
+        selected["pattern_strength"] = pd.to_numeric(strength_series.loc[selected.index], errors="coerce")
+        output_frames.append(selected)
+    return _concat_sparse_frames(output_frames)
+
+
+def _attach_conditioning_gene_tags(store: Store, samples_df: pd.DataFrame) -> pd.DataFrame:
+    if samples_df.empty:
+        return samples_df
+
+    key_df = samples_df[["code", "date"]].drop_duplicates().rename(columns={"date": "calc_date"})
+    store.conn.register("g6_signal_keys", key_df)
+    try:
+        gene_tags = store.read_df(
+            """
+            SELECT
+                g.code,
+                g.calc_date AS date,
+                g.current_wave_direction,
+                g.current_wave_age_band,
+                g.current_wave_magnitude_band,
+                g.latest_confirmed_turn_type,
+                g.latest_two_b_confirm_type
+            FROM l3_stock_gene g
+            JOIN g6_signal_keys k
+              ON g.code = k.code
+             AND g.calc_date = k.calc_date
+            """
+        )
+    finally:
+        store.conn.unregister("g6_signal_keys")
+
+    enriched = samples_df.merge(gene_tags, on=["code", "date"], how="left")
+    fill_defaults = {
+        "current_wave_direction": "UNKNOWN",
+        "current_wave_age_band": G2_BAND_UNSCALED,
+        "current_wave_magnitude_band": G2_BAND_UNSCALED,
+        "latest_confirmed_turn_type": TURN_CONFIRM_NONE,
+        "latest_two_b_confirm_type": TURN_CONFIRM_NONE,
+        "streak_bucket": "FLAT",
+    }
+    for column, default in fill_defaults.items():
+        enriched[column] = enriched[column].fillna(default).astype(str)
+    return enriched
+
+
+def _conditioning_summary(frame: pd.DataFrame) -> dict[str, float]:
+    if frame.empty:
+        return {
+            "sample_size": 0.0,
+            "hit_rate": 0.0,
+            "avg_forward_return_pct": 0.0,
+            "median_forward_return_pct": 0.0,
+            "avg_mae_pct": 0.0,
+            "avg_mfe_pct": 0.0,
+        }
+    return {
+        "sample_size": float(len(frame)),
+        "hit_rate": float(frame["hit_flag"].mean()),
+        "avg_forward_return_pct": float(frame["forward_return_pct"].mean()),
+        "median_forward_return_pct": float(frame["forward_return_pct"].median()),
+        "avg_mae_pct": float(frame["mae_pct"].mean()),
+        "avg_mfe_pct": float(frame["mfe_pct"].mean()),
+    }
+
+
+def _conditioning_edge_tag(summary: dict[str, float], baseline: dict[str, float], is_baseline: bool) -> str:
+    if is_baseline:
+        return "BASELINE"
+    hit_delta = float(summary["hit_rate"] - baseline["hit_rate"])
+    payoff_delta = float(summary["avg_forward_return_pct"] - baseline["avg_forward_return_pct"])
+    mae_delta = float(summary["avg_mae_pct"] - baseline["avg_mae_pct"])
+    mfe_delta = float(summary["avg_mfe_pct"] - baseline["avg_mfe_pct"])
+    if (
+        hit_delta >= 0.0
+        and payoff_delta >= 0.0
+        and mae_delta <= 0.0
+        and mfe_delta >= 0.0
+        and any([hit_delta > 0.0, payoff_delta > 0.0, mae_delta < 0.0, mfe_delta > 0.0])
+    ):
+        return G6_EDGE_BETTER
+    if (
+        hit_delta <= 0.0
+        and payoff_delta <= 0.0
+        and mae_delta >= 0.0
+        and mfe_delta <= 0.0
+        and any([hit_delta < 0.0, payoff_delta < 0.0, mae_delta > 0.0, mfe_delta < 0.0])
+    ):
+        return G6_EDGE_WORSE
+    return G6_EDGE_MIXED
+
+
+def _build_conditioning_eval_rows(calc_date: date, samples_df: pd.DataFrame) -> pd.DataFrame:
+    if samples_df.empty:
+        return pd.DataFrame()
+
+    rows: list[dict[str, object]] = []
+    conditioning_specs = [
+        ("ALL", None),
+        ("current_wave_direction", "current_wave_direction"),
+        ("current_wave_age_band", "current_wave_age_band"),
+        ("current_wave_magnitude_band", "current_wave_magnitude_band"),
+        ("latest_confirmed_turn_type", "latest_confirmed_turn_type"),
+        ("latest_two_b_confirm_type", "latest_two_b_confirm_type"),
+        ("streak_bucket", "streak_bucket"),
+    ]
+
+    for signal_pattern, pattern_df in samples_df.groupby("signal_pattern", sort=True):
+        baseline = _conditioning_summary(pattern_df)
+        for conditioning_key, column in conditioning_specs:
+            if column is None:
+                parts = [("ALL", pattern_df)]
+            else:
+                parts = [
+                    (str(value), group.copy())
+                    for value, group in pattern_df.groupby(column, dropna=False, sort=True)
+                    if str(value).strip()
+                ]
+            for conditioning_value, part in parts:
+                summary = _conditioning_summary(part)
+                is_baseline = conditioning_key == "ALL" and conditioning_value == "ALL"
+                rows.append(
+                    {
+                        "calc_date": calc_date,
+                        "signal_pattern": signal_pattern,
+                        "sample_scope": G6_CONDITIONING_SAMPLE_SCOPE,
+                        "conditioning_key": conditioning_key,
+                        "conditioning_value": conditioning_value,
+                        "sample_size": int(summary["sample_size"]),
+                        "hit_rate": float(summary["hit_rate"]),
+                        "avg_forward_return_pct": float(summary["avg_forward_return_pct"]),
+                        "median_forward_return_pct": float(summary["median_forward_return_pct"]),
+                        "avg_mae_pct": float(summary["avg_mae_pct"]),
+                        "avg_mfe_pct": float(summary["avg_mfe_pct"]),
+                        "hit_rate_delta_vs_pattern_baseline": float(summary["hit_rate"] - baseline["hit_rate"]),
+                        "payoff_delta_vs_pattern_baseline": float(
+                            summary["avg_forward_return_pct"] - baseline["avg_forward_return_pct"]
+                        ),
+                        "mae_delta_vs_pattern_baseline": float(summary["avg_mae_pct"] - baseline["avg_mae_pct"]),
+                        "mfe_delta_vs_pattern_baseline": float(summary["avg_mfe_pct"] - baseline["avg_mfe_pct"]),
+                        "edge_tag": _conditioning_edge_tag(summary, baseline, is_baseline),
+                    }
+                )
+    return pd.DataFrame(rows)
+
+
+def compute_gene_conditioning(store: Store, calc_date: date) -> int:
+    start = store.conn.execute("SELECT MIN(date) FROM l2_stock_adj_daily").fetchone()[0]
+    store.conn.execute("DELETE FROM l3_gene_conditioning_eval WHERE calc_date = ?", [calc_date])
+    if start is None:
+        return 0
+
+    history_df = store.read_df(
+        """
+        SELECT code, date, adj_open, adj_high, adj_low, adj_close, volume, volume_ma20
+        FROM l2_stock_adj_daily
+        WHERE date BETWEEN ? AND ?
+        ORDER BY code, date
+        """,
+        (start, calc_date),
+    )
+    if history_df.empty:
+        return 0
+
+    sample_frames: list[pd.DataFrame] = []
+    for _, group in history_df.groupby("code", sort=True):
+        sample_df = _scan_conditioning_samples_for_code(group.reset_index(drop=True))
+        if not sample_df.empty:
+            sample_frames.append(sample_df)
+
+    if not sample_frames:
+        return 0
+
+    samples_df = _attach_conditioning_gene_tags(store, _concat_sparse_frames(sample_frames))
+    conditioning_eval_df = _build_conditioning_eval_rows(calc_date, samples_df)
+    if conditioning_eval_df.empty:
+        return 0
+    return store.bulk_upsert("l3_gene_conditioning_eval", conditioning_eval_df)
 
 
 def _concat_sparse_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:

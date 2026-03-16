@@ -10,7 +10,7 @@ from typing import Any
 import duckdb
 import pandas as pd
 
-CURRENT_SCHEMA_VERSION = 9
+CURRENT_SCHEMA_VERSION = 10
 
 
 @dataclass(frozen=True)
@@ -367,6 +367,32 @@ class Store:
                 support_follow_through           DOUBLE,
                 created_at                       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (entity_scope, entity_code, calc_date)
+            )
+            """
+        )
+
+    def _migrate_schema_v9_to_v10(self) -> None:
+        self.conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS l3_gene_conditioning_eval (
+                calc_date                         DATE    NOT NULL,
+                signal_pattern                    VARCHAR NOT NULL,
+                sample_scope                      VARCHAR NOT NULL,
+                conditioning_key                  VARCHAR NOT NULL,
+                conditioning_value                VARCHAR NOT NULL,
+                sample_size                       INTEGER,
+                hit_rate                          DOUBLE,
+                avg_forward_return_pct            DOUBLE,
+                median_forward_return_pct         DOUBLE,
+                avg_mae_pct                       DOUBLE,
+                avg_mfe_pct                       DOUBLE,
+                hit_rate_delta_vs_pattern_baseline DOUBLE,
+                payoff_delta_vs_pattern_baseline  DOUBLE,
+                mae_delta_vs_pattern_baseline     DOUBLE,
+                mfe_delta_vs_pattern_baseline     DOUBLE,
+                edge_tag                          VARCHAR,
+                created_at                        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (calc_date, signal_pattern, sample_scope, conditioning_key, conditioning_value)
             )
             """
         )
@@ -1193,6 +1219,28 @@ class Store:
                 support_follow_through           DOUBLE,
                 created_at                       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (entity_scope, entity_code, calc_date)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l3_gene_conditioning_eval (
+                calc_date                         DATE    NOT NULL,
+                signal_pattern                    VARCHAR NOT NULL,
+                sample_scope                      VARCHAR NOT NULL,
+                conditioning_key                  VARCHAR NOT NULL,
+                conditioning_value                VARCHAR NOT NULL,
+                sample_size                       INTEGER,
+                hit_rate                          DOUBLE,
+                avg_forward_return_pct            DOUBLE,
+                median_forward_return_pct         DOUBLE,
+                avg_mae_pct                       DOUBLE,
+                avg_mfe_pct                       DOUBLE,
+                hit_rate_delta_vs_pattern_baseline DOUBLE,
+                payoff_delta_vs_pattern_baseline  DOUBLE,
+                mae_delta_vs_pattern_baseline     DOUBLE,
+                mfe_delta_vs_pattern_baseline     DOUBLE,
+                edge_tag                          VARCHAR,
+                created_at                        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (calc_date, signal_pattern, sample_scope, conditioning_key, conditioning_value)
             )
             """,
             # L4

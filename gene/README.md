@@ -73,8 +73,8 @@
 
 当前执行状态：
 
-1. 已完成：`G0 / G1 / G2 / G3 / G4 / G5`
-2. 当前下一张主线卡：`G6 / BOF-PB-CPB conditioning readout`
+1. 已完成：`G0 / G1 / G2 / G3 / G4 / G5 / G6`
+2. 当前下一张主线卡：`G7 / MSS-IRS refactor-or-retire decision`
 
 1. 定义 `趋势 / 波段 / 波段主流 / 趋势逆流 / 转折 / 新高新低`
 2. 用 `波动幅度 + 波动时间 + 新高新低密度` 建立历史波段数据库
@@ -110,4 +110,5 @@
 - `03-execution/records/06-phase-g3-structure-label-calibration-record-20260316.md`
 - `03-execution/records/07-phase-g4-self-history-ruler-validation-record-20260316.md`
 - `03-execution/records/08-phase-g5-market-industry-index-mirror-ruler-record-20260316.md`
+- `03-execution/records/09-phase-g6-bof-pb-cpb-conditioning-record-20260316.md`
 - `90-archive/README.md`
