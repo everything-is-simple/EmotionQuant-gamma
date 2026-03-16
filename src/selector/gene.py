@@ -22,6 +22,12 @@ FACTOR_EVAL_DIRECTION_SCOPE = "ALL"
 FACTOR_EVAL_BIN_METHOD = "FIXED_PERCENTILE_20"
 FACTOR_EVAL_BIN_EDGES = [0.0, 20.0, 40.0, 60.0, 80.0, 100.000001]
 FACTOR_EVAL_BIN_LABELS = ["P0_20", "P20_40", "P40_60", "P60_80", "P80_100"]
+G2_DISTRIBUTION_SAMPLE_SCOPE = "SELF_HISTORY_DISTRIBUTION"
+G2_DISTRIBUTION_BAND_METHOD = "P65_P95"
+G2_BAND_NORMAL = "NORMAL"
+G2_BAND_STRONG = "STRONG"
+G2_BAND_EXTREME = "EXTREME"
+G2_BAND_UNSCALED = "UNSCALED"
 
 
 @dataclass(frozen=True)
@@ -76,6 +82,7 @@ def _clear_gene_range(store: Store, start: date, end: date) -> None:
     store.conn.execute("DELETE FROM l3_gene_wave WHERE end_date BETWEEN ? AND ?", [start, end])
     store.conn.execute("DELETE FROM l3_gene_event WHERE event_date BETWEEN ? AND ?", [start, end])
     store.conn.execute("DELETE FROM l3_gene_factor_eval WHERE calc_date BETWEEN ? AND ?", [start, end])
+    store.conn.execute("DELETE FROM l3_gene_distribution_eval WHERE calc_date BETWEEN ? AND ?", [start, end])
 
 
 def _load_gene_input(store: Store, start: date, end: date) -> pd.DataFrame:
@@ -279,6 +286,42 @@ def _relative_strength_stats(history: list[float], value: float) -> dict[str, fl
     }
 
 
+def _distribution_thresholds(history: list[float]) -> dict[str, float | int]:
+    if not history:
+        return {"sample_size": 0, "p65": np.nan, "p95": np.nan}
+    arr = np.asarray(history, dtype=float)
+    arr = arr[np.isfinite(arr)]
+    if len(arr) == 0:
+        return {"sample_size": 0, "p65": np.nan, "p95": np.nan}
+    return {
+        "sample_size": int(len(arr)),
+        "p65": float(np.percentile(arr, 65)),
+        "p95": float(np.percentile(arr, 95)),
+    }
+
+
+def _optional_float(value: float | int | None) -> float | None:
+    if value is None:
+        return None
+    number = float(value)
+    if not np.isfinite(number):
+        return None
+    return number
+
+
+def _distribution_band(value: float, thresholds: dict[str, float | int]) -> str:
+    sample_size = int(thresholds["sample_size"])
+    p65 = _optional_float(thresholds["p65"])
+    p95 = _optional_float(thresholds["p95"])
+    if sample_size <= 0 or p65 is None or p95 is None or not np.isfinite(value):
+        return G2_BAND_UNSCALED
+    if value < p65:
+        return G2_BAND_NORMAL
+    if value <= p95:
+        return G2_BAND_STRONG
+    return G2_BAND_EXTREME
+
+
 def _extract_wave_events(
     code: str,
     wave_id: str,
@@ -422,18 +465,17 @@ def _apply_wave_history_scores(waves: list[dict[str, object]]) -> None:
     history_by_direction: dict[str, list[dict[str, object]]] = {"UP": [], "DOWN": []}
     for wave in waves:
         history = history_by_direction[str(wave["direction"])]
-        magnitude_stats = _relative_strength_stats(
-            [float(item["magnitude_pct"]) for item in history],
-            float(wave["magnitude_pct"]),
-        )
-        duration_stats = _relative_strength_stats(
-            [float(item["duration_trade_days"]) for item in history],
-            float(wave["duration_trade_days"]),
-        )
-        density_stats = _relative_strength_stats(
-            [float(item["extreme_density"]) for item in history],
-            float(wave["extreme_density"]),
-        )
+        magnitude_history = [float(item["magnitude_pct"]) for item in history]
+        duration_history = [float(item["duration_trade_days"]) for item in history]
+        density_history = [float(item["extreme_density"]) for item in history]
+        magnitude_value = float(wave["magnitude_pct"])
+        duration_value = float(wave["duration_trade_days"])
+        density_value = float(wave["extreme_density"])
+        magnitude_stats = _relative_strength_stats(magnitude_history, magnitude_value)
+        duration_stats = _relative_strength_stats(duration_history, duration_value)
+        density_stats = _relative_strength_stats(density_history, density_value)
+        magnitude_thresholds = _distribution_thresholds(magnitude_history)
+        duration_thresholds = _distribution_thresholds(duration_history)
         wave["history_sample_size"] = int(magnitude_stats["sample_size"])
         wave["magnitude_rank"] = int(magnitude_stats["rank"])
         wave["duration_rank"] = int(duration_stats["rank"])
@@ -444,6 +486,13 @@ def _apply_wave_history_scores(waves: list[dict[str, object]]) -> None:
         wave["magnitude_zscore"] = float(magnitude_stats["zscore"])
         wave["duration_zscore"] = float(duration_stats["zscore"])
         wave["extreme_density_zscore"] = float(density_stats["zscore"])
+        wave["magnitude_p65"] = _optional_float(magnitude_thresholds["p65"])
+        wave["magnitude_p95"] = _optional_float(magnitude_thresholds["p95"])
+        wave["magnitude_band"] = _distribution_band(magnitude_value, magnitude_thresholds)
+        wave["duration_p65"] = _optional_float(duration_thresholds["p65"])
+        wave["duration_p95"] = _optional_float(duration_thresholds["p95"])
+        wave["duration_band"] = _distribution_band(duration_value, duration_thresholds)
+        wave["wave_age_band"] = str(wave["duration_band"])
         history.append(wave)
 
 
@@ -552,18 +601,14 @@ def _build_daily_snapshots(
         age_trade_days = int(idx - active_state.start_index + 1)
         density = float(active_state.extreme_count / max(age_trade_days, 1))
         history = completed_by_direction[direction]
-        magnitude_stats = _relative_strength_stats(
-            [float(item["magnitude_pct"]) for item in history],
-            magnitude_pct,
-        )
-        duration_stats = _relative_strength_stats(
-            [float(item["duration_trade_days"]) for item in history],
-            float(age_trade_days),
-        )
-        density_stats = _relative_strength_stats(
-            [float(item["extreme_density"]) for item in history],
-            density,
-        )
+        magnitude_history = [float(item["magnitude_pct"]) for item in history]
+        duration_history = [float(item["duration_trade_days"]) for item in history]
+        density_history = [float(item["extreme_density"]) for item in history]
+        magnitude_stats = _relative_strength_stats(magnitude_history, magnitude_pct)
+        duration_stats = _relative_strength_stats(duration_history, float(age_trade_days))
+        density_stats = _relative_strength_stats(density_history, density)
+        magnitude_thresholds = _distribution_thresholds(magnitude_history)
+        duration_thresholds = _distribution_thresholds(duration_history)
         bull_score, bear_score, gene_score = _gene_score_from_percentiles(
             magnitude_percentile=float(magnitude_stats["percentile"]),
             duration_percentile=float(duration_stats["percentile"]),
@@ -621,6 +666,13 @@ def _build_daily_snapshots(
                 "current_wave_magnitude_zscore": float(magnitude_stats["zscore"]),
                 "current_wave_duration_zscore": float(duration_stats["zscore"]),
                 "current_wave_extreme_density_zscore": float(density_stats["zscore"]),
+                "current_wave_magnitude_p65": _optional_float(magnitude_thresholds["p65"]),
+                "current_wave_magnitude_p95": _optional_float(magnitude_thresholds["p95"]),
+                "current_wave_magnitude_band": _distribution_band(magnitude_pct, magnitude_thresholds),
+                "current_wave_duration_p65": _optional_float(duration_thresholds["p65"]),
+                "current_wave_duration_p95": _optional_float(duration_thresholds["p95"]),
+                "current_wave_duration_band": _distribution_band(float(age_trade_days), duration_thresholds),
+                "current_wave_age_band": _distribution_band(float(age_trade_days), duration_thresholds),
             }
         )
     return snapshots
@@ -723,6 +775,12 @@ def _build_factor_eval_samples(
                 "code": code,
                 "wave_id": str(wave["wave_id"]),
                 "direction": str(wave["direction"]),
+                "end_date": wave["end_date"],
+                "magnitude_raw_pct": float(wave["magnitude_pct"]),
+                "duration_raw_trade_days": float(wave["duration_trade_days"]),
+                "magnitude_band": str(wave["magnitude_band"]),
+                "duration_band": str(wave["duration_band"]),
+                "wave_age_band": str(wave["wave_age_band"]),
                 "magnitude": float(wave["magnitude_percentile"]),
                 "duration": float(wave["duration_percentile"]),
                 "extreme_density": float(wave["extreme_density_percentile"]),
@@ -822,6 +880,96 @@ def _build_factor_eval_rows(samples_df: pd.DataFrame, calc_date: date) -> pd.Dat
     return pd.DataFrame(rows)
 
 
+def _outcome_summary(frame: pd.DataFrame) -> dict[str, float | int]:
+    if frame.empty:
+        return {
+            "band_sample_size": 0,
+            "continuation_base_rate": 0.0,
+            "reversal_base_rate": 0.0,
+            "median_forward_return": 0.0,
+            "median_forward_drawdown": 0.0,
+        }
+    return {
+        "band_sample_size": int(len(frame)),
+        "continuation_base_rate": float(frame["continuation_flag"].mean()),
+        "reversal_base_rate": float(frame["reversal_flag"].mean()),
+        "median_forward_return": float(frame["aligned_close_return_pct"].median()),
+        "median_forward_drawdown": float(frame["adverse_excursion_pct"].median()),
+    }
+
+
+def _build_distribution_eval_rows(
+    samples_df: pd.DataFrame,
+    final_snapshot_df: pd.DataFrame,
+    calc_date: date,
+) -> pd.DataFrame:
+    if samples_df.empty or final_snapshot_df.empty:
+        return pd.DataFrame()
+
+    metric_specs = [
+        {
+            "metric_name": "magnitude_pct",
+            "current_value_col": "current_wave_magnitude_pct",
+            "current_percentile_col": "current_wave_magnitude_percentile",
+            "p65_col": "current_wave_magnitude_p65",
+            "p95_col": "current_wave_magnitude_p95",
+            "band_col": "current_wave_magnitude_band",
+            "sample_band_col": "magnitude_band",
+        },
+        {
+            "metric_name": "duration_trade_days",
+            "current_value_col": "current_wave_age_trade_days",
+            "current_percentile_col": "current_wave_duration_percentile",
+            "p65_col": "current_wave_duration_p65",
+            "p95_col": "current_wave_duration_p95",
+            "band_col": "current_wave_age_band",
+            "sample_band_col": "wave_age_band",
+        },
+    ]
+
+    rows: list[dict[str, object]] = []
+    for snapshot in final_snapshot_df.itertuples(index=False):
+        code = str(snapshot.code)
+        direction = str(snapshot.current_wave_direction)
+        code_samples = samples_df.loc[
+            (samples_df["code"] == code) & (samples_df["direction"] == direction)
+        ].copy()
+        for spec in metric_specs:
+            band_label = str(getattr(snapshot, spec["band_col"]))
+            band_samples = code_samples.loc[code_samples[spec["sample_band_col"]] == band_label].copy()
+            summary = _outcome_summary(band_samples)
+            rows.append(
+                {
+                    "code": code,
+                    "calc_date": calc_date,
+                    "current_wave_id": str(snapshot.current_wave_id),
+                    "direction": direction,
+                    "metric_name": spec["metric_name"],
+                    "sample_scope": G2_DISTRIBUTION_SAMPLE_SCOPE,
+                    "band_method": G2_DISTRIBUTION_BAND_METHOD,
+                    "history_sample_size": int(snapshot.current_wave_history_sample_size),
+                    "band_sample_size": int(summary["band_sample_size"]),
+                    "current_value": float(getattr(snapshot, spec["current_value_col"])),
+                    "current_percentile": float(getattr(snapshot, spec["current_percentile_col"])),
+                    "threshold_p65": _optional_float(getattr(snapshot, spec["p65_col"])),
+                    "threshold_p95": _optional_float(getattr(snapshot, spec["p95_col"])),
+                    "band_label": band_label,
+                    "continuation_base_rate": float(summary["continuation_base_rate"]),
+                    "reversal_base_rate": float(summary["reversal_base_rate"]),
+                    "median_forward_return": float(summary["median_forward_return"]),
+                    "median_forward_drawdown": float(summary["median_forward_drawdown"]),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def _concat_sparse_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
+    normalized = [frame.dropna(axis=1, how="all") for frame in frames if not frame.empty]
+    if not normalized:
+        return pd.DataFrame()
+    return pd.concat(normalized, ignore_index=True, sort=False)
+
+
 def _build_code_gene_payload(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     if frame.empty:
         return pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
@@ -893,18 +1041,20 @@ def compute_gene(store: Store, start: date, end: date) -> int:
             factor_eval_sample_frames.append(factor_eval_sample_df)
 
     total_written = 0
+    final_snapshot_df = pd.DataFrame()
 
     if snapshot_frames:
-        snapshot_df = pd.concat(snapshot_frames, ignore_index=True)
+        snapshot_df = _concat_sparse_frames(snapshot_frames)
         snapshot_df = _apply_cross_section_ranks(snapshot_df)
         snapshot_df = snapshot_df.loc[
             (snapshot_df["calc_date"] >= rebuild_start) & (snapshot_df["calc_date"] <= end)
         ].copy()
         if not snapshot_df.empty:
+            final_snapshot_df = snapshot_df.loc[snapshot_df["calc_date"] == end].copy()
             total_written += store.bulk_upsert("l3_stock_gene", snapshot_df)
 
     if wave_frames:
-        wave_df = pd.concat(wave_frames, ignore_index=True)
+        wave_df = _concat_sparse_frames(wave_frames)
         wave_df = wave_df.loc[
             (wave_df["end_date"] >= rebuild_start) & (wave_df["end_date"] <= end)
         ].copy()
@@ -912,7 +1062,7 @@ def compute_gene(store: Store, start: date, end: date) -> int:
             total_written += store.bulk_upsert("l3_gene_wave", wave_df)
 
     if event_frames:
-        event_df = pd.concat(event_frames, ignore_index=True)
+        event_df = _concat_sparse_frames(event_frames)
         event_df = event_df.loc[
             (event_df["event_date"] >= rebuild_start) & (event_df["event_date"] <= end)
         ].copy()
@@ -920,11 +1070,16 @@ def compute_gene(store: Store, start: date, end: date) -> int:
             total_written += store.bulk_upsert("l3_gene_event", event_df)
 
     if factor_eval_sample_frames:
-        factor_eval_df = _build_factor_eval_rows(
-            pd.concat(factor_eval_sample_frames, ignore_index=True),
-            calc_date=end,
-        )
+        factor_eval_samples_df = _concat_sparse_frames(factor_eval_sample_frames)
+        factor_eval_df = _build_factor_eval_rows(factor_eval_samples_df, calc_date=end)
         if not factor_eval_df.empty:
             total_written += store.bulk_upsert("l3_gene_factor_eval", factor_eval_df)
+        distribution_eval_df = _build_distribution_eval_rows(
+            samples_df=factor_eval_samples_df,
+            final_snapshot_df=final_snapshot_df,
+            calc_date=end,
+        )
+        if not distribution_eval_df.empty:
+            total_written += store.bulk_upsert("l3_gene_distribution_eval", distribution_eval_df)
 
     return total_written

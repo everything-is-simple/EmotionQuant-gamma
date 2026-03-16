@@ -68,6 +68,8 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
                 current_wave_direction,
                 current_wave_magnitude_pct,
                 current_wave_magnitude_percentile,
+                current_wave_magnitude_band,
+                current_wave_age_band,
                 cross_section_magnitude_rank,
                 cross_section_magnitude_percentile
             FROM l3_stock_gene
@@ -85,7 +87,9 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
                 duration_trade_days,
                 wave_role,
                 reversal_tag,
-                magnitude_percentile
+                magnitude_percentile,
+                magnitude_band,
+                wave_age_band
             FROM l3_gene_wave
             ORDER BY code, end_date
             """
@@ -117,14 +121,31 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
             ORDER BY factor_name, bin_label
             """
         )
+        distribution_eval = store.read_df(
+            """
+            SELECT
+                code,
+                calc_date,
+                metric_name,
+                band_label,
+                threshold_p65,
+                threshold_p95,
+                band_sample_size
+            FROM l3_gene_distribution_eval
+            ORDER BY code, metric_name
+            """
+        )
 
         assert written > 0
         assert "current_wave_direction" in schema["name"].tolist()
         assert "cross_section_magnitude_rank" in schema["name"].tolist()
+        assert "current_wave_magnitude_band" in schema["name"].tolist()
+        assert "current_wave_age_band" in schema["name"].tolist()
         assert not snapshots.empty
         assert not waves.empty
         assert not events.empty
         assert not factor_eval.empty
+        assert not distribution_eval.empty
         assert snapshots["current_wave_direction"].tolist() == ["UP", "UP"]
         assert snapshots["code"].tolist() == ["AAA", "BBB"]
         assert snapshots["cross_section_magnitude_rank"].tolist() == [1, 2]
@@ -132,7 +153,11 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
             snapshots.iloc[1]["current_wave_magnitude_pct"]
         )
         assert snapshots["current_wave_magnitude_percentile"].notna().all()
+        assert snapshots["current_wave_magnitude_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
+        assert snapshots["current_wave_age_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
         assert waves["magnitude_percentile"].notna().all()
+        assert waves["magnitude_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
+        assert waves["wave_age_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
         assert events["event_seq"].min() == 1
         assert set(factor_eval.loc[factor_eval["bin_label"] == "ALL", "factor_name"].tolist()) == {
             "magnitude",
@@ -142,5 +167,7 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert factor_eval["sample_scope"].eq("SELF_HISTORY_PERCENTILE").all()
         assert factor_eval["direction_scope"].eq("ALL").all()
         assert factor_eval["forward_horizon_trade_days"].eq(10).all()
+        assert set(distribution_eval["metric_name"].tolist()) == {"duration_trade_days", "magnitude_pct"}
+        assert distribution_eval["band_label"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
     finally:
         store.close()

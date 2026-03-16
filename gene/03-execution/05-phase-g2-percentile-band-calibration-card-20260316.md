@@ -1,6 +1,6 @@
 # G2 卡: 历史寿命分布与 65/95 校准
 
-**状态**: `Opened`  
+**状态**: `Completed`  
 **日期**: `2026-03-16`
 
 ---
@@ -53,3 +53,28 @@
 1. 不把 `65 / 95` 扩写成参数森林
 2. 不在本卡重写 `1-2-3 / 2B`
 3. 不在本卡引入指数和行业镜像尺
+
+---
+
+## 7. 结案结论
+
+本卡已完成。  
+当前第四战场已正式具备 `G2` 所需的三类正式输出：
+
+1. `l3_stock_gene` 已增加：
+   - `current_wave_magnitude_p65 / p95`
+   - `current_wave_duration_p65 / p95`
+   - `current_wave_magnitude_band / current_wave_duration_band / current_wave_age_band`
+2. `l3_gene_wave` 已增加：
+   - `magnitude_p65 / p95`
+   - `duration_p65 / p95`
+   - `magnitude_band / duration_band / wave_age_band`
+3. 主库已新增 `l3_gene_distribution_eval`，用于记录窗口结束日的自历史分布带与基础赔率读数
+
+截至 `2026-02-24` 的主库真实回放结果表明：
+
+1. `magnitude` 的三段分带已经能稳定拉开“普通 / 强 / 极端”差异
+2. `duration` 的分带已可稳定落库，但解释力仍明显弱于 `magnitude`
+3. `65 / 95` 在第四战场中已被固定为“历史位置标签”，而不是新的交易参数森林
+
+下一张主线卡应按顺序进入 `G3 / structure label calibration`。

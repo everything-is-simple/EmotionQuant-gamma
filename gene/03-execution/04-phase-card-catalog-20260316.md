@@ -14,8 +14,8 @@
 
 当前状态：
 
-1. 已完成：`G0 / G1`
-2. 已开未做：`G2 ~ G8`
+1. 已完成：`G0 / G1 / G2`
+2. 已开未做：`G3 ~ G8`
 3. 条件卡待触发：`GX1 / GX2`
 
 ---
@@ -30,7 +30,7 @@
    - 状态：`Completed`
 3. `G2 / percentile band calibration`
    - 作用：把 `65 / 95` 做成历史分布带，而不是新参数森林
-   - 状态：`Opened`
+   - 状态：`Completed`
 4. `G3 / structure label calibration`
    - 作用：把 `1-2-3 / 2B` 从描述词升级成正式结构标签
    - 状态：`Opened`

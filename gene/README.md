@@ -71,6 +71,11 @@
 
 第四战场第一阶段只做三件事：
 
+当前执行状态：
+
+1. 已完成：`G0 / G1 / G2`
+2. 当前下一张主线卡：`G3 / structure label calibration`
+
 1. 定义 `趋势 / 波段 / 波段主流 / 趋势逆流 / 转折 / 新高新低`
 2. 用 `波动幅度 + 波动时间 + 新高新低密度` 建立历史波段数据库
 3. 输出个股自历史分位、`z-score` 与横截面排序
@@ -101,4 +106,5 @@
 - `03-execution/records/02-professional-speculation-principles-map-20260316.md`
 - `03-execution/records/03-professional-speculation-principles-system-ingestion-matrix-20260316.md`
 - `03-execution/records/04-phase-g1-factor-attribution-baseline-record-20260316.md`
+- `03-execution/records/05-phase-g2-percentile-band-calibration-record-20260316.md`
 - `90-archive/README.md`

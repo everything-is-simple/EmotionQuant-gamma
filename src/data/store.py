@@ -10,7 +10,7 @@ from typing import Any
 import duckdb
 import pandas as pd
 
-CURRENT_SCHEMA_VERSION = 5
+CURRENT_SCHEMA_VERSION = 6
 
 
 @dataclass(frozen=True)
@@ -229,6 +229,50 @@ class Store:
             )
             """
         )
+
+    def _migrate_schema_v5_to_v6(self) -> None:
+        statements = [
+            """
+            CREATE TABLE IF NOT EXISTS l3_gene_distribution_eval (
+                code                       VARCHAR NOT NULL,
+                calc_date                  DATE    NOT NULL,
+                current_wave_id            VARCHAR NOT NULL,
+                direction                  VARCHAR NOT NULL,
+                metric_name                VARCHAR NOT NULL,
+                sample_scope               VARCHAR NOT NULL,
+                band_method                VARCHAR NOT NULL,
+                history_sample_size        INTEGER,
+                band_sample_size           INTEGER,
+                current_value              DOUBLE,
+                current_percentile         DOUBLE,
+                threshold_p65              DOUBLE,
+                threshold_p95              DOUBLE,
+                band_label                 VARCHAR,
+                continuation_base_rate     DOUBLE,
+                reversal_base_rate         DOUBLE,
+                median_forward_return      DOUBLE,
+                median_forward_drawdown    DOUBLE,
+                created_at                 TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (code, calc_date, metric_name)
+            )
+            """,
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS magnitude_p65 DOUBLE",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS magnitude_p95 DOUBLE",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS magnitude_band VARCHAR",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS duration_p65 DOUBLE",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS duration_p95 DOUBLE",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS duration_band VARCHAR",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS wave_age_band VARCHAR",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_magnitude_p65 DOUBLE",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_magnitude_p95 DOUBLE",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_magnitude_band VARCHAR",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_duration_p65 DOUBLE",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_duration_p95 DOUBLE",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_duration_band VARCHAR",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_age_band VARCHAR",
+        ]
+        for sql in statements:
+            self.conn.execute(sql)
 
     def _ensure_optional_columns(self) -> None:
         """
@@ -844,6 +888,13 @@ class Store:
                 current_wave_magnitude_zscore DOUBLE,
                 current_wave_duration_zscore DOUBLE,
                 current_wave_extreme_density_zscore DOUBLE,
+                current_wave_magnitude_p65 DOUBLE,
+                current_wave_magnitude_p95 DOUBLE,
+                current_wave_magnitude_band VARCHAR,
+                current_wave_duration_p65 DOUBLE,
+                current_wave_duration_p95 DOUBLE,
+                current_wave_duration_band VARCHAR,
+                current_wave_age_band VARCHAR,
                 cross_section_magnitude_rank INTEGER,
                 cross_section_magnitude_percentile DOUBLE,
                 cross_section_duration_rank INTEGER,
@@ -885,6 +936,13 @@ class Store:
                 magnitude_zscore            DOUBLE,
                 duration_zscore             DOUBLE,
                 extreme_density_zscore      DOUBLE,
+                magnitude_p65               DOUBLE,
+                magnitude_p95               DOUBLE,
+                magnitude_band              VARCHAR,
+                duration_p65                DOUBLE,
+                duration_p95                DOUBLE,
+                duration_band               VARCHAR,
+                wave_age_band               VARCHAR,
                 created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (code, wave_id)
             )
@@ -931,6 +989,30 @@ class Store:
                     forward_horizon_trade_days,
                     bin_label
                 )
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l3_gene_distribution_eval (
+                code                       VARCHAR NOT NULL,
+                calc_date                  DATE    NOT NULL,
+                current_wave_id            VARCHAR NOT NULL,
+                direction                  VARCHAR NOT NULL,
+                metric_name                VARCHAR NOT NULL,
+                sample_scope               VARCHAR NOT NULL,
+                band_method                VARCHAR NOT NULL,
+                history_sample_size        INTEGER,
+                band_sample_size           INTEGER,
+                current_value              DOUBLE,
+                current_percentile         DOUBLE,
+                threshold_p65              DOUBLE,
+                threshold_p95              DOUBLE,
+                band_label                 VARCHAR,
+                continuation_base_rate     DOUBLE,
+                reversal_base_rate         DOUBLE,
+                median_forward_return      DOUBLE,
+                median_forward_drawdown    DOUBLE,
+                created_at                 TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (code, calc_date, metric_name)
             )
             """,
             # L4
