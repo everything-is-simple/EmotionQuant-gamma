@@ -1,63 +1,61 @@
 # Phase 6B Integrated End-to-End Validation Card
 
-**状态**: `Active`  
-**日期**: `2026-03-17`  
-**对象**: `第一战场 / Phase 6B / integrated end-to-end validation`
+**Status**: `Completed`  
+**Date**: `2026-03-17`  
+**Scope**: `First battlefield / Phase 6B / integrated end-to-end validation`
 
 ---
 
-## 1. 目标
+## 1. Goal
 
-`Phase 6B` 只做一件事：
-
-`对 Phase 6A 冻结后的统一默认系统候选，做正式长窗 replay、对照矩阵和 gate 裁决。`
-
----
-
-## 2. 本卡要回答的问题
-
-1. 统一默认系统候选相对当前 baseline 到底改了什么
-2. 改动后是否保持端到端稳定、trace 完整和可解释性
-3. 统一默认系统候选是否真的值得 promotion，而不是只多了一层叙事
-4. 哪些 failure mode 必须直接判 `NO-GO`
+`Phase 6B` does one thing:
+run a formal integrated replay and gate decision for the frozen unified default-system candidate defined in `Phase 6A`.
 
 ---
 
-## 3. 冻结输入
+## 2. Validation Window
 
-1. `blueprint/03-execution/11-phase-6-unified-default-system-migration-package-card-20260317.md`
-2. `blueprint/03-execution/12-phase-6a-promoted-subset-freeze-card-20260317.md`
-3. `docs/spec/v0.01-plus/governance/v0.01-plus-promoted-subset-freeze-20260317.md`
-4. `blueprint/01-full-design/09-mainline-system-operating-baseline-20260309.md`
-5. `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
-
-当前明确不做：
-
-1. `不在验证过程中继续改 freeze scope`
-2. `不做 case-by-case cherry-pick`
-3. `不因局部亮点跳过 gate`
+1. `2026-01-05` to `2026-02-24`
+2. full window plus `front_half_window` and `back_half_window`
+3. source DB: `G:\EmotionQuant_data\emotionquant.duckdb`
 
 ---
 
-## 4. 本卡交付物
+## 3. Formal Evidence
 
-1. 一张 `integrated validation matrix`
-2. 一组 `formal evidence bundle`
-3. 一张 `Phase 6B formal record`
-
----
-
-## 5. Done 标准
-
-1. baseline 对照组与 promotion candidate 组同时重跑
-2. 长窗与窗口切分 evidence 都落地
-3. `GO / NO-GO / HOLD` 判定口径写死
-4. `development-status.md` 同步写明 `Phase 6B completed, next = Phase 6C`
+1. `docs/spec/v0.01-plus/evidence/phase6_integrated_validation_legacy_phase6_unified_default_candidate_w20260105_20260224_t181741__integrated_validation.json`
+2. `docs/spec/v0.01-plus/records/v0.01-plus-phase-6b-integrated-end-to-end-validation-20260317.md`
 
 ---
 
-## 6. 下一步
+## 4. Formal Outcome
 
-`Phase 6B` 完成后，下一张固定为：
+1. `decision = go_to_phase_6c`
+2. `diagnosis = candidate_boundary_and_runtime_validated`
+3. `boundary_audit_passed = true`
+4. `gene_sidecar_ready = true`
+5. `retired_runtime_boundary_held = true`
+6. `trace_complete = true`
+7. `window_slice_complete = true`
+
+Full-window comparison:
+
+1. raw legacy control: `trade_count=7`, `EV=-0.019861`, `PF=0.289672`, `MDD=0.011477`
+2. unified candidate: `trade_count=13`, `EV=-0.018301`, `PF=0.652769`, `MDD=0.024216`
+3. candidate vs raw legacy: `trade_count_ratio=1.8571`, `profit_factor_delta=+0.3631`, `expected_value_delta=+0.001559`
+
+---
+
+## 5. Boundary Notes
+
+1. `Gene` remains shadow-only; no runtime hard gate was promoted.
+2. legacy `IRS-lite / MSS-lite` runtime semantics remain retired inside the unified candidate.
+3. `Phase 6B` validates the candidate boundary and runtime behavior, but does not itself declare final default-runtime promotion.
+
+---
+
+## 6. Next Step
+
+The next fixed sub-card is:
 
 `Phase 6C / unified operating runbook refresh`

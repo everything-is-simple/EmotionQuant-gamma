@@ -1,78 +1,72 @@
 # Phase 6 Unified Default System Migration Package Card
 
-**状态**: `Active`  
-**日期**: `2026-03-17`  
-**对象**: `第一战场 / unified default system migration package`
+**Status**: `Completed`  
+**Date**: `2026-03-17`  
+**Scope**: `First battlefield / unified default system migration package`
 
 ---
 
-## 1. 目标
+## 1. Goal
 
-`Phase 6` 只做一件事：
-
-`把第一到第四战场当前已经形成的可迁子集，合法整合成一个统一默认系统候选。`
-
----
-
-## 2. 本卡要回答的问题
-
-1. 哪些对象当前允许进入统一默认系统候选
-2. 哪些对象只能保留为 shadow / explain-only / governance-only
-3. 一体化 replay / gate 到底要验证什么，而不是只跑旧 baseline
-4. 当前统一运行手册应该怎样写，才能覆盖运行链路、风险开关和人工介入边界
-5. 什么条件满足后，主线才允许从 `legacy_bof_baseline` 切到新的统一默认系统
+`Phase 6` does one thing:
+freeze, validate, and operationalize the smallest truthful unified default-system candidate that can be promoted back into the mainline.
 
 ---
 
-## 3. 冻结输入
+## 2. Frozen Package Boundary
 
-1. `docs/spec/v0.01-plus/records/v0.01-plus-phase-5-research-line-migration-package-closeout-20260315.md`
-2. `normandy/03-execution/records/16-phase-normandy-campaign-closeout-record-20260313.md`
-3. `positioning/03-execution/records/10-phase-p9-positioning-campaign-closeout-record-20260315.md`
-4. `gene/03-execution/records/11-phase-g8-gene-campaign-closeout-record-20260316.md`
-5. `docs/spec/common/records/four-battlefields-integrated-system-map-20260316.md`
-6. `blueprint/01-full-design/09-mainline-system-operating-baseline-20260309.md`
-7. `blueprint/02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
-8. `blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`
+The current unified default-system candidate remains:
 
-当前明确不做：
+1. `legacy_bof_baseline`
+2. `FIXED_NOTIONAL_CONTROL`
+3. `FULL_EXIT_CONTROL`
+4. `Gene context sidecar`
+5. `MSS/IRS retirement boundary`
 
-1. `不直接口头切换默认运行路径`
-2. `不把 retained / watch 对象偷升格成默认参数`
-3. `不重开旧 IRS / MSS 的默认运行资格`
-4. `不在 package 定义前先跑大矩阵`
+What still does **not** happen in this package:
 
----
-
-## 4. 本卡交付物
-
-1. 一张 `Phase 6 opening card`
-2. 一份 `promoted subset freeze`
-3. 一张 `integrated end-to-end validation card`
-4. 一份 `unified operating runbook`
-5. 一张 `Phase 6 formal record`
+1. no automatic promotion of any `Normandy` retained or watch branch
+2. no automatic promotion of any `Positioning` retained partial-exit family
+3. no `Gene` runtime hard gate
+4. no revival of legacy `IRS-lite / MSS-lite` runtime semantics
 
 ---
 
-## 5. 固定边界
+## 3. Package State
 
-1. 不把 `Normandy` retained / watch 分支直接写成默认 entry promotion
-2. 不把 `Positioning` retained queue 直接写成默认 partial-exit 参数
-3. 不把 `Gene` 镜像尺和条件层直接写成硬过滤器
-4. 不把旧 `IRS-lite / MSS-lite` 恢复成默认运行层
-5. 不在没有 formal gate 的情况下改写 `legacy_bof_baseline`
-
----
-
-## 6. 当前建议拆段
-
-1. `Phase 6A / promoted subset freeze`
-2. `Phase 6B / integrated end-to-end validation`
-3. `Phase 6C / unified operating runbook refresh`
-4. `Phase 6 closeout / default-system promotion decision record`
+1. `Phase 6A / promoted subset freeze` = `Completed`
+2. `Phase 6B / integrated end-to-end validation` = `Completed`
+3. `Phase 6C / unified operating runbook refresh` = `Completed`
+4. `Phase 6 closeout / default-system promotion decision record` = `Completed`
 
 ---
 
-## 7. 一句话结论
+## 4. Formal Inputs
 
-`Phase 6` 不是继续补研究，而是把四个战场真正能进入默认运行系统的子集冻结出来、验证清楚、再合法升格。
+1. `blueprint/03-execution/12-phase-6a-promoted-subset-freeze-card-20260317.md`
+2. `blueprint/03-execution/13-phase-6b-integrated-end-to-end-validation-card-20260317.md`
+3. `blueprint/03-execution/14-phase-6c-unified-operating-runbook-refresh-card-20260317.md`
+4. `docs/spec/v0.01-plus/governance/v0.01-plus-promoted-subset-freeze-20260317.md`
+5. `docs/spec/v0.01-plus/records/v0.01-plus-phase-6a-promoted-subset-freeze-20260317.md`
+6. `docs/spec/v0.01-plus/records/v0.01-plus-phase-6b-integrated-end-to-end-validation-20260317.md`
+7. `docs/spec/v0.01-plus/records/v0.01-plus-phase-6c-unified-operating-runbook-refresh-20260317.md`
+8. `docs/spec/v0.01-plus/records/v0.01-plus-phase-6-closeout-default-system-promotion-decision-20260317.md`
+
+---
+
+## 5. Current Truth
+
+1. `Phase 6A` has already frozen the candidate boundary.
+2. `Phase 6B` has now formally validated the candidate with a long-window integrated replay.
+3. The default runtime is still `legacy_bof_baseline`; no new mechanism stack was cut over.
+4. The unified default-system description is now formally promoted at the governance layer.
+
+---
+
+## 6. Next Step
+
+The package is now closed.
+
+Any future default-runtime change requires:
+
+`a new formal package and a new formal gate`

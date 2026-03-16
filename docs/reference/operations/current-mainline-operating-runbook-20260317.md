@@ -1,146 +1,155 @@
 # Current Mainline Operating Runbook
 
-**状态**: `Active`  
-**日期**: `2026-03-17`  
-**对象**: `当前主线运行链路、风险开关、人工介入边界与 rollback 规则`
+**Status**: `Active`  
+**Date**: `2026-03-17`  
+**Scope**: `Current mainline operating chain, allowed switches, intervention boundary, and rollback rules`
 
 ---
 
-## 1. 定位
+## 1. Purpose
 
-本文不是算法正文，也不是研究卡。
+This runbook does one thing:
+state the truthful operating path for the current mainline while `Phase 6` is still in migration.
 
-它只回答：
+It is not:
 
-1. 当前主线实际按什么链路运行
-2. 哪些风险开关允许开启
-3. 哪些对象只能作为 shadow / sidecar / report 使用
-4. 人工介入允许到什么程度
-5. 什么情况下必须 rollback 或停机
+1. a research memo
+2. an algorithm design spec
+3. a verbal shortcut for unapproved promotion
 
 ---
 
-## 2. 当前允许的默认运行模式
+## 2. Current Truth
 
-当前唯一允许的默认运行模式固定为：
+The currently allowed operating path is still:
 
 `legacy_bof_baseline + FIXED_NOTIONAL_CONTROL + FULL_EXIT_CONTROL`
 
-当前仍同时写死：
+At the same time, the following are also fixed truths:
 
-1. `old IRS-lite / MSS-lite` 不回到默认运行层
-2. `SINGLE_LOT_CONTROL` 只保留为 floor sanity baseline
-3. `Gene` 当前只允许作为 `context sidecar / report / dashboard`
-4. 任何 retained / watch 对象都不得口头升格为默认项
+1. `v0.01-plus` is the current governance mainline
+2. the production default runtime has **not** yet been switched away from `legacy_bof_baseline`
+3. `Gene` may appear only as `context sidecar / dashboard / attribution`
+4. legacy `IRS-lite / MSS-lite` runtime semantics remain retired
+5. no retained or watch research object may be verbally promoted into default runtime behavior
 
 ---
 
-## 3. 当前默认运行链路
+## 3. Operating Chain
 
-当前主线运行链路固定为：
+The current operating chain is:
 
 ```text
-Selector 初选
+Selector prefilter
 -> BOF baseline entry
 -> FIXED_NOTIONAL_CONTROL
 -> FULL_EXIT_CONTROL
--> Broker 执行
+-> Broker execution
 -> Backtest / Report / Evidence
 ```
 
-当前若并行生成第四战场信息，只允许以：
+What may run alongside the chain as sidecar only:
 
 1. `stock self-history tags`
 2. `market / industry mirror ranks`
-3. `conditioning readout`
+3. `gene conditioning readout`
 
-的 report-side / dashboard-side sidecar 身份出现，不得直接改写 entry、sizing、exit。
+These sidecars may inform observation, attribution, and post-trade review, but may not directly rewrite:
 
----
-
-## 4. 开工前检查
-
-每次正式运行前，最低检查固定为：
-
-1. 运行 `powershell -ExecutionPolicy Bypass -File scripts/ops/preflight.ps1 -Profile hook`
-2. 确认当前数据库为 `G:\EmotionQuant_data\emotionquant.duckdb`
-3. 确认 `legacy_bof_baseline` 可重跑
-4. 确认未私自打开研究线 retained / watch 开关
-5. 确认本次 run 的目标是 baseline runtime，不是假装 Phase 6 promotion 已完成
+1. entry
+2. sizing
+3. exit
+4. runtime filtering
 
 ---
 
-## 5. 允许的风险开关
+## 4. Allowed Runtime Switches
 
-当前允许的正式运行开关固定为：
+The allowed runtime switches are fixed as:
 
 1. `entry family = BOF baseline only`
 2. `sizing baseline = FIXED_NOTIONAL_CONTROL`
 3. `exit baseline = FULL_EXIT_CONTROL`
-4. `single-lot floor sanity` 可作为验证对照，不作为第二 operating lane
-5. `Gene context sidecar` 可进入 report / attribution / dashboard
-
-当前禁止的运行开关固定为：
-
-1. 打开旧 `IRS-lite / MSS-lite` 作为默认 runtime layer
-2. 把 `Gene` 条件层改成 hard filter
-3. 把 `TRAIL_SCALE_OUT_25_75` 或其他 retained queue 改成默认 partial-exit
-4. 把 `Normandy` watch / retained branch 改成默认 entry
-5. 在没有 formal package 的前提下切换默认运行路径
+4. `SINGLE_LOT_CONTROL = floor sanity only`
+5. `Gene = sidecar / shadow / attribution only`
 
 ---
 
-## 6. 人工介入边界
+## 5. Forbidden Runtime Switches
 
-当前人工允许做的事：
+The following remain forbidden unless a new formal package and gate explicitly promote them:
 
-1. 因 `preflight`、数据契约或关键 trace 异常而暂停运行
-2. 做 report-side 环境观察与复盘解释
-3. 按 `Broker` 既有语义执行 `STOP_LOSS / FORCE_CLOSE`
-4. 在 formal package 内记录问题并回退到 `legacy_bof_baseline`
-
-当前人工禁止做的事：
-
-1. 人工把 `Gene` 标签当成未编码的交易过滤器
-2. 人工把 retained / watch 结论临时加到默认运行
-3. 因少量样本亮点改写默认 sizing / exit
-4. 不经 formal record 就宣布“统一默认系统已切换完成”
+1. turning legacy `IRS-lite / MSS-lite` back on as default runtime layers
+2. translating any `Gene` label, mirror score, or conditioning bucket into a hard runtime filter
+3. promoting `TRAIL_SCALE_OUT_25_75` or any retained partial-exit family into default exit behavior
+4. promoting any `Normandy` watch or retained branch into default entry behavior
+5. declaring that the unified default system has already been cut over
 
 ---
 
-## 7. 报告与证据要求
+## 6. Pre-Run Checklist
 
-每次正式运行后，最低要能回答：
+Before any formal mainline run, the minimum checklist is:
 
-1. 这次 run 是否仍在 `legacy_bof_baseline` 下运行
-2. `FIXED_NOTIONAL_CONTROL / FULL_EXIT_CONTROL` 是否按预期执行
-3. sidecar / report 是否清楚区分了 runtime layer 与 context layer
-4. 任一失败路径是否都能通过 `run_id / signal_id` 回溯
+1. run `powershell -ExecutionPolicy Bypass -File scripts/ops/preflight.ps1 -Profile hook`
+2. confirm the main database is `G:\EmotionQuant_data\emotionquant.duckdb`
+3. confirm the run target is still the baseline operating path, not a verbalized post-Phase-6 promotion
+4. confirm no research-only switch was manually turned on
+5. confirm `legacy_bof_baseline` remains replayable and recoverable
 
 ---
 
-## 8. Rollback 与停机规则
+## 7. Human Intervention Boundary
 
-当前正式 rollback target 固定为：
+Human intervention is allowed only for:
+
+1. stopping a run because `preflight`, schema, trace, or core contracts failed
+2. reviewing sidecar output for attribution and environment interpretation
+3. executing already-defined `STOP_LOSS / FORCE_CLOSE` behavior under existing broker semantics
+4. recording issues and explicitly rolling back to `legacy_bof_baseline`
+
+Human intervention is forbidden for:
+
+1. manually treating `Gene` sidecar tags as uncoded trading filters
+2. temporarily adding retained or watch conclusions into default runtime behavior
+3. rewriting sizing or exit semantics because of a small local win sample
+4. announcing cutover completion without a formal closeout record
+
+---
+
+## 8. Reporting Requirements
+
+Every formal run must remain able to answer:
+
+1. was the run still on `legacy_bof_baseline`
+2. did `FIXED_NOTIONAL_CONTROL` and `FULL_EXIT_CONTROL` execute as expected
+3. was `Gene` clearly separated as sidecar rather than runtime logic
+4. can any failure be traced back through `run_id / signal_id`
+
+---
+
+## 9. Rollback And Emergency Stop
+
+The current rollback target is fixed as:
 
 `legacy_bof_baseline`
 
-出现以下任一情况时，必须停止口头 promotion 并回到 baseline：
+Promotion talk must stop and rollback must be enforced if any of the following happens:
 
-1. 端到端运行链被破坏
-2. trace / report / sidecar 失真
-3. 研究层对象被偷带进 runtime hard gate
-4. 默认参数切换没有 formal package 和 formal gate
+1. the end-to-end operating chain is broken
+2. trace, report, or sidecar integrity becomes non-credible
+3. any research-layer object leaks into runtime hard-gate behavior
+4. default runtime semantics change without a formal package and formal gate
 
 ---
 
-## 9. 与 Phase 6 的关系
+## 10. Relation To Phase 6
 
-本文当前服务于两件事：
+This runbook now serves two purposes:
 
-1. 约束当前 baseline operating system
-2. 为 `Phase 6 / unified default system migration package` 提供 runbook baseline
+1. it protects the truthful current operating baseline
+2. it provides the single operational entry point for the `Phase 6` unified candidate boundary
 
-这意味着：
+This means:
 
-`在 Phase 6B integrated gate 跑完之前，本文优先保护当前 baseline，不为未过 gate 的统一默认系统候选背书。`
+`Phase 6B` has validated the candidate boundary, but the runtime default remains unchanged until `Phase 6 closeout` explicitly says otherwise.

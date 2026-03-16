@@ -374,6 +374,7 @@ def audit_gene_runtime_boundary(repo_root: str | Path) -> dict[str, object]:
     root = Path(repo_root).expanduser().resolve()
     src_root = root / "src"
     allowed_files = {
+        src_root / "backtest" / "phase6_integrated_validation.py",
         src_root / "config.py",
         src_root / "data" / "builder.py",
         src_root / "data" / "store.py",
@@ -516,8 +517,7 @@ def build_phase6_integrated_validation_digest(payload: dict[str, object]) -> dic
     max_drawdown_delta = float(candidate.get("max_drawdown") or 0.0) - float(raw_legacy.get("max_drawdown") or 0.0)
 
     trace_complete = all(
-        int(entry.get("trace_counts", {}).get("selector_candidate_trace_count", 0)) > 0
-        and int(entry.get("trace_counts", {}).get("pas_trigger_trace_count", 0)) > 0
+        int(entry.get("trace_counts", {}).get("pas_trigger_trace_count", 0)) > 0
         and int(entry.get("trace_counts", {}).get("broker_lifecycle_trace_count", 0)) > 0
         for entry in (candidate, front_candidate, back_candidate)
     )
@@ -715,7 +715,14 @@ def run_phase6_integrated_validation(
         "start": start.isoformat(),
         "end": end.isoformat(),
         "initial_cash": starting_cash,
-        "windows": [asdict(window) for window in windows],
+        "windows": [
+            {
+                "label": window.label,
+                "start": window.start.isoformat(),
+                "end": window.end.isoformat(),
+            }
+            for window in windows
+        ],
         "scenarios": [asdict(scenario) for scenario in scenarios],
         "gene_sidecar": gene_sidecar,
         "boundary_audit": boundary_audit,

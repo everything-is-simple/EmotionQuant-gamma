@@ -1,30 +1,32 @@
 # Reference / Operations
 
-## 定位
+## Purpose
 
-`docs/reference/operations/` 只保留通用运维参考，不再保留临时模板和拆散的补充页。
+`docs/reference/operations/` keeps operational reference material only.
 
-这里回答：
+This directory answers:
 
-1. 环境怎么配
-2. 目录纪律怎么守
-3. 临时文件怎么清理
+1. how the environment is set up
+2. what the operating runbook is
+3. what the directory and temp-file discipline is
 
-## 当前保留文件
+It does not carry research backlog or temporary migration notes.
 
-| 文件 | 角色 |
+## Current Files
+
+| File | Role |
 |---|---|
-| `setup-guide.md` | 环境配置、目录纪律与临时文件清理总入口 |
-| `current-mainline-operating-runbook-20260317.md` | 当前主线运行链路、风险开关、人工介入边界与 rollback 规则 |
+| `setup-guide.md` | Environment setup, directory discipline, and temp-file handling |
+| `current-mainline-operating-runbook-20260317.md` | Current truthful operating chain, allowed switches, intervention boundary, and rollback rules |
 
-## 使用边界
+## Usage Boundary
 
-1. 这里只放通用运维参考，不放真实 Token、真实网关地址或本机敏感值
-2. 当前主线设计看 `blueprint/`
-3. 当前状态看 `docs/spec/common/records/development-status.md`
-4. 历史冻结基线看 `docs/design-v2/01-system/system-baseline.md`
+1. use this directory for operational reference only
+2. use `blueprint/` for mainline design authority
+3. use `docs/spec/common/records/development-status.md` for current state
+4. use `docs/design-v2/01-system/system-baseline.md` only for frozen historical baseline
 
-## 入口
+## Entry Points
 
 1. `setup-guide.md`
 2. `current-mainline-operating-runbook-20260317.md`

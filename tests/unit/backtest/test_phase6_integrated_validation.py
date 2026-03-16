@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from src.backtest.phase6_integrated_validation import (
     PHASE6_UNIFIED_DEFAULT_CANDIDATE,
     RAW_LEGACY_BASELINE_CONTROL,
+    audit_gene_runtime_boundary,
     build_phase6_integrated_scenarios,
     build_phase6_integrated_validation_digest,
 )
@@ -187,3 +190,101 @@ def test_build_phase6_integrated_validation_digest_returns_no_go_when_boundary_f
 
     assert digest["decision"] == "no_go"
     assert digest["diagnosis"] == "boundary_violation"
+
+
+def test_build_phase6_integrated_validation_digest_accepts_current_runtime_trace_shape() -> None:
+    digest = build_phase6_integrated_validation_digest(
+        {
+            "matrix_status": "completed",
+            "gene_sidecar": {
+                "stock_gene_rows": 10_000,
+                "gene_validation_rows": 4,
+                "gene_mirror_rows": 32,
+                "gene_conditioning_rows": 108,
+            },
+            "boundary_audit": {
+                "audit_passed": True,
+            },
+            "results": [
+                {
+                    "scenario_label": RAW_LEGACY_BASELINE_CONTROL,
+                    "window_label": "full_window",
+                    "trade_count": 7,
+                    "buy_filled_count": 7,
+                    "exposure_rate": 0.60,
+                    "expected_value": -0.02,
+                    "profit_factor": 0.28,
+                    "max_drawdown": 0.02,
+                    "trace_counts": {
+                        "selector_candidate_trace_count": 0,
+                        "pas_trigger_trace_count": 2893,
+                        "broker_lifecycle_trace_count": 25,
+                        "rank_trace_count": 0,
+                    },
+                },
+                {
+                    "scenario_label": PHASE6_UNIFIED_DEFAULT_CANDIDATE,
+                    "window_label": "full_window",
+                    "trade_count": 13,
+                    "buy_filled_count": 13,
+                    "exposure_rate": 0.80,
+                    "expected_value": -0.018,
+                    "profit_factor": 0.65,
+                    "max_drawdown": 0.03,
+                    "enable_irs_filter": False,
+                    "enable_mss_gate": False,
+                    "reject_rate": 0.0,
+                    "trace_counts": {
+                        "selector_candidate_trace_count": 0,
+                        "pas_trigger_trace_count": 3000,
+                        "broker_lifecycle_trace_count": 48,
+                        "rank_trace_count": 0,
+                    },
+                },
+                {
+                    "scenario_label": PHASE6_UNIFIED_DEFAULT_CANDIDATE,
+                    "window_label": "front_half_window",
+                    "trade_days": 15,
+                    "trade_count": 0,
+                    "expected_value": 0.0,
+                    "trace_counts": {
+                        "selector_candidate_trace_count": 0,
+                        "pas_trigger_trace_count": 3000,
+                        "broker_lifecycle_trace_count": 48,
+                        "rank_trace_count": 0,
+                    },
+                },
+                {
+                    "scenario_label": PHASE6_UNIFIED_DEFAULT_CANDIDATE,
+                    "window_label": "back_half_window",
+                    "trade_days": 15,
+                    "trade_count": 10,
+                    "expected_value": -0.023,
+                    "trace_counts": {
+                        "selector_candidate_trace_count": 0,
+                        "pas_trigger_trace_count": 3000,
+                        "broker_lifecycle_trace_count": 48,
+                        "rank_trace_count": 0,
+                    },
+                },
+            ],
+        }
+    )
+
+    assert digest["decision"] == "go_to_phase_6c"
+    assert digest["gate_checks"]["trace_complete"] is True
+
+
+def test_audit_gene_runtime_boundary_allows_phase6_validator_module() -> None:
+    repo_root = Path(__file__).resolve().parents[3]
+
+    audit = audit_gene_runtime_boundary(repo_root)
+
+    assert all(
+        hit["path"] != str(repo_root / "src" / "backtest" / "phase6_integrated_validation.py")
+        for hit in audit["unexpected_source_hits"]
+    )
+    assert all(
+        hit["path"] != str(repo_root / "src" / "backtest" / "phase6_integrated_validation.py")
+        for hit in audit["enable_gene_filter_runtime_hits"]
+    )
