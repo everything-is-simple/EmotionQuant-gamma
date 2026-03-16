@@ -15,6 +15,7 @@
 | 文件 | 角色 |
 |---|---|
 | `setup-guide.md` | 环境配置、目录纪律与临时文件清理总入口 |
+| `current-mainline-operating-runbook-20260317.md` | 当前主线运行链路、风险开关、人工介入边界与 rollback 规则 |
 
 ## 使用边界
 
@@ -26,3 +27,4 @@
 ## 入口
 
 1. `setup-guide.md`
+2. `current-mainline-operating-runbook-20260317.md`

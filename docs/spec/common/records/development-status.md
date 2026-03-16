@@ -116,6 +116,13 @@
 - 当前主库截至 `2026-02-24` 的真实读数已写定：`duration_percentile = PRIMARY_RULER`，整体更像“过热 / 衰竭 / 历史极端尺”，不是强 continuation 尺；镜像层必须保留 `mirror_gene_rank + primary_ruler_rank + width ratios`，五形态条件层当前只应作为环境解释层。
 - 当前 `GX1 / GX2 = conditional_only`；第四战场若未来继续，只允许通过 `explicit_mainline_migration_package_or_new_targeted_hypothesis` 重开。
 
+### 4.2 主线统一默认系统包补记（2026-03-17）
+
+- 第一战场已正式打开 `Phase 6 / unified default system migration package`，用于把第一到第四战场真正能升格的子集冻结成统一默认系统候选。
+- 当前 `Phase 6` 只允许推进四类工作：`mainline migration package`、`promoted subset freeze`、`integrated end-to-end validation`、`unified operating runbook refresh`。
+- 当前正式 freeze 的统一默认系统候选口径是：`BOF baseline + control hierarchy + historical context sidecar + MSS/IRS retirement boundary`。
+- 当前仍明确不允许：把 `Gene` 条件层写成 runtime hard gate、把 retained / watch 对象写成默认参数、在没有 gate 的情况下切换 `legacy_bof_baseline`。
+
 ## 5. 本周执行区（滚动维护）
 
 分段说明：`2026-03-07` 起归入“文档治理期”；`2026-03-02` 至 `2026-03-06` 的实现与联调记录归入“旧实现期（历史摘要）”。
@@ -362,3 +369,4 @@
 | 2026-03-16 | v1.71 | 完成 `Fourth Battlefield / G7 MSS-IRS refactor-or-retire decision`：已基于 `G4 ~ G6` 与旧主线 `Phase 2 ~ Phase 4.1` 证据链正式写定 `旧 MSS-lite = retire old implementation`、`旧 IRS-lite = retire old score semantics while keeping the problem and replacing the entry with G5 industry mirror ruler`；当前第四战场正式替代入口固定为 `l3_gene_mirror(MARKET / INDUSTRY) + mirror_gene_rank / primary_ruler_rank + width ratios + l3_gene_conditioning_eval`，且 `GX2` 当前不触发；下一张主线卡应进入 `G8 / gene campaign closeout` |
 | 2026-03-16 | v1.72 | 完成 `Fourth Battlefield / G8 gene campaign closeout`：已正式写定 `all_defined_gene_main_queue_cards_closed = yes`、`all_formal_gene_records_closed = yes`、`active_gene_main_queue = none` 与 `GX1 / GX2 = conditional_only`；第四战场当前正式留下 `historical wave ruler + mirror ruler + conditioning readout + MSS/IRS retire boundary`，且未来若继续只允许通过 `explicit_mainline_migration_package_or_new_targeted_hypothesis` |
 | 2026-03-16 | v1.73 | 完成 `system doc cleanup + four-battlefields integrated system map`：已新增当前四战场集成系统图，明确写定“现在可以按 baseline operating system 上手，但还不能宣称四战场研究结论已全量并入单一默认系统”；同时已修正根 README 的旧 `IRS / MSS` 默认链路描述，并将第四战场开线早期的 backlog 临时卡归档到 `gene/90-archive/` |
+| 2026-03-17 | v1.74 | 打开 `Phase 6 / unified default system migration package`：已正式落下主包卡、`6A / promoted subset freeze`、`6B / integrated end-to-end validation`、`6C / unified operating runbook refresh` 三张子卡，并新增 `v0.01-plus-promoted-subset-freeze-20260317.md` 与 `current-mainline-operating-runbook-20260317.md` 两个正式入口，用于把四战场统一默认系统候选合法冻结出来，但当前尚未完成 integrated replay / gate，也尚未切换默认运行路径 |

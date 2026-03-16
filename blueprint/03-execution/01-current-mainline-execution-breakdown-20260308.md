@@ -103,6 +103,7 @@
 6. `Phase 4 = P4 全链回归与 Gate 收口`
 7. `Phase 4.1 = P4.1 MSS / Broker 整改`
 8. `Phase 5 = 研究线 migration package`
+9. `Phase 6 = 统一默认系统 migration package`
 
 当前不允许跳步：
 
@@ -122,6 +123,7 @@
 | `Phase 4` | `01-08` | 只重跑、归因、给出主线结论，不再改写正文 |
 | `Phase 4.1` | `04 / 05 / 08 + Phase 4 records` | 只拆 `MSS / Broker` 执行层，不重开 `PAS / IRS` 正文，也不改写 `P3 exit / P4 NO-GO` |
 | `Phase 5` | `Normandy / Positioning closeout records + 09 + current implementation spec` | 只做 migration absorption 与 governance patch，不新增 replay |
+| `Phase 6` | `Normandy / Positioning / Gene closeout records + Phase 5 closeout + current operating baseline` | 只做 unified default system freeze、integrated validation 与 runbook refresh，不得口头切换默认路径 |
 
 ### 4.2 当前 Phase Card 入口
 
@@ -139,12 +141,16 @@
 9. `blueprint/03-execution/08-phase-5a-normandy-migration-boundary-absorption-card-20260315.md`
 10. `blueprint/03-execution/09-phase-5b-positioning-migration-boundary-absorption-card-20260315.md`
 11. `blueprint/03-execution/10-phase-5c-mainline-no-fake-governance-patch-card-20260315.md`
+12. `blueprint/03-execution/11-phase-6-unified-default-system-migration-package-card-20260317.md`
+13. `blueprint/03-execution/12-phase-6a-promoted-subset-freeze-card-20260317.md`
+14. `blueprint/03-execution/13-phase-6b-integrated-end-to-end-validation-card-20260317.md`
+15. `blueprint/03-execution/14-phase-6c-unified-operating-runbook-refresh-card-20260317.md`
 
 ---
 
 ## 5. Phase 摘要
 
-### 5.1 当前 11 张卡
+### 5.1 当前 15 张卡
 
 1. `Phase 0`：
    - `blueprint/03-execution/02-phase-0-contract-trace-card-20260309.md`
@@ -165,6 +171,11 @@
    - `blueprint/03-execution/08-phase-5a-normandy-migration-boundary-absorption-card-20260315.md`
    - `blueprint/03-execution/09-phase-5b-positioning-migration-boundary-absorption-card-20260315.md`
    - `blueprint/03-execution/10-phase-5c-mainline-no-fake-governance-patch-card-20260315.md`
+9. `Phase 6`：
+   - `blueprint/03-execution/11-phase-6-unified-default-system-migration-package-card-20260317.md`
+   - `blueprint/03-execution/12-phase-6a-promoted-subset-freeze-card-20260317.md`
+   - `blueprint/03-execution/13-phase-6b-integrated-end-to-end-validation-card-20260317.md`
+   - `blueprint/03-execution/14-phase-6c-unified-operating-runbook-refresh-card-20260317.md`
 
 ### 5.2 使用规则
 
@@ -207,7 +218,7 @@
 
 ## 7. 下一步
 
-从 `2026-03-15` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3`、`Phase 4`、`Phase 4.1` 与 `Phase 5` 都已完成当前轮次收口。`Phase 4.1` 内部先后完成了 `P4.1-A / P4.1-B / P4.1-C / P4.1-D / P4.1-E / P4.1-F`，其中 `carryover_buffer(1)` 已完成一次 direct `Phase 4 Gate replay`，随后治理裁决冻结最后一条 `size_only_overlay` 候选，但 final replay 仍未推翻 `legacy_bof_baseline`；`Phase 5` 则已把第二、第三战场可迁回主线的边界正式吸收回主线 SoT 与治理层。
+从 `2026-03-17` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3`、`Phase 4`、`Phase 4.1` 与 `Phase 5` 都已完成当前轮次收口。`Phase 4.1` 内部先后完成了 `P4.1-A / P4.1-B / P4.1-C / P4.1-D / P4.1-E / P4.1-F`，其中 `carryover_buffer(1)` 已完成一次 direct `Phase 4 Gate replay`，随后治理裁决冻结最后一条 `size_only_overlay` 候选，但 final replay 仍未推翻 `legacy_bof_baseline`；`Phase 5` 已把第二、第三战场可迁回主线的边界正式吸收回主线 SoT 与治理层；当前下一包正式进入 `Phase 6`，用于把第一到第四战场真正冻结成统一默认系统候选、完成 integrated validation，并刷新统一 runbook。
 
 其中：
 
@@ -215,6 +226,7 @@
 2. `Phase 4 = Completed (NO-GO)`
 3. `Phase 4.1 = Completed (remediation exhausted, NO-GO persists)`
 4. `Phase 5 = Completed (research-line migration package closed)`
+5. `Phase 6 = Opened (unified default system migration package)`
 5. rollback target 保持：
    - `legacy_bof_baseline`
 6. 当前 active mainline package：
@@ -226,11 +238,12 @@
 
 1. 当前不再在 `Phase 4.1` 内冻结新的 `MSS / Broker` 候选
 2. `Phase 5` 已闭环，不再继续补旧 sub-card
-3. 正式默认路径继续保持：
+3. `Phase 6` 当前允许继续推进 `6A / 6B / 6C`，但不允许在 gate 前口头切默认路径
+4. 正式默认路径继续保持：
    - `legacy_bof_baseline`
-4. 当前主线已吸收第二、第三战场可迁回的治理边界，但没有任何 parameter promotion
-5. 若未来继续，无论是主线默认切换还是研究线新实验，都必须新开 formal package 与新证据链
+5. 当前主线已吸收第二、第三战场可迁回的治理边界，并已正式开始冻结第四战场可迁回的 context boundary，但仍没有任何 parameter promotion
+6. 若未来继续，无论是主线默认切换还是研究线新实验，都必须新开 formal package 与新证据链
 
 也就是：
 
-`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 / Phase 4.1 / Phase 5 都已收口；当前主线没有 active migration package，默认运行路径继续保持 legacy_bof_baseline。`
+`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 / Phase 4.1 / Phase 5 都已收口；当前 active mainline package 已切到 Phase 6，但默认运行路径仍继续保持 legacy_bof_baseline。`

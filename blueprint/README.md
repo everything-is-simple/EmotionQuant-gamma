@@ -74,6 +74,10 @@
 - `02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
 - `03-execution/00-current-dev-data-baseline-20260311.md`
 - `03-execution/01-current-mainline-execution-breakdown-20260308.md`
+- `03-execution/11-phase-6-unified-default-system-migration-package-card-20260317.md`
+- `03-execution/12-phase-6a-promoted-subset-freeze-card-20260317.md`
+- `03-execution/13-phase-6b-integrated-end-to-end-validation-card-20260317.md`
+- `03-execution/14-phase-6c-unified-operating-runbook-refresh-card-20260317.md`
 
 它们分别负责：
 
@@ -167,6 +171,10 @@
 11. `08-phase-5a-normandy-migration-boundary-absorption-card-20260315.md`
 12. `09-phase-5b-positioning-migration-boundary-absorption-card-20260315.md`
 13. `10-phase-5c-mainline-no-fake-governance-patch-card-20260315.md`
+14. `11-phase-6-unified-default-system-migration-package-card-20260317.md`
+15. `12-phase-6a-promoted-subset-freeze-card-20260317.md`
+16. `13-phase-6b-integrated-end-to-end-validation-card-20260317.md`
+17. `14-phase-6c-unified-operating-runbook-refresh-card-20260317.md`
 
 当前冻结后的使用顺序固定为：
 
