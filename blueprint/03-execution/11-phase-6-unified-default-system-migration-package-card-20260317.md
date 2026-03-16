@@ -1,6 +1,6 @@
 # Phase 6 Unified Default System Migration Package Card
 
-**状态**: `Draft`  
+**状态**: `Active`  
 **日期**: `2026-03-17`  
 **对象**: `第一战场 / unified default system migration package`
 

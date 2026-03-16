@@ -238,11 +238,12 @@
 
 1. 当前不再在 `Phase 4.1` 内冻结新的 `MSS / Broker` 候选
 2. `Phase 5` 已闭环，不再继续补旧 sub-card
-3. `Phase 6` 当前允许继续推进 `6A / 6B / 6C`，但不允许在 gate 前口头切默认路径
-4. 正式默认路径继续保持：
+3. `Phase 6A` 已完成，当前 active sub-card 已切到 `Phase 6B / integrated end-to-end validation`
+4. `Phase 6` 当前允许继续推进 `6B / 6C`，但不允许在 gate 前口头切默认路径
+5. 正式默认路径继续保持：
    - `legacy_bof_baseline`
-5. 当前主线已吸收第二、第三战场可迁回的治理边界，并已正式开始冻结第四战场可迁回的 context boundary，但仍没有任何 parameter promotion
-6. 若未来继续，无论是主线默认切换还是研究线新实验，都必须新开 formal package 与新证据链
+6. 当前主线已吸收第二、第三战场可迁回的治理边界，并已完成第四战场可迁回 `context sidecar boundary` 的第一轮 freeze，但仍没有任何 parameter promotion
+7. 若未来继续，无论是主线默认切换还是研究线新实验，都必须新开 formal package 与新证据链
 
 也就是：
 

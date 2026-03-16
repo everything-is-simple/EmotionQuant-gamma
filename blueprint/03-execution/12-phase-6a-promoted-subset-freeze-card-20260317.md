@@ -1,6 +1,6 @@
 # Phase 6A Promoted Subset Freeze Card
 
-**状态**: `Draft`  
+**状态**: `Completed`  
 **日期**: `2026-03-17`  
 **对象**: `第一战场 / Phase 6A / promoted subset freeze`
 

@@ -35,6 +35,7 @@
 | 主线切换 Gate | `docs/spec/v0.01-plus/governance/v0.01-plus-gate-checklist.md` | Gate 规则归档 |
 | 主线反冒充治理 | `docs/spec/v0.01-plus/governance/v0.01-plus-mainline-no-fake-rules.md` | 当前默认口径、禁止误用层、条件卡开启规则 |
 | 升格子集冻结 | `docs/spec/v0.01-plus/governance/v0.01-plus-promoted-subset-freeze-20260317.md` | 统一默认系统候选的 promote-now / shadow-only / remain-research 冻结表 |
+| Phase 6A formal record | `docs/spec/v0.01-plus/records/v0.01-plus-phase-6a-promoted-subset-freeze-20260317.md` | 统一默认系统候选第一轮 freeze 的正式裁决 |
 | 契约补充 | `docs/spec/v0.01-plus/governance/v0.01-plus-data-contract-table.md` | 运行期契约归档 |
 | 研究线迁回收官 | `docs/spec/v0.01-plus/records/v0.01-plus-phase-5-research-line-migration-package-closeout-20260315.md` | 第一战场对第二、第三战场吸收包的正式收官裁决 |
 | 当前统一 runbook | `docs/reference/operations/current-mainline-operating-runbook-20260317.md` | 当前默认运行链路、风险开关、人工介入与 rollback 规则 |

@@ -1,6 +1,6 @@
 # Phase 6B Integrated End-to-End Validation Card
 
-**状态**: `Draft`  
+**状态**: `Active`  
 **日期**: `2026-03-17`  
 **对象**: `第一战场 / Phase 6B / integrated end-to-end validation`
 
