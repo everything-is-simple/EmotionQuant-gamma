@@ -582,6 +582,138 @@ def test_compute_gene_conditioning_writes_pattern_conditioning_rows(tmp_path) ->
                 specs.append({"close": close, "volume": 1_050.0, "volume_ma20": 900.0})
             return specs
 
+        def bpb_specs() -> list[dict[str, float]]:
+            specs: list[dict[str, float]] = []
+            for close in [
+                10.0,
+                10.05,
+                10.1,
+                10.15,
+                10.2,
+                10.25,
+                10.2,
+                10.15,
+                10.1,
+                10.05,
+                10.0,
+                10.08,
+                10.12,
+                10.16,
+                10.2,
+                10.24,
+                10.18,
+                10.12,
+                10.08,
+                10.14,
+            ]:
+                specs.append(
+                    {
+                        "open": close - 0.05,
+                        "high": close + 0.12,
+                        "low": close - 0.12,
+                        "close": close,
+                        "volume": 1_000.0,
+                        "volume_ma20": 900.0,
+                    }
+                )
+            specs.extend(
+                [
+                    {
+                        "open": 10.48,
+                        "high": 10.7,
+                        "low": 10.56,
+                        "close": 10.65,
+                        "volume": 1_300.0,
+                        "volume_ma20": 900.0,
+                    },
+                    {
+                        "open": 10.72,
+                        "high": 10.88,
+                        "low": 10.7,
+                        "close": 10.82,
+                        "volume": 1_280.0,
+                        "volume_ma20": 900.0,
+                    },
+                    {
+                        "open": 10.78,
+                        "high": 10.75,
+                        "low": 10.55,
+                        "close": 10.62,
+                        "volume": 980.0,
+                        "volume_ma20": 900.0,
+                    },
+                    {
+                        "open": 10.64,
+                        "high": 10.7,
+                        "low": 10.52,
+                        "close": 10.58,
+                        "volume": 970.0,
+                        "volume_ma20": 900.0,
+                    },
+                    {
+                        "open": 10.6,
+                        "high": 10.72,
+                        "low": 10.56,
+                        "close": 10.64,
+                        "volume": 960.0,
+                        "volume_ma20": 900.0,
+                    },
+                ]
+            )
+            specs.append(
+                {
+                    "open": 10.7,
+                    "high": 11.05,
+                    "low": 10.66,
+                    "close": 11.0,
+                    "volume": 1_250.0,
+                    "volume_ma20": 900.0,
+                }
+            )
+            for close in [11.05, 11.12, 11.2, 11.18, 11.26, 11.3, 11.36, 11.42, 11.48, 11.52, 11.58, 11.6]:
+                specs.append({"close": close, "volume": 1_040.0, "volume_ma20": 900.0})
+            return specs
+
+        def tst_specs() -> list[dict[str, float]]:
+            specs: list[dict[str, float]] = []
+            for index in range(55):
+                close = 10.35 + (index % 5) * 0.08 + (index // 20) * 0.03
+                low = 10.0 if index in (3, 17, 31) else close - 0.18
+                specs.append(
+                    {
+                        "open": close - 0.06,
+                        "high": close + 0.18,
+                        "low": low,
+                        "close": close,
+                        "volume": 1_000.0,
+                        "volume_ma20": 900.0,
+                    }
+                )
+            for close in [10.18, 10.12, 10.16, 10.1, 10.2]:
+                specs.append(
+                    {
+                        "open": close + 0.02,
+                        "high": close + 0.16,
+                        "low": 10.05,
+                        "close": close,
+                        "volume": 980.0,
+                        "volume_ma20": 900.0,
+                    }
+                )
+            specs.append(
+                {
+                    "open": 10.22,
+                    "high": 10.55,
+                    "low": 10.0,
+                    "close": 10.48,
+                    "volume": 1_100.0,
+                    "volume_ma20": 900.0,
+                }
+            )
+            for close in [10.52, 10.56, 10.6, 10.64, 10.68, 10.72, 10.76, 10.8, 10.84, 10.88, 10.92, 10.96]:
+                specs.append({"close": close, "volume": 1_020.0, "volume_ma20": 900.0})
+            return specs
+
         def cpb_specs() -> list[dict[str, float]]:
             specs: list[dict[str, float]] = []
             for close in [
@@ -644,7 +776,9 @@ def test_compute_gene_conditioning_writes_pattern_conditioning_rows(tmp_path) ->
 
         spec_map = {
             "BOF": bof_specs(),
+            "BPB": bpb_specs(),
             "PB": pb_specs(),
+            "TST": tst_specs(),
             "CPB": cpb_specs(),
         }
         max_len = max(len(specs) for specs in spec_map.values())
@@ -689,7 +823,7 @@ def test_compute_gene_conditioning_writes_pattern_conditioning_rows(tmp_path) ->
 
         assert written > 0
         assert not conditioning_rows.empty
-        assert set(conditioning_rows["signal_pattern"].tolist()) == {"bof", "pb", "cpb"}
+        assert set(conditioning_rows["signal_pattern"].tolist()) == {"bof", "bpb", "pb", "tst", "cpb"}
         assert conditioning_rows["sample_scope"].eq("PAS_DETECTOR_TRIGGER").all()
         assert set(conditioning_rows["conditioning_key"].tolist()) >= {
             "ALL",
@@ -700,7 +834,7 @@ def test_compute_gene_conditioning_writes_pattern_conditioning_rows(tmp_path) ->
             "latest_two_b_confirm_type",
             "streak_bucket",
         }
-        assert len(baseline_rows) == 3
+        assert len(baseline_rows) == 5
         assert baseline_rows["conditioning_value"].eq("ALL").all()
         assert baseline_rows["edge_tag"].eq("BASELINE").all()
         assert baseline_rows["sample_size"].gt(0).all()

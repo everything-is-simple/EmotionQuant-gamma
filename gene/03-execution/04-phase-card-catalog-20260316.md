@@ -40,7 +40,7 @@
 6. `G5 / market-industry-index mirror ruler`
    - 作用：把个股历史尺镜像到指数、行业和大盘
    - 状态：`Completed`
-7. `G6 / BOF-PB-CPB conditioning readout`
+7. `G6 / BOF-BPB-PB-TST-CPB conditioning readout`
    - 作用：把第四战场标签回灌到 Normandy 条件层
    - 状态：`Completed`
 8. `G7 / MSS-IRS refactor-or-retire decision`

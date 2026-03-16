@@ -1901,6 +1901,107 @@ def _scan_conditioning_samples_for_code(frame: pd.DataFrame) -> pd.DataFrame:
         & (volume_series >= volume_ma20_series * float(cfg.pas_pb_volume_mult))
     )
 
+    bpb_breakout_ref = high_series.shift(6).rolling(int(cfg.pas_bpb_breakout_window), min_periods=int(cfg.pas_bpb_breakout_window)).max()
+    bpb_breakout_peak = high_series.shift(1).rolling(5, min_periods=5).max()
+    bpb_pullback_low = low_series.shift(1).rolling(5, min_periods=5).min()
+    breakout_leg_close = pd.Series(
+        np.where(
+            (volume_ma20_series > 0.0) & (volume_series >= volume_ma20_series * float(cfg.pas_bpb_volume_mult)),
+            close_series,
+            np.nan,
+        ),
+        index=data.index,
+        dtype=float,
+    )
+    breakout_leg_exists = breakout_leg_close.shift(1).rolling(5, min_periods=1).max() > bpb_breakout_ref
+    bpb_support_hold = bpb_pullback_low >= bpb_breakout_ref * 0.97
+    bpb_pullback_depth = (bpb_breakout_peak - bpb_pullback_low) / np.maximum(bpb_breakout_peak - bpb_breakout_ref, 1e-9)
+    bpb_pullback_depth_valid = (
+        bpb_pullback_depth >= float(cfg.pas_bpb_pullback_min)
+    ) & (bpb_pullback_depth <= float(cfg.pas_bpb_pullback_max))
+    bpb_confirmation = (
+        (close_series > bpb_breakout_peak)
+        & (close_series >= bpb_breakout_ref)
+        & (volume_ma20_series > 0.0)
+        & (volume_series >= volume_ma20_series * float(cfg.pas_bpb_volume_mult))
+    )
+    bpb_not_overextended = close_series <= bpb_breakout_peak * 1.03
+    bpb_confirm_strength = np.clip(
+        (close_series - bpb_breakout_ref) / np.maximum(0.10 * bpb_breakout_ref, 1e-9),
+        0.0,
+        1.0,
+    )
+    bpb_depth_quality = np.where(
+        (bpb_pullback_depth >= 0.40) & (bpb_pullback_depth <= 0.60),
+        1.0,
+        np.where(bpb_pullback_depth_valid, 0.7, 0.0),
+    )
+    bpb_strength = np.clip(
+        0.40 * bpb_confirm_strength
+        + 0.25 * volume_strength
+        + 0.20 * bpb_depth_quality
+        + 0.15 * body_ratio,
+        0.0,
+        1.0,
+    )
+    bpb_trigger = (
+        valid_range
+        & valid_future
+        & bpb_breakout_ref.notna()
+        & bpb_breakout_peak.notna()
+        & bpb_pullback_low.notna()
+        & breakout_leg_exists
+        & bpb_support_hold
+        & bpb_pullback_depth_valid
+        & bpb_confirmation
+        & bpb_not_overextended
+    )
+
+    tst_support_level = low_series.shift(6).rolling(55, min_periods=55).min()
+    tst_test_low = low_series.shift(1).rolling(5, min_periods=5).min()
+    tst_test_high_ref = high_series.shift(1).rolling(5, min_periods=5).max()
+    lower_shadow_ratio = (np.minimum(open_series, close_series) - low_series) / np.maximum(high_series - low_series, 1e-9)
+    tst_test_distance = np.abs(tst_test_low - tst_support_level) / np.maximum(tst_support_level, 1e-9)
+    tst_near_support = tst_test_distance <= float(cfg.pas_tst_distance_max)
+    tst_support_hold = close_series >= tst_support_level
+    tst_bounce_confirm = (close_series > tst_test_high_ref) | (
+        (close_series > open_series) & (close_series > tst_support_level * 1.01)
+    )
+    tst_rejection_candle = lower_shadow_ratio >= 0.35
+    tst_volume_confirm = (volume_ma20_series > 0.0) & (volume_series >= volume_ma20_series * float(cfg.pas_tst_volume_mult))
+    tst_support_closeness = 1.0 - np.clip(
+        tst_test_distance / max(float(cfg.pas_tst_distance_max), 1e-9),
+        0.0,
+        1.0,
+    )
+    tst_bounce_strength = np.clip(
+        (close_series - tst_support_level) / np.maximum(0.05 * tst_support_level, 1e-9),
+        0.0,
+        1.0,
+    )
+    tst_rejection_strength = np.clip(lower_shadow_ratio, 0.0, 1.0)
+    tst_volume_strength = np.clip(volume_ratio / 1.5, 0.0, 1.0)
+    tst_strength = np.clip(
+        0.35 * tst_support_closeness
+        + 0.30 * tst_bounce_strength
+        + 0.20 * tst_rejection_strength
+        + 0.15 * tst_volume_strength,
+        0.0,
+        1.0,
+    )
+    tst_trigger = (
+        valid_range
+        & valid_future
+        & tst_support_level.notna()
+        & tst_test_low.notna()
+        & tst_test_high_ref.notna()
+        & tst_near_support
+        & tst_support_hold
+        & tst_bounce_confirm
+        & tst_rejection_candle
+        & tst_volume_confirm
+    )
+
     support_band_low = low_series.shift(1).rolling(20, min_periods=20).min()
     support_band_high = low_series.shift(1).rolling(20, min_periods=20).quantile(0.35)
     neckline_ref = high_series.shift(1).rolling(20, min_periods=20).max()
@@ -1938,7 +2039,9 @@ def _scan_conditioning_samples_for_code(frame: pd.DataFrame) -> pd.DataFrame:
 
     pattern_specs = [
         ("bof", bof_trigger, bof_strength),
+        ("bpb", bpb_trigger, bpb_strength),
         ("pb", pb_trigger, pb_strength),
+        ("tst", tst_trigger, tst_strength),
         ("cpb", cpb_trigger, cpb_strength),
     ]
     output_frames: list[pd.DataFrame] = []

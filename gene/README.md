@@ -56,7 +56,7 @@
 4. `G3`: `1-2-3 / 2B` 结构标签校准
 5. `G4`: 个股自历史标尺验证
 6. `G5`: 指数 / 行业 / 大盘镜像尺
-7. `G6`: `BOF / PB / CPB` 条件层统计
+7. `G6`: `BOF / BPB / PB / TST / CPB` 条件层统计
 8. `G7`: `MSS / IRS` 改造或退役决策
 9. `G8`: 第四战场收口
 
@@ -98,6 +98,7 @@
 - `03-execution/07-phase-g4-self-history-ruler-validation-card-20260316.md`
 - `03-execution/08-phase-g5-market-industry-index-mirror-ruler-card-20260316.md`
 - `03-execution/09-phase-g6-bof-pb-cpb-conditioning-card-20260316.md`
+- `03-execution/evidence/09-phase-g6-five-pattern-conditioning-evidence-20260316.md`
 - `03-execution/10-phase-g7-mss-irs-refactor-or-retire-card-20260316.md`
 - `03-execution/11-phase-g8-gene-campaign-closeout-card-20260316.md`
 - `03-execution/12-phase-gx1-targeted-detector-rewrite-card-20260316.md`
