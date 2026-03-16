@@ -14,8 +14,8 @@
 
 当前状态：
 
-1. 已完成：`G0 / G1 / G2`
-2. 已开未做：`G3 ~ G8`
+1. 已完成：`G0 / G1 / G2 / G3`
+2. 已开未做：`G4 ~ G8`
 3. 条件卡待触发：`GX1 / GX2`
 
 ---
@@ -33,7 +33,7 @@
    - 状态：`Completed`
 4. `G3 / structure label calibration`
    - 作用：把 `1-2-3 / 2B` 从描述词升级成正式结构标签
-   - 状态：`Opened`
+   - 状态：`Completed`
 5. `G4 / self-history ruler validation`
    - 作用：验证“个股自历史标尺”到底是否真有解释力
    - 状态：`Opened`

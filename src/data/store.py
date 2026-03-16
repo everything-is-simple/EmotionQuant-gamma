@@ -10,7 +10,7 @@ from typing import Any
 import duckdb
 import pandas as pd
 
-CURRENT_SCHEMA_VERSION = 6
+CURRENT_SCHEMA_VERSION = 7
 
 
 @dataclass(frozen=True)
@@ -270,6 +270,25 @@ class Store:
             "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_duration_p95 DOUBLE",
             "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_duration_band VARCHAR",
             "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_age_band VARCHAR",
+        ]
+        for sql in statements:
+            self.conn.execute(sql)
+
+    def _migrate_schema_v6_to_v7(self) -> None:
+        statements = [
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS turn_confirm_type VARCHAR",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS turn_step1_date DATE",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS turn_step2_date DATE",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS turn_step3_date DATE",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS two_b_confirm_type VARCHAR",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS two_b_confirm_date DATE",
+            "ALTER TABLE l3_gene_event ADD COLUMN IF NOT EXISTS event_family VARCHAR",
+            "ALTER TABLE l3_gene_event ADD COLUMN IF NOT EXISTS structure_direction VARCHAR",
+            "ALTER TABLE l3_gene_event ADD COLUMN IF NOT EXISTS anchor_wave_id VARCHAR",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS latest_confirmed_turn_type VARCHAR",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS latest_confirmed_turn_date DATE",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS latest_two_b_confirm_type VARCHAR",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS latest_two_b_confirm_date DATE",
         ]
         for sql in statements:
             self.conn.execute(sql)
@@ -895,6 +914,10 @@ class Store:
                 current_wave_duration_p95 DOUBLE,
                 current_wave_duration_band VARCHAR,
                 current_wave_age_band VARCHAR,
+                latest_confirmed_turn_type VARCHAR,
+                latest_confirmed_turn_date DATE,
+                latest_two_b_confirm_type VARCHAR,
+                latest_two_b_confirm_date DATE,
                 cross_section_magnitude_rank INTEGER,
                 cross_section_magnitude_percentile DOUBLE,
                 cross_section_duration_rank INTEGER,
@@ -943,6 +966,12 @@ class Store:
                 duration_p95                DOUBLE,
                 duration_band               VARCHAR,
                 wave_age_band               VARCHAR,
+                turn_confirm_type           VARCHAR,
+                turn_step1_date             DATE,
+                turn_step2_date             DATE,
+                turn_step3_date             DATE,
+                two_b_confirm_type          VARCHAR,
+                two_b_confirm_date          DATE,
                 created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (code, wave_id)
             )
@@ -961,6 +990,9 @@ class Store:
                 density_after_event     DOUBLE,
                 is_two_b_failure        BOOLEAN,
                 failure_date            DATE,
+                event_family            VARCHAR,
+                structure_direction     VARCHAR,
+                anchor_wave_id          VARCHAR,
                 created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (code, wave_id, event_seq)
             )

@@ -141,6 +141,8 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert "cross_section_magnitude_rank" in schema["name"].tolist()
         assert "current_wave_magnitude_band" in schema["name"].tolist()
         assert "current_wave_age_band" in schema["name"].tolist()
+        assert "latest_confirmed_turn_type" in schema["name"].tolist()
+        assert "latest_two_b_confirm_type" in schema["name"].tolist()
         assert not snapshots.empty
         assert not waves.empty
         assert not events.empty
@@ -169,5 +171,97 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert factor_eval["forward_horizon_trade_days"].eq(10).all()
         assert set(distribution_eval["metric_name"].tolist()) == {"duration_trade_days", "magnitude_pct"}
         assert distribution_eval["band_label"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
+    finally:
+        store.close()
+
+
+def test_compute_gene_writes_g3_structure_labels(tmp_path) -> None:
+    db = tmp_path / "gene_structure_labels.duckdb"
+    store = Store(db)
+    try:
+        base = date(2026, 1, 5)
+        closes_turn_up = [14.0, 13.0, 12.0, 13.0, 14.0, 13.4, 12.6, 13.2, 14.5, 15.0, 14.6, 14.2]
+        closes_turn_down = [13.0, 14.0, 15.0, 14.0, 13.0, 13.6, 14.4, 13.8, 12.5, 12.0, 12.4, 12.8]
+
+        store.bulk_upsert("l1_trade_calendar", _trade_calendar(base, len(closes_turn_up)))
+        store.bulk_upsert(
+            "l2_stock_adj_daily",
+            pd.DataFrame(
+                _adj_daily_rows(base, "AAA", closes_turn_up) + _adj_daily_rows(base, "BBB", closes_turn_down)
+            ),
+        )
+
+        compute_gene(store, base, base + timedelta(days=len(closes_turn_up) - 1))
+
+        structure_waves = store.read_df(
+            """
+            SELECT
+                code,
+                end_date,
+                turn_confirm_type,
+                turn_step1_date,
+                turn_step2_date,
+                turn_step3_date,
+                two_b_confirm_type
+            FROM l3_gene_wave
+            WHERE turn_confirm_type <> 'NONE' OR two_b_confirm_type <> 'NONE'
+            ORDER BY code, end_date
+            """
+        )
+        structure_events = store.read_df(
+            """
+            SELECT
+                code,
+                wave_id,
+                event_type,
+                event_family,
+                structure_direction,
+                anchor_wave_id
+            FROM l3_gene_event
+            WHERE event_family = 'STRUCTURE'
+            ORDER BY code, event_date, event_seq
+            """
+        )
+        snapshots = store.read_df(
+            """
+            SELECT
+                code,
+                latest_confirmed_turn_type,
+                latest_two_b_confirm_type
+            FROM l3_stock_gene
+            WHERE calc_date = ?
+            ORDER BY code
+            """,
+            (base + timedelta(days=len(closes_turn_up) - 1),),
+        )
+
+        assert not structure_waves.empty
+        assert not structure_events.empty
+        assert set(structure_events["event_type"].tolist()) >= {
+            "123_STEP1",
+            "123_STEP2",
+            "123_STEP3",
+            "2B_BOTTOM",
+            "2B_TOP",
+        }
+
+        up_turn = structure_waves.loc[structure_waves["code"] == "AAA"].reset_index(drop=True)
+        assert "CONFIRMED_TURN_UP" in up_turn["turn_confirm_type"].tolist()
+        up_confirm = up_turn.loc[up_turn["turn_confirm_type"] == "CONFIRMED_TURN_UP"].iloc[0]
+        assert up_confirm["turn_step1_date"] < up_confirm["turn_step2_date"] < up_confirm["turn_step3_date"]
+        assert "2B_BOTTOM" in up_turn["two_b_confirm_type"].tolist()
+
+        down_turn = structure_waves.loc[structure_waves["code"] == "BBB"].reset_index(drop=True)
+        assert "CONFIRMED_TURN_DOWN" in down_turn["turn_confirm_type"].tolist()
+        down_confirm = down_turn.loc[down_turn["turn_confirm_type"] == "CONFIRMED_TURN_DOWN"].iloc[0]
+        assert down_confirm["turn_step1_date"] < down_confirm["turn_step2_date"] < down_confirm["turn_step3_date"]
+        assert "2B_TOP" in down_turn["two_b_confirm_type"].tolist()
+
+        assert snapshots["latest_confirmed_turn_type"].tolist() == ["CONFIRMED_TURN_UP", "CONFIRMED_TURN_DOWN"]
+        assert snapshots["latest_two_b_confirm_type"].tolist() == ["2B_BOTTOM", "2B_TOP"]
+        assert set(structure_events.loc[structure_events["code"] == "AAA", "structure_direction"].tolist()) == {"UP"}
+        assert set(structure_events.loc[structure_events["code"] == "BBB", "structure_direction"].tolist()) == {
+            "DOWN"
+        }
     finally:
         store.close()

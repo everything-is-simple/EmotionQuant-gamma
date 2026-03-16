@@ -1,6 +1,6 @@
 # G3 卡: 结构标签校准
 
-**状态**: `Opened`  
+**状态**: `Completed`  
 **日期**: `2026-03-16`
 
 ---
@@ -52,3 +52,31 @@
 1. 不把 `1-2-3 / 2B` 直接宣布为 alpha
 2. 不在本卡大量引入辅助指标做主过滤
 3. 不抢做 `GX1`，除非一致性问题已实锤阻塞
+
+---
+
+## 7. 结案结论
+
+本卡已完成。  
+当前第四战场已经把 `G3` 所需的结构标签正式接入三层对象：
+
+1. `l3_gene_wave`
+   - `turn_confirm_type`
+   - `turn_step1_date / turn_step2_date / turn_step3_date`
+   - `two_b_confirm_type / two_b_confirm_date`
+2. `l3_gene_event`
+   - `event_family`
+   - `structure_direction`
+   - `anchor_wave_id`
+   - 正式事件类型：`123_STEP1 / 123_STEP2 / 123_STEP3 / 2B_TOP / 2B_BOTTOM`
+3. `l3_stock_gene`
+   - `latest_confirmed_turn_type / latest_confirmed_turn_date`
+   - `latest_two_b_confirm_type / latest_two_b_confirm_date`
+
+截至 `2026-02-24` 的主库真实回放结果表明：
+
+1. `1-2-3` 已不再只是粗 `reversal_tag` 叙述，而是正式 `confirmed_turn` 结构
+2. `2B` 已不再只是附带布尔标记，而是正式 `2B_TOP / 2B_BOTTOM` 事件
+3. 当前计数一致性已经足以支持进入 `G4`，暂未发现必须立刻打开 `GX1` 的阻塞级问题
+
+下一张主线卡应按顺序进入 `G4 / self-history ruler validation`。

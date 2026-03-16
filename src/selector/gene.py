@@ -28,6 +28,16 @@ G2_BAND_NORMAL = "NORMAL"
 G2_BAND_STRONG = "STRONG"
 G2_BAND_EXTREME = "EXTREME"
 G2_BAND_UNSCALED = "UNSCALED"
+EVENT_FAMILY_EXTREME = "EXTREME"
+EVENT_FAMILY_STRUCTURE = "STRUCTURE"
+TURN_CONFIRM_NONE = "NONE"
+TURN_CONFIRM_UP = "CONFIRMED_TURN_UP"
+TURN_CONFIRM_DOWN = "CONFIRMED_TURN_DOWN"
+TWO_B_TOP = "2B_TOP"
+TWO_B_BOTTOM = "2B_BOTTOM"
+STEP1_EVENT = "123_STEP1"
+STEP2_EVENT = "123_STEP2"
+STEP3_EVENT = "123_STEP3"
 
 
 @dataclass(frozen=True)
@@ -354,6 +364,9 @@ def _extract_wave_events(
                     event.failure_index is not None and event.failure_index <= end_index
                 ),
                 "failure_date": event.failure_date,
+                "event_family": EVENT_FAMILY_EXTREME,
+                "structure_direction": None,
+                "anchor_wave_id": wave_id,
             }
         )
     last = selected[-1]
@@ -419,6 +432,12 @@ def _build_wave_rows(
                 "trend_direction_after": "UNSET",
                 "wave_role": "MAINSTREAM",
                 "reversal_tag": "NONE",
+                "turn_confirm_type": TURN_CONFIRM_NONE,
+                "turn_step1_date": None,
+                "turn_step2_date": None,
+                "turn_step3_date": None,
+                "two_b_confirm_type": TURN_CONFIRM_NONE,
+                "two_b_confirm_date": None,
             }
         )
     return waves, events
@@ -437,9 +456,7 @@ def _assign_wave_trend_context(waves: list[dict[str, object]]) -> None:
             end_price = float(wave["end_price"])
             if highest_up_end is None or end_price > highest_up_end:
                 highest_up_end = end_price
-                if major_trend == "DOWN":
-                    reversal_tag = "ONE_TWO_THREE_UP"
-                elif major_trend == "UNSET":
+                if major_trend == "UNSET":
                     reversal_tag = "INITIAL_TREND_UP"
                 major_trend = "UP"
                 role = "MAINSTREAM"
@@ -447,9 +464,7 @@ def _assign_wave_trend_context(waves: list[dict[str, object]]) -> None:
             end_price = float(wave["end_price"])
             if lowest_down_end is None or end_price < lowest_down_end:
                 lowest_down_end = end_price
-                if major_trend == "UP":
-                    reversal_tag = "ONE_TWO_THREE_DOWN"
-                elif major_trend == "UNSET":
+                if major_trend == "UNSET":
                     reversal_tag = "INITIAL_TREND_DOWN"
                 major_trend = "DOWN"
                 role = "MAINSTREAM"
@@ -459,6 +474,180 @@ def _assign_wave_trend_context(waves: list[dict[str, object]]) -> None:
         wave["trend_direction_after"] = major_trend if major_trend != "UNSET" else direction
         wave["wave_role"] = role
         wave["reversal_tag"] = reversal_tag
+
+
+def _wave_for_date(waves: list[dict[str, object]], event_date: date | None) -> dict[str, object] | None:
+    if event_date is None:
+        return None
+    for wave in waves:
+        start_date = wave["start_date"]
+        end_date = wave["end_date"]
+        if start_date is None or end_date is None:
+            continue
+        if start_date <= event_date <= end_date:
+            return wave
+    return None
+
+
+def _renumber_wave_events(events: list[dict[str, object]]) -> list[dict[str, object]]:
+    ordered = sorted(
+        events,
+        key=lambda row: (
+            str(row["wave_id"]),
+            row["event_date"],
+            0 if row.get("event_family") == EVENT_FAMILY_EXTREME else 1,
+            str(row["event_type"]),
+        ),
+    )
+    seq_by_wave: dict[str, int] = {}
+    for row in ordered:
+        wave_id = str(row["wave_id"])
+        seq = seq_by_wave.get(wave_id, 0) + 1
+        seq_by_wave[wave_id] = seq
+        row["event_seq"] = seq
+    return ordered
+
+
+def _apply_structure_labels(waves: list[dict[str, object]], events: list[dict[str, object]]) -> list[dict[str, object]]:
+    if not waves:
+        return events
+
+    structure_events: list[dict[str, object]] = []
+
+    for event in events:
+        failure_date = event.get("failure_date")
+        if failure_date is None:
+            continue
+        if str(event["event_type"]) == "NEW_HIGH":
+            event_type = TWO_B_TOP
+            structure_direction = "DOWN"
+        elif str(event["event_type"]) == "NEW_LOW":
+            event_type = TWO_B_BOTTOM
+            structure_direction = "UP"
+        else:
+            continue
+        target_wave = _wave_for_date(waves, failure_date)
+        if target_wave is None:
+            continue
+        target_wave["two_b_failure_count"] = int(target_wave["two_b_failure_count"]) + 1
+        target_wave["two_b_confirm_type"] = event_type
+        target_wave["two_b_confirm_date"] = failure_date
+        if str(target_wave["reversal_tag"]) == "NONE":
+            target_wave["reversal_tag"] = "TWO_B_WATCH"
+        structure_events.append(
+            {
+                "code": target_wave["code"],
+                "wave_id": target_wave["wave_id"],
+                "event_seq": 0,
+                "event_date": failure_date,
+                "direction": target_wave["direction"],
+                "event_type": event_type,
+                "event_price": event["previous_extreme_price"],
+                "previous_extreme_price": event["previous_extreme_price"],
+                "spacing_trade_days": None,
+                "density_after_event": None,
+                "is_two_b_failure": True,
+                "failure_date": failure_date,
+                "event_family": EVENT_FAMILY_STRUCTURE,
+                "structure_direction": structure_direction,
+                "anchor_wave_id": event["wave_id"],
+            }
+        )
+
+    for idx in range(2, len(waves)):
+        wave_a = waves[idx - 2]
+        wave_b = waves[idx - 1]
+        wave_c = waves[idx]
+        if str(wave_c["turn_confirm_type"]) != TURN_CONFIRM_NONE:
+            continue
+
+        turn_direction: str | None = None
+        reversal_tag: str | None = None
+        if (
+            str(wave_a["direction"]) == "UP"
+            and str(wave_b["direction"]) == "DOWN"
+            and str(wave_c["direction"]) == "UP"
+            and float(wave_b["end_price"]) > float(wave_a["start_price"])
+            and float(wave_c["end_price"]) > float(wave_a["end_price"])
+        ):
+            turn_direction = "UP"
+            reversal_tag = "ONE_TWO_THREE_UP"
+            wave_c["turn_confirm_type"] = TURN_CONFIRM_UP
+        elif (
+            str(wave_a["direction"]) == "DOWN"
+            and str(wave_b["direction"]) == "UP"
+            and str(wave_c["direction"]) == "DOWN"
+            and float(wave_b["end_price"]) < float(wave_a["start_price"])
+            and float(wave_c["end_price"]) < float(wave_a["end_price"])
+        ):
+            turn_direction = "DOWN"
+            reversal_tag = "ONE_TWO_THREE_DOWN"
+            wave_c["turn_confirm_type"] = TURN_CONFIRM_DOWN
+
+        if turn_direction is None or reversal_tag is None:
+            continue
+
+        wave_c["turn_step1_date"] = wave_a["end_date"]
+        wave_c["turn_step2_date"] = wave_b["end_date"]
+        wave_c["turn_step3_date"] = wave_c["end_date"]
+        wave_c["reversal_tag"] = reversal_tag
+        structure_events.extend(
+            [
+                {
+                    "code": wave_a["code"],
+                    "wave_id": wave_a["wave_id"],
+                    "event_seq": 0,
+                    "event_date": wave_a["end_date"],
+                    "direction": wave_a["direction"],
+                    "event_type": STEP1_EVENT,
+                    "event_price": wave_a["end_price"],
+                    "previous_extreme_price": None,
+                    "spacing_trade_days": None,
+                    "density_after_event": None,
+                    "is_two_b_failure": False,
+                    "failure_date": None,
+                    "event_family": EVENT_FAMILY_STRUCTURE,
+                    "structure_direction": turn_direction,
+                    "anchor_wave_id": wave_a["wave_id"],
+                },
+                {
+                    "code": wave_b["code"],
+                    "wave_id": wave_b["wave_id"],
+                    "event_seq": 0,
+                    "event_date": wave_b["end_date"],
+                    "direction": wave_b["direction"],
+                    "event_type": STEP2_EVENT,
+                    "event_price": wave_b["end_price"],
+                    "previous_extreme_price": None,
+                    "spacing_trade_days": None,
+                    "density_after_event": None,
+                    "is_two_b_failure": False,
+                    "failure_date": None,
+                    "event_family": EVENT_FAMILY_STRUCTURE,
+                    "structure_direction": turn_direction,
+                    "anchor_wave_id": wave_a["wave_id"],
+                },
+                {
+                    "code": wave_c["code"],
+                    "wave_id": wave_c["wave_id"],
+                    "event_seq": 0,
+                    "event_date": wave_c["end_date"],
+                    "direction": wave_c["direction"],
+                    "event_type": STEP3_EVENT,
+                    "event_price": wave_c["end_price"],
+                    "previous_extreme_price": None,
+                    "spacing_trade_days": None,
+                    "density_after_event": None,
+                    "is_two_b_failure": False,
+                    "failure_date": None,
+                    "event_family": EVENT_FAMILY_STRUCTURE,
+                    "structure_direction": turn_direction,
+                    "anchor_wave_id": wave_a["wave_id"],
+                },
+            ]
+        )
+
+    return _renumber_wave_events(events + structure_events)
 
 
 def _apply_wave_history_scores(waves: list[dict[str, object]]) -> None:
@@ -560,6 +749,10 @@ def _build_daily_snapshots(
 
     completed_by_direction: dict[str, list[dict[str, object]]] = {"UP": [], "DOWN": []}
     latest_completed_reversal = "NONE"
+    latest_confirmed_turn_type = TURN_CONFIRM_NONE
+    latest_confirmed_turn_date: date | None = None
+    latest_two_b_confirm_type = TURN_CONFIRM_NONE
+    latest_two_b_confirm_date: date | None = None
     trend_direction = "UNSET"
     wave_cursor = 0
     pivot_cursor = 0
@@ -577,6 +770,12 @@ def _build_daily_snapshots(
             completed_by_direction[str(completed["direction"])].append(completed)
             trend_direction = str(completed["trend_direction_after"])
             latest_completed_reversal = str(completed["reversal_tag"])
+            if str(completed["turn_confirm_type"]) != TURN_CONFIRM_NONE:
+                latest_confirmed_turn_type = str(completed["turn_confirm_type"])
+                latest_confirmed_turn_date = completed["turn_step3_date"]
+            if str(completed["two_b_confirm_type"]) != TURN_CONFIRM_NONE:
+                latest_two_b_confirm_type = str(completed["two_b_confirm_type"])
+                latest_two_b_confirm_date = completed["two_b_confirm_date"]
             wave_cursor += 1
 
         while pivot_cursor + 1 < len(pivots) and pivots[pivot_cursor + 1].confirm_index <= idx:
@@ -615,8 +814,8 @@ def _build_daily_snapshots(
             density_percentile=float(density_stats["percentile"]),
             direction=direction,
         )
-        if latest_completed_reversal.startswith("ONE_TWO_THREE") and trend_direction == direction:
-            reversal_state = latest_completed_reversal
+        if latest_confirmed_turn_type != TURN_CONFIRM_NONE and trend_direction == direction:
+            reversal_state = latest_confirmed_turn_type
         elif active_state.two_b_failure_count > 0:
             reversal_state = "TWO_B_WATCH"
         elif trend_direction not in {"UNSET", direction}:
@@ -644,6 +843,10 @@ def _build_daily_snapshots(
                 "current_wave_role": current_wave_role,
                 "reversal_state": reversal_state,
                 "latest_completed_reversal_tag": latest_completed_reversal,
+                "latest_confirmed_turn_type": latest_confirmed_turn_type,
+                "latest_confirmed_turn_date": latest_confirmed_turn_date,
+                "latest_two_b_confirm_type": latest_two_b_confirm_type,
+                "latest_two_b_confirm_date": latest_two_b_confirm_date,
                 "current_wave_start_date": active_state.start_date,
                 "current_wave_reference_price": float(active_state.reference_price),
                 "current_wave_terminal_price": current_close,
@@ -985,6 +1188,7 @@ def _build_code_gene_payload(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.Data
         down_candidates=down_candidates,
     )
     _assign_wave_trend_context(wave_rows)
+    event_rows = _apply_structure_labels(wave_rows, event_rows)
     _apply_wave_history_scores(wave_rows)
     snapshot_rows = _build_daily_snapshots(
         code=code,
