@@ -25,6 +25,7 @@
 |---|---|
 | `01-stock-gene-library-charter-20260313.md` | 第四战场开线前的早期总体提案 |
 | `02-stock-gene-library-industry-bucketing-upgrade-20260313.md` | 曾考虑并入行业分档的升级草案 |
+| `03-g1-g2-g3-g6-backlog-card-20260316.md` | 第四战场开线早期的过渡 backlog 卡，现已被 `G1 ~ G8` 正式记录替代 |
 | `04-battlefield-stock-gene-bank.md` | 概念形成期的总述草案 |
 
 ---

@@ -92,7 +92,6 @@
 - `01-full-design/02-professional-speculation-principles-theory-annex-20260316.md`
 - `02-implementation-spec/01-price-only-wave-ruler-spec-20260316.md`
 - `03-execution/01-phase-g0-wave-ruler-opening-card-20260316.md`
-- `03-execution/02-phase-g1-g2-g3-g6-backlog-20260316.md`
 - `03-execution/03-phase-g1-factor-attribution-baseline-card-20260316.md`
 - `03-execution/04-phase-card-catalog-20260316.md`
 - `03-execution/05-phase-g2-percentile-band-calibration-card-20260316.md`

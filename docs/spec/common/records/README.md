@@ -13,6 +13,7 @@
 | 类型 | 路径 | 用途 |
 |---|---|---|
 | 当前状态 | `development-status.md` | 查看当前治理阶段、历史摘要与重启条件 |
+| 当前系统总图 | `four-battlefields-integrated-system-map-20260316.md` | 查看四个战场当前如何拼成一套系统、当前可用边界与后续整合工作 |
 | 系统宪法 | `system-constitution-v1.md` | 查看当前跨线不可违背铁律 |
 | 开发军规 | `development-discipline-v1.md` | 查看当前跨线通用的开发纪律与 baseline-first 执行规则 |
 | `design-v2` 退场清单 | `design-v2-retirement-checklist-20260312.md` | 查看历史基线包的保留、降级与未来删除边界 |
@@ -34,5 +35,6 @@
 - `docs/design-migration-boundary.md`
 - `blueprint/README.md`
 - `docs/spec/common/records/development-status.md`
+- `docs/spec/common/records/four-battlefields-integrated-system-map-20260316.md`
 - `docs/spec/common/records/development-discipline-v1.md`
 - `docs/spec/common/README.md`

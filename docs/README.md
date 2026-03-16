@@ -21,11 +21,12 @@
 
 1. `../README.md`
 2. `spec/common/records/repo-line-map-20260312.md`
-3. `spec/common/records/development-status.md`
-4. `../blueprint/README.md`
-5. `../blueprint/01-full-design/`
-6. `../blueprint/02-implementation-spec/`
-7. `../blueprint/03-execution/`
+3. `spec/common/records/four-battlefields-integrated-system-map-20260316.md`
+4. `spec/common/records/development-status.md`
+5. `../blueprint/README.md`
+6. `../blueprint/01-full-design/`
+7. `../blueprint/02-implementation-spec/`
+8. `../blueprint/03-execution/`
 
 ---
 
@@ -56,8 +57,9 @@
 
 1. `../README.md`
 2. `spec/common/records/repo-line-map-20260312.md`
-3. `spec/common/records/development-status.md`
-4. `../blueprint/README.md`
+3. `spec/common/records/four-battlefields-integrated-system-map-20260316.md`
+4. `spec/common/records/development-status.md`
+5. `../blueprint/README.md`
 
 ### 3.2 历史与治理
 
@@ -89,6 +91,7 @@
 
 - `docs/design-migration-boundary.md`
 - `docs/spec/common/records/development-status.md`
+- `docs/spec/common/records/four-battlefields-integrated-system-map-20260316.md`
 - `docs/spec/common/records/repo-line-map-20260312.md`
 - `docs/spec/common/records/supporting-layers-retention-checklist-20260312.md`
 - `docs/design-v2/01-system/system-baseline.md`

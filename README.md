@@ -5,6 +5,7 @@ EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
 ## 设计入口
 
 - 仓库三线地图：[`docs/spec/common/records/repo-line-map-20260312.md`](docs/spec/common/records/repo-line-map-20260312.md)
+- 当前四战场集成图：[`docs/spec/common/records/four-battlefields-integrated-system-map-20260316.md`](docs/spec/common/records/four-battlefields-integrated-system-map-20260316.md)
 - 历史线 `v0.01 Frozen`：[`docs/design-v2/01-system/system-baseline.md`](docs/design-v2/01-system/system-baseline.md)
 - 主线 `v0.01-plus`：[`docs/spec/v0.01-plus/README.md`](docs/spec/v0.01-plus/README.md)
 - 当前主线设计权威层：[`blueprint/README.md`](blueprint/README.md)
@@ -13,8 +14,11 @@ EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
 - 研究线 `Gene`：[`gene/README.md`](gene/README.md)
 - 当前治理状态：[`docs/spec/common/records/development-status.md`](docs/spec/common/records/development-status.md)
 
-当前主线执行链路：
-`Selector 初选 -> BOF 触发 -> IRS 排序 -> MSS 控仓 -> Broker 执行`
+当前默认运行链路：
+`Selector 初选 -> BOF baseline entry -> FIXED_NOTIONAL_CONTROL -> FULL_EXIT_CONTROL -> Broker 执行`
+
+当前四战场集成口径：
+`第一战场给运行骨架，第二战场给 alpha truth，第三战场给 capital control，第四战场给 historical context。`
 
 说明：
 - `v0.01` 已冻结为历史尝试，仅作对照、回退与回归验证。
@@ -95,6 +99,7 @@ EmotionQuant-gamma/
 
 ## 相关文档
 
+- 当前四战场集成图：[`docs/spec/common/records/four-battlefields-integrated-system-map-20260316.md`](docs/spec/common/records/four-battlefields-integrated-system-map-20260316.md)
 - 配置指南：[`docs/reference/operations/setup-guide.md`](docs/reference/operations/setup-guide.md)
 - 文档导航：[`docs/README.md`](docs/README.md)
 - 仓库三线地图：[`docs/spec/common/records/repo-line-map-20260312.md`](docs/spec/common/records/repo-line-map-20260312.md)
