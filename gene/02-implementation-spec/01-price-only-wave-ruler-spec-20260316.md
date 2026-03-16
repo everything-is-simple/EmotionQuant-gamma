@@ -12,6 +12,7 @@
 1. 只消费 `l2_stock_adj_daily`
 2. 只依赖复权 OHLC 与成交额字段
 3. 只输出历史波段数据库，不产生实时交易信号
+4. `G1` 研究层允许在窗口结束日追加一次 `factor_eval` 基线输出
 
 ---
 
@@ -53,6 +54,18 @@
 4. 事件间隔天数、事件后密度
 5. 是否构成 `2B` 失败
 
+### 2.4 `l3_gene_factor_eval`
+
+`G1` 研究表，主键为 `(calc_date, factor_name, sample_scope, direction_scope, forward_horizon_trade_days, bin_label)`。
+
+承载内容：
+
+1. `magnitude / duration / extreme_density` 三个正式子因子
+2. 固定 forward horizon 下的解释力分箱
+3. `continuation_rate / reversal_rate`
+4. `median_forward_return / median_forward_drawdown`
+5. `monotonicity_score`
+
 ---
 
 ## 3. 计算流程
@@ -66,6 +79,7 @@
 5. 计算该股票同方向历史分位与 z-score
 6. 对同日同方向股票做横截面排序
 7. 回写三张 `l3_gene_*` 表
+8. 在窗口结束日，基于 completed wave 回写一次 `l3_gene_factor_eval`
 
 ---
 
@@ -100,6 +114,24 @@
 
 `gene_score` 由三项分位均值构成，用于给出第一版综合尺。
 
+### 5.1 `G1` 固定基线口径
+
+`G1` 第一版固定为最小可复跑基线：
+
+1. 因子只允许：
+   - `magnitude`
+   - `duration`
+   - `extreme_density`
+2. 样本口径固定为：
+   - `SELF_HISTORY_PERCENTILE`
+3. 分箱口径固定为：
+   - `0-20 / 20-40 / 40-60 / 60-80 / 80-100`
+4. forward horizon 第一版固定为：
+   - `10` 个交易日
+5. 方向统一折算为方向一致收益，避免 `UP / DOWN` 直接混淆
+
+`G1` 的目标不是得到终局结论，而是先得到一把可复跑、可排序、可比较的子因子硬度基线。
+
 ---
 
 ## 6. 当前非目标
@@ -110,3 +142,5 @@
 2. 指数级 `gene`
 3. PB / CPB 交易过滤
 4. 与 `IRS / MSS` 的正式融合
+5. 多 horizon 并行优化
+6. 更复杂的标签联合解释

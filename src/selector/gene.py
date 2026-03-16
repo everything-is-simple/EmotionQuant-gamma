@@ -16,6 +16,12 @@ PIVOT_NEIGHBOR_BARS = 2
 PIVOT_CONFIRMATION_BARS = 2
 TWO_B_CONFIRMATION_BARS = 3
 GENE_LOOKBACK_TRADE_DAYS = 260
+FACTOR_EVAL_FORWARD_HORIZON_TRADE_DAYS = 10
+FACTOR_EVAL_SAMPLE_SCOPE = "SELF_HISTORY_PERCENTILE"
+FACTOR_EVAL_DIRECTION_SCOPE = "ALL"
+FACTOR_EVAL_BIN_METHOD = "FIXED_PERCENTILE_20"
+FACTOR_EVAL_BIN_EDGES = [0.0, 20.0, 40.0, 60.0, 80.0, 100.000001]
+FACTOR_EVAL_BIN_LABELS = ["P0_20", "P20_40", "P40_60", "P60_80", "P80_100"]
 
 
 @dataclass(frozen=True)
@@ -69,6 +75,7 @@ def _clear_gene_range(store: Store, start: date, end: date) -> None:
     store.conn.execute("DELETE FROM l3_stock_gene WHERE calc_date BETWEEN ? AND ?", [start, end])
     store.conn.execute("DELETE FROM l3_gene_wave WHERE end_date BETWEEN ? AND ?", [start, end])
     store.conn.execute("DELETE FROM l3_gene_event WHERE event_date BETWEEN ? AND ?", [start, end])
+    store.conn.execute("DELETE FROM l3_gene_factor_eval WHERE calc_date BETWEEN ? AND ?", [start, end])
 
 
 def _load_gene_input(store: Store, start: date, end: date) -> pd.DataFrame:
@@ -642,9 +649,182 @@ def _apply_cross_section_ranks(snapshot_df: pd.DataFrame) -> pd.DataFrame:
     return ranked
 
 
-def _build_code_gene_payload(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+def _future_terminal_close(closes: np.ndarray) -> float | None:
+    finite = closes[np.isfinite(closes)]
+    if len(finite) == 0:
+        return None
+    return float(finite[-1])
+
+
+def _future_window_metrics(
+    direction: WaveDirection,
+    end_price: float,
+    future_highs: np.ndarray,
+    future_lows: np.ndarray,
+    future_closes: np.ndarray,
+) -> dict[str, float | bool] | None:
+    if end_price <= 0:
+        return None
+    terminal_close = _future_terminal_close(future_closes)
+    if terminal_close is None:
+        return None
+
+    max_high = float(np.nanmax(future_highs)) if np.isfinite(future_highs).any() else terminal_close
+    min_low = float(np.nanmin(future_lows)) if np.isfinite(future_lows).any() else terminal_close
+
+    if direction == "UP":
+        aligned_close_return = ((terminal_close - end_price) / end_price) * 100.0
+        favorable_excursion = max(0.0, ((max_high - end_price) / end_price) * 100.0)
+        adverse_excursion = max(0.0, ((end_price - min_low) / end_price) * 100.0)
+    else:
+        aligned_close_return = ((end_price - terminal_close) / end_price) * 100.0
+        favorable_excursion = max(0.0, ((end_price - min_low) / end_price) * 100.0)
+        adverse_excursion = max(0.0, ((max_high - end_price) / end_price) * 100.0)
+
+    return {
+        "aligned_close_return_pct": float(aligned_close_return),
+        "favorable_excursion_pct": float(favorable_excursion),
+        "adverse_excursion_pct": float(adverse_excursion),
+        "continuation_flag": bool(favorable_excursion > adverse_excursion and favorable_excursion > 0.0),
+        "reversal_flag": bool(adverse_excursion > favorable_excursion and adverse_excursion > 0.0),
+    }
+
+
+def _build_factor_eval_samples(
+    code: str,
+    frame: pd.DataFrame,
+    waves: list[dict[str, object]],
+) -> pd.DataFrame:
+    if not waves:
+        return pd.DataFrame()
+
+    highs = pd.to_numeric(frame["adj_high"], errors="coerce").to_numpy(dtype=float)
+    lows = pd.to_numeric(frame["adj_low"], errors="coerce").to_numpy(dtype=float)
+    closes = pd.to_numeric(frame["adj_close"], errors="coerce").to_numpy(dtype=float)
+
+    rows: list[dict[str, object]] = []
+    for wave in waves:
+        end_confirm_index = int(wave["end_confirm_index"])
+        start_index = end_confirm_index + 1
+        if start_index >= len(frame):
+            continue
+        stop_index = min(len(frame), start_index + FACTOR_EVAL_FORWARD_HORIZON_TRADE_DAYS)
+        metrics = _future_window_metrics(
+            direction=str(wave["direction"]),
+            end_price=float(wave["end_price"]),
+            future_highs=highs[start_index:stop_index],
+            future_lows=lows[start_index:stop_index],
+            future_closes=closes[start_index:stop_index],
+        )
+        if metrics is None:
+            continue
+        rows.append(
+            {
+                "code": code,
+                "wave_id": str(wave["wave_id"]),
+                "direction": str(wave["direction"]),
+                "magnitude": float(wave["magnitude_percentile"]),
+                "duration": float(wave["duration_percentile"]),
+                "extreme_density": float(wave["extreme_density_percentile"]),
+                **metrics,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def _spearman_like(values: pd.Series, outcomes: pd.Series) -> float:
+    if len(values) < 2 or len(outcomes) < 2:
+        return 0.0
+    if values.nunique(dropna=True) < 2 or outcomes.nunique(dropna=True) < 2:
+        return 0.0
+    score = values.rank(method="average").corr(outcomes.rank(method="average"))
+    if pd.isna(score):
+        return 0.0
+    return float(score)
+
+
+def _factor_eval_row(
+    calc_date: date,
+    factor_name: str,
+    bin_label: str,
+    frame: pd.DataFrame,
+    monotonicity_score: float,
+) -> dict[str, object]:
+    return {
+        "calc_date": calc_date,
+        "factor_name": factor_name,
+        "sample_scope": FACTOR_EVAL_SAMPLE_SCOPE,
+        "direction_scope": FACTOR_EVAL_DIRECTION_SCOPE,
+        "forward_horizon_trade_days": FACTOR_EVAL_FORWARD_HORIZON_TRADE_DAYS,
+        "bin_method": FACTOR_EVAL_BIN_METHOD,
+        "bin_label": bin_label,
+        "sample_size": int(len(frame)),
+        "continuation_rate": float(frame["continuation_flag"].mean()) if len(frame) else 0.0,
+        "reversal_rate": float(frame["reversal_flag"].mean()) if len(frame) else 0.0,
+        "median_forward_return": float(frame["aligned_close_return_pct"].median()) if len(frame) else 0.0,
+        "median_forward_drawdown": float(frame["adverse_excursion_pct"].median()) if len(frame) else 0.0,
+        "monotonicity_score": monotonicity_score,
+    }
+
+
+def _build_factor_eval_rows(samples_df: pd.DataFrame, calc_date: date) -> pd.DataFrame:
+    if samples_df.empty:
+        return pd.DataFrame()
+
+    rows: list[dict[str, object]] = []
+    for factor_name in ("magnitude", "duration", "extreme_density"):
+        factor_frame = samples_df[
+            [
+                factor_name,
+                "aligned_close_return_pct",
+                "adverse_excursion_pct",
+                "continuation_flag",
+                "reversal_flag",
+            ]
+        ].dropna()
+        if factor_frame.empty:
+            continue
+        monotonicity_score = _spearman_like(
+            factor_frame[factor_name],
+            factor_frame["aligned_close_return_pct"],
+        )
+        rows.append(
+            _factor_eval_row(
+                calc_date=calc_date,
+                factor_name=factor_name,
+                bin_label="ALL",
+                frame=factor_frame,
+                monotonicity_score=monotonicity_score,
+            )
+        )
+        bucketed = factor_frame.assign(
+            bin_label=pd.cut(
+                factor_frame[factor_name],
+                bins=FACTOR_EVAL_BIN_EDGES,
+                labels=FACTOR_EVAL_BIN_LABELS,
+                include_lowest=True,
+                right=True,
+            )
+        )
+        for bin_label in FACTOR_EVAL_BIN_LABELS:
+            bucket = bucketed.loc[bucketed["bin_label"] == bin_label].copy()
+            if bucket.empty:
+                continue
+            rows.append(
+                _factor_eval_row(
+                    calc_date=calc_date,
+                    factor_name=factor_name,
+                    bin_label=bin_label,
+                    frame=bucket,
+                    monotonicity_score=monotonicity_score,
+                )
+            )
+    return pd.DataFrame(rows)
+
+
+def _build_code_gene_payload(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     if frame.empty:
-        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
+        return pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
 
     code = str(frame["code"].iloc[0])
     pivots = _build_confirmed_pivots(frame)
@@ -666,7 +846,17 @@ def _build_code_gene_payload(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.Data
         up_candidates=up_candidates,
         down_candidates=down_candidates,
     )
-    return pd.DataFrame(snapshot_rows), pd.DataFrame(wave_rows), pd.DataFrame(event_rows)
+    factor_eval_samples = _build_factor_eval_samples(
+        code=code,
+        frame=frame,
+        waves=wave_rows,
+    )
+    return (
+        pd.DataFrame(snapshot_rows),
+        pd.DataFrame(wave_rows),
+        pd.DataFrame(event_rows),
+        factor_eval_samples,
+    )
 
 
 def compute_gene(store: Store, start: date, end: date) -> int:
@@ -687,15 +877,20 @@ def compute_gene(store: Store, start: date, end: date) -> int:
     snapshot_frames: list[pd.DataFrame] = []
     wave_frames: list[pd.DataFrame] = []
     event_frames: list[pd.DataFrame] = []
+    factor_eval_sample_frames: list[pd.DataFrame] = []
 
     for _, group in df.groupby("code", sort=True):
-        snapshot_df, wave_df, event_df = _build_code_gene_payload(group.reset_index(drop=True))
+        snapshot_df, wave_df, event_df, factor_eval_sample_df = _build_code_gene_payload(
+            group.reset_index(drop=True)
+        )
         if not snapshot_df.empty:
             snapshot_frames.append(snapshot_df)
         if not wave_df.empty:
             wave_frames.append(wave_df)
         if not event_df.empty:
             event_frames.append(event_df)
+        if not factor_eval_sample_df.empty:
+            factor_eval_sample_frames.append(factor_eval_sample_df)
 
     total_written = 0
 
@@ -723,5 +918,13 @@ def compute_gene(store: Store, start: date, end: date) -> int:
         ].copy()
         if not event_df.empty:
             total_written += store.bulk_upsert("l3_gene_event", event_df)
+
+    if factor_eval_sample_frames:
+        factor_eval_df = _build_factor_eval_rows(
+            pd.concat(factor_eval_sample_frames, ignore_index=True),
+            calc_date=end,
+        )
+        if not factor_eval_df.empty:
+            total_written += store.bulk_upsert("l3_gene_factor_eval", factor_eval_df)
 
     return total_written

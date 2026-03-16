@@ -102,6 +102,21 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
             ORDER BY code, event_date, event_seq
             """
         )
+        factor_eval = store.read_df(
+            """
+            SELECT
+                calc_date,
+                factor_name,
+                sample_scope,
+                direction_scope,
+                forward_horizon_trade_days,
+                bin_label,
+                sample_size,
+                monotonicity_score
+            FROM l3_gene_factor_eval
+            ORDER BY factor_name, bin_label
+            """
+        )
 
         assert written > 0
         assert "current_wave_direction" in schema["name"].tolist()
@@ -109,6 +124,7 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert not snapshots.empty
         assert not waves.empty
         assert not events.empty
+        assert not factor_eval.empty
         assert snapshots["current_wave_direction"].tolist() == ["UP", "UP"]
         assert snapshots["code"].tolist() == ["AAA", "BBB"]
         assert snapshots["cross_section_magnitude_rank"].tolist() == [1, 2]
@@ -118,5 +134,13 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert snapshots["current_wave_magnitude_percentile"].notna().all()
         assert waves["magnitude_percentile"].notna().all()
         assert events["event_seq"].min() == 1
+        assert set(factor_eval.loc[factor_eval["bin_label"] == "ALL", "factor_name"].tolist()) == {
+            "magnitude",
+            "duration",
+            "extreme_density",
+        }
+        assert factor_eval["sample_scope"].eq("SELF_HISTORY_PERCENTILE").all()
+        assert factor_eval["direction_scope"].eq("ALL").all()
+        assert factor_eval["forward_horizon_trade_days"].eq(10).all()
     finally:
         store.close()

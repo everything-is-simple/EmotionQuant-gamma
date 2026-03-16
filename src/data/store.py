@@ -10,7 +10,7 @@ from typing import Any
 import duckdb
 import pandas as pd
 
-CURRENT_SCHEMA_VERSION = 4
+CURRENT_SCHEMA_VERSION = 5
 
 
 @dataclass(frozen=True)
@@ -199,6 +199,36 @@ class Store:
             statements.append(f"ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS {column} {definition}")
         for sql in statements:
             self.conn.execute(sql)
+
+    def _migrate_schema_v4_to_v5(self) -> None:
+        self.conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS l3_gene_factor_eval (
+                calc_date                   DATE    NOT NULL,
+                factor_name                 VARCHAR NOT NULL,
+                sample_scope                VARCHAR NOT NULL,
+                direction_scope             VARCHAR NOT NULL,
+                forward_horizon_trade_days  INTEGER NOT NULL,
+                bin_method                  VARCHAR NOT NULL,
+                bin_label                   VARCHAR NOT NULL,
+                sample_size                 INTEGER,
+                continuation_rate           DOUBLE,
+                reversal_rate               DOUBLE,
+                median_forward_return       DOUBLE,
+                median_forward_drawdown     DOUBLE,
+                monotonicity_score          DOUBLE,
+                created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (
+                    calc_date,
+                    factor_name,
+                    sample_scope,
+                    direction_scope,
+                    forward_horizon_trade_days,
+                    bin_label
+                )
+            )
+            """
+        )
 
     def _ensure_optional_columns(self) -> None:
         """
@@ -875,6 +905,32 @@ class Store:
                 failure_date            DATE,
                 created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (code, wave_id, event_seq)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l3_gene_factor_eval (
+                calc_date                   DATE    NOT NULL,
+                factor_name                 VARCHAR NOT NULL,
+                sample_scope                VARCHAR NOT NULL,
+                direction_scope             VARCHAR NOT NULL,
+                forward_horizon_trade_days  INTEGER NOT NULL,
+                bin_method                  VARCHAR NOT NULL,
+                bin_label                   VARCHAR NOT NULL,
+                sample_size                 INTEGER,
+                continuation_rate           DOUBLE,
+                reversal_rate               DOUBLE,
+                median_forward_return       DOUBLE,
+                median_forward_drawdown     DOUBLE,
+                monotonicity_score          DOUBLE,
+                created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (
+                    calc_date,
+                    factor_name,
+                    sample_scope,
+                    direction_scope,
+                    forward_horizon_trade_days,
+                    bin_label
+                )
             )
             """,
             # L4
