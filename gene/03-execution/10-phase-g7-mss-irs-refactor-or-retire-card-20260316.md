@@ -1,6 +1,6 @@
 # G7 卡: MSS / IRS 改造或退役决策
 
-**状态**: `Opened`  
+**状态**: `Completed`  
 **日期**: `2026-03-16`
 
 ---
@@ -53,3 +53,27 @@
 1. 不在本卡重做第一战场历史回顾
 2. 不因为情感依赖保留旧模块
 3. 不在没有证据时直接宣布全面替代
+
+---
+
+## 7. 结案结论
+
+本卡已完成。  
+当前 `G7` 的正式裁决固定为：
+
+1. 旧 `MSS-lite` 正式退役为“历史实现与证据对象”
+   - 不再作为未来默认路径、默认风控 overlay 或 promotion 候选继续漂
+   - 现有代码与文档先保留，用于历史 replay、证据回溯与归档
+2. 旧 `IRS-lite` 也不再保留为未来行业评分主入口
+   - 保留的是“行业相对强弱/相对位置”这个问题
+   - 退役的是旧 `IndustryScore.score -> signal.irs_score` 单分数字义
+   - 替代入口改为第四战场 `G5` 的行业镜像尺，而不是继续沿旧 `irs_score` 升级
+3. 第四战场给出的正式替代入口固定为：
+   - 市场层：`l3_gene_mirror(MARKET)` + `support_rise_ratio / support_strong_ratio / support_new_high_ratio`
+   - 行业层：`l3_gene_mirror(INDUSTRY)` + `mirror_gene_rank / primary_ruler_rank / support_rise_ratio`
+   - 形态环境层：`l3_gene_conditioning_eval`
+4. `GX2 / targeted migration package` 当前不触发
+   - 因为本轮没有出现必须集中迁移旧表、旧脚本、旧入口的阻塞级压力
+   - 若未来主线要正式吸收 `G5 / G6` 结论，必须新开显式 migration package
+5. `G7` 完成后，第四战场下一张主线卡按顺序进入：
+   - `G8 / gene campaign closeout`

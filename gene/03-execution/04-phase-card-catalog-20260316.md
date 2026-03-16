@@ -14,8 +14,8 @@
 
 当前状态：
 
-1. 已完成：`G0 / G1 / G2 / G3 / G4 / G5 / G6`
-2. 已开未做：`G7 ~ G8`
+1. 已完成：`G0 / G1 / G2 / G3 / G4 / G5 / G6 / G7`
+2. 已开未做：`G8`
 3. 条件卡待触发：`GX1 / GX2`
 
 ---
@@ -45,7 +45,7 @@
    - 状态：`Completed`
 8. `G7 / MSS-IRS refactor-or-retire decision`
    - 作用：基于第四战场结果，对旧体系做改造或退役决策
-   - 状态：`Opened`
+   - 状态：`Completed`
 9. `G8 / gene campaign closeout`
    - 作用：冻结第四战场最终交付与边界
    - 状态：`Opened`
