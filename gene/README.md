@@ -7,37 +7,29 @@
 
 ## 1. 定位
 
-`gene/` 是 `EmotionQuant-gamma` 根目录下的第四战场设计空间，也是当前仓库专门面向“个股历史波段标尺”的独立研究线。
-它只回答一个问题：
+`gene/` 是 `EmotionQuant-gamma` 根目录下的第四战场研究线，专门回答一个问题：
 
-`当前这只股票的这一段走势，在它自己的历史里算什么级别。`
+`当前这只股票当前这段走势，在它自己的历史里算什么级别？`
 
-这里不是 `blueprint/` 的替代品，也不是对当前 `v0.01-plus` 主线的直接改写。
-`Gene` 不是版本线，而是研究线。
+它不是版本线，不替代 `blueprint/`，也不直接改写当前主线。它的职责是先做“历史尺”，再决定哪些旧模块值得改造，哪些旧模块应该退役。
 
 ---
 
 ## 2. 边界
 
-当前仓库已经有三块已知前提：
-
-1. `blueprint/` + `docs/spec/v0.01-plus/` 代表当前主线
-2. `normandy/` 回答“买什么 / 为什么打”
-3. `positioning/` 回答“打多大 / 怎么退”
-
-因此 `gene/` 的边界固定为：
+第四战场固定遵守以下边界：
 
 1. 不重开 `Normandy` 的 alpha provenance 问题
 2. 不重开 `Positioning` 的 sizing / partial-exit 问题
-3. 不先把 `MSS / IRS` 当答案，而是先做价格对象层
-4. 先把 `趋势 / 波段 / 转折 / 新高新低` 的术语冻结
-5. 先给全市场一把“历史尺”，再决定 `MSS / IRS` 是改造还是退役
+3. 先做个股价格对象层，不先把 `MSS / IRS` 当答案
+4. 先冻结 `趋势 / 波段 / 转折 / 新高新低` 的术语
+5. 先给全市场一把历史尺，再决定 `MSS / IRS` 是改造还是退役
 
 ---
 
-## 3. 分层结构
+## 3. 目录结构
 
-`gene/` 固定沿用 `blueprint/` 的三层结构：
+`gene/` 固定沿用三层结构：
 
 1. `01-full-design/`
 2. `02-implementation-spec/`
@@ -46,23 +38,48 @@
 另保留：
 
 4. `90-archive/`
-   - 保存第四战场正式开线前的早期提案与概念草案
 
 ---
 
-## 4. 当前目标
+## 4. 卡体系
+
+第四战场完整卡体系固定为 `11` 张：
+
+1. 必选主线卡 `9` 张：`G0 ~ G8`
+2. 可选条件卡 `2` 张：`GX1 ~ GX2`
+
+主线顺序固定为：
+
+1. `G0`: 对象层脚手架
+2. `G1`: 三子因子解释力基线
+3. `G2`: 历史寿命分布与 `65 / 95` 校准
+4. `G3`: `1-2-3 / 2B` 结构标签校准
+5. `G4`: 个股自历史标尺验证
+6. `G5`: 指数 / 行业 / 大盘镜像尺
+7. `G6`: `BOF / PB / CPB` 条件层统计
+8. `G7`: `MSS / IRS` 改造或退役决策
+9. `G8`: 第四战场收口
+
+条件卡：
+
+1. `GX1`: 目标检测器重写
+2. `GX2`: 目标迁移包
+
+---
+
+## 5. 当前目标
 
 第四战场第一阶段只做三件事：
 
 1. 定义 `趋势 / 波段 / 波段主流 / 趋势逆流 / 转折 / 新高新低`
 2. 用 `波动幅度 + 波动时间 + 新高新低密度` 建立历史波段数据库
-3. 输出个股自历史分位、z-score 和全市场横截面排序
+3. 输出个股自历史分位、`z-score` 与横截面排序
 
-第一版明确只消费 `l2_stock_adj_daily`，不依赖 `MSS / IRS`，也不直接进入实时漏斗。
+第一版只消费 `l2_stock_adj_daily`，不依赖 `MSS / IRS`，也不直接进入实时漏斗。
 
 ---
 
-## 5. 当前入口
+## 6. 当前入口
 
 - `01-full-design/01-stock-historical-trend-ruler-charter-20260316.md`
 - `01-full-design/02-professional-speculation-principles-theory-annex-20260316.md`
@@ -70,6 +87,16 @@
 - `03-execution/01-phase-g0-wave-ruler-opening-card-20260316.md`
 - `03-execution/02-phase-g1-g2-g3-g6-backlog-20260316.md`
 - `03-execution/03-phase-g1-factor-attribution-baseline-card-20260316.md`
+- `03-execution/04-phase-card-catalog-20260316.md`
+- `03-execution/05-phase-g2-percentile-band-calibration-card-20260316.md`
+- `03-execution/06-phase-g3-structure-label-calibration-card-20260316.md`
+- `03-execution/07-phase-g4-self-history-ruler-validation-card-20260316.md`
+- `03-execution/08-phase-g5-market-industry-index-mirror-ruler-card-20260316.md`
+- `03-execution/09-phase-g6-bof-pb-cpb-conditioning-card-20260316.md`
+- `03-execution/10-phase-g7-mss-irs-refactor-or-retire-card-20260316.md`
+- `03-execution/11-phase-g8-gene-campaign-closeout-card-20260316.md`
+- `03-execution/12-phase-gx1-targeted-detector-rewrite-card-20260316.md`
+- `03-execution/13-phase-gx2-targeted-migration-package-card-20260316.md`
 - `03-execution/records/01-phase-g0-wave-ruler-opening-record-20260316.md`
 - `03-execution/records/02-professional-speculation-principles-map-20260316.md`
 - `03-execution/records/03-professional-speculation-principles-system-ingestion-matrix-20260316.md`
