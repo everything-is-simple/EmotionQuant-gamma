@@ -26,6 +26,10 @@
 
 第四战场后续只需要反复回到这些地方，而不需要每次重新翻整本书。
 
+另见：
+
+1. [《专业投机原理》系统吸收分类矩阵](./03-professional-speculation-principles-system-ingestion-matrix-20260316.md)
+
 ---
 
 ## 2. 当前已定位的核心章节

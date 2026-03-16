@@ -65,8 +65,11 @@
 ## 5. 当前入口
 
 - `01-full-design/01-stock-historical-trend-ruler-charter-20260316.md`
+- `01-full-design/02-professional-speculation-principles-theory-annex-20260316.md`
 - `02-implementation-spec/01-price-only-wave-ruler-spec-20260316.md`
 - `03-execution/01-phase-g0-wave-ruler-opening-card-20260316.md`
+- `03-execution/02-phase-g1-g2-g3-g6-backlog-20260316.md`
 - `03-execution/records/01-phase-g0-wave-ruler-opening-record-20260316.md`
 - `03-execution/records/02-professional-speculation-principles-map-20260316.md`
+- `03-execution/records/03-professional-speculation-principles-system-ingestion-matrix-20260316.md`
 - `90-archive/README.md`
