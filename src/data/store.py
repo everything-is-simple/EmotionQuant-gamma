@@ -10,7 +10,7 @@ from typing import Any
 import duckdb
 import pandas as pd
 
-CURRENT_SCHEMA_VERSION = 7
+CURRENT_SCHEMA_VERSION = 8
 
 
 @dataclass(frozen=True)
@@ -292,6 +292,36 @@ class Store:
         ]
         for sql in statements:
             self.conn.execute(sql)
+
+    def _migrate_schema_v7_to_v8(self) -> None:
+        self.conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS l3_gene_validation_eval (
+                calc_date                           DATE    NOT NULL,
+                metric_name                         VARCHAR NOT NULL,
+                sample_scope                        VARCHAR NOT NULL,
+                forward_horizon_trade_days          INTEGER NOT NULL,
+                sample_size                         INTEGER,
+                monotonicity_score                  DOUBLE,
+                avg_daily_rank_corr                 DOUBLE,
+                positive_daily_rank_corr_rate       DOUBLE,
+                top_bucket_continuation_rate        DOUBLE,
+                bottom_bucket_continuation_rate     DOUBLE,
+                top_bucket_median_forward_return    DOUBLE,
+                bottom_bucket_median_forward_return DOUBLE,
+                top_bucket_median_forward_drawdown  DOUBLE,
+                bottom_bucket_median_forward_drawdown DOUBLE,
+                decision_tag                        VARCHAR,
+                created_at                          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (
+                    calc_date,
+                    metric_name,
+                    sample_scope,
+                    forward_horizon_trade_days
+                )
+            )
+            """
+        )
 
     def _ensure_optional_columns(self) -> None:
         """
@@ -1045,6 +1075,32 @@ class Store:
                 median_forward_drawdown    DOUBLE,
                 created_at                 TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (code, calc_date, metric_name)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l3_gene_validation_eval (
+                calc_date                           DATE    NOT NULL,
+                metric_name                         VARCHAR NOT NULL,
+                sample_scope                        VARCHAR NOT NULL,
+                forward_horizon_trade_days          INTEGER NOT NULL,
+                sample_size                         INTEGER,
+                monotonicity_score                  DOUBLE,
+                avg_daily_rank_corr                 DOUBLE,
+                positive_daily_rank_corr_rate       DOUBLE,
+                top_bucket_continuation_rate        DOUBLE,
+                bottom_bucket_continuation_rate     DOUBLE,
+                top_bucket_median_forward_return    DOUBLE,
+                bottom_bucket_median_forward_return DOUBLE,
+                top_bucket_median_forward_drawdown  DOUBLE,
+                bottom_bucket_median_forward_drawdown DOUBLE,
+                decision_tag                        VARCHAR,
+                created_at                          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (
+                    calc_date,
+                    metric_name,
+                    sample_scope,
+                    forward_horizon_trade_days
+                )
             )
             """,
             # L4

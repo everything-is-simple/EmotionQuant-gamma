@@ -1,6 +1,6 @@
 # G4 卡: 个股自历史标尺验证
 
-**状态**: `Opened`  
+**状态**: `Completed`  
 **日期**: `2026-03-16`
 
 ---
@@ -55,3 +55,33 @@
 1. 不直接把历史尺硬接入实时交易
 2. 不在本卡回头重写 `G1 / G2 / G3`
 3. 不提前对 `MSS / IRS` 下最终退役结论
+
+---
+
+## 7. 结案结论
+
+本卡已完成。  
+当前第四战场已经把 `G4` 所需的自历史验证层正式接入：
+
+1. `Store` schema 升级到 `v8`
+2. 新增 `l3_gene_validation_eval`
+3. `compute_gene()` 现已自动回写：
+   - `gene_score`
+   - `magnitude_percentile`
+   - `duration_percentile`
+   - `extreme_density_percentile`
+4. 每次验证固定产出：
+   - `monotonicity_score`
+   - `avg_daily_rank_corr`
+   - `positive_daily_rank_corr_rate`
+   - `top / bottom bucket continuation_rate`
+   - `decision_tag`
+
+截至 `2026-02-24` 的主库真实读数表明：
+
+1. `duration_percentile` 是当前三子因子里最硬的 `PRIMARY_RULER`
+2. `magnitude_percentile` 与 `extreme_density_percentile` 仍保留为 `SUPPORTING_RULER`
+3. `gene_score` 当前仍可保留为 `KEEP_COMPOSITE`
+4. 整体单调性与日度 rank-corr 较弱，当前历史尺更像“过热/衰竭尺”，而不是强 continuation 尺
+
+下一张主线卡应按顺序进入 `G5 / market-industry-index mirror ruler`。

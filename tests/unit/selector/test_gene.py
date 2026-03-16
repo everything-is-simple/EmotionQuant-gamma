@@ -135,6 +135,19 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
             ORDER BY code, metric_name
             """
         )
+        validation_eval = store.read_df(
+            """
+            SELECT
+                calc_date,
+                metric_name,
+                sample_scope,
+                forward_horizon_trade_days,
+                sample_size,
+                decision_tag
+            FROM l3_gene_validation_eval
+            ORDER BY metric_name
+            """
+        )
 
         assert written > 0
         assert "current_wave_direction" in schema["name"].tolist()
@@ -171,6 +184,17 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert factor_eval["forward_horizon_trade_days"].eq(10).all()
         assert set(distribution_eval["metric_name"].tolist()) == {"duration_trade_days", "magnitude_pct"}
         assert distribution_eval["band_label"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
+        assert not validation_eval.empty
+        assert set(validation_eval["metric_name"].tolist()) == {
+            "duration_percentile",
+            "extreme_density_percentile",
+            "gene_score",
+            "magnitude_percentile",
+        }
+        assert validation_eval["sample_scope"].eq("SELF_HISTORY_CURRENT_WAVE").all()
+        assert validation_eval["forward_horizon_trade_days"].eq(10).all()
+        assert validation_eval["sample_size"].gt(0).all()
+        assert validation_eval["decision_tag"].ne("").all()
     finally:
         store.close()
 

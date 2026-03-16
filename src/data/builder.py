@@ -83,6 +83,7 @@ def build_l3(store: Store, config: Settings, start: date | None, end: date | Non
         store.conn.execute("DELETE FROM l3_gene_event")
         store.conn.execute("DELETE FROM l3_gene_factor_eval")
         store.conn.execute("DELETE FROM l3_gene_distribution_eval")
+        store.conn.execute("DELETE FROM l3_gene_validation_eval")
 
     # Keep each L3 product on its own rebuild window.
     mss_window = _resolve_window(store, "l3_mss_daily", config, start, end, force)

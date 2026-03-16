@@ -14,8 +14,8 @@
 
 当前状态：
 
-1. 已完成：`G0 / G1 / G2 / G3`
-2. 已开未做：`G4 ~ G8`
+1. 已完成：`G0 / G1 / G2 / G3 / G4`
+2. 已开未做：`G5 ~ G8`
 3. 条件卡待触发：`GX1 / GX2`
 
 ---
@@ -36,7 +36,7 @@
    - 状态：`Completed`
 5. `G4 / self-history ruler validation`
    - 作用：验证“个股自历史标尺”到底是否真有解释力
-   - 状态：`Opened`
+   - 状态：`Completed`
 6. `G5 / market-industry-index mirror ruler`
    - 作用：把个股历史尺镜像到指数、行业和大盘
    - 状态：`Opened`

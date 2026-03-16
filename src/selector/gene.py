@@ -38,6 +38,13 @@ TWO_B_BOTTOM = "2B_BOTTOM"
 STEP1_EVENT = "123_STEP1"
 STEP2_EVENT = "123_STEP2"
 STEP3_EVENT = "123_STEP3"
+G4_VALIDATION_SAMPLE_SCOPE = "SELF_HISTORY_CURRENT_WAVE"
+G4_PRIMARY_RULER = "PRIMARY_RULER"
+G4_SUPPORTING_RULER = "SUPPORTING_RULER"
+G4_WEAK_COMPONENT = "WEAK_COMPONENT"
+G4_KEEP_COMPOSITE = "KEEP_COMPOSITE"
+G4_SUMMARY_ONLY = "SUMMARY_ONLY"
+G4_DOWNGRADE_COMPONENT_PANEL = "DOWNGRADE_COMPONENT_PANEL"
 
 
 @dataclass(frozen=True)
@@ -93,6 +100,7 @@ def _clear_gene_range(store: Store, start: date, end: date) -> None:
     store.conn.execute("DELETE FROM l3_gene_event WHERE event_date BETWEEN ? AND ?", [start, end])
     store.conn.execute("DELETE FROM l3_gene_factor_eval WHERE calc_date BETWEEN ? AND ?", [start, end])
     store.conn.execute("DELETE FROM l3_gene_distribution_eval WHERE calc_date BETWEEN ? AND ?", [start, end])
+    store.conn.execute("DELETE FROM l3_gene_validation_eval WHERE calc_date BETWEEN ? AND ?", [start, end])
 
 
 def _load_gene_input(store: Store, start: date, end: date) -> pd.DataFrame:
@@ -1166,6 +1174,195 @@ def _build_distribution_eval_rows(
     return pd.DataFrame(rows)
 
 
+def _load_snapshot_validation_metric_samples(store: Store, calc_date: date, metric_column: str) -> pd.DataFrame:
+    horizon = FACTOR_EVAL_FORWARD_HORIZON_TRADE_DAYS
+    query = f"""
+        WITH price_forward AS (
+            SELECT
+                code,
+                date AS calc_date,
+                LEAD(adj_close, ?) OVER (PARTITION BY code ORDER BY date) AS future_terminal_close,
+                MAX(adj_high) OVER (
+                    PARTITION BY code
+                    ORDER BY date
+                    ROWS BETWEEN 1 FOLLOWING AND {horizon} FOLLOWING
+                ) AS future_max_high,
+                MIN(adj_low) OVER (
+                    PARTITION BY code
+                    ORDER BY date
+                    ROWS BETWEEN 1 FOLLOWING AND {horizon} FOLLOWING
+                ) AS future_min_low
+            FROM l2_stock_adj_daily
+            WHERE date <= ?
+        )
+        SELECT
+            s.calc_date,
+            CAST(s.{metric_column} AS DOUBLE) AS metric_value,
+            CASE
+                WHEN s.current_wave_direction = 'UP'
+                    THEN ((p.future_terminal_close - s.current_wave_terminal_price) / s.current_wave_terminal_price) * 100.0
+                ELSE ((s.current_wave_terminal_price - p.future_terminal_close) / s.current_wave_terminal_price) * 100.0
+            END AS aligned_close_return_pct,
+            CASE
+                WHEN s.current_wave_direction = 'UP'
+                    THEN GREATEST(0.0, ((p.future_max_high - s.current_wave_terminal_price) / s.current_wave_terminal_price) * 100.0)
+                ELSE GREATEST(0.0, ((s.current_wave_terminal_price - p.future_min_low) / s.current_wave_terminal_price) * 100.0)
+            END AS favorable_excursion_pct,
+            CASE
+                WHEN s.current_wave_direction = 'UP'
+                    THEN GREATEST(0.0, ((s.current_wave_terminal_price - p.future_min_low) / s.current_wave_terminal_price) * 100.0)
+                ELSE GREATEST(0.0, ((p.future_max_high - s.current_wave_terminal_price) / s.current_wave_terminal_price) * 100.0)
+            END AS adverse_excursion_pct
+        FROM l3_stock_gene s
+        JOIN price_forward p
+          ON s.code = p.code
+         AND s.calc_date = p.calc_date
+        WHERE s.calc_date <= ?
+          AND s.current_wave_terminal_price > 0
+          AND s.current_wave_direction IN ('UP', 'DOWN')
+          AND s.{metric_column} IS NOT NULL
+          AND p.future_terminal_close IS NOT NULL
+    """
+    frame = store.read_df(query, (horizon, calc_date, calc_date))
+    if frame.empty:
+        return frame
+    frame["continuation_flag"] = (
+        (frame["favorable_excursion_pct"] > frame["adverse_excursion_pct"])
+        & (frame["favorable_excursion_pct"] > 0.0)
+    )
+    frame["reversal_flag"] = (
+        (frame["adverse_excursion_pct"] > frame["favorable_excursion_pct"])
+        & (frame["adverse_excursion_pct"] > 0.0)
+    )
+    return frame
+
+
+def _validation_bucket_summary(frame: pd.DataFrame) -> dict[str, float]:
+    if frame.empty:
+        return {
+            "continuation_rate": 0.0,
+            "median_forward_return": 0.0,
+            "median_forward_drawdown": 0.0,
+        }
+    return {
+        "continuation_rate": float(frame["continuation_flag"].mean()),
+        "median_forward_return": float(frame["aligned_close_return_pct"].median()),
+        "median_forward_drawdown": float(frame["adverse_excursion_pct"].median()),
+    }
+
+
+def _build_validation_eval_row(calc_date: date, metric_name: str, samples_df: pd.DataFrame) -> dict[str, object]:
+    monotonicity_score = _spearman_like(samples_df["metric_value"], samples_df["aligned_close_return_pct"])
+    bucketed = samples_df.assign(
+        bin_label=pd.cut(
+            samples_df["metric_value"],
+            bins=FACTOR_EVAL_BIN_EDGES,
+            labels=FACTOR_EVAL_BIN_LABELS,
+            include_lowest=True,
+            right=True,
+        )
+    )
+    bottom = bucketed.loc[bucketed["bin_label"] == "P0_20"].copy()
+    top = bucketed.loc[bucketed["bin_label"] == "P80_100"].copy()
+    bottom_summary = _validation_bucket_summary(bottom)
+    top_summary = _validation_bucket_summary(top)
+
+    daily_corrs: list[float] = []
+    for _, part in samples_df.groupby("calc_date", sort=True):
+        corr = _spearman_like(part["metric_value"], part["aligned_close_return_pct"])
+        daily_corrs.append(float(corr))
+    avg_daily_rank_corr = float(np.mean(daily_corrs)) if daily_corrs else 0.0
+    positive_daily_rank_corr_rate = float(np.mean([corr > 0.0 for corr in daily_corrs])) if daily_corrs else 0.0
+
+    return {
+        "calc_date": calc_date,
+        "metric_name": metric_name,
+        "sample_scope": G4_VALIDATION_SAMPLE_SCOPE,
+        "forward_horizon_trade_days": FACTOR_EVAL_FORWARD_HORIZON_TRADE_DAYS,
+        "sample_size": int(len(samples_df)),
+        "monotonicity_score": float(monotonicity_score),
+        "avg_daily_rank_corr": float(avg_daily_rank_corr),
+        "positive_daily_rank_corr_rate": float(positive_daily_rank_corr_rate),
+        "top_bucket_continuation_rate": float(top_summary["continuation_rate"]),
+        "bottom_bucket_continuation_rate": float(bottom_summary["continuation_rate"]),
+        "top_bucket_median_forward_return": float(top_summary["median_forward_return"]),
+        "bottom_bucket_median_forward_return": float(bottom_summary["median_forward_return"]),
+        "top_bucket_median_forward_drawdown": float(top_summary["median_forward_drawdown"]),
+        "bottom_bucket_median_forward_drawdown": float(bottom_summary["median_forward_drawdown"]),
+        "decision_tag": "",
+    }
+
+
+def _attach_validation_decisions(validation_df: pd.DataFrame) -> pd.DataFrame:
+    if validation_df.empty:
+        return validation_df
+
+    scored = validation_df.copy()
+    scored["strength_score"] = scored["monotonicity_score"].abs() + scored["avg_daily_rank_corr"].abs()
+
+    factor_mask = scored["metric_name"].isin(
+        ["magnitude_percentile", "duration_percentile", "extreme_density_percentile"]
+    )
+    factor_df = scored.loc[factor_mask].copy()
+    best_factor_metric = "magnitude_percentile"
+    best_factor_score = 0.0
+    if not factor_df.empty:
+        best_idx = factor_df["strength_score"].idxmax()
+        best_factor_metric = str(factor_df.loc[best_idx, "metric_name"])
+        best_factor_score = float(factor_df.loc[best_idx, "strength_score"])
+
+    def _factor_decision(row: pd.Series) -> str:
+        if str(row["metric_name"]) == best_factor_metric:
+            return G4_PRIMARY_RULER
+        if best_factor_score <= 1e-12:
+            return G4_SUPPORTING_RULER
+        if float(row["strength_score"]) >= best_factor_score * 0.5:
+            return G4_SUPPORTING_RULER
+        return G4_WEAK_COMPONENT
+
+    decisions: list[str] = []
+    for row in scored.itertuples(index=False):
+        metric_name = str(row.metric_name)
+        if metric_name in {"magnitude_percentile", "duration_percentile", "extreme_density_percentile"}:
+            decisions.append(_factor_decision(pd.Series(row._asdict())))
+            continue
+        if metric_name == "gene_score":
+            if best_factor_score <= 1e-12:
+                decisions.append(G4_KEEP_COMPOSITE)
+            elif float(row.strength_score) >= best_factor_score * 0.8:
+                decisions.append(G4_KEEP_COMPOSITE)
+            elif float(row.strength_score) >= best_factor_score * 0.5:
+                decisions.append(G4_SUMMARY_ONLY)
+            else:
+                decisions.append(G4_DOWNGRADE_COMPONENT_PANEL)
+            continue
+        decisions.append(G4_WEAK_COMPONENT)
+
+    scored["decision_tag"] = decisions
+    return scored.drop(columns=["strength_score"])
+
+
+def compute_gene_validation(store: Store, calc_date: date) -> int:
+    metric_map = {
+        "gene_score": "gene_score",
+        "magnitude_percentile": "current_wave_magnitude_percentile",
+        "duration_percentile": "current_wave_duration_percentile",
+        "extreme_density_percentile": "current_wave_extreme_density_percentile",
+    }
+    rows: list[dict[str, object]] = []
+    for metric_name, metric_column in metric_map.items():
+        samples_df = _load_snapshot_validation_metric_samples(store, calc_date, metric_column)
+        if samples_df.empty:
+            continue
+        rows.append(_build_validation_eval_row(calc_date, metric_name, samples_df))
+
+    store.conn.execute("DELETE FROM l3_gene_validation_eval WHERE calc_date = ?", [calc_date])
+    if not rows:
+        return 0
+    validation_df = _attach_validation_decisions(pd.DataFrame(rows))
+    return store.bulk_upsert("l3_gene_validation_eval", validation_df)
+
+
 def _concat_sparse_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
     normalized = [frame.dropna(axis=1, how="all") for frame in frames if not frame.empty]
     if not normalized:
@@ -1285,5 +1482,8 @@ def compute_gene(store: Store, start: date, end: date) -> int:
         )
         if not distribution_eval_df.empty:
             total_written += store.bulk_upsert("l3_gene_distribution_eval", distribution_eval_df)
+
+    if not final_snapshot_df.empty:
+        total_written += compute_gene_validation(store, end)
 
     return total_written

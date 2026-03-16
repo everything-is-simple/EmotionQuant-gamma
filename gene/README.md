@@ -73,8 +73,8 @@
 
 当前执行状态：
 
-1. 已完成：`G0 / G1 / G2 / G3`
-2. 当前下一张主线卡：`G4 / self-history ruler validation`
+1. 已完成：`G0 / G1 / G2 / G3 / G4`
+2. 当前下一张主线卡：`G5 / market-industry-index mirror ruler`
 
 1. 定义 `趋势 / 波段 / 波段主流 / 趋势逆流 / 转折 / 新高新低`
 2. 用 `波动幅度 + 波动时间 + 新高新低密度` 建立历史波段数据库
@@ -108,4 +108,5 @@
 - `03-execution/records/04-phase-g1-factor-attribution-baseline-record-20260316.md`
 - `03-execution/records/05-phase-g2-percentile-band-calibration-record-20260316.md`
 - `03-execution/records/06-phase-g3-structure-label-calibration-record-20260316.md`
+- `03-execution/records/07-phase-g4-self-history-ruler-validation-record-20260316.md`
 - `90-archive/README.md`
