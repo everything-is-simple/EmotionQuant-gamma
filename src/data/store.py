@@ -10,7 +10,7 @@ from typing import Any
 import duckdb
 import pandas as pd
 
-CURRENT_SCHEMA_VERSION = 8
+CURRENT_SCHEMA_VERSION = 9
 
 
 @dataclass(frozen=True)
@@ -319,6 +319,54 @@ class Store:
                     sample_scope,
                     forward_horizon_trade_days
                 )
+            )
+            """
+        )
+
+    def _migrate_schema_v8_to_v9(self) -> None:
+        self.conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS l3_gene_mirror (
+                entity_scope                     VARCHAR NOT NULL,
+                entity_code                      VARCHAR NOT NULL,
+                calc_date                        DATE    NOT NULL,
+                entity_name                      VARCHAR,
+                source_table                     VARCHAR NOT NULL,
+                price_source_kind                VARCHAR NOT NULL,
+                current_wave_direction           VARCHAR,
+                current_wave_role                VARCHAR,
+                current_wave_start_date          DATE,
+                current_wave_terminal_price      DOUBLE,
+                current_wave_signed_return_pct   DOUBLE,
+                current_wave_age_trade_days      INTEGER,
+                current_wave_magnitude_pct       DOUBLE,
+                current_wave_extreme_density     DOUBLE,
+                current_wave_history_sample_size INTEGER,
+                current_wave_magnitude_percentile DOUBLE,
+                current_wave_duration_percentile DOUBLE,
+                current_wave_extreme_density_percentile DOUBLE,
+                current_wave_magnitude_band      VARCHAR,
+                current_wave_duration_band       VARCHAR,
+                current_wave_age_band            VARCHAR,
+                latest_confirmed_turn_type       VARCHAR,
+                latest_two_b_confirm_type        VARCHAR,
+                gene_score                       DOUBLE,
+                primary_ruler_metric             VARCHAR,
+                primary_ruler_value              DOUBLE,
+                primary_ruler_rank               INTEGER,
+                primary_ruler_percentile         DOUBLE,
+                mirror_gene_rank                 INTEGER,
+                mirror_gene_percentile           DOUBLE,
+                composite_decision_tag           VARCHAR,
+                support_rise_ratio               DOUBLE,
+                support_strong_ratio             DOUBLE,
+                support_new_high_ratio           DOUBLE,
+                support_amount_vs_ma20           DOUBLE,
+                support_return_5d                DOUBLE,
+                support_return_20d               DOUBLE,
+                support_follow_through           DOUBLE,
+                created_at                       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (entity_scope, entity_code, calc_date)
             )
             """
         )
@@ -1101,6 +1149,50 @@ class Store:
                     sample_scope,
                     forward_horizon_trade_days
                 )
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l3_gene_mirror (
+                entity_scope                     VARCHAR NOT NULL,
+                entity_code                      VARCHAR NOT NULL,
+                calc_date                        DATE    NOT NULL,
+                entity_name                      VARCHAR,
+                source_table                     VARCHAR NOT NULL,
+                price_source_kind                VARCHAR NOT NULL,
+                current_wave_direction           VARCHAR,
+                current_wave_role                VARCHAR,
+                current_wave_start_date          DATE,
+                current_wave_terminal_price      DOUBLE,
+                current_wave_signed_return_pct   DOUBLE,
+                current_wave_age_trade_days      INTEGER,
+                current_wave_magnitude_pct       DOUBLE,
+                current_wave_extreme_density     DOUBLE,
+                current_wave_history_sample_size INTEGER,
+                current_wave_magnitude_percentile DOUBLE,
+                current_wave_duration_percentile DOUBLE,
+                current_wave_extreme_density_percentile DOUBLE,
+                current_wave_magnitude_band      VARCHAR,
+                current_wave_duration_band       VARCHAR,
+                current_wave_age_band            VARCHAR,
+                latest_confirmed_turn_type       VARCHAR,
+                latest_two_b_confirm_type        VARCHAR,
+                gene_score                       DOUBLE,
+                primary_ruler_metric             VARCHAR,
+                primary_ruler_value              DOUBLE,
+                primary_ruler_rank               INTEGER,
+                primary_ruler_percentile         DOUBLE,
+                mirror_gene_rank                 INTEGER,
+                mirror_gene_percentile           DOUBLE,
+                composite_decision_tag           VARCHAR,
+                support_rise_ratio               DOUBLE,
+                support_strong_ratio             DOUBLE,
+                support_new_high_ratio           DOUBLE,
+                support_amount_vs_ma20           DOUBLE,
+                support_return_5d                DOUBLE,
+                support_return_20d               DOUBLE,
+                support_follow_through           DOUBLE,
+                created_at                       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (entity_scope, entity_code, calc_date)
             )
             """,
             # L4

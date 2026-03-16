@@ -45,6 +45,10 @@ G4_WEAK_COMPONENT = "WEAK_COMPONENT"
 G4_KEEP_COMPOSITE = "KEEP_COMPOSITE"
 G4_SUMMARY_ONLY = "SUMMARY_ONLY"
 G4_DOWNGRADE_COMPONENT_PANEL = "DOWNGRADE_COMPONENT_PANEL"
+G5_SCOPE_MARKET = "MARKET"
+G5_SCOPE_INDUSTRY = "INDUSTRY"
+G5_PRICE_SOURCE_OHLC = "OHLC_NATIVE"
+G5_PRICE_SOURCE_SYNTHETIC = "SYNTHETIC_CLOSE_ONLY"
 
 
 @dataclass(frozen=True)
@@ -1361,6 +1365,375 @@ def compute_gene_validation(store: Store, calc_date: date) -> int:
         return 0
     validation_df = _attach_validation_decisions(pd.DataFrame(rows))
     return store.bulk_upsert("l3_gene_validation_eval", validation_df)
+
+
+def _ratio_or_nan(numerator: float | int | None, denominator: float | int | None) -> float | None:
+    if numerator is None or denominator is None or pd.isna(numerator) or pd.isna(denominator):
+        return None
+    numerator_float = float(numerator)
+    denominator_float = float(denominator)
+    if not np.isfinite(numerator_float) or not np.isfinite(denominator_float) or denominator_float == 0.0:
+        return None
+    return float(numerator_float / denominator_float)
+
+
+def _load_market_mirror_input(store: Store, start: date, end: date) -> pd.DataFrame:
+    frame = store.read_df(
+        """
+        SELECT
+            ('MARKET::' || ts_code) AS code,
+            date,
+            CAST(open AS DOUBLE) AS adj_open,
+            CAST(high AS DOUBLE) AS adj_high,
+            CAST(low AS DOUBLE) AS adj_low,
+            CAST(close AS DOUBLE) AS adj_close,
+            CAST(COALESCE(volume, 0.0) AS DOUBLE) AS volume,
+            CAST(COALESCE(amount, 0.0) AS DOUBLE) AS amount,
+            CAST(COALESCE(pct_chg, 0.0) AS DOUBLE) AS pct_chg,
+            ? AS entity_scope,
+            ts_code AS entity_code,
+            ts_code AS entity_name,
+            'l1_index_daily' AS source_table,
+            ? AS price_source_kind
+        FROM l1_index_daily
+        WHERE date BETWEEN ? AND ?
+        ORDER BY ts_code, date
+        """,
+        (G5_SCOPE_MARKET, G5_PRICE_SOURCE_OHLC, start, end),
+    )
+    if frame.empty:
+        return frame
+    frame["date"] = pd.to_datetime(frame["date"]).dt.date
+    return frame
+
+
+def _load_industry_mirror_input(store: Store, start: date, end: date) -> pd.DataFrame:
+    frame = store.read_df(
+        """
+        SELECT
+            industry,
+            date,
+            CAST(COALESCE(pct_chg, 0.0) AS DOUBLE) AS pct_chg,
+            CAST(COALESCE(amount, 0.0) AS DOUBLE) AS amount,
+            CAST(COALESCE(stock_count, 0) AS DOUBLE) AS stock_count
+        FROM l2_industry_daily
+        WHERE date BETWEEN ? AND ?
+        ORDER BY industry, date
+        """,
+        (start, end),
+    )
+    if frame.empty:
+        return frame
+
+    rows: list[pd.DataFrame] = []
+    for industry, part in frame.groupby("industry", sort=True):
+        entity = part.sort_values("date").copy()
+        entity["pct_chg"] = pd.to_numeric(entity["pct_chg"], errors="coerce").fillna(0.0)
+        returns = entity["pct_chg"] / 100.0
+        synthetic_close = (1.0 + returns).cumprod() * 100.0
+        synthetic_open = synthetic_close.shift(1).fillna(synthetic_close)
+        synthetic_swing = synthetic_open * returns.abs() * 0.25
+
+        entity["adj_open"] = synthetic_open
+        entity["adj_close"] = synthetic_close
+        entity["adj_high"] = np.maximum(synthetic_open, synthetic_close) + synthetic_swing
+        entity["adj_low"] = np.maximum(np.minimum(synthetic_open, synthetic_close) - synthetic_swing, 0.01)
+        entity["volume"] = pd.to_numeric(entity["stock_count"], errors="coerce").fillna(0.0)
+        entity["code"] = f"INDUSTRY::{industry}"
+        entity["entity_scope"] = G5_SCOPE_INDUSTRY
+        entity["entity_code"] = industry
+        entity["entity_name"] = industry
+        entity["source_table"] = "l2_industry_daily"
+        entity["price_source_kind"] = G5_PRICE_SOURCE_SYNTHETIC
+        rows.append(
+            entity[
+                [
+                    "code",
+                    "date",
+                    "adj_open",
+                    "adj_high",
+                    "adj_low",
+                    "adj_close",
+                    "volume",
+                    "amount",
+                    "pct_chg",
+                    "entity_scope",
+                    "entity_code",
+                    "entity_name",
+                    "source_table",
+                    "price_source_kind",
+                ]
+            ].copy()
+        )
+
+    mirror_input = _concat_sparse_frames(rows)
+    if mirror_input.empty:
+        return mirror_input
+    mirror_input["date"] = pd.to_datetime(mirror_input["date"]).dt.date
+    return mirror_input
+
+
+def _load_g5_mirror_input(store: Store, start: date, end: date) -> pd.DataFrame:
+    return _concat_sparse_frames(
+        [
+            _load_market_mirror_input(store, start, end),
+            _load_industry_mirror_input(store, start, end),
+        ]
+    )
+
+
+def _load_market_support_metrics(store: Store, calc_date: date) -> dict[str, float | None]:
+    frame = store.read_df(
+        """
+        SELECT
+            total_stocks,
+            rise_count,
+            strong_up_count,
+            new_100d_high_count
+        FROM l2_market_snapshot
+        WHERE date = ?
+        """,
+        (calc_date,),
+    )
+    if frame.empty:
+        return {
+            "support_rise_ratio": None,
+            "support_strong_ratio": None,
+            "support_new_high_ratio": None,
+        }
+    row = frame.iloc[0]
+    total_stocks = row["total_stocks"]
+    return {
+        "support_rise_ratio": _ratio_or_nan(row["rise_count"], total_stocks),
+        "support_strong_ratio": _ratio_or_nan(row["strong_up_count"], total_stocks),
+        "support_new_high_ratio": _ratio_or_nan(row["new_100d_high_count"], total_stocks),
+    }
+
+
+def _load_industry_support_metrics(store: Store, calc_date: date) -> pd.DataFrame:
+    frame = store.read_df(
+        """
+        SELECT
+            d.industry AS entity_code,
+            d.stock_count,
+            d.rise_count,
+            d.amount,
+            d.amount_ma20,
+            d.return_5d,
+            d.return_20d,
+            s.strong_stock_ratio,
+            s.new_high_count,
+            s.leader_follow_through
+        FROM l2_industry_daily d
+        LEFT JOIN l2_industry_structure_daily s
+          ON s.industry = d.industry
+         AND s.date = d.date
+        WHERE d.date = ?
+        ORDER BY d.industry
+        """,
+        (calc_date,),
+    )
+    if frame.empty:
+        return frame
+
+    frame = frame.copy()
+    frame["support_rise_ratio"] = [
+        _ratio_or_nan(rise_count, stock_count)
+        for rise_count, stock_count in zip(frame["rise_count"], frame["stock_count"], strict=False)
+    ]
+    frame["support_strong_ratio"] = pd.to_numeric(frame["strong_stock_ratio"], errors="coerce")
+    frame["support_new_high_ratio"] = [
+        _ratio_or_nan(new_high_count, stock_count)
+        for new_high_count, stock_count in zip(frame["new_high_count"], frame["stock_count"], strict=False)
+    ]
+    frame["support_amount_vs_ma20"] = [
+        _ratio_or_nan(amount, amount_ma20)
+        for amount, amount_ma20 in zip(frame["amount"], frame["amount_ma20"], strict=False)
+    ]
+    frame["support_return_5d"] = pd.to_numeric(frame["return_5d"], errors="coerce")
+    frame["support_return_20d"] = pd.to_numeric(frame["return_20d"], errors="coerce")
+    frame["support_follow_through"] = pd.to_numeric(frame["leader_follow_through"], errors="coerce")
+    return frame[
+        [
+            "entity_code",
+            "support_rise_ratio",
+            "support_strong_ratio",
+            "support_new_high_ratio",
+            "support_amount_vs_ma20",
+            "support_return_5d",
+            "support_return_20d",
+            "support_follow_through",
+        ]
+    ].copy()
+
+
+def _resolve_mirror_policy(store: Store, calc_date: date) -> dict[str, str]:
+    default_policy = {
+        "primary_ruler_metric": "duration_percentile",
+        "composite_decision_tag": G4_KEEP_COMPOSITE,
+    }
+    frame = store.read_df(
+        """
+        SELECT metric_name, decision_tag
+        FROM l3_gene_validation_eval
+        WHERE calc_date = ?
+          AND sample_scope = ?
+        ORDER BY metric_name
+        """,
+        (calc_date, G4_VALIDATION_SAMPLE_SCOPE),
+    )
+    if frame.empty:
+        return default_policy
+
+    primary_rows = frame.loc[frame["decision_tag"] == G4_PRIMARY_RULER]
+    if not primary_rows.empty:
+        default_policy["primary_ruler_metric"] = str(primary_rows.iloc[0]["metric_name"])
+
+    composite_rows = frame.loc[frame["metric_name"] == "gene_score"]
+    if not composite_rows.empty:
+        decision = str(composite_rows.iloc[0]["decision_tag"])
+        if decision:
+            default_policy["composite_decision_tag"] = decision
+    return default_policy
+
+
+def _apply_mirror_ranks(mirror_df: pd.DataFrame) -> pd.DataFrame:
+    if mirror_df.empty:
+        return mirror_df
+    ranked = mirror_df.copy()
+    group_cols = ["calc_date", "entity_scope"]
+    ranked["mirror_gene_rank"] = (
+        ranked.groupby(group_cols)["gene_score"].rank(method="dense", ascending=False).astype("Int64")
+    )
+    ranked["mirror_gene_percentile"] = ranked.groupby(group_cols)["gene_score"].rank(method="max", pct=True) * 100.0
+    ranked["primary_ruler_rank"] = (
+        ranked.groupby(group_cols)["primary_ruler_value"].rank(method="dense", ascending=False).astype("Int64")
+    )
+    ranked["primary_ruler_percentile"] = (
+        ranked.groupby(group_cols)["primary_ruler_value"].rank(method="max", pct=True) * 100.0
+    )
+    return ranked
+
+
+def compute_gene_mirror(store: Store, calc_date: date) -> int:
+    start = _lookback_trade_start(store, calc_date, GENE_LOOKBACK_TRADE_DAYS)
+    mirror_input = _load_g5_mirror_input(store, start, calc_date)
+    store.conn.execute("DELETE FROM l3_gene_mirror WHERE calc_date = ?", [calc_date])
+    if mirror_input.empty:
+        return 0
+
+    snapshot_frames: list[pd.DataFrame] = []
+    for _, group in mirror_input.groupby("code", sort=True):
+        entity_frame = group.reset_index(drop=True).copy()
+        snapshot_df, _, _, _ = _build_code_gene_payload(entity_frame)
+        if snapshot_df.empty:
+            continue
+        final_snapshot = snapshot_df.loc[snapshot_df["calc_date"] == calc_date].copy()
+        if final_snapshot.empty:
+            continue
+        meta = entity_frame.iloc[0]
+        final_snapshot["entity_scope"] = str(meta["entity_scope"])
+        final_snapshot["entity_code"] = str(meta["entity_code"])
+        final_snapshot["entity_name"] = str(meta["entity_name"])
+        final_snapshot["source_table"] = str(meta["source_table"])
+        final_snapshot["price_source_kind"] = str(meta["price_source_kind"])
+        snapshot_frames.append(final_snapshot)
+
+    if not snapshot_frames:
+        return 0
+
+    mirror_df = _concat_sparse_frames(snapshot_frames)
+    policy = _resolve_mirror_policy(store, calc_date)
+    primary_ruler_metric = str(policy["primary_ruler_metric"])
+    primary_column_map = {
+        "magnitude_percentile": "current_wave_magnitude_percentile",
+        "duration_percentile": "current_wave_duration_percentile",
+        "extreme_density_percentile": "current_wave_extreme_density_percentile",
+        "gene_score": "gene_score",
+    }
+    primary_ruler_column = primary_column_map.get(primary_ruler_metric, "current_wave_duration_percentile")
+    mirror_df["primary_ruler_metric"] = primary_ruler_metric
+    mirror_df["primary_ruler_value"] = pd.to_numeric(mirror_df[primary_ruler_column], errors="coerce")
+    mirror_df["composite_decision_tag"] = str(policy["composite_decision_tag"])
+
+    market_support = _load_market_support_metrics(store, calc_date)
+    for column in [
+        "support_rise_ratio",
+        "support_strong_ratio",
+        "support_new_high_ratio",
+        "support_amount_vs_ma20",
+        "support_return_5d",
+        "support_return_20d",
+        "support_follow_through",
+    ]:
+        if column not in mirror_df.columns:
+            mirror_df[column] = np.nan
+
+    market_mask = mirror_df["entity_scope"] == G5_SCOPE_MARKET
+    for column, value in market_support.items():
+        mirror_df.loc[market_mask, column] = value
+
+    industry_support = _load_industry_support_metrics(store, calc_date)
+    if not industry_support.empty:
+        mirror_df = mirror_df.merge(industry_support, on="entity_code", how="left", suffixes=("", "_industry"))
+        for column in [
+            "support_rise_ratio",
+            "support_strong_ratio",
+            "support_new_high_ratio",
+            "support_amount_vs_ma20",
+            "support_return_5d",
+            "support_return_20d",
+            "support_follow_through",
+        ]:
+            industry_column = f"{column}_industry"
+            if industry_column in mirror_df.columns:
+                fill_mask = mirror_df[industry_column].notna()
+                if fill_mask.any():
+                    mirror_df.loc[fill_mask, column] = mirror_df.loc[fill_mask, industry_column]
+                mirror_df = mirror_df.drop(columns=[industry_column])
+
+    mirror_df = _apply_mirror_ranks(mirror_df)
+    output_columns = [
+        "entity_scope",
+        "entity_code",
+        "calc_date",
+        "entity_name",
+        "source_table",
+        "price_source_kind",
+        "current_wave_direction",
+        "current_wave_role",
+        "current_wave_start_date",
+        "current_wave_terminal_price",
+        "current_wave_signed_return_pct",
+        "current_wave_age_trade_days",
+        "current_wave_magnitude_pct",
+        "current_wave_extreme_density",
+        "current_wave_history_sample_size",
+        "current_wave_magnitude_percentile",
+        "current_wave_duration_percentile",
+        "current_wave_extreme_density_percentile",
+        "current_wave_magnitude_band",
+        "current_wave_duration_band",
+        "current_wave_age_band",
+        "latest_confirmed_turn_type",
+        "latest_two_b_confirm_type",
+        "gene_score",
+        "primary_ruler_metric",
+        "primary_ruler_value",
+        "primary_ruler_rank",
+        "primary_ruler_percentile",
+        "mirror_gene_rank",
+        "mirror_gene_percentile",
+        "composite_decision_tag",
+        "support_rise_ratio",
+        "support_strong_ratio",
+        "support_new_high_ratio",
+        "support_amount_vs_ma20",
+        "support_return_5d",
+        "support_return_20d",
+        "support_follow_through",
+    ]
+    return store.bulk_upsert("l3_gene_mirror", mirror_df[output_columns].copy())
 
 
 def _concat_sparse_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:

@@ -1,6 +1,6 @@
 # G5 卡: 指数/行业/大盘镜像尺
 
-**状态**: `Opened`  
+**状态**: `Completed`  
 **日期**: `2026-03-16`
 
 ---
@@ -51,3 +51,33 @@
 1. 不直接复活旧 `MSS / IRS` 逻辑
 2. 不把宽度、均线、成交量抬成第一层对象
 3. 不在本卡讨论具体执行信号
+
+---
+
+## 7. 结案结论
+
+本卡已完成。  
+当前第四战场已经把 `G5` 所需的镜像层正式落到 `l3_gene_mirror`：
+
+1. 市场层：
+   - 使用 `l1_index_daily`
+   - 当前主库第一版以 `000001.SH` 为市场镜像对象
+   - 保留 `rise_ratio / strong_ratio / new_high_ratio` 作为辅助确认
+2. 行业层：
+   - 使用 `l2_industry_daily`
+   - 以 `pct_chg` 复合出 `synthetic close-only` 价格对象
+   - 当前先保留 `rise_ratio` 为稳定辅助字段
+3. 镜像表固定同时暴露：
+   - `mirror_gene_rank`
+   - `primary_ruler_rank`
+   - `composite_decision_tag`
+   - `price_source_kind`
+
+截至 `2026-02-24` 的主库真实读数表明：
+
+1. `G4` 的 `duration_percentile = PRIMARY_RULER` 已正式镜像到市场层与行业层
+2. 行业 `composite rank` 与 `primary_ruler rank` 明显不完全相同，不能偷简化成单榜
+3. 当前可稳定进入镜像层的辅助确认工具，是市场/行业宽度比率而不是旧 `MSS / IRS` 语义包
+4. `amount_vs_ma20 / return_20d / follow_through` 字段当前先保留为预留列，不提升为第一版稳定主辅助集
+
+下一张主线卡应按顺序进入 `G6 / BOF-PB-CPB conditioning readout`。
