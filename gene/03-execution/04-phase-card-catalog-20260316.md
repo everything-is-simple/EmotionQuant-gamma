@@ -12,10 +12,11 @@
 1. 必选主线卡 `9` 张：`G0 ~ G8`
 2. 可选条件卡 `2` 张：`GX1 ~ GX2`
 
-如果按“当前还没开的卡”计算：
+当前状态：
 
-1. `G0 / G1` 已开
-2. 本轮一起补开 `G2 ~ G8` 与 `GX1 ~ GX2`
+1. 已完成：`G0 / G1`
+2. 已开未做：`G2 ~ G8`
+3. 条件卡待触发：`GX1 / GX2`
 
 ---
 
@@ -23,10 +24,10 @@
 
 1. `G0 / wave-ruler opening scaffold`
    - 作用：搭对象层脚手架与正式表合同
-   - 状态：`Opened`
+   - 状态：`Completed`
 2. `G1 / factor attribution baseline`
    - 作用：先回答 `magnitude / duration / extreme_density` 谁更硬
-   - 状态：`Opened`
+   - 状态：`Completed`
 3. `G2 / percentile band calibration`
    - 作用：把 `65 / 95` 做成历史分布带，而不是新参数森林
    - 状态：`Opened`
