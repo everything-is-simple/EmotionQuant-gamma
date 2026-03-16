@@ -1,6 +1,6 @@
 # G8 卡: 第四战场收口
 
-**状态**: `Opened`  
+**状态**: `Completed`  
 **日期**: `2026-03-16`
 
 ---
@@ -51,3 +51,17 @@
 1. 不在本卡再开新方向
 2. 不把所有历史草案继续留在正式入口
 3. 不跳过 `G7` 就提前宣布收官
+
+---
+
+## 7. 结案结论
+
+本卡完成后，第四战场正式写定：
+
+1. `all_defined_gene_main_queue_cards_closed = yes`
+2. `all_formal_gene_records_closed = yes`
+3. `active_gene_main_queue = none`
+4. `current_gene_boundary = historical_wave_ruler_plus_mirror_ruler_plus_conditioning_readout_plus_mss_irs_retire_boundary`
+5. `gx1_status = conditional_only`
+6. `gx2_status = conditional_only`
+7. `future_gene_reentry_requires = explicit_mainline_migration_package_or_new_targeted_hypothesis`

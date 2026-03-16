@@ -14,9 +14,9 @@
 
 当前状态：
 
-1. 已完成：`G0 / G1 / G2 / G3 / G4 / G5 / G6 / G7`
-2. 已开未做：`G8`
-3. 条件卡待触发：`GX1 / GX2`
+1. 已完成：`G0 / G1 / G2 / G3 / G4 / G5 / G6 / G7 / G8`
+2. 当前主线队列：`none`
+3. 条件卡状态：`GX1 / GX2 = conditional_only`
 
 ---
 
@@ -48,7 +48,7 @@
    - 状态：`Completed`
 9. `G8 / gene campaign closeout`
    - 作用：冻结第四战场最终交付与边界
-   - 状态：`Opened`
+   - 状态：`Completed`
 
 ---
 
@@ -56,10 +56,10 @@
 
 1. `GX1 / targeted detector rewrite`
    - 触发条件：现有 `pivot / turn / 2B` 检测器的一致性不足，已阻塞 `G3`
-   - 状态：`Opened`
+   - 状态：`Conditional only`
 2. `GX2 / targeted migration package`
    - 触发条件：第四战场结论需要集中迁移旧表、旧脚本或旧文档入口
-   - 状态：`Opened`
+   - 状态：`Conditional only`
 
 ---
 

@@ -69,16 +69,18 @@
 
 ## 5. 当前目标
 
-第四战场第一阶段只做三件事：
+第四战场第一阶段已正式完成，当前执行状态固定为：
 
-当前执行状态：
+1. 已完成：`G0 / G1 / G2 / G3 / G4 / G5 / G6 / G7 / G8`
+2. 当前主线队列：`none`
+3. 条件卡状态：`GX1 / GX2 = conditional_only`
+4. 如未来继续：`explicit_mainline_migration_package_or_new_targeted_hypothesis`
 
-1. 已完成：`G0 / G1 / G2 / G3 / G4 / G5 / G6 / G7`
-2. 当前下一张主线卡：`G8 / gene campaign closeout`
+本轮正式完成的主线工作可压成三件事：
 
 1. 定义 `趋势 / 波段 / 波段主流 / 趋势逆流 / 转折 / 新高新低`
 2. 用 `波动幅度 + 波动时间 + 新高新低密度` 建立历史波段数据库
-3. 输出个股自历史分位、`z-score` 与横截面排序
+3. 输出个股自历史分位、`z-score` 与横截面排序，并扩展到镜像层与条件层
 
 第一版只消费 `l2_stock_adj_daily`，不依赖 `MSS / IRS`，也不直接进入实时漏斗。
 
@@ -102,6 +104,7 @@
 - `03-execution/10-phase-g7-mss-irs-refactor-or-retire-card-20260316.md`
 - `03-execution/evidence/10-phase-g7-mss-irs-decision-evidence-20260316.md`
 - `03-execution/11-phase-g8-gene-campaign-closeout-card-20260316.md`
+- `03-execution/evidence/11-phase-g8-gene-campaign-closeout-evidence-20260316.md`
 - `03-execution/12-phase-gx1-targeted-detector-rewrite-card-20260316.md`
 - `03-execution/13-phase-gx2-targeted-migration-package-card-20260316.md`
 - `03-execution/records/01-phase-g0-wave-ruler-opening-record-20260316.md`
@@ -114,4 +117,5 @@
 - `03-execution/records/08-phase-g5-market-industry-index-mirror-ruler-record-20260316.md`
 - `03-execution/records/09-phase-g6-bof-pb-cpb-conditioning-record-20260316.md`
 - `03-execution/records/10-phase-g7-mss-irs-refactor-or-retire-record-20260316.md`
+- `03-execution/records/11-phase-g8-gene-campaign-closeout-record-20260316.md`
 - `90-archive/README.md`
