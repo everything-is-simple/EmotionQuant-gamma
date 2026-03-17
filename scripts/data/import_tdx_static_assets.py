@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
+"""导入本地通达信静态资产快照。
+
+这条脚本补的是 vipdoc 没有的三块：
+- raw_stock_basic
+- raw_index_classify
+- raw_index_member
+"""
+
 import argparse
 import struct
 import sys
@@ -271,6 +279,11 @@ def build_stock_basic_records(
     ts_code_to_market: dict[str, str],
     quote_name_map: dict[str, str],
 ) -> list[dict[str, Any]]:
+    # 当前快照版 stock_basic 的装配逻辑：
+    # 1. base.dbf 给主清单
+    # 2. tdxhy.cfg 给行业归属
+    # 3. quotes/fallback 只在本地缓存缺名字时补名称
+    # 4. 最终落成 raw_stock_basic 的当日快照
     records: list[dict[str, Any]] = []
     for row in base_records:
         symbol = str(row.get("GPDM", "")).strip().upper()

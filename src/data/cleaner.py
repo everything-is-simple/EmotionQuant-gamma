@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""L1 -> L2 清洗与聚合层。
+
+fetcher 负责把事实装进 `l1_*`；
+cleaner 负责把这些事实整理成策略稳定消费的 `l2_*` 特征表。
+"""
+
 from datetime import date, timedelta
 
 import numpy as np
@@ -35,6 +41,7 @@ def _rolling_on_valid_days(
 
 
 def clean_stock_adj_daily(store: Store, start: date, end: date) -> int:
+    """构建个股复权日线主表。"""
     _clear_date_range(store, "l2_stock_adj_daily", start, end)
     lookback_start = start - timedelta(days=180)
     raw = store.read_df(
@@ -98,6 +105,8 @@ def clean_stock_adj_daily(store: Store, start: date, end: date) -> int:
 
 
 def _stock_daily_with_info(store: Store, start: date, end: date) -> pd.DataFrame:
+    # 行业字段优先取 `l1_industry_member`，只有缺口时才回退到
+    # `l1_stock_info.industry`，避免旧口径重新抬头。
     return store.read_df(
         """
         SELECT
@@ -143,6 +152,7 @@ def _stock_daily_with_info(store: Store, start: date, end: date) -> pd.DataFrame
 
 
 def clean_industry_daily(store: Store, start: date, end: date) -> int:
+    """把个股日线压成行业日快照。"""
     _clear_date_range(store, "l2_industry_daily", start, end)
     # P2-A 第一批输入扩展只保留行业级中间态：
     # 先在 DuckDB 聚合到 industry/day，再补 20 日均额与 5/20 日收益，

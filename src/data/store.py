@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""DuckDB 存储网关。
+
+这里守住的是系统的数据合同：schema 版本、DDL、迁移、bulk upsert 和
+fetch progress 都从这里统一出入口。
+"""
+
 import json
 import os
 from dataclasses import dataclass
@@ -20,7 +26,7 @@ class SchemaVersion:
 
 
 class Store:
-    """DuckDB unified storage gateway."""
+    """DuckDB 统一存储网关。"""
 
     def __init__(self, db_path: str | Path):
         path = Path(db_path).expanduser().resolve()
@@ -280,6 +286,9 @@ class Store:
             self.conn.execute(sql)
 
     def _migrate_schema_v11_to_v12(self) -> None:
+        # Phase 7B：活跃行业成员合同从 `l1_sw_industry_member`
+        # 收口到 `l1_industry_member`。迁移时保留旧表，
+        # 只复制数据和 fetch progress，保证旧库平滑升级。
         self.conn.execute(
             """
             CREATE TABLE IF NOT EXISTS l1_industry_member (
@@ -1737,6 +1746,8 @@ class Store:
 
     @staticmethod
     def _canonical_fetch_progress_key(data_type: str) -> str:
+        # 外部合同已经统一成 `industry_member`，
+        # 这里只保留旧进度键的内部兼容。
         mapping = {
             "sw_industry_member": "industry_member",
         }

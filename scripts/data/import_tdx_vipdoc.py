@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
+"""导入本地通达信 vipdoc 日线主底座。
+
+这条脚本只负责三张 raw 表：
+- raw_daily
+- raw_index_daily
+- raw_trade_cal
+"""
+
 import struct
 import sys
 from collections import defaultdict
@@ -145,6 +153,8 @@ def build_trade_calendar(trade_dates: set[str]) -> list[dict[str, object]]:
 
 
 def run() -> int:
+    # 走线：
+    # `vipdoc/*.day -> 识别股票/指数 -> 组装 raw 记录 -> 批量写入 raw DuckDB`
     parser = build_parser()
     args = parser.parse_args()
 

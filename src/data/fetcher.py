@@ -1,5 +1,13 @@
 from __future__ import annotations
 
+"""数据抓取与 raw/L1 装载主入口。
+
+当前主线已经切到 `TDX local-first`：
+1. `vipdoc/T0002` 是历史主底座。
+2. `BaoStock/TuShare` 只做补洞和保底。
+3. 本模块负责把 provider/raw source 统一装进 `l1_*`，供 cleaner 继续生成 `l2_*`。
+"""
+
 import logging
 import time
 from abc import ABC, abstractmethod
@@ -34,7 +42,7 @@ def _to_yyyymmdd(d: date) -> str:
 
 
 def _canonical_fetch_data_type(data_type: str) -> str:
-    """Collapse legacy public aliases into the current runtime contract."""
+    """把历史公开别名折叠成当前正式数据类型。"""
     normalized = str(data_type).strip()
     if normalized == "sw_industry_member":
         return "industry_member"
@@ -42,7 +50,7 @@ def _canonical_fetch_data_type(data_type: str) -> str:
 
 
 def _canonical_target_table(table_name: str) -> str:
-    """Keep old table names readable by internal callers without exposing them publicly."""
+    """把旧目标表名映射到当前运行表名。"""
     normalized = str(table_name).strip()
     if normalized == "l1_sw_industry_member":
         return "l1_industry_member"
@@ -50,6 +58,7 @@ def _canonical_target_table(table_name: str) -> str:
 
 
 def _apply_local_price_limits(store: Store, start: date, end: date) -> None:
+    """按本地 A 股规则回填 `up_limit/down_limit`。"""
     # Phase 7B: 涨跌停口径本地化，不再依赖在线 limit 表。
     # 规则来源采用仓库本地 A 股规则参考：
     # - ST: 5%
@@ -482,6 +491,7 @@ def bootstrap_l1_from_raw_duckdb(
     end: date,
     refresh_stock_info_only: bool = False,
 ) -> RawBootstrapResult:
+    """把 raw DuckDB 装载成执行库 L1。"""
     source = Path(source_db).expanduser().resolve()
     if not source.exists():
         raise FileNotFoundError(f"Raw DuckDB source not found: {source}")
@@ -880,6 +890,7 @@ def fetch_incremental(
     start: date | None = None,
     end: date | None = None,
 ) -> int:
+    """统一增量抓取入口。"""
     canonical_data_type = _canonical_fetch_data_type(data_type)
     canonical_target_table = _canonical_target_table(target_table)
     end_date = end or date.today()
