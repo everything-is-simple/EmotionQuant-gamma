@@ -5,6 +5,10 @@ import sys
 from datetime import date
 from pathlib import Path
 
+# Phase 6B 正式验证 runner。
+# 作用是把“统一默认系统候选”按固定窗口跑成一份 end-to-end validation
+# evidence，供 Phase 6 record / gate decision 使用。
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))

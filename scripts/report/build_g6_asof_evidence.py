@@ -7,6 +7,10 @@ from pathlib import Path
 
 import duckdb
 
+# 本脚本服务第四战场 G6：
+# 核对 raw_stock_basic 作为 as-of 源时，落到 l1_stock_info 后的覆盖率、
+# 时滞和 list_status 分布，并输出成专项 evidence JSON。
+
 
 @dataclass(frozen=True)
 class CoverageStats:

@@ -1,3 +1,5 @@
+# TEMP_PATH cleanup entrypoint.
+# Removes cache and temporary artifacts while protecting repo and data roots.
 [CmdletBinding()]
 param(
     [switch]$DryRun,

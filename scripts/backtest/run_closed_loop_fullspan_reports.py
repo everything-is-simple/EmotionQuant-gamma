@@ -9,6 +9,10 @@ from pathlib import Path
 
 import pandas as pd
 
+# 长窗闭环报告导出器。
+# 这支脚本不服务默认 runtime，而是把指定配置族在长时间窗内跑成
+# 年度摘要、逐笔 roundtrip、腿级明细和拒单统计，供人工复盘。
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 import sys

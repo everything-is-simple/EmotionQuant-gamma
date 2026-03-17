@@ -1,3 +1,5 @@
+# Environment bootstrap entrypoint.
+# Creates .venv, initializes .env, prepares data/temp roots, and installs deps.
 [CmdletBinding()]
 param(
     [switch]$IncludeFileOps,

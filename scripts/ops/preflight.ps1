@@ -1,4 +1,5 @@
-# Unified development preflight.
+# Unified preflight entrypoint.
+# Runs docs/config/path/lint/test checks by profile before commit or push.
 param(
     [switch]$Quiet,
     [switch]$DocsOnly,
