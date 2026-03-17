@@ -79,6 +79,7 @@
 - `03-execution/12-phase-6a-promoted-subset-freeze-card-20260317.md`
 - `03-execution/13-phase-6b-integrated-end-to-end-validation-card-20260317.md`
 - `03-execution/14-phase-6c-unified-operating-runbook-refresh-card-20260317.md`
+- `03-execution/15-phase-7-data-provider-refactor-card-20260317.md`
 
 它们分别负责：
 
@@ -176,6 +177,7 @@
 15. `12-phase-6a-promoted-subset-freeze-card-20260317.md`
 16. `13-phase-6b-integrated-end-to-end-validation-card-20260317.md`
 17. `14-phase-6c-unified-operating-runbook-refresh-card-20260317.md`
+18. `15-phase-7-data-provider-refactor-card-20260317.md`
 
 当前冻结后的使用顺序固定为：
 
