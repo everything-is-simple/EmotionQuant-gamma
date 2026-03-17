@@ -157,6 +157,11 @@ def _load_gene_input(store: Store, start: date, end: date) -> pd.DataFrame:
     )
 
 
+# 先做“全局极值突破事件”的粗扫描，不立刻按 wave 切分。
+# 这样做是因为 2B 的识别本质上要先知道：
+# 1. 哪个 bar 刚刚突破了旧极值
+# 2. 它在短确认窗里有没有失败回落
+# 后面 `_extract_wave_events()` 再把这些候选事件裁切回各自所属的 wave。
 def _build_extreme_candidates(frame: pd.DataFrame, direction: WaveDirection) -> list[ExtremeCandidate]:
     dates = pd.to_datetime(frame["date"]).dt.date.to_list()
     highs = pd.to_numeric(frame["adj_high"], errors="coerce").to_numpy(dtype=float)
@@ -205,6 +210,8 @@ def _build_extreme_candidates(frame: pd.DataFrame, direction: WaveDirection) -> 
     return candidates
 
 
+# 左右各看固定数量 bar，只接受真正局部占优的高点。
+# 这是故意保守的写法：宁可漏掉一些边缘拐点，也要减少噪声 pivot。
 def _is_swing_high(highs: np.ndarray, idx: int) -> bool:
     left = highs[idx - PIVOT_NEIGHBOR_BARS : idx]
     right = highs[idx + 1 : idx + PIVOT_NEIGHBOR_BARS + 1]
@@ -214,6 +221,7 @@ def _is_swing_high(highs: np.ndarray, idx: int) -> bool:
     return bool(current >= float(np.nanmax(left)) and current > float(np.nanmax(right)))
 
 
+# 与 swing high 对称：寻找局部低点，并要求右侧已经出现回升。
 def _is_swing_low(lows: np.ndarray, idx: int) -> bool:
     left = lows[idx - PIVOT_NEIGHBOR_BARS : idx]
     right = lows[idx + 1 : idx + PIVOT_NEIGHBOR_BARS + 1]
@@ -223,6 +231,8 @@ def _is_swing_low(lows: np.ndarray, idx: int) -> bool:
     return bool(current <= float(np.nanmin(left)) and current < float(np.nanmin(right)))
 
 
+# 补一个“反向 seed pivot”，保证第一段 completed wave 有合法起点。
+# 否则真实扫描出来的第一个确认 pivot 往往只像一个终点，无法形成完整波段。
 def _seed_initial_pivot(frame: pd.DataFrame, first_pivot: PivotPoint | None) -> PivotPoint:
     dates = pd.to_datetime(frame["date"]).dt.date.to_list()
     highs = pd.to_numeric(frame["adj_high"], errors="coerce").to_numpy(dtype=float)
@@ -395,6 +405,9 @@ def _distribution_band(value: float, thresholds: dict[str, float | int]) -> str:
     return G2_BAND_EXTREME
 
 
+# 只做“时间归属”，不重新识别事件：
+# 发生在当前 start_index..end_index 内的 extreme candidate，
+# 就记入当前 completed wave 的事件账本。
 def _extract_wave_events(
     code: str,
     wave_id: str,
@@ -441,6 +454,9 @@ def _extract_wave_events(
     return rows, failure_count, last.event_date, float(last.price)
 
 
+# completed wave 由相邻、异侧、已确认的两个 pivot 配对得到。
+# 这一层只描述波段本体：起点、终点、幅度、时长、事件密度；
+# 1-2-3 / 2B 等高层结构语义在下一层叠加。
 def _build_wave_rows(
     code: str,
     pivots: list[PivotPoint],
@@ -508,6 +524,8 @@ def _build_wave_rows(
     return waves, events
 
 
+# 这里构造的是“wave 账本内部”的方向上下文，不是市场级趋势模型。
+# 目的只是给后面的 reversal / countertrend 标签一个稳定坐标系。
 def _assign_wave_trend_context(waves: list[dict[str, object]]) -> None:
     major_trend = "UNSET"
     highest_up_end: float | None = None
@@ -554,6 +572,8 @@ def _wave_for_date(waves: list[dict[str, object]], event_date: date | None) -> d
     return None
 
 
+# 结构事件是后加进去的，不能再信原始序号。
+# 统一重排一次，保证最终 event ledger 顺序稳定、可审计。
 def _renumber_wave_events(events: list[dict[str, object]]) -> list[dict[str, object]]:
     ordered = sorted(
         events,
@@ -587,7 +607,9 @@ def _apply_structure_labels(waves: list[dict[str, object]], events: list[dict[st
 
     structure_events: list[dict[str, object]] = []
 
-    # Pass 1: convert failed extremes into 2B confirmations on the target wave.
+    # Pass 1:
+    # 先把“突破后失败”的 extreme 事件翻译成 2B 结构确认，
+    # 并把确认结果记到 failure 所在的目标 wave 上。
     for event in events:
         failure_date = event.get("failure_date")
         if failure_date is None:
@@ -628,7 +650,9 @@ def _apply_structure_labels(waves: list[dict[str, object]], events: list[dict[st
             }
         )
 
-    # Pass 2: scan A-B-C wave triples for 1-2-3 structure confirmation.
+    # Pass 2:
+    # 再扫描连续三段交替 wave，寻找 1-2-3 反转结构。
+    # 这里要求 C 真正突破 A 的末端极值，B 仍保持为有效中继/回撤。
     for idx in range(2, len(waves)):
         wave_a = waves[idx - 2]
         wave_b = waves[idx - 1]
@@ -727,6 +751,8 @@ def _apply_structure_labels(waves: list[dict[str, object]], events: list[dict[st
 
 # 这里只拿“同方向、已完成”的历史波段做比较，
 # 避免把上涨波段和下跌波段混在一起，导致百分位失真。
+# 自历史评分只拿“当前波段之前、同方向、已完成”的 wave 做参照。
+# 这样 percentile 的语义才稳定，不会把上涨和下跌的分布混在一起。
 def _apply_wave_history_scores(waves: list[dict[str, object]]) -> None:
     """只拿同方向历史 completed wave 给当前波段做自历史评分。"""
 
@@ -764,6 +790,8 @@ def _apply_wave_history_scores(waves: list[dict[str, object]]) -> None:
         history.append(wave)
 
 
+# active wave 从“最近一个已经确认的 pivot”起算，
+# 后面只增量推进，不回头全表重扫。
 def _initial_active_state(
     pivot: PivotPoint,
     direction: WaveDirection,
@@ -778,6 +806,9 @@ def _initial_active_state(
     )
 
 
+# 把 active state 推进到当前 bar：
+# 1. 吞掉截至当前 bar 已出现的 extreme 事件
+# 2. 再吞掉截至当前 bar 已确认失败的 2B failure
 def _advance_active_state(state: ActiveWaveState, current_index: int) -> None:
     while state.next_event_ptr < len(state.event_candidates):
         event = state.event_candidates[state.next_event_ptr]
@@ -800,6 +831,9 @@ def _advance_active_state(state: ActiveWaveState, current_index: int) -> None:
         state.two_b_failure_count += 1
 
 
+# 当前 composite 很克制：只是把三个 percentile 取均值，
+# 再按方向投射到 bull_score / bear_score。
+# 这正是 G4 要验证的对象：它能不能当主尺，还是只能做汇总视图。
 def _gene_score_from_percentiles(
     magnitude_percentile: float,
     duration_percentile: float,
@@ -814,6 +848,8 @@ def _gene_score_from_percentiles(
 
 # snapshot 是 Gene 真正给运行时使用的对象：
 # 每个交易日只关心当前 active wave 在自历史中的位置，以及已经确认的结构标签。
+# snapshot 是 Gene 真正给运行时/面板消费的对象：
+# 每个交易日都把“当前 active wave 在自历史里的位置”压成一行。
 def _build_daily_snapshots(
     code: str,
     frame: pd.DataFrame,
@@ -853,8 +889,8 @@ def _build_daily_snapshots(
     snapshots: list[dict[str, object]] = []
 
     for idx, calc_date in enumerate(dates):
-        # Completed waves only become valid historical reference samples after their
-        # confirmation bar has passed.
+        # 只有当 end pivot 的 confirm bar 已经过了，这段 completed wave
+        # 才允许进入历史参照池。否则会把“尚未确认”的结构提前泄露给 snapshot。
         while wave_cursor < len(waves) and int(waves[wave_cursor]["end_confirm_index"]) <= idx:
             completed = waves[wave_cursor]
             completed_by_direction[str(completed["direction"])].append(completed)
@@ -868,7 +904,8 @@ def _build_daily_snapshots(
                 latest_two_b_confirm_date = completed["two_b_confirm_date"]
             wave_cursor += 1
 
-        # Once the next pivot is confirmed, the active-wave anchor advances.
+        # 一旦下一个 pivot 已确认，active wave 的锚点就前移。
+        # 这代表“当前活跃波段”的起点被重置为最新确认拐点。
         while pivot_cursor + 1 < len(pivots) and pivots[pivot_cursor + 1].confirm_index <= idx:
             pivot_cursor += 1
             current_pivot = pivots[pivot_cursor]
@@ -890,6 +927,7 @@ def _build_daily_snapshots(
         magnitude_pct = abs(signed_return_pct)
         age_trade_days = int(idx - active_state.start_index + 1)
         density = float(active_state.extreme_count / max(age_trade_days, 1))
+        # active wave 只跟同方向历史比较，避免上涨/下跌分布混用后失真。
         history = completed_by_direction[direction]
         magnitude_history = [float(item["magnitude_pct"]) for item in history]
         duration_history = [float(item["duration_trade_days"]) for item in history]
@@ -905,6 +943,8 @@ def _build_daily_snapshots(
             density_percentile=float(density_stats["percentile"]),
             direction=direction,
         )
+        # reversal_state 是给下游消费的压缩语义：
+        # 优先级依次是 confirmed turn -> active 2B watch -> countertrend watch -> none。
         if latest_confirmed_turn_type != TURN_CONFIRM_NONE and trend_direction == direction:
             reversal_state = latest_confirmed_turn_type
         elif active_state.two_b_failure_count > 0:
@@ -972,6 +1012,8 @@ def _build_daily_snapshots(
     return snapshots
 
 
+# 横截面 rank 是附加视角，不替代自历史 percentile。
+# 前者回答“今天同方向股票里谁更极端”，后者回答“它在自己历史里多极端”。
 def _apply_cross_section_ranks(snapshot_df: pd.DataFrame) -> pd.DataFrame:
     if snapshot_df.empty:
         return snapshot_df
@@ -1002,6 +1044,8 @@ def _future_terminal_close(closes: np.ndarray) -> float | None:
     return float(finite[-1])
 
 
+# 把未来窗口结果统一翻译成“顺着当前 direction 看”的指标，
+# 这样上涨波段和下跌波段可以放到同一个评估口径里比较。
 def _future_window_metrics(
     direction: WaveDirection,
     end_price: float,
@@ -1036,6 +1080,8 @@ def _future_window_metrics(
     }
 
 
+# G1 不直接拿 snapshot 做样本，而是拿 completed wave 做样本。
+# 因为我们要评估的是“这段波段本身的属性”以及确认后的前瞻结果。
 def _build_factor_eval_samples(
     code: str,
     frame: pd.DataFrame,
@@ -1051,6 +1097,7 @@ def _build_factor_eval_samples(
     rows: list[dict[str, object]] = []
     for wave in waves:
         end_confirm_index = int(wave["end_confirm_index"])
+        # 前瞻窗口从“确认之后的下一根 bar”开始，避免把结构确认当天的信息偷带进去。
         start_index = end_confirm_index + 1
         if start_index >= len(frame):
             continue
@@ -1196,6 +1243,8 @@ def _outcome_summary(frame: pd.DataFrame) -> dict[str, float | int]:
     }
 
 
+# G2 不是重新校准分位，而是把当前 snapshot 已落下的 band
+# 映射回历史同 band 样本，观察这些 band 过去大致对应什么结果分布。
 def _build_distribution_eval_rows(
     samples_df: pd.DataFrame,
     final_snapshot_df: pd.DataFrame,
@@ -1229,6 +1278,7 @@ def _build_distribution_eval_rows(
     for snapshot in final_snapshot_df.itertuples(index=False):
         code = str(snapshot.code)
         direction = str(snapshot.current_wave_direction)
+        # G2 坚持严格自历史语义：只比较“同一代码 + 同一方向”的历史 band 样本。
         code_samples = samples_df.loc[
             (samples_df["code"] == code) & (samples_df["direction"] == direction)
         ].copy()
@@ -1261,6 +1311,8 @@ def _build_distribution_eval_rows(
     return pd.DataFrame(rows)
 
 
+# G4 直接从正式 snapshot 表反查前瞻窗口，
+# 目的是验证 live 在用的 ruler，而不是验证局部中间变量。
 def _load_snapshot_validation_metric_samples(store: Store, calc_date: date, metric_column: str) -> pd.DataFrame:
     horizon = FACTOR_EVAL_FORWARD_HORIZON_TRADE_DAYS
     query = f"""
@@ -1356,6 +1408,8 @@ def _build_validation_eval_row(calc_date: date, metric_name: str, samples_df: pd
 
     daily_corrs: list[float] = []
     for _, part in samples_df.groupby("calc_date", sort=True):
+        # 除了全样本 monotonicity，还额外看“每天横截面的 rank-corr”。
+        # 这样可以防止某个 metric 只是长窗总体相关，但日度排序并不稳定。
         corr = _spearman_like(part["metric_value"], part["aligned_close_return_pct"])
         daily_corrs.append(float(corr))
     avg_daily_rank_corr = float(np.mean(daily_corrs)) if daily_corrs else 0.0
@@ -1380,6 +1434,7 @@ def _build_validation_eval_row(calc_date: date, metric_name: str, samples_df: pd
     }
 
 
+# 把连续验证指标压成治理标签，供 G5/G7 等模块直接消费。
 def _attach_validation_decisions(validation_df: pd.DataFrame) -> pd.DataFrame:
     if validation_df.empty:
         return validation_df
@@ -1502,6 +1557,8 @@ def _load_market_mirror_input(store: Store, start: date, end: date) -> pd.DataFr
     return frame
 
 
+# 行业层没有天然 OHLC，所以这里用日收益率重构 synthetic price，
+# 目的是复用和个股完全同一套 pivot/wave/snapshot 语法。
 def _load_industry_mirror_input(store: Store, start: date, end: date) -> pd.DataFrame:
     frame = store.read_df(
         """
@@ -1525,8 +1582,12 @@ def _load_industry_mirror_input(store: Store, start: date, end: date) -> pd.Data
         entity = part.sort_values("date").copy()
         entity["pct_chg"] = pd.to_numeric(entity["pct_chg"], errors="coerce").fillna(0.0)
         returns = entity["pct_chg"] / 100.0
+        # synthetic close 只要求保留“相对涨跌路径”，不追求复原真实可交易价格。
+        # 这里的目标是让行业对象也能复用 Gene 的价格语法，而不是模拟行业成交。
         synthetic_close = (1.0 + returns).cumprod() * 100.0
         synthetic_open = synthetic_close.shift(1).fillna(synthetic_close)
+        # 给 synthetic high/low 一个窄振幅外壳，避免整条序列退化成只有 close 的折线，
+        # 从而让 pivot/extreme 检测还能正常工作。
         synthetic_swing = synthetic_open * returns.abs() * 0.25
 
         entity["adj_open"] = synthetic_open
@@ -1662,6 +1723,8 @@ def _load_industry_support_metrics(store: Store, calc_date: date) -> pd.DataFram
     ].copy()
 
 
+# G5 不自己决定“谁是主尺”，而是读取 G4 的正式裁决，
+# 保证市场/行业镜像和个股主尺共用同一治理口径。
 def _resolve_mirror_policy(store: Store, calc_date: date) -> dict[str, str]:
     default_policy = {
         "primary_ruler_metric": "duration_percentile",
@@ -1692,6 +1755,10 @@ def _resolve_mirror_policy(store: Store, calc_date: date) -> dict[str, str]:
     return default_policy
 
 
+# G5 明确保留两张榜：
+# 1. composite gene_score 榜
+# 2. primary ruler 榜
+# 因为它们在真实结果里会分叉，不能偷并成一张。
 def _apply_mirror_ranks(mirror_df: pd.DataFrame) -> pd.DataFrame:
     if mirror_df.empty:
         return mirror_df
@@ -1883,6 +1950,7 @@ def _compute_streak_buckets(close_series: pd.Series) -> pd.Series:
     return pd.Series(buckets, index=close_series.index, dtype="object")
 
 
+# CPB 关心的是“支撑带被反复测试了几次”，不是最低点出现了几次。
 def _cpb_retest_count(window: np.ndarray) -> float:
     finite = window[np.isfinite(window)]
     if len(finite) == 0:
@@ -1948,7 +2016,8 @@ def _scan_conditioning_samples_for_code(frame: pd.DataFrame) -> pd.DataFrame:
         dtype=float,
     )
 
-    # BOF: downside break of a prior floor, followed by an immediate reclaim.
+    # BOF：先向下跌穿旧支撑，再快速收回支撑之上。
+    # 它描述的是“破位失败后的回收”，因此必须同时满足 break + reclaim + volume confirm。
     lookback_low = low_series.shift(1).rolling(20, min_periods=20).min()
     close_pos = (close_series - low_series) / (high_series - low_series)
     body_ratio = (close_series - open_series).abs() / (high_series - low_series)
@@ -1968,7 +2037,8 @@ def _scan_conditioning_samples_for_code(frame: pd.DataFrame) -> pd.DataFrame:
         & (volume_series >= volume_ma20_series * float(cfg.pas_bof_volume_mult))
     )
 
-    # PB: established trend, controlled pullback, then rebound confirmation.
+    # PB：先有已建立趋势，再出现可控回撤，最后出现回弹确认。
+    # 语义重点是“趋势中的健康回撤后再启动”，而不是随便反弹一下。
     trend_a_high = high_series.shift(21).rolling(20, min_periods=20).max()
     trend_floor = low_series.shift(21).rolling(20, min_periods=20).min()
     trend_peak = high_series.shift(6).rolling(15, min_periods=15).max()
@@ -2012,7 +2082,8 @@ def _scan_conditioning_samples_for_code(frame: pd.DataFrame) -> pd.DataFrame:
         & (volume_series >= volume_ma20_series * float(cfg.pas_pb_volume_mult))
     )
 
-    # BPB: breakout, shallow retest, second-leg breakout confirmation.
+    # BPB：先突破，再做浅回踩，然后二次突破确认。
+    # 核心语义是“突破后的再发力”，所以需要 breakout leg 已经存在。
     bpb_breakout_ref = high_series.shift(6).rolling(int(cfg.pas_bpb_breakout_window), min_periods=int(cfg.pas_bpb_breakout_window)).max()
     bpb_breakout_peak = high_series.shift(1).rolling(5, min_periods=5).max()
     bpb_pullback_low = low_series.shift(1).rolling(5, min_periods=5).min()
@@ -2069,7 +2140,8 @@ def _scan_conditioning_samples_for_code(frame: pd.DataFrame) -> pd.DataFrame:
         & bpb_not_overextended
     )
 
-    # TST: support test with rejection shadow and bounce confirmation.
+    # TST：对长期支撑位做测试，出现明显拒绝下影，然后反弹确认。
+    # 它强调“支撑有效”，不是追逐已经拉开的新高。
     tst_support_level = low_series.shift(6).rolling(55, min_periods=55).min()
     tst_test_low = low_series.shift(1).rolling(5, min_periods=5).min()
     tst_test_high_ref = high_series.shift(1).rolling(5, min_periods=5).max()
@@ -2115,7 +2187,8 @@ def _scan_conditioning_samples_for_code(frame: pd.DataFrame) -> pd.DataFrame:
         & tst_volume_confirm
     )
 
-    # CPB: compressed base with repeated retests and neckline breakout.
+    # CPB：平台/箱体被反复测试后，向上突破 neckline。
+    # 条件里同时要求压缩、回踩次数和突破确认三件事成立。
     support_band_low = low_series.shift(1).rolling(20, min_periods=20).min()
     support_band_high = low_series.shift(1).rolling(20, min_periods=20).quantile(0.35)
     neckline_ref = high_series.shift(1).rolling(20, min_periods=20).max()
@@ -2172,6 +2245,8 @@ def _scan_conditioning_samples_for_code(frame: pd.DataFrame) -> pd.DataFrame:
     return _concat_sparse_frames(output_frames)
 
 
+# 先找出 price-native trigger 样本，再回正式 snapshot 表上做同日 join，
+# 这样 conditioning 的环境标签始终来自正式 Gene 输出，而不是局部近似值。
 def _attach_conditioning_gene_tags(store: Store, samples_df: pd.DataFrame) -> pd.DataFrame:
     if samples_df.empty:
         return samples_df
@@ -2258,6 +2333,8 @@ def _conditioning_edge_tag(summary: dict[str, float], baseline: dict[str, float]
     return G6_EDGE_MIXED
 
 
+# 每种 signal_pattern 先建立自己的 baseline，再看各 conditioning 子集
+# 相对 baseline 是 BETTER / WORSE / MIXED，避免不同形态被混成一锅。
 def _build_conditioning_eval_rows(calc_date: date, samples_df: pd.DataFrame) -> pd.DataFrame:
     if samples_df.empty:
         return pd.DataFrame()
@@ -2356,6 +2433,8 @@ def compute_gene_conditioning(store: Store, calc_date: date) -> int:
     return store.bulk_upsert("l3_gene_conditioning_eval", conditioning_eval_df)
 
 
+# 不同对象生成的中间表可能有轻微列差异；
+# 先丢掉全空列，再 concat，避免落库时带一堆无意义空列。
 def _concat_sparse_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
     normalized = [frame.dropna(axis=1, how="all") for frame in frames if not frame.empty]
     if not normalized:
@@ -2365,6 +2444,8 @@ def _concat_sparse_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
 
 # 单代码流水线是 Gene 的最小可解释单元：
 # pivot -> wave -> event -> snapshot -> factor samples 一次性走完，便于局部排障。
+# 单代码流水线是 Gene 的最小可解释单元：
+# pivot -> wave -> structure/event -> snapshot -> factor samples 一次走完。
 def _build_code_gene_payload(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """运行单个代码的完整 Gene 流水线，并返回全部中间表。"""
 
@@ -2436,8 +2517,10 @@ def compute_gene(store: Store, start: date, end: date) -> int:
     event_frames: list[pd.DataFrame] = []
     factor_eval_sample_frames: list[pd.DataFrame] = []
 
-    # Gene is naturally partitioned by symbol. We keep the rebuild serial so the
-    # output is deterministic and easier to audit when cards change the model.
+    # Gene 天然按代码分区。
+    # 这里故意保持串行 rebuild，而不是并发乱序：
+    # 1. 输出更稳定，便于卡片改模后的审计对比
+    # 2. 单代码局部排障时更容易逐段复现
     for _, group in df.groupby("code", sort=True):
         snapshot_df, wave_df, event_df, factor_eval_sample_df = _build_code_gene_payload(
             group.reset_index(drop=True)
