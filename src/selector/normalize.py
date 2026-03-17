@@ -1,23 +1,32 @@
 from __future__ import annotations
 
-# ---------------------------------------------------------------------------
-# normalize.py — 因子标准化工具函数
-# ---------------------------------------------------------------------------
-# 职责：提供跨模块共享的安全数值运算原语。
-# 所有因子（MSS / IRS / Selector）的 zscore 标准化都必须通过这里，
-# 禁止各模块自行实现，避免口径漂移。
-#
-# 核心口径（Frozen）：
-#   zscore_single / zscore_normalize 的映射规则：[-3σ, +3σ] -> [0, 100]
-#   std=0 时统一回退到 50.0（中性值），不抛异常。
-# ---------------------------------------------------------------------------
+"""Selector 家族共用的数值归一化工具。
+
+MSS、IRS、Selector 诊断以及若干研究脚本，都需要同一套基础数值口径：
+1. 安全除法：分母为 0、缺失、非有限值时不炸掉。
+2. zscore 映射：统一投到 [0, 100] 的解释空间。
+
+把这些原语集中在这里，是为了防止各模块各写各的，最后出现“都叫 score，
+但口径完全不同”的隐性漂移。
+
+冻结口径：
+- `zscore_single` / `zscore_normalize` 都按 `[-3σ, +3σ] -> [0, 100]` 映射
+- `std=0` 或不可用时，统一回退到 `50.0`，代表中性值
+"""
 
 import numpy as np
 import pandas as pd
 
 
 def safe_ratio(numerator: float, denominator: float, default: float = 0.0) -> float:
-    """单值安全除法：分母为 0 或 NaN 时返回默认值，避免 ZeroDivisionError 扩散。"""
+    """单值安全除法。
+
+    常用于市场快照、行业统计、流动性指标这类经常会碰到 0 / NaN 分母的场景。
+    遇到异常分母时直接回退到 `default`，而不是返回 `inf / nan` 或抛异常。
+    """
+
+    # 这里故意不抛异常：Selector 相关模块大量面对真实市场脏数据，
+    # “给出稳定默认值继续运行”比“中途炸掉整条链路”更符合主线要求。
     if denominator in (0, None) or np.isnan(denominator):
         return default
     if numerator is None or np.isnan(numerator):
@@ -28,7 +37,12 @@ def safe_ratio(numerator: float, denominator: float, default: float = 0.0) -> fl
 def safe_ratio_vec(
     numerator: pd.Series | np.ndarray, denominator: pd.Series | np.ndarray, default: float = 0.0
 ) -> np.ndarray:
-    """向量化安全除法：批量计算因子时使用，比逐行调用 safe_ratio 效率高一个量级。"""
+    """向量化安全除法。
+
+    语义和 `safe_ratio` 完全一致，只是改成批量版本，供构造因子 DataFrame
+    时使用，避免逐行循环。
+    """
+
     num = np.asarray(numerator, dtype=float)
     den = np.asarray(denominator, dtype=float)
     mask = np.isfinite(den) & (den != 0) & np.isfinite(num)
@@ -38,14 +52,16 @@ def safe_ratio_vec(
 
 
 def zscore_normalize(series: pd.Series, baseline_mean: float | None = None, baseline_std: float | None = None) -> pd.Series:
-    """
-    序列标准化到 [0, 100]：
-    - 默认用序列自身的均值/标准差（适合探索性分析）
-    - 注入 baseline_mean / baseline_std 时使用预标定基线（适合生产主链）
+    """把一列数映射到共享的 `[0, 100]` 分数空间。
 
-    映射公式：score = clip((z + 3) / 6 * 100, 0, 100)
-    其中 z = (value - mean) / std
+    规则：
+    - 默认用序列自身的均值/标准差，适合探索分析。
+    - 传入 `baseline_mean / baseline_std` 时，按冻结基线映射，适合正式链路。
+    - 映射公式：`score = clip((z + 3) / 6 * 100, 0, 100)`。
     """
+
+    # 先统一转成 float，保证上游即使传来 object 列，也会在这里一次性暴露问题，
+    # 而不是在后续 clip / 减法里零散出错。
     values = series.astype(float)
     mean = float(values.mean()) if baseline_mean is None else float(baseline_mean)
     std = float(values.std(ddof=0)) if baseline_std is None else float(baseline_std)
@@ -56,14 +72,14 @@ def zscore_normalize(series: pd.Series, baseline_mean: float | None = None, base
 
 
 def zscore_single(value: float, mean: float, std: float) -> float:
-    """
-    单值标准化到 [0, 100]，与 zscore_normalize 保持同一口径。
+    """单值版 zscore 映射。
 
-    专为逐行纯函数（如 MSS / IRS 的逐日计算循环）设计，
-    避免在热路径上重复实现 NaN 判断和 clip 逻辑。
-
-    std=0 或 NaN 时回退到 50.0（中性值）。
+    给 MSS / IRS 这类逐行评分器使用，保证它们和 `zscore_normalize`
+    共用同一套数值口径。
     """
+
+    # 50 代表“中性、不可区分”，不是好也不是坏；
+    # 这比返回 0/100 更安全，因为后者会把不可判定误解释成极端状态。
     if std == 0 or np.isnan(std):
         return 50.0
     z = (value - mean) / std

@@ -1,5 +1,18 @@
 from __future__ import annotations
 
+"""第四战场 Gene 引擎。
+
+Gene 的目标不是直接给出买卖信号，而是回答：
+“这只股票当前这段波动，在它自己的历史里到底算什么级别？”
+
+整条链路分三层：
+1. 先从 L2 日线里抽出确认过的 pivot 和 completed wave。
+2. 再在 wave 上叠加 extreme / 2B / 1-2-3 等结构事件。
+3. 最后为每个交易日生成 snapshot，描述当前 active wave 在自历史中的位置。
+
+后面的 G1-G6 都是在复用这套对象模型。
+"""
+
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Literal
@@ -58,6 +71,12 @@ G6_EDGE_WORSE = "WORSE"
 
 @dataclass(frozen=True)
 class PivotPoint:
+    """已确认的摆动拐点。
+
+    Gene 不直接用“每根 K 线”做长期结构分析，而是先把价格压缩成
+    一串高低交替的确认拐点，再由拐点去切分 wave。
+    """
+
     index: int
     confirm_index: int
     pivot_date: date
@@ -68,6 +87,12 @@ class PivotPoint:
 
 @dataclass(frozen=True)
 class ExtremeCandidate:
+    """波段中的新高/新低候选事件。
+
+    它先记录“突破发生了”，后面再看是否在确认窗口内失败，
+    从而落成 2B_TOP / 2B_BOTTOM 这类结构事件。
+    """
+
     index: int
     event_date: date
     price: float
@@ -78,6 +103,14 @@ class ExtremeCandidate:
 
 @dataclass
 class ActiveWaveState:
+    """仍在进行中的 active wave 滚动状态。
+
+    已完成波段可以一次性定稿，但 active wave 不是：
+    每多一根 bar，都可能改变极值次数、最近极值位置、2B 失败是否确认。
+    把这些中间状态集中在一个对象里，可以避免 daily snapshot
+    每天都回头重扫整段历史。
+    """
+
     start_index: int
     start_date: date
     reference_price: float
@@ -225,6 +258,15 @@ def _seed_initial_pivot(frame: pd.DataFrame, first_pivot: PivotPoint | None) -> 
 
 
 def _build_confirmed_pivots(frame: pd.DataFrame) -> list[PivotPoint]:
+    """把嘈杂 OHLC 序列压缩成“高低交替”的确认拐点链。
+
+    这里故意做得保守：
+    1. 先找局部 swing high / low。
+    2. 再要求确认滞后，避免当天就把未成熟拐点当真。
+    3. 连续同侧候选只保留更极端的那个。
+    4. 最前面补一个反向 seed，保证第一段 completed wave 有合法起点。
+    """
+
     if len(frame) == 0:
         return []
 
@@ -266,6 +308,8 @@ def _build_confirmed_pivots(frame: pd.DataFrame) -> list[PivotPoint]:
             )
         )
 
+    # Remove back-to-back same-side pivots. When the market keeps printing new highs
+    # before a proper low appears, only the most extreme high should survive.
     normalized: list[PivotPoint] = []
     for pivot in candidates:
         if not normalized:
@@ -281,6 +325,8 @@ def _build_confirmed_pivots(frame: pd.DataFrame) -> list[PivotPoint]:
             continue
         normalized.append(pivot)
 
+    # Prepend an opposite-side seed so the pivot chain always starts with an anchor
+    # that can form the first completed wave.
     seed = _seed_initial_pivot(frame, normalized[0] if normalized else None)
     pivots = [seed]
     for pivot in normalized:
@@ -357,6 +403,8 @@ def _extract_wave_events(
     end_index: int,
     candidates: list[ExtremeCandidate],
 ) -> tuple[list[dict[str, object]], int, date | None, float | None]:
+    """把全局 extreme 候选裁切到当前 completed wave 的时间窗内。"""
+
     rows: list[dict[str, object]] = []
     selected = [item for item in candidates if start_index <= item.index <= end_index]
     if not selected:
@@ -525,12 +573,21 @@ def _renumber_wave_events(events: list[dict[str, object]]) -> list[dict[str, obj
     return ordered
 
 
+# 这一层把机械识别出来的 wave / extreme 事件升级成研究能直接消费的结构标签，
+# 例如 2B 顶底失败、1-2-3 三步反转，不再让下游临时拼语义。
 def _apply_structure_labels(waves: list[dict[str, object]], events: list[dict[str, object]]) -> list[dict[str, object]]:
+    """把 2B 与 1-2-3 结构语义叠加到原始 wave/event 账本上。
+
+    2B 偏事件驱动：新高/新低突破后又快速跌回/拉回参考位。
+    1-2-3 偏波段驱动：连续三段交替 completed wave 满足反转结构后才确认。
+    """
+
     if not waves:
         return events
 
     structure_events: list[dict[str, object]] = []
 
+    # Pass 1: convert failed extremes into 2B confirmations on the target wave.
     for event in events:
         failure_date = event.get("failure_date")
         if failure_date is None:
@@ -571,6 +628,7 @@ def _apply_structure_labels(waves: list[dict[str, object]], events: list[dict[st
             }
         )
 
+    # Pass 2: scan A-B-C wave triples for 1-2-3 structure confirmation.
     for idx in range(2, len(waves)):
         wave_a = waves[idx - 2]
         wave_b = waves[idx - 1]
@@ -667,7 +725,11 @@ def _apply_structure_labels(waves: list[dict[str, object]], events: list[dict[st
     return _renumber_wave_events(events + structure_events)
 
 
+# 这里只拿“同方向、已完成”的历史波段做比较，
+# 避免把上涨波段和下跌波段混在一起，导致百分位失真。
 def _apply_wave_history_scores(waves: list[dict[str, object]]) -> None:
+    """只拿同方向历史 completed wave 给当前波段做自历史评分。"""
+
     history_by_direction: dict[str, list[dict[str, object]]] = {"UP": [], "DOWN": []}
     for wave in waves:
         history = history_by_direction[str(wave["direction"])]
@@ -750,6 +812,8 @@ def _gene_score_from_percentiles(
     return 0.0, composite, composite
 
 
+# snapshot 是 Gene 真正给运行时使用的对象：
+# 每个交易日只关心当前 active wave 在自历史中的位置，以及已经确认的结构标签。
 def _build_daily_snapshots(
     code: str,
     frame: pd.DataFrame,
@@ -758,6 +822,13 @@ def _build_daily_snapshots(
     up_candidates: list[ExtremeCandidate],
     down_candidates: list[ExtremeCandidate],
 ) -> list[dict[str, object]]:
+    """为每个交易日生成面向运行时的 Gene snapshot。
+
+    每一行同时回答两件事：
+    1. 历史上已经确认了哪些结构。
+    2. 当前尚未完成的 active wave 在同方向自历史里处在什么位置。
+    """
+
     if frame.empty or not pivots:
         return []
 
@@ -782,6 +853,8 @@ def _build_daily_snapshots(
     snapshots: list[dict[str, object]] = []
 
     for idx, calc_date in enumerate(dates):
+        # Completed waves only become valid historical reference samples after their
+        # confirmation bar has passed.
         while wave_cursor < len(waves) and int(waves[wave_cursor]["end_confirm_index"]) <= idx:
             completed = waves[wave_cursor]
             completed_by_direction[str(completed["direction"])].append(completed)
@@ -795,6 +868,7 @@ def _build_daily_snapshots(
                 latest_two_b_confirm_date = completed["two_b_confirm_date"]
             wave_cursor += 1
 
+        # Once the next pivot is confirmed, the active-wave anchor advances.
         while pivot_cursor + 1 < len(pivots) and pivots[pivot_cursor + 1].confirm_index <= idx:
             pivot_cursor += 1
             current_pivot = pivots[pivot_cursor]
@@ -1045,7 +1119,11 @@ def _factor_eval_row(
     }
 
 
+# G1 因子归因不是为了生成交易信号，而是为了回答：
+# 哪些波段维度在前瞻结果上更有解释力，哪些只能留在面板里观察。
 def _build_factor_eval_rows(samples_df: pd.DataFrame, calc_date: date) -> pd.DataFrame:
+    """从前瞻波段样本汇总 G1 因子归因证据。"""
+
     if samples_df.empty:
         return pd.DataFrame()
 
@@ -1351,7 +1429,19 @@ def _attach_validation_decisions(validation_df: pd.DataFrame) -> pd.DataFrame:
     return scored.drop(columns=["strength_score"])
 
 
+# G4：验证 Gene 当前主尺是否具备可解释性。
+# 这一步不产生交易信号，而是回答：
+# - 哪个 ruler 更像主尺
+# - 哪些分量只能保留在 supporting panel
+# - gene_score 是否只能作为汇总视图
+# G4：验证 Gene 当前主尺是否具备足够稳定的可解释性。
 def compute_gene_validation(store: Store, calc_date: date) -> int:
+    """落下 G4 验证行，判断哪些 snapshot ruler 值得保留。
+
+    这里把 `gene_score` 和各 component percentile 放到同一前瞻窗口里比较，
+    目标不是生成信号，而是决定谁能当主尺，谁只能留在 supporting panel。
+    """
+
     metric_map = {
         "gene_score": "gene_score",
         "magnitude_percentile": "current_wave_magnitude_percentile",
@@ -1620,7 +1710,17 @@ def _apply_mirror_ranks(mirror_df: pd.DataFrame) -> pd.DataFrame:
     return ranked
 
 
+# G5：把个股自历史尺镜像到市场/行业层。
+# 目的不是重做 MSS / IRS，而是用同一套 Gene 尺子回答：
+# 当前市场、当前行业在它们各自历史里处在什么位置。
+# G5：把个股自历史尺镜像到市场和行业对象。
 def compute_gene_mirror(store: Store, calc_date: date) -> int:
+    """执行 G5，把 Gene 镜像到市场和行业对象。
+
+    市场层使用原生指数 OHLC，行业层使用由行业收益率重构的 synthetic price。
+    输出是 sidecar context 表，不是个股选择器的硬门控。
+    """
+
     start = _lookback_trade_start(store, calc_date, GENE_LOOKBACK_TRADE_DAYS)
     mirror_input = _load_g5_mirror_input(store, start, calc_date)
     store.conn.execute("DELETE FROM l3_gene_mirror WHERE calc_date = ?", [calc_date])
@@ -1792,7 +1892,16 @@ def _cpb_retest_count(window: np.ndarray) -> float:
     return float(np.sum((finite >= support_band_low) & (finite <= support_band_high)))
 
 
+# G6 故意做成 price-native：不依赖运行时日志，直接从价格条重构 BOF/PB/CPB/BPB/TST，
+# 这样任意历史窗口都可以重跑 conditioning readout。
 def _scan_conditioning_samples_for_code(frame: pd.DataFrame) -> pd.DataFrame:
+    """直接从价格条重构 G6 所需的 PAS 触发器家族样本。
+
+    Conditioning 故意独立于真实运行时成交日志，它问的是：
+    如果某根 bar 上出现 BOF/BPB/PB/TST/CPB，后面走成什么样，
+    当时又处在怎样的 Gene 环境里。
+    """
+
     if frame.empty:
         return pd.DataFrame()
 
@@ -1839,6 +1948,7 @@ def _scan_conditioning_samples_for_code(frame: pd.DataFrame) -> pd.DataFrame:
         dtype=float,
     )
 
+    # BOF: downside break of a prior floor, followed by an immediate reclaim.
     lookback_low = low_series.shift(1).rolling(20, min_periods=20).min()
     close_pos = (close_series - low_series) / (high_series - low_series)
     body_ratio = (close_series - open_series).abs() / (high_series - low_series)
@@ -1858,6 +1968,7 @@ def _scan_conditioning_samples_for_code(frame: pd.DataFrame) -> pd.DataFrame:
         & (volume_series >= volume_ma20_series * float(cfg.pas_bof_volume_mult))
     )
 
+    # PB: established trend, controlled pullback, then rebound confirmation.
     trend_a_high = high_series.shift(21).rolling(20, min_periods=20).max()
     trend_floor = low_series.shift(21).rolling(20, min_periods=20).min()
     trend_peak = high_series.shift(6).rolling(15, min_periods=15).max()
@@ -1901,6 +2012,7 @@ def _scan_conditioning_samples_for_code(frame: pd.DataFrame) -> pd.DataFrame:
         & (volume_series >= volume_ma20_series * float(cfg.pas_pb_volume_mult))
     )
 
+    # BPB: breakout, shallow retest, second-leg breakout confirmation.
     bpb_breakout_ref = high_series.shift(6).rolling(int(cfg.pas_bpb_breakout_window), min_periods=int(cfg.pas_bpb_breakout_window)).max()
     bpb_breakout_peak = high_series.shift(1).rolling(5, min_periods=5).max()
     bpb_pullback_low = low_series.shift(1).rolling(5, min_periods=5).min()
@@ -1957,6 +2069,7 @@ def _scan_conditioning_samples_for_code(frame: pd.DataFrame) -> pd.DataFrame:
         & bpb_not_overextended
     )
 
+    # TST: support test with rejection shadow and bounce confirmation.
     tst_support_level = low_series.shift(6).rolling(55, min_periods=55).min()
     tst_test_low = low_series.shift(1).rolling(5, min_periods=5).min()
     tst_test_high_ref = high_series.shift(1).rolling(5, min_periods=5).max()
@@ -2002,6 +2115,7 @@ def _scan_conditioning_samples_for_code(frame: pd.DataFrame) -> pd.DataFrame:
         & tst_volume_confirm
     )
 
+    # CPB: compressed base with repeated retests and neckline breakout.
     support_band_low = low_series.shift(1).rolling(20, min_periods=20).min()
     support_band_high = low_series.shift(1).rolling(20, min_periods=20).quantile(0.35)
     neckline_ref = high_series.shift(1).rolling(20, min_periods=20).max()
@@ -2198,7 +2312,17 @@ def _build_conditioning_eval_rows(calc_date: date, samples_df: pd.DataFrame) -> 
     return pd.DataFrame(rows)
 
 
+# G6：统计不同 PAS 触发器在不同 Gene 环境下的表现差异。
+# 这层输出是“条件解释层”，不是硬门控；
+# 它帮助 Normandy 判断什么形态在什么历史环境里更值得打。
+# 写出 G6 conditioning 读数，比较触发器在不同自历史环境下的表现。
 def compute_gene_conditioning(store: Store, calc_date: date) -> int:
+    """写出 G6 conditioning 读数，覆盖所有支持的触发器家族。
+
+    这是解释表，不是运行时 gate。它只回答：
+    哪类触发器在什么 Gene 环境标签下更好、更差或更混合。
+    """
+
     start = store.conn.execute("SELECT MIN(date) FROM l2_stock_adj_daily").fetchone()[0]
     store.conn.execute("DELETE FROM l3_gene_conditioning_eval WHERE calc_date = ?", [calc_date])
     if start is None:
@@ -2239,7 +2363,11 @@ def _concat_sparse_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
     return pd.concat(normalized, ignore_index=True, sort=False)
 
 
+# 单代码流水线是 Gene 的最小可解释单元：
+# pivot -> wave -> event -> snapshot -> factor samples 一次性走完，便于局部排障。
 def _build_code_gene_payload(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """运行单个代码的完整 Gene 流水线，并返回全部中间表。"""
+
     if frame.empty:
         return pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
 
@@ -2276,7 +2404,18 @@ def _build_code_gene_payload(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.Data
         factor_eval_samples,
     )
 
-
+# Main Gene entry point.
+# Rebuild always starts with an explicit lookback window because the snapshot on
+# `start` depends on waves that may have begun much earlier. The function writes:
+# 1. daily snapshots in l3_stock_gene
+# 2. completed waves in l3_gene_wave
+# 3. events and structures in l3_gene_event
+# 4. G1/G2 evaluation tables
+# 5. G4 validation rows for the end date
+# Gene 正式主入口。落盘顺序是：
+# 1. 逐代码构建 wave / event / snapshot / factor samples
+# 2. 回写 l3_stock_gene / l3_gene_wave / l3_gene_event / l3_gene_factor_eval
+# 3. 再派生 G2/G4/G5/G6 所需的辅助评估表
 def compute_gene(store: Store, start: date, end: date) -> int:
     """
     第一版历史波段标尺：
@@ -2297,6 +2436,8 @@ def compute_gene(store: Store, start: date, end: date) -> int:
     event_frames: list[pd.DataFrame] = []
     factor_eval_sample_frames: list[pd.DataFrame] = []
 
+    # Gene is naturally partitioned by symbol. We keep the rebuild serial so the
+    # output is deterministic and easier to audit when cards change the model.
     for _, group in df.groupby("code", sort=True):
         snapshot_df, wave_df, event_df, factor_eval_sample_df = _build_code_gene_payload(
             group.reset_index(drop=True)

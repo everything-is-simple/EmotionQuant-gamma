@@ -1,5 +1,13 @@
 from __future__ import annotations
 
+"""MSS 实验工位。
+
+这里专门承接“不同归一化 / 聚合方式会不会更好”的实验，
+目的是把研究试验和正式主线隔离开：
+- 正式主线在 mss.py
+- 实验变体在这里
+"""
+
 from dataclasses import dataclass
 from datetime import date
 
@@ -32,7 +40,12 @@ MSS_VARIANTS = [
 ]
 
 
+# 把实验标签解析成具体的归一化方式和聚合方式。
+# 实验层允许用一个短标签同时表达“归一化方式 + 聚合方式”，
+# 这样做批量回放时更容易比较不同实验版本。
 def get_mss_variant_spec(label: str) -> MssVariantSpec:
+    """把实验标签解析成具体配方。"""
+
     normalized = label.strip().lower()
     for variant in MSS_VARIANTS:
         if variant.label == normalized:
@@ -134,6 +147,9 @@ def _aggregate_components(components: dict[str, float], aggregation: str) -> flo
     raise ValueError(f"Unsupported MSS aggregation: {aggregation}")
 
 
+# 用某个实验配方对原始 MSS 因子框架重新打分。
+# 它不会改主线表的治理含义，只是把同一份原始观测换一套数学口径重算，
+# 便于研究“主线为什么这样定，而不是那样定”。
 def score_mss_variant(
     raw_df: pd.DataFrame,
     variant: MssVariantSpec,
@@ -142,6 +158,8 @@ def score_mss_variant(
     bearish_threshold: float = 35.0,
     reference_raw_df: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
+    """按某个实验配方对原始 MSS 因子框架重新打分。"""
+
     if raw_df is None or raw_df.empty:
         return pd.DataFrame(columns=["date", "score", "signal"] + MSS_FACTOR_NAMES)
 
@@ -166,6 +184,7 @@ def score_mss_variant(
     return pd.DataFrame(rows)
 
 
+# 把某个实验版 MSS 落成正式表结构，便于和主线直接做并排对比。
 def compute_mss_variant(
     store: Store,
     start: date,
@@ -175,6 +194,7 @@ def compute_mss_variant(
     bullish_threshold: float = 65.0,
     bearish_threshold: float = 35.0,
 ) -> int:
+    """把某个实验版 MSS 落成正式日表形状，便于并排对照。"""
     # MSS 支持按日期局部重建；先清分区，避免源数据收缩后保留旧结果。
     store.conn.execute("DELETE FROM l3_mss_daily WHERE date BETWEEN ? AND ?", [start, end])
     variant = get_mss_variant_spec(variant_label)

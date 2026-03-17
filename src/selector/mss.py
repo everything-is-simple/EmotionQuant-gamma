@@ -1,5 +1,15 @@
 from __future__ import annotations
 
+"""市场情绪评分器 MSS。
+
+MSS 的对象不是个股，也不是行业，而是“整个市场的一天”。
+它先把当天市场快照压成六个原始因子，再映射成统一分数，最后派生出：
+- signal：BULLISH / NEUTRAL / BEARISH
+- phase：当前所处阶段
+- risk_regime：Broker 可以直接消费的风险状态
+- position_advice：解释层建议仓位带
+"""
+
 from datetime import date
 from typing import Literal, Sequence
 
@@ -59,7 +69,20 @@ def _signal_from_score(
     return "NEUTRAL"
 
 
+# 从单日市场快照提取 MSS 六个原始因子。
+# 这一步只负责“把市场现象转成原始量”，还不做标准化，也不做状态解释。
 def _compute_mss_raw_components(row: pd.Series) -> dict[str, float]:
+    """从单日市场快照中提取 MSS 六个原始因子。
+
+    注意这里仍然是“原始观测量”，不是正式分数：
+    1. `market_coefficient` 看市场广度。
+    2. `profit_effect` 看赚钱效应。
+    3. `loss_effect` 看亏钱效应。
+    4. `continuity` 看强势延续。
+    5. `extreme` 看尾盘恐慌/挤压等极端情绪。
+    6. `volatility` 看当日整体扰动强度。
+    """
+
     """
     MSS 六因子原始值计算：
     1. market_coefficient: 上涨家数占比（市场广度）
@@ -137,9 +160,15 @@ def _normalize_score_history(score_history: Sequence[float] | None) -> list[floa
     return normalized
 
 
+# 根据最近一段 MSS 分数历史，推断“市场状态趋势”。
+# 这里看的是 MSS 自己的轨迹，而不是指数价格本身。
+# 这里看的不是指数价格趋势，而是 MSS 自己这套情绪分的轨迹。
+# 指数没明显走坏，并不代表情绪面没有先转弱。
 def resolve_mss_phase_trend(
     score_history: Sequence[float] | None,
 ) -> tuple[MssPhaseTrendType, MssTrendQualityType]:
+    """从近窗 MSS 分数历史推断当前趋势方向与质量。"""
+
     scores = _normalize_score_history(score_history)
     if len(scores) >= 8:
         # 正常路径优先用 8 日趋势窗：这是 blueprint 固定的主口径，
@@ -192,11 +221,13 @@ def resolve_mss_phase(score: float, phase_trend: str) -> MssPhaseType:
     return "UNKNOWN"
 
 
+# 统计当前 phase 已经持续了多少个连续交易日。
 def resolve_mss_phase_days(
     phase: str,
     prev_phase: str | None = None,
     prev_phase_days: int | None = None,
 ) -> int:
+    """统计当前 phase 已连续维持了多少个交易日。"""
     # phase_days 只看“上一交易日是否仍在同一 phase”，不看自然日；
     # 这样缺一天数据时不会偷偷把状态延续下去。
     if (
@@ -224,11 +255,17 @@ def resolve_mss_risk_regime(phase: str, phase_trend: str) -> MssRiskRegimeType:
     return "RISK_OFF"
 
 
+# 从 MSS 历史分数推导完整市场状态。
+# 返回的不只是 phase，还包括 risk_regime / position_advice / trend_quality。
+# 返回的不只是 phase，还包括 phase_trend、phase_days、risk_regime 和 position_advice，
+# 这样 Broker / trace / report 都可以只读一张日表，不必各自重复推断状态层。
 def resolve_mss_state(
     score_history: Sequence[float] | None,
     prev_phase: str | None = None,
     prev_phase_days: int | None = None,
 ) -> dict[str, str | int]:
+    """由 MSS 分数历史推导完整市场状态。"""
+
     scores = _normalize_score_history(score_history)
     if not scores:
         # 无历史时不做乐观推断：按 UNKNOWN + RISK_OFF 返回，
@@ -320,6 +357,8 @@ def _aggregate_mss_score(components: dict[str, float]) -> float:
     )
 
 
+# 把一行市场快照展开成完整、可追溯的 MSS 日记录。
+# 这是 trace / report / debug 最常用的入口，因为它同时给出 raw、normalized 和 state。
 def materialize_mss_trace_snapshot(
     row: pd.Series,
     baseline: dict[str, float] | None = None,
@@ -329,6 +368,8 @@ def materialize_mss_trace_snapshot(
     prev_phase: str | None = None,
     prev_phase_days: int | None = None,
 ) -> dict[str, float | str | date]:
+    """把单日市场快照展开成完整、可追溯的 MSS 记录。"""
+
     """把市场快照展开成 trace 友好的原始值、标准化值和总分。"""
     # 这个函数专门给 trace / debug / report 用：
     # 一次性把 raw、标准化值和聚合分数都展开，避免下游自己重算。
@@ -464,7 +505,13 @@ def compute_mss_single(
     )
     return MarketScore(date=d, score=score, signal=signal)
 
-
+# Main MSS batch entry point。
+# build_l3 就是通过这里把整段市场状态落进 l3_mss_daily。
+# 这是 MSS 的正式批量入口。它按交易日重建：
+# 1. 六个原始因子
+# 2. 归一化分量与总分
+# 3. signal / phase / risk_regime / position_advice
+# 最终形成 Broker 和报告链都能直接消费的正式日表。
 def compute_mss(
     store: Store,
     start: date,
@@ -473,6 +520,7 @@ def compute_mss(
     bullish_threshold: float = 65.0,
     bearish_threshold: float = 35.0,
 ) -> int:
+    """批量计算 MSS，并写入完整市场状态表。"""
     """
     批量计算 MSS 并写入 l3_mss_daily（幂等 upsert）。
     """
@@ -539,4 +587,3 @@ def compute_mss(
         prev_phase = str(snapshot["phase"])
         prev_phase_days = int(snapshot["phase_days"])
     return store.bulk_upsert("l3_mss_daily", pd.DataFrame(records))
-

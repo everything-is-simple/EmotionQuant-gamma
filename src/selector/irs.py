@@ -1,5 +1,17 @@
 from __future__ import annotations
 
+"""行业强弱排序器 IRS。
+
+IRS 的职责不是判断个股买卖，而是给“行业横截面”做日级排名。
+它把多个子维度拆开计算，再按 factor_mode 组合：
+1. RS：相对基准强弱
+2. RV / CF：资金流与成交活跃
+3. RT：轮动是否在持续
+4. BD / GN：行业内部广度与龙头质量
+
+主线可以只启用部分维度，但研究和 trace 仍然可以看到每个子维度分别贡献了什么。
+"""
+
 from datetime import date
 
 import numpy as np
@@ -30,7 +42,13 @@ IRS_FACTOR_MODE_FULL = "rsrvrtbdgn"
 # 真正运行时会优先吃 config.py 传下来的窗口、阈值和权重。
 
 
+# 统一 factor_mode 的别名，避免配置、文档、代码里各叫各的名字。
+# 把外部传入的 factor mode 统一成内部冻结标签。
+# 这样做是为了隔离“用户/文档叫法”与“数据库/trace 口径”：
+# 外部允许有别名，内部只认少数几个固定枚举，便于审计和回放。
 def normalize_irs_factor_mode(value: str | None) -> str:
+    """把外部 factor mode 别名统一成内部冻结标签。"""
+
     raw = str(value or IRS_FACTOR_MODE_FULL).strip().lower().replace("-", "").replace("_", "")
     if raw in {"lite", "legacy", "irslite"}:
         return IRS_FACTOR_MODE_LITE
@@ -155,6 +173,12 @@ def _resolve_rotation_status(
     return "NEUTRAL"
 
 
+# 计算相对强弱分量。
+# 这里不仅看 1 日超额，还看 5 日 / 20 日的相对收益，并额外考虑 rank 稳定性，
+# 避免“今天突然冲一下”被误判成真正的强行业。
+# 计算单个行业在某一天的相对强弱分量。
+# 核心思想是：行业强不强，不只看当天涨得多不多，而是看它相对基准
+# 在 1/5/20 日三个尺度上是否都占优，同时 rank 是否足够稳定。
 def _compute_rs_components(
     industry_row: pd.Series,
     benchmark_snapshot: dict[str, float | bool],
@@ -163,6 +187,8 @@ def _compute_rs_components(
     baseline: dict[str, float],
     rt_lookback_days: int,
 ) -> dict[str, float]:
+    """计算单个行业在某一天的相对强弱分量。"""
+
     rs_1d_raw = _safe_float(industry_row.get("pct_chg"), 0.0) - float(benchmark_snapshot["pct_chg"])
     rs_5d_raw = (
         _safe_float(industry_row.get("return_5d"), 0.0) - float(benchmark_snapshot["return_5d"])
@@ -190,7 +216,14 @@ def _compute_rs_components(
     }
 
 
+# 计算成交与资金流分量。
+# 这一组因子回答的是：行业今天有没有量、有没有分到市场的钱、相对自己历史是否放大。
+# 计算行业的成交活跃度与资金承接分量。
+# 这里既看绝对成交，也看相对市场的占比，以及相对自身 20 日的扩张程度，
+# 目的是把“今天有量”与“今天的量有意义”区分开。
 def _compute_rv_components(industry_row: pd.Series, baseline: dict[str, float]) -> dict[str, float]:
+    """计算行业的成交活跃度与资金承接分量。"""
+
     amount = _safe_float(industry_row.get("amount"), 0.0)
     market_total_amount = _safe_float(industry_row.get("market_total_amount"), 0.0)
     amount_ma20 = pd.to_numeric(industry_row.get("amount_ma20"), errors="coerce")
@@ -269,6 +302,11 @@ def _compute_gn_components(industry_row: pd.Series) -> dict[str, float]:
     return {"gn_score": float(gn_score)}
 
 
+# 计算短周期轮动持续性。
+# 核心看最近几天 rank / score 是在延续、起步、衰竭，还是已经回落。
+# 从近几天的 rank / score 历史推断轮动持续性。
+# 这个分量不回答“行业今天强不强”，而回答“这波强势是在延续、刚启动，
+# 还是已经出现衰竭/回落迹象”。
 def _compute_rt_components(
     provisional_rank: int,
     provisional_score: float,
@@ -277,6 +315,8 @@ def _compute_rt_components(
     top_rank_threshold: int,
     rt_lookback_days: int,
 ) -> dict[str, float | str]:
+    """从近几天的 rank / score 历史推断轮动持续性。"""
+
     if len(rank_history) < rt_lookback_days - 1 or len(score_history) < rt_lookback_days - 1:
         return {
             "rt_score": IRS_TRACE_FILL_SCORE,
@@ -313,7 +353,14 @@ def _compute_rt_components(
     }
 
 
+# 只混合权重大于 0 的分量。
+# 这样 ablation 关掉某个维度时，不会把“被关闭的维度”也误当成噪声算进去。
 def _weighted_score(components: list[tuple[float, float]], fallback: float) -> float:
+    """按权重聚合若干分量，并自动忽略缺失项。
+
+    fallback 不是奖励分，而是“本次无法可靠估计”的中性兜底值。
+    """
+
     # 允许某些因子在 ablation 中权重为 0；此时自动回落到 fallback，
     # 避免除以 0 或把“关闭的因子”误算成噪声。
     positive = [(float(score), float(weight)) for score, weight in components if float(weight) > 0.0]
@@ -494,6 +541,7 @@ def _build_industry_trace_row(
     }
 
 
+# 单行纯函数版 IRS 评分器，主要给测试和局部诊断用。
 def compute_irs_single(
     industry_row: pd.Series,
     benchmark_pct: float,
@@ -505,6 +553,12 @@ def compute_irs_single(
     factor_weight_bd: float = IRS_FACTOR_WEIGHT_BD,
     factor_weight_gn: float = IRS_FACTOR_WEIGHT_GN,
 ) -> tuple[float, float, float]:
+    """单行 IRS 评分器。
+
+    主要给单测和窄范围诊断使用，用同一套分量逻辑验证单个行业样本
+    在给定 benchmark 背景下会打出怎样的分数。
+    """
+
     base = baseline or IRS_BASELINE
     normalized_factor_mode = normalize_irs_factor_mode(factor_mode)
     seeded = industry_row.copy()
@@ -543,6 +597,13 @@ def compute_irs_single(
     return rs["rs_score"], float(secondary_score), float(total_score)
 
 
+# IRS 正式批量入口。
+# 同时写两类结果：
+# 1. l3_irs_daily：给主线消费的正式日表
+# 2. irs_industry_trace_exp：给复盘和证据链消费的 trace 表
+# 批量计算一个区间内的 IRS，并持续写入正式表。
+# 这里按交易日循环而不是一次性全窗口聚合，是因为 IRS 带有明显的
+# “当日横截面 + 近窗历史”语义，逐日构建更容易保证 trace 可解释。
 def compute_irs(
     store: Store,
     start: date,
@@ -558,6 +619,8 @@ def compute_irs(
     factor_weight_bd: float = IRS_FACTOR_WEIGHT_BD,
     factor_weight_gn: float = IRS_FACTOR_WEIGHT_GN,
 ) -> int:
+    """批量计算 IRS，并同时写入正式日表和 trace 证据表。"""
+
     normalized_factor_mode = normalize_irs_factor_mode(factor_mode)
     trace_variant = _trace_variant_for_factor_mode(normalized_factor_mode)
     trace_run_id = _build_irs_trace_run_id(start, end, normalized_factor_mode)

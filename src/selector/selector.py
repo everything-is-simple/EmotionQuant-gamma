@@ -1,5 +1,16 @@
 from __future__ import annotations
 
+"""运行时候选选择层。
+
+这个模块负责回答一个非常具体的问题：
+“今天哪些股票值得继续送去 PAS 触发器层做精算？”
+
+它不是最终买卖决策层，而是主线漏斗里位于 PAS 之前的候选调度层。
+当前同时保留两条路径：
+1. legacy：历史冻结参照链，用于对照、回滚、解释旧结果。
+2. dtt：当前主线使用的调度链，更偏算力预算分配，而不是最终 alpha 结论。
+"""
+
 from datetime import date
 
 import numpy as np
@@ -61,7 +72,16 @@ def _industry_priority_map(store: Store, calc_date: date) -> dict[str, float]:
     return priority
 
 
+# 读取某个交易日的候选宇宙快照。
+# 这是 Selector 的底板数据：后面所有过滤、预选、trace 都建立在这张单日快照上。
+# 这里必须一次性拼齐 L2 日线加工字段、停牌信息、行业归属、ST 状态和上市状态，
+# 否则后面的过滤链会因为“信息不在同一张表”而出现口径漂移。
+# 构建某个交易日的 Selector 原始宇宙快照。
+# 输出不是“已经可交易的股票列表”，而是“带完整过滤上下文的候选全集”。
+# 后面的基础过滤、DTT 预选、legacy 对照链和 trace 回放都从这张单日快照起步。
 def _load_universe_snapshot(store: Store, calc_date: date) -> pd.DataFrame:
+    """从 L2 日线、停牌信息和个股元数据构建单日 Selector 宇宙快照。"""
+
     """
     读取当日候选快照：
     - L2 给出流动性/波动等加工字段
@@ -122,7 +142,16 @@ def _load_universe_snapshot(store: Store, calc_date: date) -> pd.DataFrame:
     )
 
 
+# 给候选宇宙打上基础可交易过滤标签。
+# 这里故意先 annotate、后 filter，而不是直接删行。原因是：
+# 被挡掉的股票也需要保留 reject_reason，事后才能回答
+# “它为什么没进入 PAS / 为什么今天根本没资格参加候选”。
+# 给单日宇宙打上基础可交易过滤标签。
+# 重点不是删掉谁，而是明确写出谁为什么被拒绝。
+# 只有这样，后续 trace / report 才能回答“今天这只票为什么连 PAS 资格都没有”。
 def _annotate_basic_filters(df: pd.DataFrame, calc_date: date, config: Settings) -> pd.DataFrame:
+    """打上硬性可交易过滤标签，并保留拒绝原因供 trace 回放。"""
+
     if df.empty:
         return df
     work = df.copy()
@@ -161,6 +190,15 @@ def _apply_basic_filters(df: pd.DataFrame, calc_date: date, config: Settings) ->
     return work[work["reject_reason"] == ""].copy()
 
 
+# 把 Selector 漏斗过程落成 trace 表。
+# 这不是运行必需物，而是复盘必需物。没有这张 trace，后面就很难解释：
+# - 候选宇宙当时长什么样
+# - 哪些票被过滤掉
+# - 哪些票进入 top_n
+# - 哪些票真正被送去 PAS
+# 这张 trace 表记录的是“筛选过程”，不是最终信号。
+# 它把宇宙快照、拒绝原因、候选排名、是否进入 PAS 预算池
+# 放在同一条记录里，后面定位问题时就不需要再靠猜。
 def _persist_selector_candidate_trace(
     store: Store,
     calc_date: date,
@@ -170,6 +208,8 @@ def _persist_selector_candidate_trace(
     ranked_all: pd.DataFrame,
     ranked_top_n: pd.DataFrame,
 ) -> None:
+    """把 Selector 漏斗完整落盘，供后续 evidence 复盘。"""
+
     if not run_id:
         return
 
@@ -240,7 +280,15 @@ def _apply_mss_gate(mss_signal: str | None, config: Settings, df: pd.DataFrame) 
     return df
 
 
+# 按 IRS 的行业 Top-N 白名单做二次过滤。
+# 这一步是典型的“行业先行”门：如果行业当天不在允许名单里，
+# 个股再活跃也不会继续向下游传递。
+# 按 IRS 行业白名单做二次过滤。
+# 这是 legacy 链中“行业先行”的典型做法：个股先通过基础可交易性，
+# 再看它所处行业今天是否被 IRS 允许继续下传。
 def _apply_irs_filter(store: Store, calc_date: date, config: Settings, df: pd.DataFrame) -> pd.DataFrame:
+    """在开启 IRS 白名单时，只保留允许继续下传的行业。"""
+
     if not config.enable_irs_filter or df.empty:
         return df
     top_industries = store.read_df(
@@ -259,6 +307,13 @@ def _apply_irs_filter(store: Store, calc_date: date, config: Settings, df: pd.Da
     return df[df["industry"].isin(allowed)].copy()
 
 
+# 当前主线使用的 DTT 候选路径。
+# 这里的核心含义不是“谁最值得买”，而是“谁值得占用 PAS 的计算预算”。
+# 因此 preselect_score 主要由流动性和活跃度组成，尽量不提前混入
+# MSS / IRS / Gene 这种更强交易语义的层。
+# 当前主线升格的 DTT 候选路径。
+# 这条链回答的不是“谁最该买”，而是“谁值得占用 PAS 的计算预算”。
+# 因此分数故意偏轻，只用流动性和活跃度做代理，不提前混入过强的交易语义。
 def _select_dtt_candidates_frame(
     store: Store,
     calc_date: date,
@@ -266,6 +321,12 @@ def _select_dtt_candidates_frame(
     universe: pd.DataFrame,
     run_id: str = "",
 ) -> pd.DataFrame:
+    """当前主线升格的 DTT 候选路径。
+
+    DTT 主要回答“今天哪些票值得占用 PAS 计算预算”，
+    它故意比真正的交易打分更轻，只承担调度，不承担最终买卖语义。
+    """
+
     annotated = _annotate_basic_filters(universe, calc_date, cfg)
     filtered = annotated[annotated["reject_reason"] == ""].copy()
     if filtered.empty:
@@ -329,12 +390,19 @@ def _select_dtt_candidates_frame(
     return ranked
 
 
+# 历史冻结参照链。
+# 这条链保留旧时代的粗筛 + MSS 门控 + IRS 白名单 + 简单综合分逻辑，
+# 主要用于历史对齐、对照实验和 rollback。
+# 历史冻结参照链。
+# 这条路径保留旧时代的粗评分和行业/市场门控，用于历史对齐、迁移期对照实验和 rollback。
 def _select_legacy_candidates_frame(
     store: Store,
     calc_date: date,
     cfg: Settings,
     universe: pd.DataFrame,
 ) -> pd.DataFrame:
+    """保留用于历史对照和回退的冻结参照链。"""
+
     stage1 = _apply_basic_filters(universe, calc_date, cfg)
     if not stage1.empty:
         # legacy 对照链继续保留“先粗筛再门控”的历史行为，用于 compare / rollback。
@@ -380,12 +448,17 @@ def _select_legacy_candidates_frame(
     return ranked
 
 
+# 对外导出的运行时入口：把最终候选表转成 StockCandidate 对象列表。
+# 这是 Selector 的对象出口：下游 Strategy 拿到的是 StockCandidate 契约，
+# 而不是带各种中间字段的 DataFrame，符合“模块间只传结果契约”的治理要求。
 def select_candidates(
     store: Store,
     calc_date: date,
     config: Settings | None = None,
     run_id: str | None = None,
 ) -> list[StockCandidate]:
+    """按选定的 Selector 路径返回运行时 `StockCandidate` 契约对象。"""
+
     top = select_candidates_frame(store, calc_date, config=config, run_id=run_id)
     if top.empty:
         return []
@@ -407,12 +480,18 @@ def select_candidates(
     return candidates
 
 
+# 返回某个交易日最终入围的候选 DataFrame。
+# 这里只负责分派 legacy / dtt 路径，不直接承载买卖逻辑。
+# 这个入口主要给研究、回测脚本、trace 和调试工具使用。
+# 正式运行时更推荐 `select_candidates()`，因为它会把输出收敛到契约对象。
 def select_candidates_frame(
     store: Store,
     calc_date: date,
     config: Settings | None = None,
     run_id: str | None = None,
 ) -> pd.DataFrame:
+    """返回指定交易日最终入围的候选 `DataFrame`。"""
+
     cfg = config or get_settings()
     universe = _load_universe_snapshot(store, calc_date)
     if cfg.use_dtt_pipeline:
