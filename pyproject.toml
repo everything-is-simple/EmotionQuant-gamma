@@ -27,6 +27,8 @@ dependencies = [
     "numpy>=1.24.0",
     # 数据源（TuShare 主 + AKShare 备）
     "tushare>=1.2.89",
+    "baostock>=0.8.9",
+    "mootdx",
     "akshare>=1.10.0",
     # 存储
     "duckdb>=0.9.0",

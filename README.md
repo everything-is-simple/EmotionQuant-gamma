@@ -1,113 +1,109 @@
 # EmotionQuant
 
-EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
+EmotionQuant 是一套面向中国 A 股的交易系统，当前已经按“四个战场”收成统一骨架：
 
-## 设计入口
+1. `blueprint/`：第一战场，主线治理、默认运行口径、正式执行卡。
+2. `normandy/`：第二战场，alpha truth、入场/出场伤害诊断。
+3. `positioning/`：第三战场，仓位、退出、执行纪律。
+4. `gene/`：第四战场，历史趋势/波段/寿命/环境解释。
 
-- 仓库三线地图：[`docs/spec/common/records/repo-line-map-20260312.md`](docs/spec/common/records/repo-line-map-20260312.md)
-- 当前四战场集成图：[`docs/spec/common/records/four-battlefields-integrated-system-map-20260316.md`](docs/spec/common/records/four-battlefields-integrated-system-map-20260316.md)
-- 四战场文档书架：[`docs/navigation/four-battlefields-document-shelf/README.md`](docs/navigation/four-battlefields-document-shelf/README.md)
-- 历史线 `v0.01 Frozen`：[`docs/design-v2/01-system/system-baseline.md`](docs/design-v2/01-system/system-baseline.md)
-- 主线 `v0.01-plus`：[`docs/spec/v0.01-plus/README.md`](docs/spec/v0.01-plus/README.md)
-- 当前主线设计权威层：[`blueprint/README.md`](blueprint/README.md)
-- 研究线 `Normandy`：[`normandy/README.md`](normandy/README.md)
-- 研究线 `Positioning`：[`positioning/README.md`](positioning/README.md)
-- 研究线 `Gene`：[`gene/README.md`](gene/README.md)
-- 当前治理状态：[`docs/spec/common/records/development-status.md`](docs/spec/common/records/development-status.md)
+## 当前默认运行口径
 
-当前默认运行链路：
-`Selector 初选 -> BOF baseline entry -> FIXED_NOTIONAL_CONTROL -> FULL_EXIT_CONTROL -> Broker 执行`
+当前治理层写死的默认运行链是：
 
-当前四战场集成口径：
-`第一战场给运行骨架，第二战场给 alpha truth，第三战场给 capital control，第四战场给 historical context。`
+`Selector preselection -> BOF baseline entry -> FIXED_NOTIONAL_CONTROL -> FULL_EXIT_CONTROL -> Broker execution`
 
-说明：
-- `v0.01` 已冻结为历史尝试，仅作对照、回退与回归验证。
-- `v0.01-plus` 是当前治理主线，但默认运行路径仍保持 `legacy_bof_baseline`。
-- `normandy/` 是独立研究线，用于回答 `为什么打 / alpha 来自哪里`。
-- `positioning/` 是独立研究线，用于回答 `打多大 / 怎么退`。
-- `gene/` 是独立研究线，用于回答 `当前这段走势在它自己的历史里算什么级别`。
-- 三条研究线都不是新的版本号分支，也不直接改写当前主线 SoT。
+当前边界也要分清：
 
-## 仓库三线
+1. `Gene` 现在是 `context sidecar / attribution layer`，不是 runtime hard gate。
+2. 旧 `IRS/MSS` 已不再是默认执行主骨架。
+3. `scripts/backtest/` 是证据 runner 层，不是系统默认入口。
 
-- 历史线：`docs/design-v2/` + `docs/spec/v0.01/`，只承载 `v0.01 Frozen` 历史基线。
-- 主线：`blueprint/` + `docs/spec/v0.01-plus/`，只承载当前默认开发线的设计正文、实现方案和治理归档。
-- 研究线：`normandy/` + `positioning/` + `gene/`，分别承载 `alpha / exit diagnosis`、`position sizing / partial-exit` 与 `historical wave ruler` 的独立研究，不直接改写主线 SoT。
-- 状态账本：`docs/spec/common/records/`，负责跨版本、跨战场的状态、债务和资产索引，不承担当期设计正文。
+## 当前数据底座
+
+这一轮之后，数据层已经切成：
+
+`TDX local-first -> raw 库 -> L1 -> L2 -> selector / broker / backtest`
+
+主底座：
+
+1. 本地通达信 `vipdoc` 提供个股/指数历史日线。
+2. 本地 `T0002/hq_cache` 提供股票列表、行业成员快照等静态资产。
+3. 本地规则推导 `up_limit / down_limit`。
+
+补洞与保底：
+
+1. `BaoStock` 只做小窗口缺口补数。
+2. `TuShare` 只做应急保底。
+
+相关入口：
+
+- [`scripts/data/README.md`](scripts/data/README.md)
+- [`docs/reference/code-maps/src-data-code-map-20260318.md`](docs/reference/code-maps/src-data-code-map-20260318.md)
+- 历史 baseline：[`docs/design-v2/01-system/system-baseline.md`](docs/design-v2/01-system/system-baseline.md)
+
+## 设计与治理入口
+
+- 四战场集成图：[`docs/spec/common/records/four-battlefields-integrated-system-map-20260316.md`](docs/spec/common/records/four-battlefields-integrated-system-map-20260316.md)
+- 当前主线权威层：[`blueprint/README.md`](blueprint/README.md)
+- 文档书架：[`docs/navigation/four-battlefields-document-shelf/README.md`](docs/navigation/four-battlefields-document-shelf/README.md)
+- 治理状态账本：[`docs/spec/common/records/development-status.md`](docs/spec/common/records/development-status.md)
+- 历史基线权威层：[`docs/design-v2/01-system/system-baseline.md`](docs/design-v2/01-system/system-baseline.md)
+
+## 每日维护流程
+
+收盘后，推荐固定这样维护本地数据库：
+
+1. 先用通达信把本地数据下载到最新。
+2. 运行 `scripts/data/import_tdx_vipdoc.py`。
+3. 运行 `scripts/data/import_tdx_static_assets.py`。
+4. 运行 `scripts/data/repair_l1_partitions_from_raw_duckdb.py`。
+
+具体命令和说明见：
+[`scripts/data/README.md`](scripts/data/README.md)
 
 ## 快速开始
 
-### 环境配置
-
-推荐目录结构：
+### 推荐目录结构
 
 ```text
 G:\
-├── EmotionQuant-gamma\      # 代码 + 文档（本仓库）
-├── EmotionQuant_data\       # 本地数据库（不进 Git）
-└── EmotionQuant-temp\       # 临时文件（不进 Git）
+├─ EmotionQuant-gamma\   # 代码 + 文档
+├─ EmotionQuant_data\    # 本地数据库与报告
+└─ EmotionQuant-temp\    # 临时文件
 ```
 
-配置步骤：
+### 环境准备
+
 1. 复制 `.env.example` 为 `.env`
-2. 填写 `TUSHARE_TOKEN`
-3. 设置 `DATA_PATH=G:\EmotionQuant_data`
-4. 需要时设置 `LOG_PATH=G:\EmotionQuant-temp\logs`
+2. 填写 `DATA_PATH`、`TEMP_PATH`
+3. 需要时填写 `RAW_DB_PATH`
+4. 安装依赖
 
-详细配置：[`docs/reference/operations/setup-guide.md`](docs/reference/operations/setup-guide.md)
-
-### 安装依赖
+### 安装
 
 ```bash
 pip install -e .
 pip install -e ".[dev]"
-pytest -v
 ```
 
-### 基本使用
+### 常用命令
 
 ```bash
-python main.py fetch --start 2020-01-01 --end 2024-12-31
-python main.py build --layers all
-python main.py backtest --start 2020-01-01 --end 2024-12-31 --patterns bof
-python main.py run
+python main.py fetch --from-raw-db G:\EmotionQuant_data\duckdb\emotionquant.duckdb --start 2026-03-01 --end 2026-03-18
+python main.py build --layers l2,l3 --start 2026-03-01 --end 2026-03-18
+python main.py backtest --start 2024-01-01 --end 2024-12-31 --patterns bof
 ```
 
-## 目录结构
+## 相关入口
 
-```text
-EmotionQuant-gamma/
-├── blueprint/              # 主线设计权威层（full design / implementation spec / execution）
-├── normandy/               # 研究线 / 第二战场（alpha / exit diagnosis）
-├── positioning/            # 研究线 / 第三战场（buy-size / sell-size）
-├── gene/                   # 研究线 / 第四战场（historical wave ruler）
-├── src/                    # 实现代码（模块）
-├── tests/                  # 自动化测试（unit/integration/patches）
-├── scripts/                # 工具脚本（data/backtest/report/ops/setup）
-├── docs/                   # 文档总入口（见 docs/README.md）
-│   ├── design-v2/          # 历史基线与历史总览
-│   ├── Strategy/           # 理论母本与方法论来源
-│   ├── observatory/        # 观察、评审与复盘
-│   ├── spec/               # 治理归档、状态账本与版本记录
-│   ├── reference/          # 外部规则与运维参考
-│   └── workflow/           # 固定执行流程
-├── .env.example
-├── pyproject.toml
-├── main.py
-└── README.md
-```
+- [`docs/README.md`](docs/README.md)
+- [`scripts/data/README.md`](scripts/data/README.md)
+- [`scripts/backtest/README.md`](scripts/backtest/README.md)
+- [`scripts/ops/README.md`](scripts/ops/README.md)
+- [`scripts/report/README.md`](scripts/report/README.md)
+- [`docs/reference/operations/current-mainline-operating-runbook-20260317.md`](docs/reference/operations/current-mainline-operating-runbook-20260317.md)
 
-## 相关文档
+## License
 
-- 当前四战场集成图：[`docs/spec/common/records/four-battlefields-integrated-system-map-20260316.md`](docs/spec/common/records/four-battlefields-integrated-system-map-20260316.md)
-- 配置指南：[`docs/reference/operations/setup-guide.md`](docs/reference/operations/setup-guide.md)
-- 文档导航：[`docs/README.md`](docs/README.md)
-- 仓库三线地图：[`docs/spec/common/records/repo-line-map-20260312.md`](docs/spec/common/records/repo-line-map-20260312.md)
-- 当前状态：[`docs/spec/common/records/development-status.md`](docs/spec/common/records/development-status.md)
-- 主线路线图：[`docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md`](docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md)
-- Agent 规则：[`AGENTS.md`](AGENTS.md)
-
-## 许可证
-
-MIT（见 [`LICENSE`](LICENSE)）
+MIT，见 [`LICENSE`](LICENSE)。

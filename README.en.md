@@ -1,89 +1,106 @@
 # EmotionQuant
 
-EmotionQuant is a sentiment-driven quantitative system for China A-shares.
+EmotionQuant is a China A-share trading system organized around four battlefields:
+
+1. `blueprint/`: mainline governance and default runtime authority.
+2. `normandy/`: alpha truth and entry/exit diagnosis research.
+3. `positioning/`: sizing, exit control, and execution discipline research.
+4. `gene/`: historical trend/wave context research.
+
+## Current Runtime
+
+The current governed default runtime is:
+
+`Selector preselection -> BOF baseline entry -> FIXED_NOTIONAL_CONTROL -> FULL_EXIT_CONTROL -> Broker execution`
+
+Important boundaries:
+
+1. `Gene` is active as context sidecar / attribution layer, not as runtime hard gate.
+2. Legacy `IRS/MSS` are no longer the default execution spine.
+3. `scripts/backtest/` contains evidence runners, not the default system entry.
+
+## Current Data Foundation
+
+The data layer is now `TDX local-first`.
+
+Primary foundation:
+
+1. Local Tongdaxin `vipdoc` provides historical stock/index daily data.
+2. Local `T0002/hq_cache` provides stock list and industry member snapshots.
+3. Local rules provide `up_limit/down_limit`.
+
+Fallback sources:
+
+1. `BaoStock` for small-window gap filling.
+2. `TuShare` as legacy emergency fallback.
+
+See:
+
+- [`scripts/data/README.md`](scripts/data/README.md)
+- [`docs/reference/code-maps/src-data-code-map-20260318.md`](docs/reference/code-maps/src-data-code-map-20260318.md)
+- Historical baseline: [`docs/design-v2/01-system/system-baseline.md`](docs/design-v2/01-system/system-baseline.md)
 
 ## Design Entry
 
-- `v0.01` historical baseline: [`docs/design-v2/01-system/system-baseline.md`](docs/design-v2/01-system/system-baseline.md)
-- `v0.01-plus` current mainline: [`docs/spec/v0.01-plus/README.md`](docs/spec/v0.01-plus/README.md)
-- Current mainline design authority: [`blueprint/README.md`](blueprint/README.md)
-- Current governance status: [`docs/spec/common/records/development-status.md`](docs/spec/common/records/development-status.md)
+- Current four-battlefield system map: [`docs/spec/common/records/four-battlefields-integrated-system-map-20260316.md`](docs/spec/common/records/four-battlefields-integrated-system-map-20260316.md)
+- Mainline authority: [`blueprint/README.md`](blueprint/README.md)
+- Governance status ledger: [`docs/spec/common/records/development-status.md`](docs/spec/common/records/development-status.md)
+- Documentation shelf: [`docs/navigation/four-battlefields-document-shelf/README.md`](docs/navigation/four-battlefields-document-shelf/README.md)
+- Historical baseline authority: [`docs/design-v2/01-system/system-baseline.md`](docs/design-v2/01-system/system-baseline.md)
 
-Current mainline execution pipeline:
+## Daily Maintenance
 
-`Selector preselection -> BOF trigger -> IRS ranking -> MSS position control -> Broker execution`
+The recommended daily local update flow is:
 
-Notes:
-- `v0.01` is frozen as a historical attempt for comparison, rollback, and regression only.
-- `v0.01-plus` is the current mainline.
-- `backtrader` is used only for calendar stepping and data feeding; risk, matching, sizing, and state transitions are handled by the in-house `Broker` kernel.
+1. Download latest Tongdaxin local files after market close.
+2. Run `scripts/data/import_tdx_vipdoc.py`.
+3. Run `scripts/data/import_tdx_static_assets.py`.
+4. Run `scripts/data/repair_l1_partitions_from_raw_duckdb.py`.
+
+Detailed usage is documented in [`scripts/data/README.md`](scripts/data/README.md).
 
 ## Quick Start
 
-### Environment Setup
+### Environment
 
-**Recommended directory structure**:
+Recommended directory layout:
+
 ```text
 G:\
-├── EmotionQuant-gamma\      # code + docs (this repo)
-├── EmotionQuant_data\       # local database (not in Git)
-└── EmotionQuant-temp\       # temporary files (not in Git)
+├─ EmotionQuant-gamma\   # code + docs
+├─ EmotionQuant_data\    # local databases and artifacts
+└─ EmotionQuant-temp\    # temp/runtime files
 ```
 
-**Setup steps**:
-1. Copy `.env.example` to `.env`
-2. Fill in `TUSHARE_TOKEN`
-3. Set `DATA_PATH=G:\EmotionQuant_data`
-4. Set `LOG_PATH=G:\EmotionQuant-temp\logs` when needed
+Setup:
 
-Detailed setup guide: [`docs/reference/operations/setup-guide.md`](docs/reference/operations/setup-guide.md)
+1. Copy `.env.example` to `.env`.
+2. Fill in `DATA_PATH`, `TEMP_PATH`, and optional `RAW_DB_PATH`.
+3. Install dependencies.
 
-### Install Dependencies
+### Install
 
 ```bash
 pip install -e .
 pip install -e ".[dev]"
-pytest -v
 ```
 
-### Basic Usage
+### Common Commands
 
 ```bash
-python main.py fetch --start 2020-01-01 --end 2024-12-31
-python main.py build --layers all
-python main.py backtest --start 2020-01-01 --end 2024-12-31 --patterns bof
-python main.py run
-```
-
-## Repository Layout
-
-```text
-EmotionQuant-gamma/
-├── blueprint/              # new design authority layer (full design / implementation spec / execution)
-├── src/                    # implementation code (6 modules)
-├── tests/                  # automated tests (unit/integration/patches)
-├── scripts/                # utilities (data/backtest/report/ops/setup)
-├── docs/                   # documentation entry (see docs/README.md)
-│   ├── design-v2/          # historical baseline and historical overviews only
-│   ├── Strategy/           # theory sources and methodology tracing
-│   ├── observatory/        # observation, review, and retrospectives
-│   ├── spec/               # versioned archives and current mainline material
-│   ├── reference/          # external rules and operations references
-│   └── workflow/           # fixed execution flow
-├── .env.example
-├── pyproject.toml
-├── main.py
-└── README.md
+python main.py fetch --from-raw-db G:\EmotionQuant_data\duckdb\emotionquant.duckdb --start 2026-03-01 --end 2026-03-18
+python main.py build --layers l2,l3 --start 2026-03-01 --end 2026-03-18
+python main.py backtest --start 2024-01-01 --end 2024-12-31 --patterns bof
 ```
 
 ## Related Docs
 
-- Setup guide: [`docs/reference/operations/setup-guide.md`](docs/reference/operations/setup-guide.md)
-- Documentation index: [`docs/README.md`](docs/README.md)
-- Current status: [`docs/spec/common/records/development-status.md`](docs/spec/common/records/development-status.md)
-- Mainline roadmap: [`docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md`](docs/spec/v0.01-plus/roadmap/v0.01-plus-roadmap.md)
-- Agent rules: [`AGENTS.md`](AGENTS.md)
+- [`docs/README.md`](docs/README.md)
+- [`docs/reference/operations/current-mainline-operating-runbook-20260317.md`](docs/reference/operations/current-mainline-operating-runbook-20260317.md)
+- [`scripts/data/README.md`](scripts/data/README.md)
+- [`scripts/backtest/README.md`](scripts/backtest/README.md)
+- [`scripts/ops/README.md`](scripts/ops/README.md)
 
 ## License
 
-MIT (see [`LICENSE`](LICENSE))
+MIT. See [`LICENSE`](LICENSE).
