@@ -18,6 +18,7 @@
 |---|---|---|
 | 交易规则 | `A股市场交易规则-tushare版.md` | 查询交易时间、撮合、停牌与 T+1 制度 |
 | 涨跌停制度 | `A股涨跌停板制度-tushare版.md` | 查询主板/创业板/科创板/ST 的涨跌停差异 |
+| 运行时涨跌停规则 | `a-share-local-price-limit-runtime-rules-20260318.md` | 查询当前主线怎样在本地推导 `up_limit/down_limit` |
 | 申万行业分类 | `A股申万行业指数-tushare版.md` | 查询 SW 行业层级与指数映射 |
 | 当前状态 | `docs/spec/common/records/development-status.md` | 判断规则变化是否需要同步设计或治理 |
 

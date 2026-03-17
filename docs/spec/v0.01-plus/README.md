@@ -1,7 +1,7 @@
 # v0.01-plus Governance Archive
 
 **Status**: `Active`  
-**Last Updated**: `2026-03-17`
+**Last Updated**: `2026-03-18`
 
 ---
 
@@ -36,6 +36,9 @@ Mainline design authority remains in `blueprint/`.
 | Phase 6B record | `docs/spec/v0.01-plus/records/v0.01-plus-phase-6b-integrated-end-to-end-validation-20260317.md` | Formal integrated validation record |
 | Phase 6C record | `docs/spec/v0.01-plus/records/v0.01-plus-phase-6c-unified-operating-runbook-refresh-20260317.md` | Formal runbook refresh record |
 | Phase 6 closeout record | `docs/spec/v0.01-plus/records/v0.01-plus-phase-6-closeout-default-system-promotion-decision-20260317.md` | Final Phase 6 promotion decision |
+| Phase 7 card | `blueprint/03-execution/15-phase-7-data-provider-refactor-card-20260317.md` | Data-provider refactor package |
+| Phase 7B regression audit | `docs/spec/v0.01-plus/records/v0.01-plus-phase-7b-local-data-contract-regression-audit-20260318.md` | Local data-contract regression audit |
+| Phase 7 closeout record | `docs/spec/v0.01-plus/records/v0.01-plus-phase-7-data-provider-refactor-closeout-20260318.md` | Final Phase 7 data-provider closeout |
 | Current operating runbook | `docs/reference/operations/current-mainline-operating-runbook-20260317.md` | Truthful operating chain and rollback rules |
 
 ---

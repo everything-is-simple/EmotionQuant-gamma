@@ -61,6 +61,8 @@
 当前正式阅读入口补充为：
 
 1. `blueprint/03-execution/15-phase-7-data-provider-refactor-card-20260317.md`
+2. `docs/spec/v0.01-plus/records/v0.01-plus-phase-7-data-provider-refactor-closeout-20260318.md`
+3. `docs/reference/a-stock-rules/a-share-local-price-limit-runtime-rules-20260318.md`
 
 这一轮重构的现行口径是：
 
@@ -75,6 +77,8 @@
 同时，`price_limit_rules` 的现行口径也已经切到本地推导：
 
 `up_limit / down_limit = local rules derived on L1`
+
+`Phase 7` 已在 `2026-03-18` 正式收官；当前数据层真相以 Phase 7 closeout record 为准，而不是以旧的 `TuShare-first` 历史口径为准。
 
 也就是基于：
 1. `l1_stock_info.is_st / list_date`
