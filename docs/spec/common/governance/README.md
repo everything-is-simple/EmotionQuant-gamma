@@ -30,6 +30,7 @@
 ## 当前入口
 
 - `four-battlefields-unified-terminology-glossary-20260317.md`
+- `four-battlefields-object-indicator-signal-boundary-20260317.md`
 
 ## 权威入口
 

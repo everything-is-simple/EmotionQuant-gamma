@@ -27,7 +27,7 @@
 2. 第四战场的书本定义与代码偏移比对
 3. 某个策略参数是否应当升格到默认主线
 
-这些内容分别由后续两份文件处理：
+这些内容分别由后续文件处理：
 
 1. `four-battlefields-object-indicator-signal-boundary-20260317.md`
 2. `gene-foundational-definition-freeze-20260317.md`
@@ -393,9 +393,8 @@
 
 ## 12. 待续文件
 
-本文件之后，应继续补齐以下两份治理文件：
+本文件之后，仍必须补齐：
 
-1. `four-battlefields-object-indicator-signal-boundary-20260317.md`
-2. `gene-foundational-definition-freeze-20260317.md`
+1. `gene-foundational-definition-freeze-20260317.md`
 
-只有把这两份补齐，四战场的“概念骨架”才算真正闭环。
+只有把第四战场基础定义冻结稿补齐，四战场的“概念骨架”才算真正闭环。
