@@ -111,6 +111,12 @@ def _stock_daily_with_info(store: Store, start: date, end: date) -> pd.DataFrame
                   AND (m.out_date IS NULL OR m.out_date >= d.date)
                 ORDER BY m.in_date DESC, m.industry_code ASC
                 LIMIT 1
+            ), (
+                SELECT i.industry
+                FROM l1_stock_info i
+                WHERE i.ts_code = d.ts_code AND i.effective_from <= d.date
+                ORDER BY i.effective_from DESC
+                LIMIT 1
             ), '未知') AS industry,
             (
                 SELECT i.market
@@ -153,6 +159,12 @@ def clean_industry_daily(store: Store, start: date, end: date) -> int:
                       AND m.in_date <= d.date
                       AND (m.out_date IS NULL OR m.out_date >= d.date)
                     ORDER BY m.in_date DESC, m.industry_code ASC
+                    LIMIT 1
+                ), (
+                    SELECT i.industry
+                    FROM l1_stock_info i
+                    WHERE i.ts_code = d.ts_code AND i.effective_from <= d.date
+                    ORDER BY i.effective_from DESC
                     LIMIT 1
                 ), '未知') AS industry,
                 d.date,
@@ -249,6 +261,12 @@ def clean_industry_structure_daily(store: Store, start: date, end: date) -> int:
                       AND m.in_date <= d.date
                       AND (m.out_date IS NULL OR m.out_date >= d.date)
                     ORDER BY m.in_date DESC, m.industry_code ASC
+                    LIMIT 1
+                ), (
+                    SELECT i.industry
+                    FROM l1_stock_info i
+                    WHERE i.ts_code = d.ts_code AND i.effective_from <= d.date
+                    ORDER BY i.effective_from DESC
                     LIMIT 1
                 ), '未知') AS industry,
                 d.ts_code,

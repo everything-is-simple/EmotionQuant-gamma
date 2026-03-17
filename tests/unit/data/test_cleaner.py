@@ -192,7 +192,7 @@ def test_clean_industry_daily_prefers_sw_membership_and_skips_non_trade_day(tmp_
     store.close()
 
 
-def test_clean_industry_daily_without_sw_mapping_falls_back_to_unknown(tmp_path) -> None:
+def test_clean_industry_daily_without_sw_mapping_falls_back_to_stock_info_industry(tmp_path) -> None:
     db = tmp_path / "industry_unknown.duckdb"
     store = Store(db)
     trade_day = date(2026, 1, 2)
@@ -247,7 +247,7 @@ def test_clean_industry_daily_without_sw_mapping_falls_back_to_unknown(tmp_path)
 
     assert clean_industry_daily(store, trade_day, trade_day) == 1
     industry = store.read_df("SELECT industry FROM l2_industry_daily")
-    assert industry["industry"].tolist() == ["未知"]
+    assert industry["industry"].tolist() == store.read_df("SELECT industry FROM l1_stock_info ORDER BY effective_from DESC LIMIT 1")["industry"].tolist()
     store.close()
 
 
@@ -307,7 +307,7 @@ def test_clean_industry_daily_enriches_amount_ma20_and_returns(tmp_path) -> None
             """
             SELECT amount_ma20, return_5d, return_20d
             FROM l2_industry_daily
-            WHERE industry = '未知' AND date = ?
+            WHERE date = ?
             """,
             (base + timedelta(days=29),),
         )
@@ -415,7 +415,7 @@ def test_clean_industry_structure_daily_builds_minimal_structure_fields(tmp_path
         target_day = base + timedelta(days=100)
         assert clean_industry_structure_daily(store, target_day, target_day) == 1
         out = store.read_df(
-            "SELECT * FROM l2_industry_structure_daily WHERE industry = '未知' AND date = ?",
+            "SELECT * FROM l2_industry_structure_daily WHERE date = ?",
             (target_day,),
         )
         assert len(out) == 1

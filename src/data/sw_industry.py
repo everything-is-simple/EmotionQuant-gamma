@@ -50,7 +50,39 @@ def _snapshot_yyyymmdd(snapshot_date: date | str) -> str:
 def _clean_text(series: pd.Series | None) -> pd.Series:
     if series is None:
         return pd.Series(dtype="object")
-    return series.fillna("").astype(str).str.strip()
+    return series.fillna("").astype(str).str.replace("\x00", "", regex=False).str.strip()
+
+
+def _stock_only_mask(ts_codes: pd.Series) -> pd.Series:
+    cleaned = _clean_text(ts_codes).str.upper()
+    return (
+        cleaned.str.match(r"^(600|601|603|605|688|689|900)\d{3}\.SH$")
+        | cleaned.str.match(r"^(000|001|002|003|200|300|301)\d{3}\.SZ$")
+        | cleaned.str.match(r"^(4|8)\d{5}\.BJ$")
+    )
+
+
+def normalize_l1_industry_classify(classify: pd.DataFrame) -> pd.DataFrame:
+    if classify is None or classify.empty:
+        return _empty_df(["index_code", "industry_name", "industry_code", "src", "level", "trade_date"])
+
+    df = classify.copy()
+    df["index_code"] = _clean_text(df.get("index_code"))
+    df["industry_name"] = _clean_text(df.get("industry_name"))
+    if "industry_code" in df.columns:
+        df["industry_code"] = _clean_text(df.get("industry_code"))
+    else:
+        df["industry_code"] = df["index_code"]
+    df["src"] = _clean_text(df.get("src"))
+    df["level"] = _clean_text(df.get("level"))
+    df["trade_date"] = _clean_text(df.get("trade_date"))
+    df["_trade_date"] = pd.to_datetime(df["trade_date"], format="%Y%m%d", errors="coerce")
+
+    df = df[(df["index_code"] != "") & (df["industry_name"] != "")].copy()
+    df = df[~df["industry_name"].str.startswith("行业")].copy()
+    df = df.sort_values(["index_code", "_trade_date"], ascending=[True, False])
+    df = df.drop_duplicates(subset=["index_code"], keep="first")
+    return df[["index_code", "industry_name", "industry_code", "src", "level", "trade_date"]].reset_index(drop=True)
 
 
 def normalize_sw_l1_classify(classify: pd.DataFrame) -> pd.DataFrame:
@@ -62,32 +94,18 @@ def normalize_sw_l1_classify(classify: pd.DataFrame) -> pd.DataFrame:
         df = df[df["src"].fillna("").astype(str).eq("SW2021")]
     if "level" in df.columns:
         df = df[df["level"].fillna("").astype(str).eq("L1")]
+    normalized = normalize_l1_industry_classify(df)
+    return normalized[["index_code", "industry_name", "industry_code"]]
 
-    df["index_code"] = _clean_text(df.get("index_code"))
-    df["industry_name"] = _clean_text(df.get("industry_name"))
-    if "industry_code" in df.columns:
-        df["industry_code"] = _clean_text(df.get("industry_code"))
+
+def normalize_l1_industry_member_history(member_frames: pd.DataFrame | list[pd.DataFrame]) -> pd.DataFrame:
+    if isinstance(member_frames, pd.DataFrame):
+        frames = [member_frames]
     else:
-        df["industry_code"] = df["index_code"].str.replace(".SI", "", regex=False)
+        frames = member_frames
 
-    if "trade_date" in df.columns:
-        df["_trade_date"] = pd.to_datetime(df["trade_date"], format="%Y%m%d", errors="coerce")
-    else:
-        df["_trade_date"] = pd.NaT
-
-    df = df[
-        (df["index_code"] != "")
-        & (df["industry_name"] != "")
-        & (~df["industry_name"].str.startswith("行业"))
-    ].copy()
-    df = df.sort_values(["index_code", "_trade_date"], ascending=[True, False])
-    df = df.drop_duplicates(subset=["index_code"], keep="first")
-    return df[["index_code", "industry_name", "industry_code"]].reset_index(drop=True)
-
-
-def normalize_sw_l1_member_history(member_frames: list[pd.DataFrame]) -> pd.DataFrame:
     chunks: list[pd.DataFrame] = []
-    for frame in member_frames:
+    for frame in frames:
         if frame is None or frame.empty:
             continue
         df = frame.copy()
@@ -104,17 +122,25 @@ def normalize_sw_l1_member_history(member_frames: list[pd.DataFrame]) -> pd.Data
         df["in_date"] = _clean_text(df.get("in_date"))
         df["out_date"] = _clean_text(df.get("out_date"))
         df["is_new"] = _clean_text(df.get("is_new"))
+        df["trade_date"] = _clean_text(df.get("trade_date"))
         chunks.append(
-            df[["index_code", "con_code", "in_date", "out_date", "ts_code", "stock_code", "is_new"]]
+            df[["index_code", "con_code", "in_date", "out_date", "ts_code", "stock_code", "is_new", "trade_date"]]
         )
 
     if not chunks:
-        return _empty_df(["index_code", "con_code", "in_date", "out_date", "ts_code", "stock_code", "is_new"])
+        return _empty_df(
+            ["index_code", "con_code", "in_date", "out_date", "ts_code", "stock_code", "is_new", "trade_date"]
+        )
 
     members = pd.concat(chunks, ignore_index=True)
     members = members[
         (members["index_code"] != "") & (members["ts_code"] != "") & (members["in_date"] != "")
     ].copy()
+    members["_trade_date_dt"] = pd.to_datetime(
+        members["trade_date"].replace("", pd.NA),
+        format="%Y%m%d",
+        errors="coerce",
+    )
     members["_out_date_dt"] = pd.to_datetime(
         members["out_date"].replace("", pd.NA),
         format="%Y%m%d",
@@ -122,16 +148,18 @@ def normalize_sw_l1_member_history(member_frames: list[pd.DataFrame]) -> pd.Data
     )
     members["_has_out_date"] = members["out_date"] != ""
     members = members.sort_values(
-        ["index_code", "ts_code", "in_date", "_has_out_date", "_out_date_dt"],
-        ascending=[True, True, True, False, False],
+        ["index_code", "ts_code", "in_date", "_has_out_date", "_out_date_dt", "_trade_date_dt"],
+        ascending=[True, True, True, False, False, False],
     )
-    # Tushare occasionally returns both an open row and a closed row for the same entry date.
-    # v0.01 keeps one authoritative record per (industry_code, ts_code, in_date).
     members = members.drop_duplicates(
         subset=["index_code", "ts_code", "in_date"],
         keep="first",
     )
-    return members.drop(columns=["_out_date_dt", "_has_out_date"]).reset_index(drop=True)
+    return members.drop(columns=["_trade_date_dt", "_out_date_dt", "_has_out_date"]).reset_index(drop=True)
+
+
+def normalize_sw_l1_member_history(member_frames: list[pd.DataFrame]) -> pd.DataFrame:
+    return normalize_l1_industry_member_history(member_frames)
 
 
 def build_sw_l1_classify_snapshot(classify: pd.DataFrame, snapshot_date: date | str) -> pd.DataFrame:
@@ -167,22 +195,28 @@ def build_sw_l1_member_snapshot(
     return members[RAW_INDEX_MEMBER_COLUMNS].reset_index(drop=True)
 
 
-def build_l1_sw_industry_member_rows(
+def build_l1_industry_member_rows(
     classify: pd.DataFrame,
-    member_frames: list[pd.DataFrame],
+    member_frames: pd.DataFrame | list[pd.DataFrame],
     source_trade_date: date,
+    stock_only: bool = True,
 ) -> pd.DataFrame:
-    normalized_classify = normalize_sw_l1_classify(classify)
+    normalized_classify = normalize_l1_industry_classify(classify)
     if normalized_classify.empty:
         return _empty_df(L1_SW_INDUSTRY_MEMBER_COLUMNS)
 
-    members = normalize_sw_l1_member_history(member_frames)
+    members = normalize_l1_industry_member_history(member_frames)
     if members.empty:
         return _empty_df(L1_SW_INDUSTRY_MEMBER_COLUMNS)
 
     classify_map = normalized_classify.set_index("index_code")["industry_name"].to_dict()
     allowed_codes = set(classify_map.keys())
     members = members[members["index_code"].isin(allowed_codes)].copy()
+    if stock_only:
+        members = members[_stock_only_mask(members["ts_code"])].copy()
+    if members.empty:
+        return _empty_df(L1_SW_INDUSTRY_MEMBER_COLUMNS)
+
     members["industry_code"] = members["index_code"]
     members["industry_name"] = members["industry_code"].map(classify_map).fillna("")
     members["in_date"] = pd.to_datetime(members["in_date"], format="%Y%m%d", errors="coerce").dt.date
@@ -195,3 +229,16 @@ def build_l1_sw_industry_member_rows(
         keep="first",
     )
     return members[L1_SW_INDUSTRY_MEMBER_COLUMNS].reset_index(drop=True)
+
+
+def build_l1_sw_industry_member_rows(
+    classify: pd.DataFrame,
+    member_frames: list[pd.DataFrame],
+    source_trade_date: date,
+) -> pd.DataFrame:
+    sw_classify = classify.copy()
+    if "src" in sw_classify.columns:
+        sw_classify = sw_classify[sw_classify["src"].fillna("").astype(str).eq("SW2021")]
+    if "level" in sw_classify.columns:
+        sw_classify = sw_classify[sw_classify["level"].fillna("").astype(str).eq("L1")]
+    return build_l1_industry_member_rows(sw_classify, member_frames, source_trade_date, stock_only=True)

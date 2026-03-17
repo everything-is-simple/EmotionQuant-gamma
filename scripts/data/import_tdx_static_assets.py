@@ -336,6 +336,7 @@ def build_index_snapshot_records(
     snapshot_date: str,
     name_to_meta: dict[str, dict[str, str]],
     plain_code_to_ts: dict[str, str],
+    stock_list_date_map: dict[str, str],
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     classify_rows: list[dict[str, Any]] = []
     member_rows: list[dict[str, Any]] = []
@@ -369,11 +370,12 @@ def build_index_snapshot_records(
             for member_code in group["code"].astype(str).tolist():
                 local_code = member_code.strip().upper()
                 ts_code = plain_code_to_ts.get(local_code, plain_to_ts_code(local_code))
+                in_date = stock_list_date_map.get(ts_code or "", snapshot_date)
                 member_rows.append(
                     {
                         "index_code": index_code,
                         "con_code": ts_code or local_code,
-                        "in_date": snapshot_date,
+                        "in_date": in_date,
                         "out_date": "",
                         "trade_date": snapshot_date,
                         "ts_code": ts_code or "",
@@ -404,11 +406,12 @@ def build_index_snapshot_records(
             for member_code in group["code"].astype(str).tolist():
                 local_code = member_code.strip().upper()
                 ts_code = plain_code_to_ts.get(local_code, plain_to_ts_code(local_code))
+                in_date = stock_list_date_map.get(ts_code or "", snapshot_date)
                 member_rows.append(
                     {
                         "index_code": index_code,
                         "con_code": ts_code or local_code,
-                        "in_date": snapshot_date,
+                        "in_date": in_date,
                         "out_date": "",
                         "trade_date": snapshot_date,
                         "ts_code": ts_code or "",
@@ -465,11 +468,17 @@ def run() -> int:
         ts_code_to_market=ts_code_to_market,
         quote_name_map=quote_name_map,
     )
+    stock_list_date_map = {
+        str(row["ts_code"]): yyyymmdd(row.get("list_date"))
+        for row in stock_basic_records
+        if str(row.get("ts_code", "")).strip() and yyyymmdd(row.get("list_date"))
+    }
     index_classify_records, index_member_records = build_index_snapshot_records(
         reader=reader,
         snapshot_date=snapshot_date,
         name_to_meta=name_to_meta,
         plain_code_to_ts=plain_code_to_ts,
+        stock_list_date_map=stock_list_date_map,
     )
 
     progress.notes.extend(

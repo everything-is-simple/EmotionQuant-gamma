@@ -302,6 +302,19 @@ def test_bootstrap_l1_from_raw_duckdb_loads_tables_and_updates_progress(tmp_path
             {"ts_code": "000001.SZ", "list_status": "L", "effective_from": date(2026, 1, 2)},
             {"ts_code": "000001.SZ", "list_status": "D", "effective_from": date(2026, 1, 5)},
         ]
+        stock_daily = store.read_df(
+            "SELECT ts_code, date, pre_close, up_limit, down_limit FROM l1_stock_daily ORDER BY ts_code, date"
+        )
+        stock_daily["date"] = pd.to_datetime(stock_daily["date"]).dt.date
+        assert stock_daily.to_dict(orient="records") == [
+            {
+                "ts_code": "000001.SZ",
+                "date": date(2026, 1, 2),
+                "pre_close": 9.8,
+                "up_limit": 10.78,
+                "down_limit": 8.82,
+            }
+        ]
         sw_map = store.read_df(
             "SELECT industry_name, ts_code, in_date, out_date, is_new "
             "FROM l1_sw_industry_member ORDER BY ts_code, in_date"
@@ -449,14 +462,155 @@ def test_repair_l1_partitions_from_raw_duckdb_replaces_range_only(tmp_path) -> N
         assert result.stock_daily_rows == 3
         assert result.index_daily_rows == 2
         stock_daily = store.read_df(
-            "SELECT ts_code, date, close FROM l1_stock_daily ORDER BY date, ts_code"
+            "SELECT ts_code, date, close, pre_close, up_limit, down_limit FROM l1_stock_daily ORDER BY date, ts_code"
         )
         stock_daily["date"] = pd.to_datetime(stock_daily["date"]).dt.date
-        assert stock_daily.to_dict(orient="records") == [
-            {"ts_code": "000099.SZ", "date": date(2026, 2, 9), "close": 1.0},
-            {"ts_code": "000001.SZ", "date": date(2026, 2, 10), "close": 10.2},
-            {"ts_code": "000002.SZ", "date": date(2026, 2, 10), "close": 20.2},
-            {"ts_code": "000001.SZ", "date": date(2026, 2, 11), "close": 10.4},
+        assert stock_daily[["ts_code", "date", "close", "pre_close"]].to_dict(orient="records") == [
+            {"ts_code": "000099.SZ", "date": date(2026, 2, 9), "close": 1.0, "pre_close": 1.0},
+            {"ts_code": "000001.SZ", "date": date(2026, 2, 10), "close": 10.2, "pre_close": 10.0},
+            {"ts_code": "000002.SZ", "date": date(2026, 2, 10), "close": 20.2, "pre_close": 20.0},
+            {"ts_code": "000001.SZ", "date": date(2026, 2, 11), "close": 10.4, "pre_close": 10.2},
         ]
+        assert pd.isna(stock_daily.iloc[0]["up_limit"])
+        assert pd.isna(stock_daily.iloc[0]["down_limit"])
+        assert stock_daily.iloc[1]["up_limit"] == 11.0
+        assert stock_daily.iloc[1]["down_limit"] == 9.0
+        assert stock_daily.iloc[2]["up_limit"] == 22.0
+        assert stock_daily.iloc[2]["down_limit"] == 18.0
+        assert stock_daily.iloc[3]["up_limit"] == 11.22
+        assert stock_daily.iloc[3]["down_limit"] == 9.18
+    finally:
+        store.close()
+
+
+def test_bootstrap_local_price_limits_keep_gem_new_listing_unlimited(tmp_path) -> None:
+    source_db = tmp_path / "raw_gem_limit.duckdb"
+    target_db = tmp_path / "target_gem_limit.duckdb"
+
+    con = duckdb.connect(str(source_db))
+    con.execute("CREATE TABLE raw_trade_cal (cal_date VARCHAR, is_open INTEGER)")
+    con.execute("INSERT INTO raw_trade_cal VALUES ('20260316', 1), ('20260317', 1)")
+    con.execute(
+        """
+        CREATE TABLE raw_index_daily (
+            ts_code VARCHAR,
+            trade_date VARCHAR,
+            open DOUBLE,
+            high DOUBLE,
+            low DOUBLE,
+            close DOUBLE,
+            pre_close DOUBLE,
+            pct_chg DOUBLE,
+            vol DOUBLE,
+            amount DOUBLE
+        )
+        """
+    )
+    con.execute(
+        """
+        INSERT INTO raw_index_daily VALUES
+        ('000001.SH', '20260317', 1, 1, 1, 1, 1, 0, 10, 10)
+        """
+    )
+    con.execute(
+        """
+        CREATE TABLE raw_daily (
+            ts_code VARCHAR,
+            trade_date VARCHAR,
+            open DOUBLE,
+            high DOUBLE,
+            low DOUBLE,
+            close DOUBLE,
+            pre_close DOUBLE,
+            vol DOUBLE,
+            amount DOUBLE,
+            pct_chg DOUBLE
+        )
+        """
+    )
+    con.execute(
+        """
+        INSERT INTO raw_daily VALUES
+        ('300001.SZ', '20260317', 15.0, 16.0, 14.5, 15.5, 15.0, 1000, 10000, 3.33)
+        """
+    )
+    con.execute(
+        """
+        CREATE TABLE raw_daily_basic (
+            ts_code VARCHAR,
+            trade_date VARCHAR,
+            total_mv DOUBLE,
+            circ_mv DOUBLE
+        )
+        """
+    )
+    con.execute(
+        """
+        INSERT INTO raw_daily_basic VALUES
+        ('300001.SZ', '20260317', 1000000, 800000)
+        """
+    )
+    con.execute(
+        """
+        CREATE TABLE raw_stock_basic (
+            ts_code VARCHAR,
+            name VARCHAR,
+            industry VARCHAR,
+            market VARCHAR,
+            list_status VARCHAR,
+            list_date VARCHAR,
+            trade_date VARCHAR
+        )
+        """
+    )
+    con.execute(
+        """
+        INSERT INTO raw_stock_basic VALUES
+        ('300001.SZ', '创业新股', '电子', 'SZ', 'L', '20260317', '20260317')
+        """
+    )
+    con.execute(
+        """
+        CREATE TABLE raw_index_classify (
+            index_code VARCHAR,
+            industry_name VARCHAR,
+            level VARCHAR,
+            industry_code VARCHAR,
+            src VARCHAR,
+            trade_date VARCHAR,
+            is_pub VARCHAR,
+            parent_code VARCHAR
+        )
+        """
+    )
+    con.execute(
+        """
+        CREATE TABLE raw_index_member (
+            index_code VARCHAR,
+            con_code VARCHAR,
+            in_date VARCHAR,
+            out_date VARCHAR,
+            trade_date VARCHAR,
+            ts_code VARCHAR,
+            stock_code VARCHAR,
+            is_new VARCHAR
+        )
+        """
+    )
+    con.close()
+
+    store = Store(target_db)
+    try:
+        bootstrap_l1_from_raw_duckdb(
+            store=store,
+            source_db=source_db,
+            start=date(2026, 3, 17),
+            end=date(2026, 3, 17),
+        )
+        row = store.read_df(
+            "SELECT ts_code, up_limit, down_limit FROM l1_stock_daily WHERE ts_code = '300001.SZ'"
+        ).iloc[0]
+        assert pd.isna(row["up_limit"])
+        assert pd.isna(row["down_limit"])
     finally:
         store.close()

@@ -202,6 +202,25 @@
 3. `bulk_download_baostock.py` 已加安全模式。
 4. `bulk_download_tushare.py` 已独立保留。
 5. `import_tdx_static_assets.py` 已开工接入本地静态资产链。
+6. `raw_stock_basic / raw_index_classify / raw_index_member` 已由 `T0002/hq_cache + mootdx` 正式补到 `2026-03-17`。
+7. `l1_sw_industry_member` 已不再卡死旧 `SW2021` 专用链，而是优先消费本地 generic industry bucket。
+8. `up_limit / down_limit` 已切到本地规则推导，不再依赖在线 `stk_limit` 口径。
+
+### 6.1 当前阶段真相
+
+当前更准确的状态是：
+
+`Phase 7A = completed`
+`Phase 7B = active`
+
+其中 `Phase 7B` 已经完成的部分是：
+1. `fetcher.py` 正式接入本地 generic industry bucket。
+2. `cleaner.py` 与 `selector.py` 已切到 `l1_sw_industry_member 优先 + l1_stock_info.industry 回退`。
+3. `price_limit_rules` 已写回 `l1_stock_daily.up_limit / down_limit`，形成 `TDX local-first + local rules derived` 的真实执行底座。
+
+当前仍未完成的尾项是：
+1. 将 `l1_sw_industry_member` 的表名与字段命名从历史 `SW` 语义进一步去历史包袱。
+2. 继续清理仍假定 `SW-only` 的测试、说明文和下游引用。
 
 ---
 

@@ -108,6 +108,13 @@ def _load_universe_snapshot(store: Store, calc_date: date) -> pd.DataFrame:
                   AND (m.out_date IS NULL OR m.out_date >= l2.date)
                 ORDER BY m.in_date DESC, m.industry_code ASC
                 LIMIT 1
+            ), (
+                SELECT info.industry
+                FROM l1_stock_info info
+                WHERE split_part(info.ts_code, '.', 1) = l2.code
+                  AND info.effective_from <= l2.date
+                ORDER BY info.effective_from DESC
+                LIMIT 1
             ), '未知') AS industry,
             COALESCE((
                 SELECT info.is_st

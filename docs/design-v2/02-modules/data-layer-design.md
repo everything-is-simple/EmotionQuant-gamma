@@ -72,6 +72,17 @@
 2. 读取本地 `block_*.dat` 板块成员
 3. 作为股票列表/名称的轻量兜底接口
 
+同时，`price_limit_rules` 的现行口径也已经切到本地推导：
+
+`up_limit / down_limit = local rules derived on L1`
+
+也就是基于：
+1. `l1_stock_info.is_st / list_date`
+2. 股票代码对应的板块边界
+3. 本地 `l1_trade_calendar`
+
+在 `l1_stock_daily` 内直接生成执行所需的涨跌停边界，而不是继续依赖在线 `stk_limit` 下载。
+
 ---
 
 ## 4. `v0.01 Frozen` 中 Data Layer 的历史职责

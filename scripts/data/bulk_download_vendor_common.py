@@ -197,7 +197,10 @@ def yyyymmdd(value: str | date | None) -> str:
     raw = str(value).strip()
     if not raw:
         return ""
-    return raw.replace("-", "").replace("/", "")
+    normalized = raw.replace("-", "").replace("/", "")
+    if normalized in {"0", "00000000"}:
+        return ""
+    return normalized
 
 
 def ts_to_stock_code(ts_code: str | None) -> str:
@@ -428,4 +431,3 @@ def flush_table_batch(
 def log_step(message: str) -> None:
     now = datetime.now().strftime("%H:%M:%S")
     print(f"[{now}] {message}")
-

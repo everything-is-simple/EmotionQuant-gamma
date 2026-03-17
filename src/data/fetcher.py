@@ -19,7 +19,11 @@ from tenacity import (
 
 from src.config import Settings
 from src.data.store import Store
-from src.data.sw_industry import build_l1_sw_industry_member_rows, normalize_sw_l1_classify
+from src.data.sw_industry import (
+    build_l1_industry_member_rows,
+    build_l1_sw_industry_member_rows,
+    normalize_sw_l1_classify,
+)
 from src.logging_utils import logger
 
 _retry_logger = logging.getLogger("emotionquant.fetcher.retry")
@@ -28,6 +32,97 @@ _RAW_ATTACH_ALIAS = "rawdb_bootstrap"
 
 def _to_yyyymmdd(d: date) -> str:
     return d.strftime("%Y%m%d")
+
+
+def _apply_local_price_limits(store: Store, start: date, end: date) -> None:
+    # Phase 7B: 涨跌停口径本地化，不再依赖在线 limit 表。
+    # 规则来源采用仓库本地 A 股规则参考：
+    # - ST: 5%
+    # - 北交所: 30%，首个交易日不设涨跌停
+    # - 科创/创业: 20%，上市前 5 个交易日不设涨跌停
+    # - 其余 A 股: 10%，上市前 5 个交易日不设涨跌停
+    store.conn.execute(
+        """
+        UPDATE l1_stock_daily AS d
+        SET
+            up_limit = calc.up_limit,
+            down_limit = calc.down_limit
+        FROM (
+            WITH trade_days AS (
+                SELECT
+                    date,
+                    ROW_NUMBER() OVER (ORDER BY date) AS trade_day_rank
+                FROM l1_trade_calendar
+                WHERE is_trade_day = TRUE
+            ),
+            daily_info AS (
+                SELECT
+                    d.ts_code,
+                    d.date,
+                    d.pre_close,
+                    COALESCE(info.is_st, FALSE) AS is_st,
+                    info.list_date,
+                    current_day.trade_day_rank AS current_trade_day_rank,
+                    list_day.trade_day_rank AS list_trade_day_rank
+                FROM l1_stock_daily d
+                LEFT JOIN LATERAL (
+                    SELECT
+                        i.is_st,
+                        i.list_date
+                    FROM l1_stock_info i
+                    WHERE i.ts_code = d.ts_code
+                      AND i.effective_from <= d.date
+                    ORDER BY i.effective_from DESC
+                    LIMIT 1
+                ) AS info ON TRUE
+                LEFT JOIN trade_days AS current_day
+                    ON current_day.date = d.date
+                LEFT JOIN trade_days AS list_day
+                    ON list_day.date = info.list_date
+                WHERE d.date BETWEEN ? AND ?
+            ),
+            enriched AS (
+                SELECT
+                    ts_code,
+                    date,
+                    pre_close,
+                    is_st,
+                    CASE
+                        WHEN list_trade_day_rank IS NULL OR current_trade_day_rank IS NULL THEN NULL
+                        ELSE current_trade_day_rank - list_trade_day_rank + 1
+                    END AS listed_trade_days,
+                    CASE
+                        WHEN is_st THEN 0.05
+                        WHEN ts_code LIKE '%.BJ' THEN 0.30
+                        WHEN SUBSTR(ts_code, 1, 3) IN ('688', '689', '300', '301') THEN 0.20
+                        ELSE 0.10
+                    END AS limit_pct
+                FROM daily_info
+            )
+            SELECT
+                ts_code,
+                date,
+                CASE
+                    WHEN pre_close IS NULL OR pre_close <= 0 THEN NULL
+                    WHEN is_st THEN ROUND(pre_close * (1.0 + limit_pct), 2)
+                    WHEN ts_code LIKE '%.BJ' AND COALESCE(listed_trade_days, 999999) <= 1 THEN NULL
+                    WHEN ts_code NOT LIKE '%.BJ' AND COALESCE(listed_trade_days, 999999) <= 5 THEN NULL
+                    ELSE ROUND(pre_close * (1.0 + limit_pct), 2)
+                END AS up_limit,
+                CASE
+                    WHEN pre_close IS NULL OR pre_close <= 0 THEN NULL
+                    WHEN is_st THEN ROUND(pre_close * (1.0 - limit_pct), 2)
+                    WHEN ts_code LIKE '%.BJ' AND COALESCE(listed_trade_days, 999999) <= 1 THEN NULL
+                    WHEN ts_code NOT LIKE '%.BJ' AND COALESCE(listed_trade_days, 999999) <= 5 THEN NULL
+                    ELSE ROUND(pre_close * (1.0 - limit_pct), 2)
+                END AS down_limit
+            FROM enriched
+        ) AS calc
+        WHERE d.ts_code = calc.ts_code
+          AND d.date = calc.date
+        """,
+        [start, end],
+    )
 
 
 def _month_slices(start: date, end: date) -> list[tuple[date, date]]:
@@ -521,80 +616,53 @@ def bootstrap_l1_from_raw_duckdb(
             ]
             store.bulk_upsert("l1_stock_info", changed_stock_info)
 
+        if not refresh_stock_info_only:
+            _apply_local_price_limits(store, start, end)
+
         try:
-            store.conn.execute(
+            classify_frame = store.conn.execute(
                 f"""
-                INSERT INTO l1_sw_industry_member(
-                  industry_code, industry_name, ts_code, in_date, out_date, is_new, source_trade_date
-                )
-                WITH sw_l1 AS (
-                  SELECT index_code, industry_name
-                  FROM (
-                    SELECT
-                      index_code,
-                      industry_name,
-                      STRPTIME(trade_date, '%Y%m%d')::DATE AS snapshot_date,
-                      ROW_NUMBER() OVER (
-                        PARTITION BY index_code
-                        ORDER BY STRPTIME(trade_date, '%Y%m%d')::DATE DESC
-                      ) AS rn
-                    FROM {_RAW_ATTACH_ALIAS}.raw_index_classify
-                    WHERE src = 'SW2021'
-                      AND level = 'L1'
-                      AND industry_name NOT LIKE '行业%'
-                  )
-                  WHERE rn = 1
-                ),
-                  dedup AS (
-                    SELECT
-                      m.index_code AS industry_code,
-                      sw.industry_name AS industry_name,
-                      COALESCE(NULLIF(m.ts_code, ''), NULLIF(m.con_code, '')) AS ts_code,
-                    STRPTIME(m.in_date, '%Y%m%d')::DATE AS in_date,
-                    CASE
-                      WHEN NULLIF(m.out_date, '') IS NULL THEN NULL
-                      ELSE STRPTIME(m.out_date, '%Y%m%d')::DATE
-                    END AS out_date,
-                      COALESCE(m.is_new, '') AS is_new,
-                      STRPTIME(m.trade_date, '%Y%m%d')::DATE AS source_trade_date,
-                      ROW_NUMBER() OVER (
-                        PARTITION BY
-                          m.index_code,
-                          COALESCE(NULLIF(m.ts_code, ''), NULLIF(m.con_code, '')),
-                          STRPTIME(m.in_date, '%Y%m%d')::DATE
-                        ORDER BY
-                          CASE WHEN NULLIF(m.out_date, '') IS NULL THEN 1 ELSE 0 END ASC,
-                          CASE
-                            WHEN NULLIF(m.out_date, '') IS NULL THEN NULL
-                            ELSE STRPTIME(m.out_date, '%Y%m%d')::DATE
-                          END DESC,
-                          STRPTIME(m.trade_date, '%Y%m%d')::DATE DESC
-                      ) AS rn
-                    FROM {_RAW_ATTACH_ALIAS}.raw_index_member m
-                    INNER JOIN sw_l1 sw
-                      ON sw.index_code = m.index_code
-                  WHERE COALESCE(NULLIF(m.ts_code, ''), NULLIF(m.con_code, '')) IS NOT NULL
-                    AND STRPTIME(m.in_date, '%Y%m%d')::DATE <= ?
-                    AND (
-                      NULLIF(m.out_date, '') IS NULL
-                      OR STRPTIME(m.out_date, '%Y%m%d')::DATE >= ?
-                    )
-                )
-                SELECT
-                  industry_code,
-                  industry_name,
-                  ts_code,
-                  in_date,
-                  out_date,
-                  is_new,
-                  source_trade_date
-                FROM dedup
-                WHERE rn = 1
+                SELECT index_code, industry_name, level, industry_code, src, trade_date, is_pub, parent_code
+                FROM {_RAW_ATTACH_ALIAS}.raw_index_classify
+                WHERE STRPTIME(trade_date, '%Y%m%d')::DATE <= ?
                 """,
-                [end, start],
+                [end],
+            ).df()
+            member_frame = store.conn.execute(
+                f"""
+                SELECT index_code, con_code, in_date, out_date, trade_date, ts_code, stock_code, is_new
+                FROM {_RAW_ATTACH_ALIAS}.raw_index_member
+                WHERE STRPTIME(trade_date, '%Y%m%d')::DATE <= ?
+                  AND TRY_STRPTIME(NULLIF(NULLIF(in_date, ''), '0'), '%Y%m%d')::DATE <= ?
+                  AND (
+                    NULLIF(NULLIF(out_date, ''), '0') IS NULL
+                    OR TRY_STRPTIME(NULLIF(NULLIF(out_date, ''), '0'), '%Y%m%d')::DATE >= ?
+                  )
+                """,
+                [end, end, start],
+            ).df()
+            source_trade_date_raw = None
+            if not member_frame.empty and "trade_date" in member_frame.columns:
+                member_trade_dates = member_frame["trade_date"].dropna().astype(str)
+                source_trade_date_raw = member_trade_dates.max() if not member_trade_dates.empty else None
+            if not source_trade_date_raw and not classify_frame.empty and "trade_date" in classify_frame.columns:
+                classify_trade_dates = classify_frame["trade_date"].dropna().astype(str)
+                source_trade_date_raw = classify_trade_dates.max() if not classify_trade_dates.empty else None
+            source_trade_date = (
+                pd.to_datetime(source_trade_date_raw, format="%Y%m%d", errors="coerce").date()
+                if source_trade_date_raw
+                else end
             )
+            l1_industry_rows = build_l1_industry_member_rows(
+                classify_frame,
+                member_frame,
+                source_trade_date=source_trade_date,
+                stock_only=True,
+            )
+            if not l1_industry_rows.empty:
+                store.bulk_upsert("l1_sw_industry_member", l1_industry_rows)
         except Exception as exc:
-            logger.warning(f"raw SW industry bootstrap skipped: {exc}")
+            logger.warning(f"raw industry bootstrap skipped: {exc}")
 
         stock_info_max = store.read_scalar("SELECT MAX(effective_from) FROM l1_stock_info")
         store.update_fetch_progress("stock_info", stock_info_max, status="OK")
@@ -687,6 +755,7 @@ def repair_l1_partitions_from_raw_duckdb(
             """,
             [start, end],
         )
+        _apply_local_price_limits(store, start, end)
 
         # index_daily 当前执行库只消费上证指数分区；局部修复时保持同一口径。
         store.conn.execute("DELETE FROM l1_index_daily WHERE date BETWEEN ? AND ?", [start, end])

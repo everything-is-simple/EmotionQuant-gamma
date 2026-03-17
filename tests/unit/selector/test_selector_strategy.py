@@ -1396,7 +1396,7 @@ def test_selector_dtt_writes_candidate_trace_for_selected_truncated_and_rejected
     assert pd.isna(trace.iloc[2]["candidate_rank"])
     assert trace.iloc[0]["candidate_reason"] == "PRESELECT_TOP_N"
     assert pd.isna(trace.iloc[1]["candidate_reason"])
-    assert trace.iloc[0]["coverage_flag"] == "UNKNOWN_INDUSTRY"
+    assert trace.iloc[0]["coverage_flag"] == "NORMAL"
     assert trace.iloc[0]["source_snapshot_date"].date() == calc_date
     assert trace.iloc[0]["preselect_score"] == trace.iloc[0]["final_score"]
     assert trace.iloc[2]["reject_reason"] == "LOW_LIQUIDITY"
