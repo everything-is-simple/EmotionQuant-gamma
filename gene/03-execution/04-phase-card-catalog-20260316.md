@@ -62,6 +62,11 @@
    - 作用：先把 `trend_level + context proxy` 正式落成代码与落库语义
    - 状态：`Active`
    - 配套 record：`records/14-phase-gx3-trend-level-context-refactor-record-20260317.md`
+2. `GX4 / mainstream-countertrend semantics refactor`
+   - 性质：`post-closeout targeted hypothesis`
+   - 直接目标：`src/selector/gene.py`
+   - 作用：把 `wave_role` 从单层 proxy 修成相对于上一级趋势的正式结构状态
+   - 状态：`Planned`
 
 ---
 
