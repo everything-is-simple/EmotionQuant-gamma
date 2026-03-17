@@ -55,6 +55,23 @@
 3. `blueprint/03-execution/01-current-mainline-execution-breakdown-20260308.md`
 4. `docs/spec/common/records/development-status.md`
 
+### 3.3 当前数据提供方重构入口
+
+`v0.01 Frozen` 之后，现行主线已经进入 `Phase 7 / data provider refactor`。
+当前正式阅读入口补充为：
+
+1. `blueprint/03-execution/15-phase-7-data-provider-refactor-card-20260317.md`
+
+这一轮重构的现行口径是：
+
+`vipdoc historical base + T0002/hq_cache static assets + BaoStock light incremental + TuShare emergency fallback`
+
+其中 `mootdx` 的角色已经明确为：
+
+1. 读取本地 `vipdoc` 日线
+2. 读取本地 `block_*.dat` 板块成员
+3. 作为股票列表/名称的轻量兜底接口
+
 ---
 
 ## 4. `v0.01 Frozen` 中 Data Layer 的历史职责
