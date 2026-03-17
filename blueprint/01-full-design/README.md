@@ -46,19 +46,20 @@
 - `91-cross-version-object-mapping-reference-20260308.md`
 - `92-mainline-design-atom-closure-record-20260308.md`
 
-### D. 明显错层占位文件
+### D. 已退场的错层占位文件
 
-- `10-stock-gene-library-design-20260313.md`
+- 原文件：`10-stock-gene-library-design-20260313.md`
+- 归档说明：`../../gene/90-archive/05-stock-gene-library-design-placeholder-retirement-20260317.md`
 
 当前状态：
 
-1. 该文件为空。
-2. 语义上属于第四战场 `gene/`，不应继续被读者理解为第一战场正式正文。
-3. 现阶段先保留原位，避免直接移动导致历史引用断裂；但在阅读上应视作“未完成的早期错层占位”，不纳入当前 SoT。
+1. 原文件已从 `blueprint/01-full-design/` 移出。
+2. 它不再被视作第一战场正文的一部分。
+3. 第四战场正式入口统一回 `gene/`。
 
 ## 推荐阅读顺序
 
 1. 先读 `01 / 02 / 05 / 09`
 2. 再按需要回看 `03 / 04 / 06 / 07 / 08`
 3. 最后才读 `90 / 91 / 92`
-4. 不把 `10-stock-gene-library-design-20260313.md` 当正文使用
+4. 不把已退场占位文件当正文使用

@@ -6,7 +6,7 @@
 
 1. 哪些旧文档虽然位于 `blueprint/` 或 `docs/Strategy/`，但更适合按战场理解
 2. 哪些文件应该继续保留在共享与历史层
-3. 哪些文件现阶段先不移动，只在阅读口径上降级
+3. 哪些文件现阶段已经完成低风险移位或归档
 
 ## 一、blueprint/01-full-design
 
@@ -31,13 +31,14 @@
 - `blueprint/01-full-design/91-cross-version-object-mapping-reference-20260308.md`
 - `blueprint/01-full-design/92-mainline-design-atom-closure-record-20260308.md`
 
-### 4. 暂不移动但应降级的文件
+### 4. 已归档退场的低风险文件
 
-- `blueprint/01-full-design/10-stock-gene-library-design-20260313.md`
+- 原文件：`blueprint/01-full-design/10-stock-gene-library-design-20260313.md`
+- 归档说明：`gene/90-archive/05-stock-gene-library-design-placeholder-retirement-20260317.md`
 
 原因：
 
-1. 文件为空
+1. 原文件为空
 2. 语义应属第四战场
 3. 当前没有继续维护价值，不应再被理解成主线正文
 
@@ -62,4 +63,4 @@
 
 当前采用的是：
 
-`先补分类口径，再补阅读入口，再决定是否移动少量低风险文件`
+`先补分类口径，再补阅读入口，再移动少量低风险文件`
