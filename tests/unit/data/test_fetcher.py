@@ -111,13 +111,13 @@ def test_fetch_stock_info_keeps_list_status(monkeypatch) -> None:
     assert "effective_from" in df.columns
 
 
-def test_fetch_sw_industry_members_returns_l1_mapping(monkeypatch) -> None:
+def test_fetch_industry_members_returns_l1_mapping(monkeypatch) -> None:
     fake_pro = _FakePro()
     fake_ts = types.SimpleNamespace(pro_api=lambda token: fake_pro)
     monkeypatch.setitem(sys.modules, "tushare", fake_ts)
 
     fetcher = TuShareFetcher(token="dummy-token", sleep_interval=0.0)
-    df = fetcher.fetch_sw_industry_members(start=date(2026, 1, 1), end=date(2026, 1, 5))
+    df = fetcher.fetch_industry_members(start=date(2026, 1, 1), end=date(2026, 1, 5))
 
     assert set(df["industry_name"]) == {"银行", "电子"}
     assert set(df["ts_code"]) == {"000001.SZ", "000100.SZ", "600001.SH"}
@@ -287,12 +287,12 @@ def test_bootstrap_l1_from_raw_duckdb_loads_tables_and_updates_progress(tmp_path
         assert result.index_daily_rows == 1
         assert result.stock_daily_rows == 1
         assert result.stock_info_rows == 2
-        assert result.sw_industry_member_rows == 1
+        assert result.industry_member_rows == 1
         assert store.get_fetch_progress("trade_cal") == date(2026, 1, 5)
         assert store.get_fetch_progress("index_daily") == date(2026, 1, 2)
         assert store.get_fetch_progress("stock_daily") == date(2026, 1, 2)
         assert store.get_fetch_progress("stock_info") == date(2026, 1, 5)
-        assert store.get_fetch_progress("sw_industry_member") == date(2026, 1, 5)
+        assert store.get_fetch_progress("industry_member") == date(2026, 1, 5)
 
         stock_info = store.read_df(
             "SELECT ts_code, list_status, effective_from FROM l1_stock_info ORDER BY effective_from"
@@ -317,7 +317,7 @@ def test_bootstrap_l1_from_raw_duckdb_loads_tables_and_updates_progress(tmp_path
         ]
         sw_map = store.read_df(
             "SELECT industry_name, ts_code, in_date, out_date, is_new "
-            "FROM l1_sw_industry_member ORDER BY ts_code, in_date"
+            "FROM l1_industry_member ORDER BY ts_code, in_date"
         )
         sw_map["in_date"] = pd.to_datetime(sw_map["in_date"]).dt.date
         sw_map["out_date"] = pd.to_datetime(sw_map["out_date"]).dt.date

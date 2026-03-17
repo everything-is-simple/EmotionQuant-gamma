@@ -55,7 +55,7 @@ def cmd_fetch(args: argparse.Namespace) -> int:
                 "fetch raw bootstrap completed: "
                 f"source={result.source_db}, trade_cal={result.trade_calendar_rows}, "
                 f"stock_daily={result.stock_daily_rows}, index_daily={result.index_daily_rows}, "
-                f"stock_info={result.stock_info_rows}, sw_industry_member={result.sw_industry_member_rows}, "
+                f"stock_info={result.stock_info_rows}, industry_member={result.industry_member_rows}, "
                 f"stock_info_effective_range={result.stock_info_effective_from_min}.."
                 f"{result.stock_info_effective_from_max}"
             )
@@ -67,7 +67,7 @@ def cmd_fetch(args: argparse.Namespace) -> int:
         # 先拉交易日历，再拉其他表，确保 T+1 / next_trade_date 有基准。
         total += fetch_incremental(store, fetcher, "trade_cal", "l1_trade_calendar", start, end)
         total += fetch_incremental(store, fetcher, "stock_info", "l1_stock_info", start, end)
-        total += fetch_incremental(store, fetcher, "sw_industry_member", "l1_sw_industry_member", start, end)
+        total += fetch_incremental(store, fetcher, "industry_member", "l1_industry_member", start, end)
         total += fetch_incremental(store, fetcher, "index_daily", "l1_index_daily", start, end)
         total += fetch_incremental(store, fetcher, "stock_daily", "l1_stock_daily", start, end)
         logger.info(f"fetch completed, written rows={total}")
@@ -145,7 +145,7 @@ def cmd_run(args: argparse.Namespace) -> int:
 
         # 2) 增量拉取 L1，确保当日与前一交易日数据可用。
         fetch_incremental(store, fetcher, "stock_info", "l1_stock_info", signal_date, trade_date)
-        fetch_incremental(store, fetcher, "sw_industry_member", "l1_sw_industry_member", signal_date, trade_date)
+        fetch_incremental(store, fetcher, "industry_member", "l1_industry_member", signal_date, trade_date)
         fetch_incremental(store, fetcher, "index_daily", "l1_index_daily", signal_date, trade_date)
         fetch_incremental(store, fetcher, "stock_daily", "l1_stock_daily", signal_date, trade_date)
 

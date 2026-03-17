@@ -21,7 +21,6 @@ from src.config import Settings
 from src.data.store import Store
 from src.data.sw_industry import (
     build_l1_industry_member_rows,
-    build_l1_sw_industry_member_rows,
     normalize_sw_l1_classify,
 )
 from src.logging_utils import logger
@@ -158,7 +157,7 @@ class DataFetcher(ABC):
         pass
 
     @abstractmethod
-    def fetch_sw_industry_members(self, start: date, end: date) -> pd.DataFrame:
+    def fetch_industry_members(self, start: date, end: date) -> pd.DataFrame:
         pass
 
 
@@ -365,7 +364,7 @@ class TuShareFetcher(DataFetcher):
         cal["next_trade_day"] = cal["date"].map(next_map)
         return cal[["date", "is_trade_day", "prev_trade_day", "next_trade_day"]]
 
-    def fetch_sw_industry_members(self, start: date, end: date) -> pd.DataFrame:
+    def fetch_industry_members(self, start: date, end: date) -> pd.DataFrame:
         """
         远端模式拉取 SW2021 一级行业完整成员快照。
         当前成员(Y) + 历史移出成员(N) 一起拉取，避免执行库只看到现行成分。
@@ -388,7 +387,7 @@ class TuShareFetcher(DataFetcher):
                     member_frames.append(df)
                 time.sleep(self.sleep_interval)
 
-        return build_l1_sw_industry_member_rows(classify, member_frames, source_trade_date=end)
+        return build_l1_industry_member_rows(classify, member_frames, source_trade_date=end, stock_only=True)
 
 
 class AKShareFetcher(DataFetcher):
@@ -425,11 +424,11 @@ class AKShareFetcher(DataFetcher):
         logger.warning("AKShare trade_calendar mapping is minimal in v0.01.")
         return pd.DataFrame()
 
-    def fetch_sw_industry_members(self, start: date, end: date) -> pd.DataFrame:
+    def fetch_industry_members(self, start: date, end: date) -> pd.DataFrame:
         import akshare as ak
 
         _ = ak
-        logger.warning("AKShare sw industry member mapping is minimal in v0.01.")
+        logger.warning("AKShare industry member mapping is minimal in v0.01.")
         return pd.DataFrame()
 
 
@@ -441,7 +440,7 @@ class RawBootstrapResult:
     stock_daily_rows: int
     index_daily_rows: int
     stock_info_rows: int
-    sw_industry_member_rows: int
+    industry_member_rows: int
     stock_info_effective_from_min: date | None
     stock_info_effective_from_max: date | None
 
@@ -486,14 +485,14 @@ def bootstrap_l1_from_raw_duckdb(
 
         if refresh_stock_info_only:
             store.conn.execute("DELETE FROM l1_stock_info")
-            store.conn.execute("DELETE FROM l1_sw_industry_member")
+            store.conn.execute("DELETE FROM l1_industry_member")
         else:
             for table in (
                 "l1_trade_calendar",
                 "l1_stock_daily",
                 "l1_index_daily",
                 "l1_stock_info",
-                "l1_sw_industry_member",
+                "l1_industry_member",
             ):
                 store.conn.execute(f"DELETE FROM {table}")
 
@@ -660,15 +659,15 @@ def bootstrap_l1_from_raw_duckdb(
                 stock_only=True,
             )
             if not l1_industry_rows.empty:
-                store.bulk_upsert("l1_sw_industry_member", l1_industry_rows)
+                store.bulk_upsert("l1_industry_member", l1_industry_rows)
         except Exception as exc:
             logger.warning(f"raw industry bootstrap skipped: {exc}")
 
         stock_info_max = store.read_scalar("SELECT MAX(effective_from) FROM l1_stock_info")
         store.update_fetch_progress("stock_info", stock_info_max, status="OK")
         store.update_fetch_progress(
-            "sw_industry_member",
-            store.read_scalar("SELECT MAX(source_trade_date) FROM l1_sw_industry_member"),
+            "industry_member",
+            store.read_scalar("SELECT MAX(source_trade_date) FROM l1_industry_member"),
             status="OK",
         )
         if not refresh_stock_info_only:
@@ -699,7 +698,7 @@ def bootstrap_l1_from_raw_duckdb(
         stock_daily_rows=int(store.read_scalar("SELECT COUNT(*) FROM l1_stock_daily") or 0),
         index_daily_rows=int(store.read_scalar("SELECT COUNT(*) FROM l1_index_daily") or 0),
         stock_info_rows=int(store.read_scalar("SELECT COUNT(*) FROM l1_stock_info") or 0),
-        sw_industry_member_rows=int(store.read_scalar("SELECT COUNT(*) FROM l1_sw_industry_member") or 0),
+        industry_member_rows=int(store.read_scalar("SELECT COUNT(*) FROM l1_industry_member") or 0),
         stock_info_effective_from_min=stock_info_range[0] if stock_info_range else None,
         stock_info_effective_from_max=stock_info_range[1] if stock_info_range else None,
     )
@@ -886,8 +885,8 @@ def fetch_incremental(
         df = fetcher.fetch_stock_daily(start_date, end_date)
     elif data_type == "index_daily":
         df = fetcher.fetch_index_daily(["000001.SH"], start_date, end_date)
-    elif data_type == "sw_industry_member":
-        df = fetcher.fetch_sw_industry_members(start_date, end_date)
+    elif data_type in {"industry_member", "sw_industry_member"}:
+        df = fetcher.fetch_industry_members(start_date, end_date)
     else:
         raise ValueError(f"Unsupported data_type: {data_type}")
 

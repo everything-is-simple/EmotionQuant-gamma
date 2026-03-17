@@ -124,7 +124,7 @@ def test_clean_industry_daily_prefers_sw_membership_and_skips_non_trade_day(tmp_
         ),
     )
     store.bulk_upsert(
-        "l1_sw_industry_member",
+        "l1_industry_member",
         pd.DataFrame(
             [
                 {

@@ -74,7 +74,7 @@ universe snapshot
 
 | 阶段 | 名称 | 输入 | 输出 | 失败语义 |
 |---|---|---|---|---|
-| `S0` | `universe_snapshot` | `l2_stock_adj_daily + l1_stock_daily + l1_stock_info + l1_sw_industry_member` | 当日全市场候选快照 | 无当日快照则该股票不进入主链 |
+| `S0` | `universe_snapshot` | `l2_stock_adj_daily + l1_stock_daily + l1_stock_info + l1_industry_member` | 当日全市场候选快照 | 无当日快照则该股票不进入主链 |
 | `S1` | `tradability_filter` | `S0` | 可交易股票子集 | `NOT_LIVE / HALTED / ST` |
 | `S2` | `hygiene_filter` | `S1` | 样本卫生合格子集 | `TOO_NEW / LOW_LIQUIDITY` |
 | `S3` | `preselect_score` | `S2` | `preselect_score` 排序表 | 不允许混入 `MSS / IRS / PAS` |

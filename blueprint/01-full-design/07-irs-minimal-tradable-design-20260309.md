@@ -125,7 +125,7 @@ industry daily snapshot
 | `l2_industry_daily` | 行业日线聚合表 | 行业层主输入 |
 | `l2_industry_structure_daily` | 行业内结构辅助表 | `BD / GN` 结构输入 |
 | `l1_index_daily` | 市场基准 | 相对强度参照 |
-| `l1_sw_industry_member` | 行业映射 | `industry -> stock -> signal` 连接 |
+| `l1_industry_member` | 行业映射 | `industry -> stock -> signal` 连接 |
 | 当前配置 | `config.py` | 窗口、权重、阈值、fallback 规则 |
 
 ### 5.2 当前主线阶段模型

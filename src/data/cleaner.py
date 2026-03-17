@@ -105,7 +105,7 @@ def _stock_daily_with_info(store: Store, start: date, end: date) -> pd.DataFrame
             d.pct_chg, d.is_halt, d.up_limit, d.down_limit,
             COALESCE((
                 SELECT m.industry_name
-                FROM l1_sw_industry_member m
+                FROM l1_industry_member m
                 WHERE m.ts_code = d.ts_code
                   AND m.in_date <= d.date
                   AND (m.out_date IS NULL OR m.out_date >= d.date)
@@ -154,7 +154,7 @@ def clean_industry_daily(store: Store, start: date, end: date) -> int:
             SELECT
                 COALESCE((
                     SELECT m.industry_name
-                    FROM l1_sw_industry_member m
+                    FROM l1_industry_member m
                     WHERE m.ts_code = d.ts_code
                       AND m.in_date <= d.date
                       AND (m.out_date IS NULL OR m.out_date >= d.date)
@@ -256,7 +256,7 @@ def clean_industry_structure_daily(store: Store, start: date, end: date) -> int:
             SELECT
                 COALESCE((
                     SELECT m.industry_name
-                    FROM l1_sw_industry_member m
+                    FROM l1_industry_member m
                     WHERE m.ts_code = d.ts_code
                       AND m.in_date <= d.date
                       AND (m.out_date IS NULL OR m.out_date >= d.date)

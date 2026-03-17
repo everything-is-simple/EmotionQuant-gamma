@@ -102,7 +102,7 @@ def _load_universe_snapshot(store: Store, calc_date: date) -> pd.DataFrame:
             l1.is_halt,
             COALESCE((
                 SELECT m.industry_name
-                FROM l1_sw_industry_member m
+                FROM l1_industry_member m
                 WHERE split_part(m.ts_code, '.', 1) = l2.code
                   AND m.in_date <= l2.date
                   AND (m.out_date IS NULL OR m.out_date >= l2.date)

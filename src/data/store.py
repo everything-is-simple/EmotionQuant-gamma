@@ -10,7 +10,7 @@ from typing import Any
 import duckdb
 import pandas as pd
 
-CURRENT_SCHEMA_VERSION = 11
+CURRENT_SCHEMA_VERSION = 12
 
 
 @dataclass(frozen=True)
@@ -278,6 +278,65 @@ class Store:
         ]
         for sql in statements:
             self.conn.execute(sql)
+
+    def _migrate_schema_v11_to_v12(self) -> None:
+        self.conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS l1_industry_member (
+                industry_code     VARCHAR NOT NULL,
+                industry_name     VARCHAR NOT NULL,
+                ts_code           VARCHAR NOT NULL,
+                in_date           DATE    NOT NULL,
+                out_date          DATE,
+                is_new            VARCHAR,
+                source_trade_date DATE,
+                PRIMARY KEY (industry_code, ts_code, in_date)
+            )
+            """
+        )
+        old_exists = self.read_scalar(
+            """
+            SELECT COUNT(*)
+            FROM information_schema.tables
+            WHERE table_name = 'l1_sw_industry_member'
+            """
+        )
+        if old_exists:
+            self.conn.execute(
+                """
+                INSERT OR REPLACE INTO l1_industry_member(
+                    industry_code,
+                    industry_name,
+                    ts_code,
+                    in_date,
+                    out_date,
+                    is_new,
+                    source_trade_date
+                )
+                SELECT
+                    industry_code,
+                    industry_name,
+                    ts_code,
+                    in_date,
+                    out_date,
+                    is_new,
+                    source_trade_date
+                FROM l1_sw_industry_member
+                """
+            )
+        self.conn.execute(
+            """
+            INSERT OR REPLACE INTO _meta_fetch_progress(data_type, last_success, last_attempt, status, error_msg)
+            SELECT
+                'industry_member' AS data_type,
+                last_success,
+                last_attempt,
+                status,
+                error_msg
+            FROM _meta_fetch_progress
+            WHERE data_type = 'sw_industry_member'
+            """
+        )
 
     def _migrate_schema_v6_to_v7(self) -> None:
         statements = [
@@ -607,7 +666,7 @@ class Store:
             )
             """,
             """
-            CREATE TABLE IF NOT EXISTS l1_sw_industry_member (
+            CREATE TABLE IF NOT EXISTS l1_industry_member (
                 industry_code     VARCHAR NOT NULL,
                 industry_name     VARCHAR NOT NULL,
                 ts_code           VARCHAR NOT NULL,
@@ -1676,7 +1735,15 @@ class Store:
             (run_id, order_id),
         )
 
+    @staticmethod
+    def _canonical_fetch_progress_key(data_type: str) -> str:
+        mapping = {
+            "sw_industry_member": "industry_member",
+        }
+        return mapping.get(data_type, data_type)
+
     def get_fetch_progress(self, data_type: str) -> date | None:
+        data_type = self._canonical_fetch_progress_key(data_type)
         value = self.read_scalar(
             "SELECT last_success FROM _meta_fetch_progress WHERE data_type = ?", (data_type,)
         )
@@ -1689,6 +1756,7 @@ class Store:
         status: str = "OK",
         error_msg: str | None = None,
     ) -> None:
+        data_type = self._canonical_fetch_progress_key(data_type)
         payload = pd.DataFrame(
             [
                 {

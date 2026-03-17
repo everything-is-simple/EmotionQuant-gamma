@@ -1143,7 +1143,7 @@ def test_selector_dtt_preselect_score_mode_changes_sorting_basis(tmp_path) -> No
     store.close()
 
 
-def test_selector_prefers_sw_industry_over_legacy_stock_basic_industry(tmp_path) -> None:
+def test_selector_prefers_industry_member_over_legacy_stock_basic_industry(tmp_path) -> None:
     db = tmp_path / "selector_sw_priority.duckdb"
     store = Store(db)
     calc_date = date(2026, 1, 10)
@@ -1216,7 +1216,7 @@ def test_selector_prefers_sw_industry_over_legacy_stock_basic_industry(tmp_path)
         ),
     )
     store.bulk_upsert(
-        "l1_sw_industry_member",
+        "l1_industry_member",
         pd.DataFrame(
             [
                 {

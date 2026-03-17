@@ -5,7 +5,7 @@ from datetime import date
 import pandas as pd
 
 from src.data.sw_industry import (
-    build_l1_sw_industry_member_rows,
+    build_l1_industry_member_rows,
     build_sw_l1_classify_snapshot,
     build_sw_l1_member_snapshot,
     normalize_sw_l1_classify,
@@ -88,7 +88,7 @@ def test_sw_l1_snapshots_cover_active_and_removed_members() -> None:
 
     raw_classify = build_sw_l1_classify_snapshot(classify, snapshot_date="20260306")
     raw_member = build_sw_l1_member_snapshot(classify, members, snapshot_date="20260306")
-    l1_member = build_l1_sw_industry_member_rows(classify, members, source_trade_date=date(2026, 3, 6))
+    l1_member = build_l1_industry_member_rows(classify, members, source_trade_date=date(2026, 3, 6))
 
     assert raw_classify["industry_name"].tolist() == ["银行"]
     assert set(raw_member["ts_code"]) == {"000001.SZ", "600001.SH"}
@@ -135,7 +135,7 @@ def test_sw_member_dedup_prefers_closed_row_when_same_in_date_conflicts() -> Non
     ]
 
     raw_member = build_sw_l1_member_snapshot(classify, members, snapshot_date="20260306")
-    l1_member = build_l1_sw_industry_member_rows(classify, members, source_trade_date=date(2026, 3, 6))
+    l1_member = build_l1_industry_member_rows(classify, members, source_trade_date=date(2026, 3, 6))
 
     assert len(raw_member) == 1
     assert raw_member.iloc[0]["out_date"] == "20260304"
