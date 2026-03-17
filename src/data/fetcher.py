@@ -33,6 +33,22 @@ def _to_yyyymmdd(d: date) -> str:
     return d.strftime("%Y%m%d")
 
 
+def _canonical_fetch_data_type(data_type: str) -> str:
+    """Collapse legacy public aliases into the current runtime contract."""
+    normalized = str(data_type).strip()
+    if normalized == "sw_industry_member":
+        return "industry_member"
+    return normalized
+
+
+def _canonical_target_table(table_name: str) -> str:
+    """Keep old table names readable by internal callers without exposing them publicly."""
+    normalized = str(table_name).strip()
+    if normalized == "l1_sw_industry_member":
+        return "l1_industry_member"
+    return normalized
+
+
 def _apply_local_price_limits(store: Store, start: date, end: date) -> None:
     # Phase 7B: 涨跌停口径本地化，不再依赖在线 limit 表。
     # 规则来源采用仓库本地 A 股规则参考：
@@ -864,9 +880,11 @@ def fetch_incremental(
     start: date | None = None,
     end: date | None = None,
 ) -> int:
+    canonical_data_type = _canonical_fetch_data_type(data_type)
+    canonical_target_table = _canonical_target_table(target_table)
     end_date = end or date.today()
     if start is None:
-        last_success = store.get_fetch_progress(data_type)
+        last_success = store.get_fetch_progress(canonical_data_type)
         if last_success is None:
             start_date = end_date - timedelta(days=365 * 3)
         else:
@@ -877,23 +895,27 @@ def fetch_incremental(
     if start_date > end_date:
         return 0
 
-    if data_type == "trade_cal":
+    if canonical_data_type == "trade_cal":
         df = fetcher.fetch_trade_calendar(start_date, end_date)
-    elif data_type == "stock_info":
+    elif canonical_data_type == "stock_info":
         df = fetcher.fetch_stock_info()
-    elif data_type == "stock_daily":
+    elif canonical_data_type == "stock_daily":
         df = fetcher.fetch_stock_daily(start_date, end_date)
-    elif data_type == "index_daily":
+    elif canonical_data_type == "index_daily":
         df = fetcher.fetch_index_daily(["000001.SH"], start_date, end_date)
-    elif data_type in {"industry_member", "sw_industry_member"}:
+    elif canonical_data_type == "industry_member":
         df = fetcher.fetch_industry_members(start_date, end_date)
     else:
         raise ValueError(f"Unsupported data_type: {data_type}")
 
     if df is None or df.empty:
-        store.update_fetch_progress(data_type, store.get_fetch_progress(data_type), status="OK")
+        store.update_fetch_progress(
+            canonical_data_type,
+            store.get_fetch_progress(canonical_data_type),
+            status="OK",
+        )
         return 0
 
-    written = store.bulk_upsert(target_table, df)
-    store.update_fetch_progress(data_type, end_date, status="OK")
+    written = store.bulk_upsert(canonical_target_table, df)
+    store.update_fetch_progress(canonical_data_type, end_date, status="OK")
     return written

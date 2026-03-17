@@ -10,9 +10,27 @@ import pandas as pd
 from src.data.fetcher import (
     TuShareFetcher,
     bootstrap_l1_from_raw_duckdb,
+    fetch_incremental,
     repair_l1_partitions_from_raw_duckdb,
 )
 from src.data.store import Store
+
+
+class _DummyIndustryFetcher:
+    def fetch_industry_members(self, start: date, end: date) -> pd.DataFrame:
+        return pd.DataFrame(
+            [
+                {
+                    "industry_code": "BK001",
+                    "industry_name": "鏈湴鏉垮潡",
+                    "ts_code": "000001.SZ",
+                    "in_date": date(1991, 4, 3),
+                    "out_date": None,
+                    "is_new": "Y",
+                    "source_trade_date": end,
+                }
+            ]
+        )
 
 
 class _FakePro:
@@ -612,5 +630,26 @@ def test_bootstrap_local_price_limits_keep_gem_new_listing_unlimited(tmp_path) -
         ).iloc[0]
         assert pd.isna(row["up_limit"])
         assert pd.isna(row["down_limit"])
+    finally:
+        store.close()
+
+
+def test_fetch_incremental_keeps_legacy_sw_alias_internal_only(tmp_path) -> None:
+    store = Store(tmp_path / "legacy_alias.duckdb")
+    try:
+        written = fetch_incremental(
+            store=store,
+            fetcher=_DummyIndustryFetcher(),
+            data_type="sw_industry_member",
+            target_table="l1_sw_industry_member",
+            start=date(2026, 3, 17),
+            end=date(2026, 3, 17),
+        )
+        assert written == 1
+        assert store.get_fetch_progress("industry_member") == date(2026, 3, 17)
+        rows = store.read_df("SELECT industry_name, ts_code FROM l1_industry_member")
+        assert rows.to_dict(orient="records") == [
+            {"industry_name": "鏈湴鏉垮潡", "ts_code": "000001.SZ"}
+        ]
     finally:
         store.close()
