@@ -42,6 +42,10 @@ G2_BAND_NORMAL = "NORMAL"
 G2_BAND_STRONG = "STRONG"
 G2_BAND_EXTREME = "EXTREME"
 G2_BAND_UNSCALED = "UNSCALED"
+TREND_LEVEL_SHORT = "SHORT"
+TREND_LEVEL_INTERMEDIATE = "INTERMEDIATE"
+TREND_LEVEL_LONG = "LONG"
+WAVE_ROLE_BASIS_INTERMEDIATE_PROXY = "INTERMEDIATE_MAJOR_TREND_PROXY"
 EVENT_FAMILY_EXTREME = "EXTREME"
 EVENT_FAMILY_STRUCTURE = "STRUCTURE"
 TURN_CONFIRM_NONE = "NONE"
@@ -509,9 +513,14 @@ def _build_wave_rows(
                 "last_extreme_price": last_extreme_price,
                 "two_b_failure_count": two_b_count,
                 "end_confirm_index": int(end_pivot.confirm_index),
+                "trend_level": TREND_LEVEL_INTERMEDIATE,
                 "trend_direction_before": "UNSET",
                 "trend_direction_after": "UNSET",
+                "context_trend_level": TREND_LEVEL_INTERMEDIATE,
+                "context_trend_direction_before": "UNSET",
+                "context_trend_direction_after": "UNSET",
                 "wave_role": "MAINSTREAM",
+                "wave_role_basis": WAVE_ROLE_BASIS_INTERMEDIATE_PROXY,
                 "reversal_tag": "NONE",
                 "turn_confirm_type": TURN_CONFIRM_NONE,
                 "turn_step1_date": None,
@@ -553,9 +562,15 @@ def _assign_wave_trend_context(waves: list[dict[str, object]]) -> None:
                 role = "MAINSTREAM"
         if reversal_tag == "NONE" and int(wave["two_b_failure_count"]) > 0:
             reversal_tag = "TWO_B_WATCH"
+        resolved_direction_after = major_trend if major_trend != "UNSET" else direction
+        wave["trend_level"] = TREND_LEVEL_INTERMEDIATE
         wave["trend_direction_before"] = before
-        wave["trend_direction_after"] = major_trend if major_trend != "UNSET" else direction
+        wave["trend_direction_after"] = resolved_direction_after
+        wave["context_trend_level"] = TREND_LEVEL_INTERMEDIATE
+        wave["context_trend_direction_before"] = before
+        wave["context_trend_direction_after"] = resolved_direction_after
         wave["wave_role"] = role
+        wave["wave_role_basis"] = WAVE_ROLE_BASIS_INTERMEDIATE_PROXY
         wave["reversal_tag"] = reversal_tag
 
 
@@ -954,7 +969,8 @@ def _build_daily_snapshots(
         else:
             reversal_state = "NONE"
 
-        current_wave_role = "MAINSTREAM" if trend_direction in {"UNSET", direction} else "COUNTERTREND"
+        current_context_trend_direction = trend_direction if trend_direction != "UNSET" else direction
+        current_wave_role = "MAINSTREAM" if current_context_trend_direction == direction else "COUNTERTREND"
         snapshots.append(
             {
                 "code": code,
@@ -968,10 +984,14 @@ def _build_daily_snapshots(
                 "weakness_ratio": float(magnitude_stats["percentile"] / 100.0) if direction == "DOWN" else 0.0,
                 "resilience": float(duration_stats["percentile"] / 100.0) if direction == "UP" else 0.0,
                 "fragility": float(duration_stats["percentile"] / 100.0) if direction == "DOWN" else 0.0,
-                "trend_direction": trend_direction if trend_direction != "UNSET" else direction,
+                "trend_level": TREND_LEVEL_INTERMEDIATE,
+                "trend_direction": current_context_trend_direction,
                 "current_wave_id": f"{code}::{active_state.start_date.isoformat()}::{direction}",
                 "current_wave_direction": direction,
+                "current_context_trend_level": TREND_LEVEL_INTERMEDIATE,
+                "current_context_trend_direction": current_context_trend_direction,
                 "current_wave_role": current_wave_role,
+                "current_wave_role_basis": WAVE_ROLE_BASIS_INTERMEDIATE_PROXY,
                 "reversal_state": reversal_state,
                 "latest_completed_reversal_tag": latest_completed_reversal,
                 "latest_confirmed_turn_type": latest_confirmed_turn_type,

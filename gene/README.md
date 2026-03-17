@@ -106,6 +106,7 @@
 - `03-execution/evidence/11-phase-g8-gene-campaign-closeout-evidence-20260316.md`
 - `03-execution/12-phase-gx1-targeted-detector-rewrite-card-20260316.md`
 - `03-execution/13-phase-gx2-targeted-migration-package-card-20260316.md`
+- `03-execution/14-phase-gx3-trend-level-context-refactor-card-20260317.md`
 - `03-execution/records/01-phase-g0-wave-ruler-opening-record-20260316.md`
 - `03-execution/records/02-professional-speculation-principles-map-20260316.md`
 - `03-execution/records/03-professional-speculation-principles-system-ingestion-matrix-20260316.md`
@@ -118,3 +119,12 @@
 - `03-execution/records/10-phase-g7-mss-irs-refactor-or-retire-record-20260316.md`
 - `03-execution/records/11-phase-g8-gene-campaign-closeout-record-20260316.md`
 - `90-archive/README.md`
+
+---
+
+## 7. Post-Closeout Targeted Hypothesis
+
+1. `GX3 / trend-level context refactor`
+   - 鎬ц川锛?`post-closeout targeted hypothesis`
+   - 鐩存帴鐩爣锛歚src/selector/gene.py`
+   - 褰撳墠鐘舵€侊細`Active`

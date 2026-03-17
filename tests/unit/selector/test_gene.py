@@ -143,7 +143,11 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
             SELECT
                 code,
                 calc_date,
+                trend_level,
                 current_wave_direction,
+                current_context_trend_level,
+                current_context_trend_direction,
+                current_wave_role_basis,
                 current_wave_magnitude_pct,
                 current_wave_magnitude_percentile,
                 current_wave_magnitude_band,
@@ -161,9 +165,13 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
             SELECT
                 code,
                 direction,
+                trend_level,
+                context_trend_level,
+                context_trend_direction_after,
                 magnitude_pct,
                 duration_trade_days,
                 wave_role,
+                wave_role_basis,
                 reversal_tag,
                 magnitude_percentile,
                 magnitude_band,
@@ -229,6 +237,10 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
 
         assert written > 0
         assert "current_wave_direction" in schema["name"].tolist()
+        assert "trend_level" in schema["name"].tolist()
+        assert "current_context_trend_level" in schema["name"].tolist()
+        assert "current_context_trend_direction" in schema["name"].tolist()
+        assert "current_wave_role_basis" in schema["name"].tolist()
         assert "cross_section_magnitude_rank" in schema["name"].tolist()
         assert "current_wave_magnitude_band" in schema["name"].tolist()
         assert "current_wave_age_band" in schema["name"].tolist()
@@ -240,6 +252,13 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert not factor_eval.empty
         assert not distribution_eval.empty
         assert snapshots["current_wave_direction"].tolist() == ["UP", "UP"]
+        assert snapshots["trend_level"].tolist() == ["INTERMEDIATE", "INTERMEDIATE"]
+        assert snapshots["current_context_trend_level"].tolist() == ["INTERMEDIATE", "INTERMEDIATE"]
+        assert snapshots["current_context_trend_direction"].isin(["UP", "DOWN"]).all()
+        assert snapshots["current_wave_role_basis"].tolist() == [
+            "INTERMEDIATE_MAJOR_TREND_PROXY",
+            "INTERMEDIATE_MAJOR_TREND_PROXY",
+        ]
         assert snapshots["code"].tolist() == ["AAA", "BBB"]
         assert snapshots["cross_section_magnitude_rank"].tolist() == [1, 2]
         assert float(snapshots.iloc[0]["current_wave_magnitude_pct"]) > float(
@@ -248,6 +267,10 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert snapshots["current_wave_magnitude_percentile"].notna().all()
         assert snapshots["current_wave_magnitude_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
         assert snapshots["current_wave_age_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
+        assert waves["trend_level"].eq("INTERMEDIATE").all()
+        assert waves["context_trend_level"].eq("INTERMEDIATE").all()
+        assert waves["wave_role_basis"].eq("INTERMEDIATE_MAJOR_TREND_PROXY").all()
+        assert waves["context_trend_direction_after"].isin(["UP", "DOWN"]).all()
         assert waves["magnitude_percentile"].notna().all()
         assert waves["magnitude_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
         assert waves["wave_age_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()

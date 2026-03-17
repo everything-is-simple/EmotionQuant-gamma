@@ -31,6 +31,10 @@
 
 - `four-battlefields-unified-terminology-glossary-20260317.md`
 - `four-battlefields-object-indicator-signal-boundary-20260317.md`
+- `gene-foundational-definition-freeze-20260317.md`
+- `normandy-foundational-definition-freeze-20260317.md`
+- `positioning-foundational-definition-freeze-20260317.md`
+- `gene-definition-gap-remediation-checklist-20260317.md`
 
 ## 权威入口
 

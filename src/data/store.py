@@ -10,7 +10,7 @@ from typing import Any
 import duckdb
 import pandas as pd
 
-CURRENT_SCHEMA_VERSION = 10
+CURRENT_SCHEMA_VERSION = 11
 
 
 @dataclass(frozen=True)
@@ -122,9 +122,14 @@ class Store:
                 last_extreme_price          DOUBLE,
                 two_b_failure_count         INTEGER,
                 end_confirm_index           INTEGER,
+                trend_level                 VARCHAR,
                 trend_direction_before      VARCHAR,
                 trend_direction_after       VARCHAR,
+                context_trend_level         VARCHAR,
+                context_trend_direction_before VARCHAR,
+                context_trend_direction_after VARCHAR,
                 wave_role                   VARCHAR,
+                wave_role_basis             VARCHAR,
                 reversal_tag                VARCHAR,
                 history_sample_size         INTEGER,
                 magnitude_rank              INTEGER,
@@ -396,6 +401,21 @@ class Store:
             )
             """
         )
+
+    def _migrate_schema_v10_to_v11(self) -> None:
+        statements = [
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS trend_level VARCHAR",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS context_trend_level VARCHAR",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS context_trend_direction_before VARCHAR",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS context_trend_direction_after VARCHAR",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS wave_role_basis VARCHAR",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS trend_level VARCHAR",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_context_trend_level VARCHAR",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_context_trend_direction VARCHAR",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_role_basis VARCHAR",
+        ]
+        for sql in statements:
+            self.conn.execute(sql)
 
     def _ensure_optional_columns(self) -> None:
         """
@@ -983,10 +1003,14 @@ class Store:
                 new_low_freq    DOUBLE,
                 weakness_ratio  DOUBLE,
                 fragility       DOUBLE,
+                trend_level VARCHAR,
                 trend_direction VARCHAR,
                 current_wave_id VARCHAR,
                 current_wave_direction VARCHAR,
+                current_context_trend_level VARCHAR,
+                current_context_trend_direction VARCHAR,
                 current_wave_role VARCHAR,
+                current_wave_role_basis VARCHAR,
                 reversal_state VARCHAR,
                 latest_completed_reversal_tag VARCHAR,
                 current_wave_start_date DATE,
@@ -1049,9 +1073,14 @@ class Store:
                 last_extreme_price          DOUBLE,
                 two_b_failure_count         INTEGER,
                 end_confirm_index           INTEGER,
+                trend_level                 VARCHAR,
                 trend_direction_before      VARCHAR,
                 trend_direction_after       VARCHAR,
+                context_trend_level         VARCHAR,
+                context_trend_direction_before VARCHAR,
+                context_trend_direction_after VARCHAR,
                 wave_role                   VARCHAR,
+                wave_role_basis             VARCHAR,
                 reversal_tag                VARCHAR,
                 history_sample_size         INTEGER,
                 magnitude_rank              INTEGER,
