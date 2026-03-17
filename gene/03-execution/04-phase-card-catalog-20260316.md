@@ -61,6 +61,15 @@
    - 直接目标：`src/selector/gene.py`
    - 作用：先把 `trend_level + context proxy` 正式落成代码与落库语义
    - 状态：`Active`
+   - 配套 record：`records/14-phase-gx3-trend-level-context-refactor-record-20260317.md`
+
+---
+
+## 5. 当前按书吸收账本
+
+1. `gene-book-definition-ingestion-ledger`
+   - 位置：`records/12-gene-book-definition-ingestion-ledger-20260317.md`
+   - 作用：按书顺序记录哪些概念已经落盘、半落盘、尚未落盘
 
 ---
 

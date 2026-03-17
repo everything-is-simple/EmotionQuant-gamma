@@ -107,6 +107,8 @@
 - `03-execution/12-phase-gx1-targeted-detector-rewrite-card-20260316.md`
 - `03-execution/13-phase-gx2-targeted-migration-package-card-20260316.md`
 - `03-execution/14-phase-gx3-trend-level-context-refactor-card-20260317.md`
+- `03-execution/records/12-gene-book-definition-ingestion-ledger-20260317.md`
+- `03-execution/records/14-phase-gx3-trend-level-context-refactor-record-20260317.md`
 - `03-execution/records/01-phase-g0-wave-ruler-opening-record-20260316.md`
 - `03-execution/records/02-professional-speculation-principles-map-20260316.md`
 - `03-execution/records/03-professional-speculation-principles-system-ingestion-matrix-20260316.md`
