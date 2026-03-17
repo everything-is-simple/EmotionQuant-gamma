@@ -163,7 +163,7 @@ l2_industry_daily
 
 但当前运行时现实是：
 
-1. `l1_sw_industry_member` 保存 `industry_code + industry_name`
+1. `l1_industry_member` 保存 `industry_code + industry_name`
 2. `l2_industry_daily` 当前只落 `industry` 名称
 3. `l3_irs_daily` 当前也只落 `industry` 名称
 

@@ -70,7 +70,7 @@
 
 1. `index_classify`
 2. `index_member`
-3. 本地维护的 `l1_sw_industry_member`
+3. 本地维护的 `l1_industry_member`
 
 以下资料**不应再被当作正式行业归属真相源**：
 

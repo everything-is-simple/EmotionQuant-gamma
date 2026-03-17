@@ -26,7 +26,7 @@ RAW_INDEX_MEMBER_COLUMNS = [
     "is_new",
 ]
 
-L1_SW_INDUSTRY_MEMBER_COLUMNS = [
+L1_INDUSTRY_MEMBER_COLUMNS = [
     "industry_code",
     "industry_name",
     "ts_code",
@@ -203,11 +203,11 @@ def build_l1_industry_member_rows(
 ) -> pd.DataFrame:
     normalized_classify = normalize_l1_industry_classify(classify)
     if normalized_classify.empty:
-        return _empty_df(L1_SW_INDUSTRY_MEMBER_COLUMNS)
+        return _empty_df(L1_INDUSTRY_MEMBER_COLUMNS)
 
     members = normalize_l1_industry_member_history(member_frames)
     if members.empty:
-        return _empty_df(L1_SW_INDUSTRY_MEMBER_COLUMNS)
+        return _empty_df(L1_INDUSTRY_MEMBER_COLUMNS)
 
     classify_map = normalized_classify.set_index("index_code")["industry_name"].to_dict()
     allowed_codes = set(classify_map.keys())
@@ -215,7 +215,7 @@ def build_l1_industry_member_rows(
     if stock_only:
         members = members[_stock_only_mask(members["ts_code"])].copy()
     if members.empty:
-        return _empty_df(L1_SW_INDUSTRY_MEMBER_COLUMNS)
+        return _empty_df(L1_INDUSTRY_MEMBER_COLUMNS)
 
     members["industry_code"] = members["index_code"]
     members["industry_name"] = members["industry_code"].map(classify_map).fillna("")
@@ -228,7 +228,7 @@ def build_l1_industry_member_rows(
         subset=["industry_code", "ts_code", "in_date"],
         keep="first",
     )
-    return members[L1_SW_INDUSTRY_MEMBER_COLUMNS].reset_index(drop=True)
+    return members[L1_INDUSTRY_MEMBER_COLUMNS].reset_index(drop=True)
 
 
 def build_l1_sw_industry_member_rows(
@@ -236,6 +236,7 @@ def build_l1_sw_industry_member_rows(
     member_frames: list[pd.DataFrame],
     source_trade_date: date,
 ) -> pd.DataFrame:
+    """Legacy SW2021-only wrapper kept for historical specs and old callers."""
     sw_classify = classify.copy()
     if "src" in sw_classify.columns:
         sw_classify = sw_classify[sw_classify["src"].fillna("").astype(str).eq("SW2021")]
