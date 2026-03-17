@@ -6,6 +6,7 @@ EmotionQuant 是面向中国 A 股的情绪驱动量化系统。
 
 - 仓库三线地图：[`docs/spec/common/records/repo-line-map-20260312.md`](docs/spec/common/records/repo-line-map-20260312.md)
 - 当前四战场集成图：[`docs/spec/common/records/four-battlefields-integrated-system-map-20260316.md`](docs/spec/common/records/four-battlefields-integrated-system-map-20260316.md)
+- 四战场文档书架：[`docs/navigation/four-battlefields-document-shelf/README.md`](docs/navigation/four-battlefields-document-shelf/README.md)
 - 历史线 `v0.01 Frozen`：[`docs/design-v2/01-system/system-baseline.md`](docs/design-v2/01-system/system-baseline.md)
 - 主线 `v0.01-plus`：[`docs/spec/v0.01-plus/README.md`](docs/spec/v0.01-plus/README.md)
 - 当前主线设计权威层：[`blueprint/README.md`](blueprint/README.md)

@@ -44,6 +44,7 @@
 1. `01-full-design/`
    - 完整设计 SoT
    - 一旦冻结，不因实现压力随意改写
+   - 阅读时应同时参考 `01-full-design/README.md` 的战场归属说明
 
 2. `02-implementation-spec/`
    - 从完整设计中裁出的当前实现方案

@@ -41,6 +41,7 @@
 | `reference/` | 外部规则与运维参考 |
 | `observatory/` | 评审标准与少量观察入口 |
 | `workflow/` | 固定执行流程 |
+| `navigation/` | 非破坏式文档重组入口，按四战场视角重新组织旧文档 |
 
 口径固定如下：
 
@@ -56,10 +57,11 @@
 ### 3.1 当前主线
 
 1. `../README.md`
-2. `spec/common/records/repo-line-map-20260312.md`
-3. `spec/common/records/four-battlefields-integrated-system-map-20260316.md`
-4. `spec/common/records/development-status.md`
-5. `../blueprint/README.md`
+2. `navigation/four-battlefields-document-shelf/README.md`
+3. `spec/common/records/repo-line-map-20260312.md`
+4. `spec/common/records/four-battlefields-integrated-system-map-20260316.md`
+5. `spec/common/records/development-status.md`
+6. `../blueprint/README.md`
 
 ### 3.2 历史与治理
 
@@ -89,6 +91,7 @@
 
 ## 5. 相关入口
 
+- `docs/navigation/four-battlefields-document-shelf/README.md`
 - `docs/design-migration-boundary.md`
 - `docs/spec/common/records/development-status.md`
 - `docs/spec/common/records/four-battlefields-integrated-system-map-20260316.md`
