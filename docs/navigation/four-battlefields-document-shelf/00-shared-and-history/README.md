@@ -27,6 +27,7 @@
 - A 股规则：`../../../reference/a-stock-rules/`
 - 历史版本治理：`../../../spec/v0.01/`
 - 错层与共享文档登记：`cross-battlefield-document-classification-register-20260317.md`
+- 第四轮低风险归档筛查：`fourth-round-low-risk-archive-screening-20260317.md`
 
 ## 说明
 
