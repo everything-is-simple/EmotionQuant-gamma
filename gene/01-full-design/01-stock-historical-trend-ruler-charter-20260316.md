@@ -18,6 +18,25 @@
 
 ## 2. 术语冻结
 
+### 2.0 术语分层
+
+第四战场当前正式采用四层分法：
+
+1. 第一层，本体定义：
+   `trend_level / trend / pivot / wave / reference extreme / trendline`
+2. 第二层，转折确认语法：
+   `1-2-3 / 2B`
+3. 第三层，交易触发语法：
+   `BOF / BPB / PB / TST / CPB`
+4. 第四层，历史解释语法：
+   `lifespan / percentile / band / mirror / conditioning`
+
+这意味着：
+
+1. `1-2-3 / 2B` 不属于第一层“趋势本体定义”
+2. 它们也不是默认交易信号
+3. 它们是把“趋势改变或趋势失败”机械化、可审计化的确认语法
+
 ### 2.1 趋势
 
 趋势先定义成结构，不先定义成指标。
@@ -35,13 +54,31 @@
 
 ### 2.3 波段主流
 
+补充冻结：
+
+1. `MAINSTREAM` 不是独立对象，而是 `wave` 相对于上一级 `trend` 的结构状态
+2. 它必须回答“相对于哪一层趋势”
+3. 当前代码里的单层 proxy 不是最终语义
+
 顺既有趋势方向推进，并刷新该趋势同向极值的波段，记为 `MAINSTREAM`。
 
 ### 2.4 趋势逆流
 
+补充冻结：
+
+1. `COUNTERTREND` 对应上一级趋势中的逆向段
+2. 它不等于任意局部噪音
+3. 它必须和“次级折返”语义挂钩，而不是只看单根方向
+
 逆既有趋势方向推进，但尚未完成转折确认的波段，记为 `COUNTERTREND`。
 
 ### 2.5 转折
+
+补充冻结：
+
+1. `1-2-3 / 2B` 属于第二层“转折确认语法”
+2. 它们不是第一层“趋势 / 波段”本体定义
+3. 它们也不是第三层交易触发器
 
 转折先采用结构确认，不采用预测定义。
 
@@ -98,6 +135,17 @@
 
 ## 6. 卡体系
 
+补充状态说明：
+
+1. `G0 ~ G8 + GX1 ~ GX2` 是第四战场原始 campaign
+2. closeout 之后，允许围绕定义尾账继续开 `post-closeout targeted hypothesis`
+3. 当前已补入：
+   - `GX3 / trend-level context refactor`
+   - `GX4 / mainstream-countertrend semantics refactor`
+   - `GX5 / 2B window semantics refactor`
+   - `GX6 / 1-2-3 three-condition refactor`
+   - `GX7 / post-refactor G4-G5-G6 revalidation`
+
 第四战场完整卡体系固定为 `11` 张：
 
 1. 必选主线卡 `9` 张：`G0 ~ G8`
@@ -139,6 +187,11 @@
 ---
 
 ## 7. 第一阶段非目标
+
+补充冻结：
+
+1. 不把 `1-2-3 / 2B` 当成趋势本体定义
+2. 不假装当前 `MAINSTREAM / COUNTERTREND` 语义已经最终完成
 
 第一阶段明确不做以下事情：
 

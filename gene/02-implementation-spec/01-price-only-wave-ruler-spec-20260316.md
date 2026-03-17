@@ -20,6 +20,13 @@
 
 ### 2.1 `l3_stock_gene`
 
+补充说明：
+
+1. 当前 schema 已正式补入 `trend_level`
+2. 当前 schema 已正式补入 `current_context_trend_level / current_context_trend_direction`
+3. 当前 schema 已正式补入 `current_wave_role_basis`
+4. 这些字段当前属于“语义诚实化字段”，不是最终多层趋势完整实现
+
 日级快照表，主键为 `(code, calc_date)`。
 
 承载内容：
@@ -31,6 +38,13 @@
 5. 同日同方向横截面 rank / percentile
 
 ### 2.2 `l3_gene_wave`
+
+补充说明：
+
+1. 当前 schema 已正式补入 `trend_level`
+2. 当前 schema 已正式补入 `context_trend_level / context_trend_direction_before / context_trend_direction_after`
+3. 当前 schema 已正式补入 `wave_role_basis`
+4. 这些字段当前属于“语义诚实化字段”，不是最终多层趋势完整实现
 
 已完成波段账本，主键为 `(code, wave_id)`。
 
@@ -85,6 +99,26 @@
 
 ## 4. 当前转折实现
 
+这里必须明确：
+
+1. 当前 `1-2-3` 仍是三段波近似，不是最终三条件语义
+2. 当前 `2B` 仍是固定短确认窗近似，不是层级相关时间窗
+3. 当前 `MAINSTREAM / COUNTERTREND` 仍是相对于 `INTERMEDIATE_MAJOR_TREND_PROXY` 的近似
+4. 当前实现可以运行，但不能假装等同于书义最终版
+
+### 4.1 当前已落盘但仍属 proxy 的语义
+
+当前代码和 schema 已经正式落盘，但仍属于“诚实 proxy”而不是最终语义的字段包括：
+
+1. `trend_level`
+   - 当前先固定写为 `INTERMEDIATE`
+2. `context_trend_level`
+   - 当前先固定写为 `INTERMEDIATE`
+3. `context_trend_direction_before / after`
+4. `current_context_trend_level / current_context_trend_direction`
+5. `wave_role_basis / current_wave_role_basis`
+   - 当前口径为 `INTERMEDIATE_MAJOR_TREND_PROXY`
+
 第一版不追求终极定义，只追求可重复、可回放、可比较。
 
 当前实现口径：
@@ -135,6 +169,24 @@
 ---
 
 ## 6. 当前非目标
+
+补充冻结：
+
+1. 不假装当前 `1-2-3 / 2B / MAINSTREAM / COUNTERTREND` 语义已经最终完成
+
+---
+
+## 7. Closeout 后整改顺序
+
+如果继续修第四战场，顺序固定为：
+
+1. `GX3 / trend-level context refactor`
+2. `GX4 / mainstream-countertrend semantics refactor`
+3. `GX5 / 2B window semantics refactor`
+4. `GX6 / 1-2-3 three-condition refactor`
+5. `GX7 / post-refactor G4-G5-G6 revalidation`
+
+也就是说，后续不是先开新统计卡，而是先把定义层和确认层修到站得住。
 
 第一版明确不做：
 
