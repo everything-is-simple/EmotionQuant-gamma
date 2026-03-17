@@ -108,6 +108,9 @@
 - `03-execution/13-phase-gx2-targeted-migration-package-card-20260316.md`
 - `03-execution/14-phase-gx3-trend-level-context-refactor-card-20260317.md`
 - `03-execution/15-phase-gx4-mainstream-countertrend-semantics-card-20260317.md`
+- `03-execution/16-phase-gx5-two-b-window-semantics-refactor-card-20260317.md`
+- `03-execution/17-phase-gx6-123-three-condition-refactor-card-20260317.md`
+- `03-execution/18-phase-gx7-post-refactor-g4-g5-g6-revalidation-card-20260317.md`
 - `03-execution/records/12-gene-book-definition-ingestion-ledger-20260317.md`
 - `03-execution/records/14-phase-gx3-trend-level-context-refactor-record-20260317.md`
 - `03-execution/records/01-phase-g0-wave-ruler-opening-record-20260316.md`
@@ -129,6 +132,18 @@
 
 1. `GX3 / trend-level context refactor`
 2. `GX4 / mainstream-countertrend semantics refactor`
+3. `GX5 / 2B window semantics refactor`
+4. `GX6 / 1-2-3 three-condition refactor`
+5. `GX7 / post-refactor G4-G5-G6 revalidation`
+   - `post-closeout targeted hypothesis`
+   - `src/selector/gene.py`
+   - `Planned`
+   - `post-closeout targeted hypothesis`
+   - `src/selector/gene.py`
+   - `Planned`
+   - `post-closeout targeted hypothesis`
+   - `src/selector/gene.py`
+   - `Planned`
    - `post-closeout targeted hypothesis`
    - `src/selector/gene.py`
    - `Planned`

@@ -67,6 +67,21 @@
    - 直接目标：`src/selector/gene.py`
    - 作用：把 `wave_role` 从单层 proxy 修成相对于上一级趋势的正式结构状态
    - 状态：`Planned`
+3. `GX5 / 2B window semantics refactor`
+   - 性质：`post-closeout targeted hypothesis`
+   - 直接目标：`src/selector/gene.py`
+   - 作用：把 `2B` 从固定 `3 bar` 近似修成层级相关的失败极值确认语法
+   - 状态：`Planned`
+4. `GX6 / 1-2-3 three-condition refactor`
+   - 性质：`post-closeout targeted hypothesis`
+   - 直接目标：`src/selector/gene.py`
+   - 作用：把 `1-2-3` 从三段波近似标签修成三条件确认语法
+   - 状态：`Planned`
+5. `GX7 / post-refactor G4-G5-G6 revalidation`
+   - 性质：`post-closeout targeted hypothesis`
+   - 直接目标：`src/selector/gene.py`
+   - 作用：在定义层修正之后，重审 `validation / mirror / conditioning` 的正式结论
+   - 状态：`Planned`
 
 ---
 
