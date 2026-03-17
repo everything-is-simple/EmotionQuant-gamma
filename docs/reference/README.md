@@ -20,6 +20,7 @@
 |---|---|
 | `a-stock-rules/` | A 股交易制度、涨跌停、申万行业参考 |
 | `operations/` | 环境配置、目录纪律与清理总入口 |
+| `code-maps/` | 现行代码结构、走线与表关系参考 |
 
 ## 使用边界
 
@@ -34,5 +35,6 @@
 
 1. `a-stock-rules/README.md`
 2. `operations/README.md`
-3. `../spec/common/records/development-status.md`
-4. `../../blueprint/README.md`
+3. `code-maps/README.md`
+4. `../spec/common/records/development-status.md`
+5. `../../blueprint/README.md`
