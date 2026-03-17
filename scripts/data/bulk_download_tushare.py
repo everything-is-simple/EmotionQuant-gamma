@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
+"""TuShare 遗留批量下载入口。
+
+当前定位不是每日主流程，而是 BaoStock 不可用时的保底入口。
+真正的每日主流程已经切到本地 TDX 数据链。
+"""
+
 import sys
 from pathlib import Path
 
@@ -13,4 +19,3 @@ from bulk_download import main
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

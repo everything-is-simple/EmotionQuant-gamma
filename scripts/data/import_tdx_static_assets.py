@@ -3,6 +3,14 @@ from __future__ import annotations
 
 """导入本地通达信静态资产快照。
 
+这条脚本负责补齐 vipdoc 没有的三块：
+- raw_stock_basic
+- raw_index_classify
+- raw_index_member
+"""
+
+"""导入本地通达信静态资产快照。
+
 这条脚本补的是 vipdoc 没有的三块：
 - raw_stock_basic
 - raw_index_classify

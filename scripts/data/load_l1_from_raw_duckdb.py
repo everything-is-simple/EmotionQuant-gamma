@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""从 raw DuckDB 全量或大窗口装载执行库 L1。
+
+适合初次建库、大范围重刷或静态资产口径变化后的整段刷新。
+它不是每日增量主入口。
+"""
+
 import argparse
 import sys
 from datetime import date

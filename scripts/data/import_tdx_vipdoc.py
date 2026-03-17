@@ -3,6 +3,12 @@ from __future__ import annotations
 
 """导入本地通达信 vipdoc 日线主底座。
 
+这条脚本负责每日主流程的第一步：把收盘后通达信更新下来的
+个股/指数日线正式写进 raw DuckDB。
+"""
+
+"""导入本地通达信 vipdoc 日线主底座。
+
 这条脚本只负责三张 raw 表：
 - raw_daily
 - raw_index_daily

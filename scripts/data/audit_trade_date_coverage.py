@@ -1,5 +1,10 @@
 from __future__ import annotations
 
+"""检查特定交易日的 raw/L1/L2 覆盖异常。
+
+这不是日更脚本，而是诊断脚本。适合在怀疑某天漏数、错数时运行。
+"""
+
 import argparse
 import json
 import sys

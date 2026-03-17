@@ -16,6 +16,10 @@
     python scripts/data/bulk_download.py --help
     python scripts/data/bulk_download.py --dry-run --start 20250101 --end 20260224
 """
+# Legacy note:
+# 这份脚本仍然可用，但当前只作为 TuShare fallback 的底层引擎保留。
+# 每日主流程已经切到：
+# `import_tdx_vipdoc.py + import_tdx_static_assets.py + repair_l1_partitions_from_raw_duckdb.py`
 from __future__ import annotations
 
 import argparse

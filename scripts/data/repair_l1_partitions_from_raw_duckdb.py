@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""按日期窗口修复执行库 L1。
+
+这是当前每日增量更新最重要的执行库入口。
+raw 库更新后，优先用它把最近 1~5 个交易日重刷进执行库。
+"""
+
 import argparse
 import sys
 from datetime import date

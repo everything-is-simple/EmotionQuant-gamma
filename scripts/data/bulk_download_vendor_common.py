@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
+"""数据下载脚本共享工具层。
+
+这里集中放 raw 表 schema、主键、DuckDB 兼容写入器、参数解析和公共辅助函数。
+它不是独立入口脚本，而是给 provider/TDX 导入脚本复用。
+"""
+
 import argparse
 import hashlib
 import json
