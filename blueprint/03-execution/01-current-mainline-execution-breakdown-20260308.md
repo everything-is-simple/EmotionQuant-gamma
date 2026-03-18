@@ -150,7 +150,8 @@
 18. `blueprint/03-execution/17-phase-9-gene-mainline-integration-package-card-20260318.md`
 19. `blueprint/03-execution/17.1-phase-9a-gene-promoted-subset-freeze-card-20260318.md`
 20. `blueprint/03-execution/17.2-phase-9b-isolated-duration-percentile-validation-card-20260318.md`
-21. `blueprint/03-execution/18-phase-10-bof-risk-unit-lifecycle-package-card-20260318.md`
+21. `blueprint/03-execution/17.3-phase-9b-isolated-wave-role-validation-card-20260318.md`
+22. `blueprint/03-execution/18-phase-10-bof-risk-unit-lifecycle-package-card-20260318.md`
 
 ---
 
@@ -190,6 +191,7 @@
    - `blueprint/03-execution/17-phase-9-gene-mainline-integration-package-card-20260318.md`
    - `blueprint/03-execution/17.1-phase-9a-gene-promoted-subset-freeze-card-20260318.md`
    - `blueprint/03-execution/17.2-phase-9b-isolated-duration-percentile-validation-card-20260318.md`
+   - `blueprint/03-execution/17.3-phase-9b-isolated-wave-role-validation-card-20260318.md`
 13. `Phase 10`
    - `blueprint/03-execution/18-phase-10-bof-risk-unit-lifecycle-package-card-20260318.md`
 

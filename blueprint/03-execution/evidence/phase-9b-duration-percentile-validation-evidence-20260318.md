@@ -10,31 +10,22 @@
 
 本轮只回答一个问题：
 
-`如果只把 duration_percentile 以 negative filter only 身份接进当前 validated baseline，结果会不会比 baseline 更好？`
+`如果只把 duration_percentile 以 negative filter only 身份接入当前 validated baseline，结果会不会比 baseline 更好？`
 
 ---
 
 ## 2. 被测规则
 
-本轮唯一被测 runtime 规则是：
+本轮正式规则只有一条：
 
 `block when current_wave_duration_percentile >= 95`
 
-这条规则的来源是：
+这条规则的边界是：
 
-1. `Phase 9A` 已正式冻结 `duration_percentile = first runtime candidate`
-2. `G2` 已把 `P95` 固定为 `duration` 历史位置标签的正式分布阈值
-3. 本轮明确禁止偷带 `current_wave_age_band / wave_role / reversal_state / mirror / conditioning / gene_score`
-
-所以这轮不是：
-
-1. `age band` 过滤
-2. `duration + age` 双变量过滤
-3. Gene sizing / exit modulation
-
-而只是：
-
-`duration_percentile >= 95 -> block entry`
+1. 只测 `duration_percentile`
+2. 只允许 `negative filter only`
+3. 禁止偷带 `current_wave_age_band / wave_role / reversal_state / mirror / conditioning / gene_score`
+4. 不允许改成 sizing overlay 或 exit modulation
 
 ---
 
@@ -47,6 +38,7 @@
 正式 JSON evidence：
 
 1. [`../../../docs/spec/v0.01-plus/evidence/phase9b_duration_percentile_validation_legacy_duration_percentile_negative_filter_p95_w20260105_20260224_t085921__phase9_duration_validation.json`](../../../docs/spec/v0.01-plus/evidence/phase9b_duration_percentile_validation_legacy_duration_percentile_negative_filter_p95_w20260105_20260224_t085921__phase9_duration_validation.json)
+2. [`../../../docs/spec/v0.01-plus/evidence/phase9b_duration_percentile_validation_legacy_duration_percentile_negative_filter_p65_w20260105_20260224_t100421__phase9_duration_validation.json`](../../../docs/spec/v0.01-plus/evidence/phase9b_duration_percentile_validation_legacy_duration_percentile_negative_filter_p65_w20260105_20260224_t100421__phase9_duration_validation.json)
 
 正式窗口：
 
@@ -59,7 +51,7 @@
 
 ---
 
-## 4. Full-window 结果
+## 4. 正式 `95` 结果
 
 ### 4.1 Baseline
 
@@ -98,9 +90,9 @@
 
 ---
 
-## 5. 规则到底拦掉了什么
+## 5. 这条规则到底拦掉了什么
 
-本轮 `duration_percentile >= 95` 的真实过滤结果是：
+`duration_percentile >= 95` 的真实过滤结果是：
 
 1. `duration_filter_total_signal_count = 16`
 2. `duration_filter_blocked_signal_count = 6`
@@ -116,9 +108,9 @@
 
 也就是说：
 
-`这轮规则确实直接拿掉了 baseline 里原本真的会成交的 6 个 entry。`
+`这轮规则确实直接拿掉了 baseline 里原本会真实成交的 6 笔 entry。`
 
-被拦的 6 个信号是：
+被拦的 `6` 个信号是：
 
 1. `300502 / 2026-01-12 / bof / duration_percentile = 100`
 2. `002594 / 2026-01-28 / bof / duration_percentile = 100`
@@ -141,7 +133,7 @@
 
 这说明前半窗只有很弱的 entry 差异，但没有形成可闭合交易，因此：
 
-`front_half 不能单独支撑 promotion，也不能单独否定 promotion。`
+`front_half 不能单独支持 promotion，也不能单独否定 promotion。`
 
 ### 6.2 Back half
 
@@ -158,7 +150,7 @@
 
 ---
 
-## 7. 还剩什么残留风险
+## 7. 残留风险
 
 本轮不是没有残留问题。
 
@@ -166,17 +158,46 @@
 
 1. candidate `missing_rate` 从 `0` 升到 `0.0476190476`
 2. full-window failure breakdown 从 baseline 的 `MAX_POSITIONS_REACHED = 3` 变成 candidate 的 `NO_MARKET_DATA = 1`
-3. 这 `1` 个 `NO_MARKET_DATA` 来自 `EXIT_300308_2026-02-11_stop_loss`
+3. 这 `1` 条 `NO_MARKET_DATA` 来自 `EXIT_300308_2026-02-11_stop_loss`
 
 这说明：
 
-`duration_percentile` 过滤虽然改善了主结果，但同时改写了持仓路径，也把一个原本没暴露出来的 exit 数据缺口暴露了出来。`
+`duration_percentile` 过滤虽然改善了主结果，但同时也改写了持仓路径，并把一个原本没暴露出来的 exit 数据缺口暴露了出来。`
 
-这条残留不应被忽略，但它不足以推翻本轮 isolated ruling。
+这个残留不该被忽略，但它不足以推翻本轮 isolated ruling。
 
 ---
 
-## 8. Evidence verdict
+## 8. `65` vs `95` sensitivity reference
+
+为了回答“这把刀要不要开得更宽”，本轮补跑了一个参考对照：
+
+`block when current_wave_duration_percentile >= 65`
+
+对比结果是：
+
+1. `95` 拦掉 `6 / 16 = 37.5%` formal signals，保留 `10` 笔成交
+2. `65` 拦掉 `13 / 16 = 81.25%` formal signals，只保留 `3` 笔成交
+3. `95` 拦掉 baseline 中 `6 / 13 = 46.15%` 的真实 `BUY filled`
+4. `65` 拦掉 baseline 中 `11 / 13 = 84.62%` 的真实 `BUY filled`
+5. `65` 的 `expected_value / profit_factor / max_drawdown` 更好看，但它是通过“把大多数交易直接砍掉”换来的
+6. `65` 的 `reject_rate / missing_rate` 也比 `95` 更高：`0.142857 / 0.142857` 对 `0.047619 / 0.047619`
+
+用人话说：
+
+1. `95` 还是一把细刀，只砍最晚期、最极端的那几笔
+2. `65` 已经不是“轻量 late-life filter”，而是“把大多数中后段波一刀切掉”
+3. 所以 `65` 虽然账面更好看，但不能诚实地直接解释成“比 95 更适合正式主线”
+
+因此本轮 sensitivity conclusion 是：
+
+1. `65` 可以保留为参考对照
+2. 它不改写本轮 formal ruling
+3. `Phase 9B` 当前正式保留的阈值仍然是 `95`
+
+---
+
+## 9. Evidence verdict
 
 本轮 evidence 支持的结论是：
 

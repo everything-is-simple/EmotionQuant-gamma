@@ -40,6 +40,15 @@ class Phase9ValidationWindow:
     end: date
 
 
+def build_phase9_duration_candidate_label(threshold: float) -> str:
+    normalized = float(threshold)
+    if normalized.is_integer():
+        threshold_token = str(int(normalized))
+    else:
+        threshold_token = str(normalized).replace(".", "_")
+    return f"PHASE9B_DURATION_P{threshold_token}_NEGATIVE_FILTER"
+
+
 def _safe_ratio(numerator: float | int | None, denominator: float | int | None) -> float | None:
     if numerator is None or denominator is None:
         return None
@@ -138,7 +147,7 @@ def build_phase9_duration_scenarios(
             notes=baseline_note,
         ),
         Phase9DurationScenario(
-            label=PHASE9B_DURATION_P95_NEGATIVE_FILTER,
+            label=build_phase9_duration_candidate_label(threshold),
             filter_role="duration_percentile_negative_filter",
             duration_percentile_threshold=float(threshold),
             pipeline_mode="legacy",
@@ -607,16 +616,25 @@ def build_phase9_duration_validation_digest(payload: dict[str, object]) -> dict[
     if not isinstance(blocked_signal_truth, dict):
         raise ValueError("payload.blocked_signal_truth must be a dict")
 
+    candidate_labels = [
+        str(item.get("scenario_label") or "")
+        for item in results
+        if str(item.get("scenario_label") or "") != PHASE9B_BASELINE_CONTROL
+    ]
+    candidate_label = candidate_labels[0] if candidate_labels else ""
+    if not candidate_label:
+        raise ValueError("Missing non-baseline candidate scenario in payload.results")
+
     baseline = _find_result(results, scenario_label=PHASE9B_BASELINE_CONTROL, window_label="full_window")
-    candidate = _find_result(results, scenario_label=PHASE9B_DURATION_P95_NEGATIVE_FILTER, window_label="full_window")
+    candidate = _find_result(results, scenario_label=candidate_label, window_label="full_window")
     front_candidate = _find_result(
         results,
-        scenario_label=PHASE9B_DURATION_P95_NEGATIVE_FILTER,
+        scenario_label=candidate_label,
         window_label="front_half_window",
     )
     back_candidate = _find_result(
         results,
-        scenario_label=PHASE9B_DURATION_P95_NEGATIVE_FILTER,
+        scenario_label=candidate_label,
         window_label="back_half_window",
     )
 
@@ -895,7 +913,7 @@ def run_phase9_duration_percentile_validation(
             "operator": ">=",
             "threshold": float(threshold),
             "rule": f"block when current_wave_duration_percentile >= {threshold:g}",
-            "rule_source": "G2 P95 duration location semantics",
+            "rule_source": "G2 duration percentile location semantics",
             "forbidden_companions": [
                 "current_wave_age_band",
                 "wave_role",

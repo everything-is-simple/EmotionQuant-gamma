@@ -6,6 +6,7 @@ from src.backtest.phase9_duration_percentile_validation import (
     DurationPercentileNegativeSignalFilter,
     PHASE9B_BASELINE_CONTROL,
     PHASE9B_DURATION_P95_NEGATIVE_FILTER,
+    build_phase9_duration_candidate_label,
     build_phase9_duration_validation_digest,
 )
 from src.contracts import Signal
@@ -149,3 +150,8 @@ def test_build_phase9_duration_validation_digest_retains_sidecar_when_candidate_
 
     assert digest["decision"] == "retain_sidecar_only"
     assert digest["diagnosis"] == "isolated_rule_not_better_than_baseline"
+
+
+def test_build_phase9_duration_candidate_label_reflects_threshold() -> None:
+    assert build_phase9_duration_candidate_label(95.0) == PHASE9B_DURATION_P95_NEGATIVE_FILTER
+    assert build_phase9_duration_candidate_label(65.0) == "PHASE9B_DURATION_P65_NEGATIVE_FILTER"

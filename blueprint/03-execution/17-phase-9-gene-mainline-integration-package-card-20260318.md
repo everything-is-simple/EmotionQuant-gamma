@@ -126,6 +126,8 @@ Current opened round:
 1. [`17.2-phase-9b-isolated-duration-percentile-validation-card-20260318.md`](./17.2-phase-9b-isolated-duration-percentile-validation-card-20260318.md)
 2. completed first isolated win = `duration_percentile as negative filter, alone`
 3. current isolated ruling = `promote_duration_percentile_negative_filter`
+4. `p65` was reviewed as sensitivity reference only and did not replace the formal `p95` threshold
+5. next opened round = [`17.3-phase-9b-isolated-wave-role-validation-card-20260318.md`](./17.3-phase-9b-isolated-wave-role-validation-card-20260318.md)
 
 ### 7.3 Phase 9C
 
