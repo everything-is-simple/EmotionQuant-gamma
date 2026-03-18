@@ -1,0 +1,886 @@
+{
+  "generated_at": "2026-03-18T22:05:05Z",
+  "matrix_status": "completed",
+  "research_parent": "phase9_gene_mainline_integration_package",
+  "research_question": "If the parent-context direction alone is connected into the validated baseline as a negative guard, does it improve the current mainline enough to justify formal promotion?",
+  "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "db_path": "G:\\EmotionQuant-temp\\backtest\\phase9-context-direction-validation-20260319.duckdb",
+  "artifact_root": "G:\\EmotionQuant-temp\\artifacts",
+  "start": "2026-01-05",
+  "end": "2026-02-24",
+  "initial_cash": 1000000.0,
+  "validation_rule": {
+    "ledger_field": "context_trend_direction_before",
+    "runtime_field": "current_context_trend_direction",
+    "promoted_metric": "context_trend_direction_before",
+    "role": "parent_context_negative_guard",
+    "operator": "==",
+    "blocked_direction": "DOWN",
+    "rule": "block when current_context_trend_direction == DOWN",
+    "rule_source": "GX3/GX4 intermediate parent-context direction proxy",
+    "forbidden_companions": [
+      "duration_percentile",
+      "current_wave_age_band",
+      "wave_role",
+      "reversal_state",
+      "mirror",
+      "conditioning",
+      "gene_score",
+      "gene_sizing_overlay",
+      "gene_exit_modulation"
+    ]
+  },
+  "windows": [
+    {
+      "label": "full_window",
+      "start": "2026-01-05",
+      "end": "2026-02-24"
+    },
+    {
+      "label": "front_half_window",
+      "start": "2026-01-05",
+      "end": "2026-01-23"
+    },
+    {
+      "label": "back_half_window",
+      "start": "2026-01-26",
+      "end": "2026-02-24"
+    }
+  ],
+  "scenarios": [
+    {
+      "label": "PHASE9B_BASELINE_CONTROL",
+      "filter_role": "none",
+      "blocked_context_direction": null,
+      "pipeline_mode": "legacy",
+      "position_sizing_mode": "fixed_notional",
+      "exit_control_mode": "full_exit_control",
+      "notes": "Validated baseline only: legacy BOF entry, FIXED_NOTIONAL_CONTROL, FULL_EXIT_CONTROL, Gene sidecar only."
+    },
+    {
+      "label": "PHASE9B_CONTEXT_DIRECTION_DOWN_NEGATIVE_GUARD",
+      "filter_role": "context_direction_negative_guard",
+      "blocked_context_direction": "DOWN",
+      "pipeline_mode": "legacy",
+      "position_sizing_mode": "fixed_notional",
+      "exit_control_mode": "full_exit_control",
+      "notes": "Single-variable candidate only: keep the validated baseline fixed and block entry when current_context_trend_direction == DOWN."
+    }
+  ],
+  "candidate_filter": {
+    "metrics": {
+      "context_direction_filter_total_signal_count": 16,
+      "context_direction_filter_allowed_signal_count": 10,
+      "context_direction_filter_blocked_signal_count": 6,
+      "context_direction_filter_blocked_signal_share": 0.375,
+      "context_direction_filter_missing_direction_signal_count": 0,
+      "context_direction_filter_blocked_direction": "DOWN",
+      "context_direction_filter_rule": "block when current_context_trend_direction == DOWN"
+    },
+    "daily_rows": [
+      {
+        "signal_date": "2026-01-05",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-06",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-07",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-08",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-09",
+        "total_signal_count": 1,
+        "allowed_signal_count": 1,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-12",
+        "total_signal_count": 1,
+        "allowed_signal_count": 1,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-13",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-14",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-15",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-16",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-19",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-20",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-21",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-22",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-23",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-26",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-27",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-28",
+        "total_signal_count": 1,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 1,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-29",
+        "total_signal_count": 4,
+        "allowed_signal_count": 2,
+        "blocked_signal_count": 2,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-01-30",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-02-02",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-02-03",
+        "total_signal_count": 4,
+        "allowed_signal_count": 3,
+        "blocked_signal_count": 1,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-02-04",
+        "total_signal_count": 4,
+        "allowed_signal_count": 2,
+        "blocked_signal_count": 2,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-02-05",
+        "total_signal_count": 1,
+        "allowed_signal_count": 1,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-02-06",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-02-09",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-02-10",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-02-11",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-02-12",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-02-13",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      },
+      {
+        "signal_date": "2026-02-24",
+        "total_signal_count": 0,
+        "allowed_signal_count": 0,
+        "blocked_signal_count": 0,
+        "missing_direction_signal_count": 0
+      }
+    ],
+    "blocked_rows": [
+      {
+        "signal_id": "002594_2026-01-28_bof",
+        "signal_date": "2026-01-28",
+        "code": "002594",
+        "pattern": "bof",
+        "block_reason": "CONTEXT_DIRECTION_EQ_DOWN",
+        "current_context_trend_direction": "DOWN",
+        "current_context_trend_level": "INTERMEDIATE",
+        "current_wave_role": "MAINSTREAM",
+        "blocked_context_direction": "DOWN"
+      },
+      {
+        "signal_id": "601818_2026-01-29_bof",
+        "signal_date": "2026-01-29",
+        "code": "601818",
+        "pattern": "bof",
+        "block_reason": "CONTEXT_DIRECTION_EQ_DOWN",
+        "current_context_trend_direction": "DOWN",
+        "current_context_trend_level": "INTERMEDIATE",
+        "current_wave_role": "COUNTERTREND",
+        "blocked_context_direction": "DOWN"
+      },
+      {
+        "signal_id": "600436_2026-01-29_bof",
+        "signal_date": "2026-01-29",
+        "code": "600436",
+        "pattern": "bof",
+        "block_reason": "CONTEXT_DIRECTION_EQ_DOWN",
+        "current_context_trend_direction": "DOWN",
+        "current_context_trend_level": "INTERMEDIATE",
+        "current_wave_role": "COUNTERTREND",
+        "blocked_context_direction": "DOWN"
+      },
+      {
+        "signal_id": "002227_2026-02-03_bof",
+        "signal_date": "2026-02-03",
+        "code": "002227",
+        "pattern": "bof",
+        "block_reason": "CONTEXT_DIRECTION_EQ_DOWN",
+        "current_context_trend_direction": "DOWN",
+        "current_context_trend_level": "INTERMEDIATE",
+        "current_wave_role": "MAINSTREAM",
+        "blocked_context_direction": "DOWN"
+      },
+      {
+        "signal_id": "002175_2026-02-04_bof",
+        "signal_date": "2026-02-04",
+        "code": "002175",
+        "pattern": "bof",
+        "block_reason": "CONTEXT_DIRECTION_EQ_DOWN",
+        "current_context_trend_direction": "DOWN",
+        "current_context_trend_level": "INTERMEDIATE",
+        "current_wave_role": "MAINSTREAM",
+        "blocked_context_direction": "DOWN"
+      },
+      {
+        "signal_id": "000610_2026-02-04_bof",
+        "signal_date": "2026-02-04",
+        "code": "000610",
+        "pattern": "bof",
+        "block_reason": "CONTEXT_DIRECTION_EQ_DOWN",
+        "current_context_trend_direction": "DOWN",
+        "current_context_trend_level": "INTERMEDIATE",
+        "current_wave_role": "MAINSTREAM",
+        "blocked_context_direction": "DOWN"
+      }
+    ],
+    "window_metrics": {
+      "full_window": {
+        "context_direction_filter_total_signal_count": 16,
+        "context_direction_filter_allowed_signal_count": 10,
+        "context_direction_filter_blocked_signal_count": 6,
+        "context_direction_filter_blocked_signal_share": 0.375,
+        "context_direction_filter_missing_direction_signal_count": 0,
+        "context_direction_filter_blocked_direction": "DOWN",
+        "context_direction_filter_rule": "block when current_context_trend_direction == DOWN"
+      },
+      "front_half_window": {
+        "context_direction_filter_total_signal_count": 2,
+        "context_direction_filter_allowed_signal_count": 2,
+        "context_direction_filter_blocked_signal_count": 0,
+        "context_direction_filter_blocked_signal_share": 0.0,
+        "context_direction_filter_missing_direction_signal_count": 0,
+        "context_direction_filter_blocked_direction": "DOWN",
+        "context_direction_filter_rule": "block when current_context_trend_direction == DOWN"
+      },
+      "back_half_window": {
+        "context_direction_filter_total_signal_count": 14,
+        "context_direction_filter_allowed_signal_count": 8,
+        "context_direction_filter_blocked_signal_count": 6,
+        "context_direction_filter_blocked_signal_share": 0.42857142857142855,
+        "context_direction_filter_missing_direction_signal_count": 0,
+        "context_direction_filter_blocked_direction": "DOWN",
+        "context_direction_filter_rule": "block when current_context_trend_direction == DOWN"
+      }
+    }
+  },
+  "blocked_signal_truth": {
+    "blocked_signal_count": 6,
+    "blocked_signals_present_in_baseline_signal_count": 6,
+    "blocked_signals_missing_from_baseline_signal_count": 0,
+    "blocked_signals_with_baseline_buy_order_count": 6,
+    "blocked_signals_with_baseline_buy_fill_count": 5,
+    "blocked_signals_with_baseline_buy_reject_count": 1,
+    "blocked_signals_with_baseline_buy_expire_count": 0,
+    "blocked_signals_with_no_baseline_buy_order_count": 0,
+    "blocked_signals_share_of_baseline_buy_fills": 0.38461538461538464,
+    "blocked_signal_examples": [
+      {
+        "signal_id": "002594_2026-01-28_bof",
+        "signal_date": "2026-01-28",
+        "code": "002594",
+        "pattern": "bof",
+        "block_reason": "CONTEXT_DIRECTION_EQ_DOWN",
+        "current_context_trend_direction": "DOWN",
+        "current_context_trend_level": "INTERMEDIATE",
+        "current_wave_role": "MAINSTREAM",
+        "blocked_context_direction": "DOWN"
+      },
+      {
+        "signal_id": "600436_2026-01-29_bof",
+        "signal_date": "2026-01-29",
+        "code": "600436",
+        "pattern": "bof",
+        "block_reason": "CONTEXT_DIRECTION_EQ_DOWN",
+        "current_context_trend_direction": "DOWN",
+        "current_context_trend_level": "INTERMEDIATE",
+        "current_wave_role": "COUNTERTREND",
+        "blocked_context_direction": "DOWN"
+      },
+      {
+        "signal_id": "601818_2026-01-29_bof",
+        "signal_date": "2026-01-29",
+        "code": "601818",
+        "pattern": "bof",
+        "block_reason": "CONTEXT_DIRECTION_EQ_DOWN",
+        "current_context_trend_direction": "DOWN",
+        "current_context_trend_level": "INTERMEDIATE",
+        "current_wave_role": "COUNTERTREND",
+        "blocked_context_direction": "DOWN"
+      },
+      {
+        "signal_id": "002227_2026-02-03_bof",
+        "signal_date": "2026-02-03",
+        "code": "002227",
+        "pattern": "bof",
+        "block_reason": "CONTEXT_DIRECTION_EQ_DOWN",
+        "current_context_trend_direction": "DOWN",
+        "current_context_trend_level": "INTERMEDIATE",
+        "current_wave_role": "MAINSTREAM",
+        "blocked_context_direction": "DOWN"
+      },
+      {
+        "signal_id": "000610_2026-02-04_bof",
+        "signal_date": "2026-02-04",
+        "code": "000610",
+        "pattern": "bof",
+        "block_reason": "CONTEXT_DIRECTION_EQ_DOWN",
+        "current_context_trend_direction": "DOWN",
+        "current_context_trend_level": "INTERMEDIATE",
+        "current_wave_role": "MAINSTREAM",
+        "blocked_context_direction": "DOWN"
+      },
+      {
+        "signal_id": "002175_2026-02-04_bof",
+        "signal_date": "2026-02-04",
+        "code": "002175",
+        "pattern": "bof",
+        "block_reason": "CONTEXT_DIRECTION_EQ_DOWN",
+        "current_context_trend_direction": "DOWN",
+        "current_context_trend_level": "INTERMEDIATE",
+        "current_wave_role": "MAINSTREAM",
+        "blocked_context_direction": "DOWN"
+      }
+    ]
+  },
+  "results": [
+    {
+      "scenario_label": "PHASE9B_BASELINE_CONTROL",
+      "window_label": "full_window",
+      "window_start": "2026-01-05",
+      "window_end": "2026-02-24",
+      "notes": "Validated baseline only: legacy BOF entry, FIXED_NOTIONAL_CONTROL, FULL_EXIT_CONTROL, Gene sidecar only.",
+      "run_id": "phase9b_context_trend_direction_validation_phase9b_baseline_control_full_window_legacy_legacy_bof_baseline_w20260105_20260224_t220358",
+      "pipeline_mode": "legacy",
+      "filter_role": "none",
+      "blocked_context_direction": null,
+      "position_sizing_mode": "fixed_notional",
+      "exit_control_mode": "full_exit_control",
+      "trade_days": 31,
+      "trade_count": 13,
+      "win_rate": 0.38461538461538464,
+      "avg_win": 0.030485147867519474,
+      "avg_loss": 0.04106734769162593,
+      "expected_value": -0.013547157091954622,
+      "profit_factor": 0.7423208359213255,
+      "max_drawdown": 0.01985395931421615,
+      "reject_rate": 0.10344827586206896,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.8064516129032258,
+      "opportunity_count": 16.0,
+      "filled_count": 13.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 3.0,
+      "participation_rate": 0.8125,
+      "environment_breakdown": {
+        "BULLISH": {
+          "trade_count": 1.0,
+          "win_rate": 1.0,
+          "avg_win": 0.013239362508435885,
+          "avg_loss": 0.0,
+          "profit_factor": Infinity,
+          "expected_value": 0.013239362508435885,
+          "median_pnl_pct": 0.013239362508435885
+        },
+        "NEUTRAL": {
+          "trade_count": 12.0,
+          "win_rate": 0.3333333333333333,
+          "avg_win": 0.03479659420729037,
+          "avg_loss": 0.04106734769162593,
+          "profit_factor": 0.8473056129306781,
+          "expected_value": -0.01577936705865383,
+          "median_pnl_pct": -0.01678179761824663
+        }
+      },
+      "buy_trade_signature": "b5dd60908aefa2fcc73a6494abed2df9e09e5106fb738dc41c259b635ca34dcd",
+      "trace_counts": {
+        "selector_candidate_trace_count": 0,
+        "pas_trigger_trace_count": 3000,
+        "broker_lifecycle_trace_count": 49,
+        "rank_trace_count": 0
+      },
+      "failure_reason_breakdown": {
+        "MAX_POSITIONS_REACHED": 3
+      },
+      "context_direction_filter_metrics": null,
+      "signals_count": 16,
+      "buy_order_count": 16,
+      "buy_filled_count": 13,
+      "buy_reject_count": 3,
+      "buy_reject_rate": 0.1875,
+      "buy_trade_count": 13,
+      "avg_entry_quantity": 5446.153846153846,
+      "avg_entry_notional": 84888.30769230769,
+      "max_entry_notional_pct_initial_cash": 0.09927400000000002
+    },
+    {
+      "scenario_label": "PHASE9B_BASELINE_CONTROL",
+      "window_label": "front_half_window",
+      "window_start": "2026-01-05",
+      "window_end": "2026-01-23",
+      "notes": "Validated baseline only: legacy BOF entry, FIXED_NOTIONAL_CONTROL, FULL_EXIT_CONTROL, Gene sidecar only.",
+      "run_id": "phase9b_context_trend_direction_validation_phase9b_baseline_control_full_window_legacy_legacy_bof_baseline_w20260105_20260224_t220358",
+      "pipeline_mode": "legacy",
+      "filter_role": "none",
+      "blocked_context_direction": null,
+      "position_sizing_mode": "fixed_notional",
+      "exit_control_mode": "full_exit_control",
+      "trade_days": 15,
+      "trade_count": 0,
+      "win_rate": 0.0,
+      "avg_win": 0.0,
+      "avg_loss": 0.0,
+      "expected_value": 0.0,
+      "profit_factor": 0.0,
+      "max_drawdown": 0.0,
+      "reject_rate": 0.0,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.6666666666666666,
+      "opportunity_count": 2.0,
+      "filled_count": 2.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 1.0,
+      "environment_breakdown": {},
+      "buy_trade_signature": "9cd03245de3555f5ac086c60ac25977e3ba9eb32e49f636077d6dd128334163a",
+      "trace_counts": {
+        "selector_candidate_trace_count": 0,
+        "pas_trigger_trace_count": 3000,
+        "broker_lifecycle_trace_count": 49,
+        "rank_trace_count": 0
+      },
+      "failure_reason_breakdown": {},
+      "context_direction_filter_metrics": null,
+      "signals_count": 2,
+      "buy_order_count": 2,
+      "buy_filled_count": 2,
+      "buy_reject_count": 0,
+      "buy_reject_rate": 0.0,
+      "buy_trade_count": 2,
+      "avg_entry_quantity": 950.0,
+      "avg_entry_notional": 85446.0,
+      "max_entry_notional_pct_initial_cash": 0.09384
+    },
+    {
+      "scenario_label": "PHASE9B_BASELINE_CONTROL",
+      "window_label": "back_half_window",
+      "window_start": "2026-01-26",
+      "window_end": "2026-02-24",
+      "notes": "Validated baseline only: legacy BOF entry, FIXED_NOTIONAL_CONTROL, FULL_EXIT_CONTROL, Gene sidecar only.",
+      "run_id": "phase9b_context_trend_direction_validation_phase9b_baseline_control_full_window_legacy_legacy_bof_baseline_w20260105_20260224_t220358",
+      "pipeline_mode": "legacy",
+      "filter_role": "none",
+      "blocked_context_direction": null,
+      "position_sizing_mode": "fixed_notional",
+      "exit_control_mode": "full_exit_control",
+      "trade_days": 16,
+      "trade_count": 11,
+      "win_rate": 0.36363636363636365,
+      "avg_win": 0.03479659420729037,
+      "avg_loss": 0.04101375968069878,
+      "expected_value": -0.013446358266884543,
+      "profit_factor": 0.8484126907211038,
+      "max_drawdown": 0.017704556448946827,
+      "reject_rate": 0.1111111111111111,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.6875,
+      "opportunity_count": 14.0,
+      "filled_count": 11.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 3.0,
+      "participation_rate": 0.7857142857142857,
+      "environment_breakdown": {
+        "NEUTRAL": {
+          "trade_count": 11.0,
+          "win_rate": 0.36363636363636365,
+          "avg_win": 0.03479659420729037,
+          "avg_loss": 0.04101375968069878,
+          "profit_factor": 0.8484126907211038,
+          "expected_value": -0.013446358266884543,
+          "median_pnl_pct": -0.013983235955056116
+        }
+      },
+      "buy_trade_signature": "ebb58e242bd76aba71fecdcd4ea8ca3f5ef5095233800df57e005d5820829825",
+      "trace_counts": {
+        "selector_candidate_trace_count": 0,
+        "pas_trigger_trace_count": 3000,
+        "broker_lifecycle_trace_count": 49,
+        "rank_trace_count": 0
+      },
+      "failure_reason_breakdown": {
+        "MAX_POSITIONS_REACHED": 3
+      },
+      "context_direction_filter_metrics": null,
+      "signals_count": 14,
+      "buy_order_count": 14,
+      "buy_filled_count": 11,
+      "buy_reject_count": 3,
+      "buy_reject_rate": 0.21428571428571427,
+      "buy_trade_count": 11,
+      "avg_entry_quantity": 6263.636363636364,
+      "avg_entry_notional": 84786.90909090909,
+      "max_entry_notional_pct_initial_cash": 0.09927400000000002
+    },
+    {
+      "scenario_label": "PHASE9B_CONTEXT_DIRECTION_DOWN_NEGATIVE_GUARD",
+      "window_label": "full_window",
+      "window_start": "2026-01-05",
+      "window_end": "2026-02-24",
+      "notes": "Single-variable candidate only: keep the validated baseline fixed and block entry when current_context_trend_direction == DOWN.",
+      "run_id": "phase9b_context_trend_direction_validation_phase9b_context_direction_down_negative_guard_full_window_legacy_legacy_bof_baseline_w20260105_20260224_t220432",
+      "pipeline_mode": "legacy",
+      "filter_role": "context_direction_negative_guard",
+      "blocked_context_direction": "DOWN",
+      "position_sizing_mode": "fixed_notional",
+      "exit_control_mode": "full_exit_control",
+      "trade_days": 31,
+      "trade_count": 10,
+      "win_rate": 0.5,
+      "avg_win": 0.03827764246750579,
+      "avg_loss": 0.04704917841260607,
+      "expected_value": -0.00438576797255014,
+      "profit_factor": 0.8135666500235829,
+      "max_drawdown": 0.014451292366800317,
+      "reject_rate": 0.047619047619047616,
+      "missing_rate": 0.047619047619047616,
+      "exposure_rate": 0.8064516129032258,
+      "opportunity_count": 16.0,
+      "filled_count": 10.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 0.625,
+      "environment_breakdown": {
+        "BULLISH": {
+          "trade_count": 1.0,
+          "win_rate": 1.0,
+          "avg_win": 0.013239362508435885,
+          "avg_loss": 0.0,
+          "profit_factor": Infinity,
+          "expected_value": 0.013239362508435885,
+          "median_pnl_pct": 0.013239362508435885
+        },
+        "NEUTRAL": {
+          "trade_count": 9.0,
+          "win_rate": 0.4444444444444444,
+          "avg_win": 0.04453721245727327,
+          "avg_loss": 0.04704917841260607,
+          "profit_factor": 0.9466097806575138,
+          "expected_value": -0.006344115803770815,
+          "median_pnl_pct": -0.013983235955056116
+        }
+      },
+      "buy_trade_signature": "369992f6e0b1e646976e9367f1c7687affb3939bc44816fcba6b32f2c2df7de6",
+      "trace_counts": {
+        "selector_candidate_trace_count": 0,
+        "pas_trigger_trace_count": 3000,
+        "broker_lifecycle_trace_count": 39,
+        "rank_trace_count": 0
+      },
+      "failure_reason_breakdown": {
+        "NO_MARKET_DATA": 1
+      },
+      "context_direction_filter_metrics": {
+        "context_direction_filter_total_signal_count": 16,
+        "context_direction_filter_allowed_signal_count": 10,
+        "context_direction_filter_blocked_signal_count": 6,
+        "context_direction_filter_blocked_signal_share": 0.375,
+        "context_direction_filter_missing_direction_signal_count": 0,
+        "context_direction_filter_blocked_direction": "DOWN",
+        "context_direction_filter_rule": "block when current_context_trend_direction == DOWN"
+      },
+      "signals_count": 16,
+      "buy_order_count": 10,
+      "buy_filled_count": 10,
+      "buy_reject_count": 0,
+      "buy_reject_rate": 0.0,
+      "buy_trade_count": 10,
+      "avg_entry_quantity": 5750.0,
+      "avg_entry_notional": 85820.5,
+      "max_entry_notional_pct_initial_cash": 0.09879
+    },
+    {
+      "scenario_label": "PHASE9B_CONTEXT_DIRECTION_DOWN_NEGATIVE_GUARD",
+      "window_label": "front_half_window",
+      "window_start": "2026-01-05",
+      "window_end": "2026-01-23",
+      "notes": "Single-variable candidate only: keep the validated baseline fixed and block entry when current_context_trend_direction == DOWN.",
+      "run_id": "phase9b_context_trend_direction_validation_phase9b_context_direction_down_negative_guard_full_window_legacy_legacy_bof_baseline_w20260105_20260224_t220432",
+      "pipeline_mode": "legacy",
+      "filter_role": "context_direction_negative_guard",
+      "blocked_context_direction": "DOWN",
+      "position_sizing_mode": "fixed_notional",
+      "exit_control_mode": "full_exit_control",
+      "trade_days": 15,
+      "trade_count": 0,
+      "win_rate": 0.0,
+      "avg_win": 0.0,
+      "avg_loss": 0.0,
+      "expected_value": 0.0,
+      "profit_factor": 0.0,
+      "max_drawdown": 0.0,
+      "reject_rate": 0.0,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.6666666666666666,
+      "opportunity_count": 2.0,
+      "filled_count": 2.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 1.0,
+      "environment_breakdown": {},
+      "buy_trade_signature": "9cd03245de3555f5ac086c60ac25977e3ba9eb32e49f636077d6dd128334163a",
+      "trace_counts": {
+        "selector_candidate_trace_count": 0,
+        "pas_trigger_trace_count": 3000,
+        "broker_lifecycle_trace_count": 39,
+        "rank_trace_count": 0
+      },
+      "failure_reason_breakdown": {},
+      "context_direction_filter_metrics": {
+        "context_direction_filter_total_signal_count": 2,
+        "context_direction_filter_allowed_signal_count": 2,
+        "context_direction_filter_blocked_signal_count": 0,
+        "context_direction_filter_blocked_signal_share": 0.0,
+        "context_direction_filter_missing_direction_signal_count": 0,
+        "context_direction_filter_blocked_direction": "DOWN",
+        "context_direction_filter_rule": "block when current_context_trend_direction == DOWN"
+      },
+      "signals_count": 2,
+      "buy_order_count": 2,
+      "buy_filled_count": 2,
+      "buy_reject_count": 0,
+      "buy_reject_rate": 0.0,
+      "buy_trade_count": 2,
+      "avg_entry_quantity": 950.0,
+      "avg_entry_notional": 85446.0,
+      "max_entry_notional_pct_initial_cash": 0.09384
+    },
+    {
+      "scenario_label": "PHASE9B_CONTEXT_DIRECTION_DOWN_NEGATIVE_GUARD",
+      "window_label": "back_half_window",
+      "window_start": "2026-01-26",
+      "window_end": "2026-02-24",
+      "notes": "Single-variable candidate only: keep the validated baseline fixed and block entry when current_context_trend_direction == DOWN.",
+      "run_id": "phase9b_context_trend_direction_validation_phase9b_context_direction_down_negative_guard_full_window_legacy_legacy_bof_baseline_w20260105_20260224_t220432",
+      "pipeline_mode": "legacy",
+      "filter_role": "context_direction_negative_guard",
+      "blocked_context_direction": "DOWN",
+      "position_sizing_mode": "fixed_notional",
+      "exit_control_mode": "full_exit_control",
+      "trade_days": 16,
+      "trade_count": 8,
+      "win_rate": 0.5,
+      "avg_win": 0.04453721245727327,
+      "avg_loss": 0.0484508570737286,
+      "expected_value": -0.001956822308227666,
+      "profit_factor": 0.9192244502403772,
+      "max_drawdown": 0.015399985709278651,
+      "reject_rate": 0.05263157894736842,
+      "missing_rate": 0.05263157894736842,
+      "exposure_rate": 0.6875,
+      "opportunity_count": 14.0,
+      "filled_count": 8.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 0.5714285714285714,
+      "environment_breakdown": {
+        "NEUTRAL": {
+          "trade_count": 8.0,
+          "win_rate": 0.5,
+          "avg_win": 0.04453721245727327,
+          "avg_loss": 0.0484508570737286,
+          "profit_factor": 0.9192244502403772,
+          "expected_value": -0.001956822308227666,
+          "median_pnl_pct": -0.004827514391870662
+        }
+      },
+      "buy_trade_signature": "1bfc25177c259f274ddfda6c19aa13d238a657412786bab592039d82d1852506",
+      "trace_counts": {
+        "selector_candidate_trace_count": 0,
+        "pas_trigger_trace_count": 3000,
+        "broker_lifecycle_trace_count": 39,
+        "rank_trace_count": 0
+      },
+      "failure_reason_breakdown": {
+        "NO_MARKET_DATA": 1
+      },
+      "context_direction_filter_metrics": {
+        "context_direction_filter_total_signal_count": 14,
+        "context_direction_filter_allowed_signal_count": 8,
+        "context_direction_filter_blocked_signal_count": 6,
+        "context_direction_filter_blocked_signal_share": 0.42857142857142855,
+        "context_direction_filter_missing_direction_signal_count": 0,
+        "context_direction_filter_blocked_direction": "DOWN",
+        "context_direction_filter_rule": "block when current_context_trend_direction == DOWN"
+      },
+      "signals_count": 14,
+      "buy_order_count": 8,
+      "buy_filled_count": 8,
+      "buy_reject_count": 0,
+      "buy_reject_rate": 0.0,
+      "buy_trade_count": 8,
+      "avg_entry_quantity": 6950.0,
+      "avg_entry_notional": 85914.125,
+      "max_entry_notional_pct_initial_cash": 0.09879
+    }
+  ],
+  "digest": {
+    "generated_at": "2026-03-18T22:05:05Z",
+    "matrix_status": "completed",
+    "diagnosis": "isolated_negative_guard_improves_baseline",
+    "decision": "promote_context_trend_direction_negative_guard",
+    "full_window_comparison": {
+      "expected_value_delta_candidate_minus_baseline": 0.009161389119404482,
+      "profit_factor_delta_candidate_minus_baseline": 0.07124581410225739,
+      "max_drawdown_delta_candidate_minus_baseline": -0.005402666947415834,
+      "trade_count_delta_candidate_minus_baseline": -3,
+      "buy_filled_count_delta_candidate_minus_baseline": -3,
+      "signal_count_delta_candidate_minus_baseline": 0
+    },
+    "isolated_rule_summary": {
+      "blocked_signal_count": 6,
+      "blocked_signal_share": 0.375,
+      "blocked_signals_with_baseline_buy_fill_count": 5,
+      "blocked_signals_share_of_baseline_buy_fills": 0.38461538461538464,
+      "blocked_context_direction": "DOWN",
+      "rule": "block when current_context_trend_direction == DOWN"
+    },
+    "candidate_window_summary": {
+      "front_half_trade_count": 0,
+      "front_half_expected_value": 0.0,
+      "back_half_trade_count": 8,
+      "back_half_expected_value": -0.001956822308227666
+    },
+    "conclusion": "The isolated context-trend-direction negative guard improved the validated baseline on the full window without worsening drawdown, so it earns promotion to the next formal Phase 9 package step."
+  },
+  "summary_run_id": "phase9b_context_trend_direction_validation_legacy_context_direction_negative_guard_down_w20260105_20260224_t210823"
+}

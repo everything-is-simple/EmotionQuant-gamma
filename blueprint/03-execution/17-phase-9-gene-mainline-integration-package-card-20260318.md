@@ -131,9 +131,11 @@ Current completed isolated rounds:
 6. second isolated ruling = `retain_sidecar_only`
 7. [`17.4-phase-9b-isolated-reversal-state-validation-card-20260318.md`](./17.4-phase-9b-isolated-reversal-state-validation-card-20260318.md) completed third isolated round = `reversal_state as exit-preparation only`
 8. third isolated ruling = `promote_reversal_state_exit_preparation`
-9. the package now has `2` isolated winners:
-   `duration_percentile` and `reversal_state`
-10. `Phase 9C` combination candidate no longer fails the winner-count gate alone, but it still remains unopened because `GX8 completed or formally non-blocking` plus explicit combination freeze are not yet satisfied
+9. [`17.5-phase-9b-isolated-context-trend-direction-before-validation-card-20260318.md`](./17.5-phase-9b-isolated-context-trend-direction-before-validation-card-20260318.md) completed fourth isolated round = `context_trend_direction_before as parent-context negative guard`
+10. fourth isolated ruling = `promote_context_trend_direction_negative_guard`
+11. the package now has `3` isolated winners:
+   `duration_percentile`, `reversal_state`, and `context_trend_direction_before`
+12. `Phase 9C` combination candidate no longer fails the winner-count gate alone, but it still remains unopened because `GX8` is only ruled non-blocking for the isolated proxy scope, and explicit combination freeze is not yet satisfied
 
 ### 7.3 Phase 9C
 

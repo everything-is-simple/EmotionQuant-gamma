@@ -1,7 +1,7 @@
 # v0.01-plus Governance Archive
 
 **Status**: `Active`  
-**Last Updated**: `2026-03-18`
+**Last Updated**: `2026-03-19`
 
 ---
 
@@ -59,8 +59,11 @@ Mainline design authority remains in `blueprint/`.
 | Phase 9B reversal-state evidence | `blueprint/03-execution/evidence/phase-9b-reversal-state-validation-evidence-20260318.md` | 第一战场 evidence：`reversal_state == CONFIRMED_TURN_DOWN` 的真实 defensive-exit 结果 |
 | Phase 9B reversal-state execution record | `blueprint/03-execution/records/phase-9b-reversal-state-validation-record-20260318.md` | 第一战场结论：`reversal_state` 已赢下 isolated exit-preparation 轮 |
 | Phase 9B reversal-state record | `docs/spec/v0.01-plus/records/v0.01-plus-phase-9b-reversal-state-validation-20260318.md` | 正式 ruling：`promote_reversal_state_exit_preparation` |
-| Phase 9B parent-context card | `blueprint/03-execution/17.5-phase-9b-isolated-context-trend-direction-before-validation-card-20260318.md` | 后续单变量卡：`context_trend_direction_before`，仍受 `GX8 + redundancy review` 双门槛约束 |
-| Phase 9C combination card | `blueprint/03-execution/17.6-phase-9c-gene-combination-candidate-card-20260318.md` | `2` 个 isolated winner 门槛已满足，但仍受 `GX8/non-blocking + combination freeze` 约束 |
+| Phase 9B parent-context card | `blueprint/03-execution/17.5-phase-9b-isolated-context-trend-direction-before-validation-card-20260318.md` | 已完成 `context_trend_direction_before` 的 isolated parent-context negative guard 验证 |
+| Phase 9B parent-context evidence | `blueprint/03-execution/evidence/phase-9b-context-trend-direction-validation-evidence-20260319.md` | 第一战场 evidence：`current_context_trend_direction == DOWN` 的真实 runtime 结果 |
+| Phase 9B parent-context execution record | `blueprint/03-execution/records/phase-9b-context-trend-direction-validation-record-20260319.md` | 第一战场结论：`context_trend_direction_before` 已赢下 isolated parent-context 轮 |
+| Phase 9B parent-context record | `docs/spec/v0.01-plus/records/v0.01-plus-phase-9b-context-trend-direction-validation-20260319.md` | 正式 ruling：`promote_context_trend_direction_negative_guard` |
+| Phase 9C combination card | `blueprint/03-execution/17.6-phase-9c-gene-combination-candidate-card-20260318.md` | `3` 个 isolated winner 已成立，但仍受 `GX8` 组合 scope 与 combination freeze 约束 |
 | Phase 9D package ruling card | `blueprint/03-execution/17.7-phase-9d-gene-package-promotion-ruling-card-20260318.md` | Phase 9 包级 promotion / retention / defer closeout |
 | Current operating runbook | `docs/reference/operations/current-mainline-operating-runbook-20260317.md` | Truthful operating chain and rollback rules |
 
