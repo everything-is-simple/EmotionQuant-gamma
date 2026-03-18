@@ -41,6 +41,8 @@ Mainline design authority remains in `blueprint/`.
 | Phase 7 closeout record | `docs/spec/v0.01-plus/records/v0.01-plus-phase-7-data-provider-refactor-closeout-20260318.md` | Final Phase 7 data-provider closeout |
 | Phase 8 residual audit | `docs/spec/v0.01-plus/records/v0.01-plus-phase-8-data-contract-residual-audit-20260318.md` | Residual active-contract audit after local-first cutover |
 | Phase 8 remediation checklist | `docs/spec/v0.01-plus/records/v0.01-plus-phase-8-data-contract-remediation-checklist-20260318.md` | Residual compatibility/document cleanup queue |
+| Phase 9 card | `blueprint/03-execution/17-phase-9-gene-mainline-integration-package-card-20260318.md` | Gene mainline integration package |
+| Phase 9A sub-card | `blueprint/03-execution/17.1-phase-9a-gene-promoted-subset-freeze-card-20260318.md` | Active working freeze card; evidence and conclusion still pending |
 | Current operating runbook | `docs/reference/operations/current-mainline-operating-runbook-20260317.md` | Truthful operating chain and rollback rules |
 
 ---
