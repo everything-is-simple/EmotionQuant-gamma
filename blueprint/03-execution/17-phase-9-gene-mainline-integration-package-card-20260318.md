@@ -135,7 +135,7 @@ Current completed isolated rounds:
 10. fourth isolated ruling = `promote_context_trend_direction_negative_guard`
 11. the package now has `3` isolated winners:
    `duration_percentile`, `reversal_state`, and `context_trend_direction_before`
-12. `Phase 9C` combination candidate no longer fails the winner-count gate alone, but it still remains unopened because `GX8` is only ruled non-blocking for the isolated proxy scope, and explicit combination freeze is not yet satisfied
+12. `Phase 9C` combination candidate no longer fails either the winner-count gate or the `GX8` hierarchy gate, so the next truthful move is to open `17.6` and freeze the smallest allowed combination candidate explicitly
 
 ### 7.3 Phase 9C
 

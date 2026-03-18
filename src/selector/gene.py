@@ -44,7 +44,31 @@ G2_BAND_UNSCALED = "UNSCALED"
 TREND_LEVEL_SHORT = "SHORT"
 TREND_LEVEL_INTERMEDIATE = "INTERMEDIATE"
 TREND_LEVEL_LONG = "LONG"
+CANONICAL_TREND_LEVEL = TREND_LEVEL_INTERMEDIATE
+TREND_LEVEL_ORDER = [TREND_LEVEL_SHORT, TREND_LEVEL_INTERMEDIATE, TREND_LEVEL_LONG]
+TREND_LEVEL_PIVOT_NEIGHBOR_BARS = {
+    TREND_LEVEL_SHORT: 1,
+    TREND_LEVEL_INTERMEDIATE: PIVOT_NEIGHBOR_BARS,
+    TREND_LEVEL_LONG: 4,
+}
+TREND_LEVEL_PIVOT_CONFIRMATION_BARS = {
+    TREND_LEVEL_SHORT: 1,
+    TREND_LEVEL_INTERMEDIATE: PIVOT_CONFIRMATION_BARS,
+    TREND_LEVEL_LONG: 4,
+}
+SNAPSHOT_LEVEL_PREFIX = {
+    TREND_LEVEL_SHORT: "short",
+    TREND_LEVEL_INTERMEDIATE: "intermediate",
+    TREND_LEVEL_LONG: "long",
+}
+PARENT_TREND_LEVEL_BY_LEVEL = {
+    TREND_LEVEL_SHORT: TREND_LEVEL_INTERMEDIATE,
+    TREND_LEVEL_INTERMEDIATE: TREND_LEVEL_LONG,
+    TREND_LEVEL_LONG: TREND_LEVEL_LONG,
+}
 WAVE_ROLE_BASIS_INTERMEDIATE_PARENT_CONTEXT = "INTERMEDIATE_PARENT_CONTEXT_DIRECTION"
+WAVE_ROLE_BASIS_SHORT_PARENT_CONTEXT = "SHORT_PARENT_CONTEXT_DIRECTION"
+WAVE_ROLE_BASIS_LONG_SELF_BOOTSTRAP = "LONG_SELF_DIRECTION_BOOTSTRAP"
 TWO_B_WINDOW_BASIS_SHORT = "SHORT_WITHIN_1_BAR"
 TWO_B_WINDOW_BASIS_INTERMEDIATE = "INTERMEDIATE_WITHIN_3_TO_5_BARS"
 TWO_B_WINDOW_BASIS_LONG = "LONG_WITHIN_7_TO_10_BARS"
@@ -152,6 +176,30 @@ def _wave_role_from_context_direction(context_direction: str, direction: str) ->
     """根据显式的父趋势参照方向判定 mainstream / countertrend。"""
 
     return "MAINSTREAM" if context_direction == direction else "COUNTERTREND"
+
+
+def _pivot_neighbor_bars(trend_level: str) -> int:
+    return int(TREND_LEVEL_PIVOT_NEIGHBOR_BARS.get(trend_level, PIVOT_NEIGHBOR_BARS))
+
+
+def _pivot_confirmation_bars(trend_level: str) -> int:
+    return int(TREND_LEVEL_PIVOT_CONFIRMATION_BARS.get(trend_level, PIVOT_CONFIRMATION_BARS))
+
+
+def _parent_trend_level(trend_level: str) -> str:
+    return str(PARENT_TREND_LEVEL_BY_LEVEL.get(trend_level, TREND_LEVEL_INTERMEDIATE))
+
+
+def _wave_role_basis_for_level(trend_level: str) -> str:
+    if trend_level == TREND_LEVEL_SHORT:
+        return WAVE_ROLE_BASIS_SHORT_PARENT_CONTEXT
+    if trend_level == TREND_LEVEL_LONG:
+        return WAVE_ROLE_BASIS_LONG_SELF_BOOTSTRAP
+    return WAVE_ROLE_BASIS_INTERMEDIATE_PARENT_CONTEXT
+
+
+def _snapshot_level_prefix(trend_level: str) -> str:
+    return str(SNAPSHOT_LEVEL_PREFIX.get(trend_level, trend_level.lower()))
 
 
 def _two_b_confirmation_window_spec(trend_level: str) -> tuple[int, str]:
@@ -262,20 +310,20 @@ def _build_extreme_candidates(
 
 # 左右各看固定数量 bar，只接受真正局部占优的高点。
 # 这是故意保守的写法：宁可漏掉一些边缘拐点，也要减少噪声 pivot。
-def _is_swing_high(highs: np.ndarray, idx: int) -> bool:
-    left = highs[idx - PIVOT_NEIGHBOR_BARS : idx]
-    right = highs[idx + 1 : idx + PIVOT_NEIGHBOR_BARS + 1]
-    if len(left) < PIVOT_NEIGHBOR_BARS or len(right) < PIVOT_NEIGHBOR_BARS:
+def _is_swing_high(highs: np.ndarray, idx: int, neighbor_bars: int) -> bool:
+    left = highs[idx - neighbor_bars : idx]
+    right = highs[idx + 1 : idx + neighbor_bars + 1]
+    if len(left) < neighbor_bars or len(right) < neighbor_bars:
         return False
     current = highs[idx]
     return bool(current >= float(np.nanmax(left)) and current > float(np.nanmax(right)))
 
 
 # 与 swing high 对称：寻找局部低点，并要求右侧已经出现回升。
-def _is_swing_low(lows: np.ndarray, idx: int) -> bool:
-    left = lows[idx - PIVOT_NEIGHBOR_BARS : idx]
-    right = lows[idx + 1 : idx + PIVOT_NEIGHBOR_BARS + 1]
-    if len(left) < PIVOT_NEIGHBOR_BARS or len(right) < PIVOT_NEIGHBOR_BARS:
+def _is_swing_low(lows: np.ndarray, idx: int, neighbor_bars: int) -> bool:
+    left = lows[idx - neighbor_bars : idx]
+    right = lows[idx + 1 : idx + neighbor_bars + 1]
+    if len(left) < neighbor_bars or len(right) < neighbor_bars:
         return False
     current = lows[idx]
     return bool(current <= float(np.nanmin(left)) and current < float(np.nanmin(right)))
@@ -317,7 +365,10 @@ def _seed_initial_pivot(frame: pd.DataFrame, first_pivot: PivotPoint | None) -> 
     )
 
 
-def _build_confirmed_pivots(frame: pd.DataFrame) -> list[PivotPoint]:
+def _build_confirmed_pivots(
+    frame: pd.DataFrame,
+    trend_level: str = TREND_LEVEL_INTERMEDIATE,
+) -> list[PivotPoint]:
     """把嘈杂 OHLC 序列压缩成“高低交替”的确认拐点链。
 
     这里故意做得保守：
@@ -335,15 +386,18 @@ def _build_confirmed_pivots(frame: pd.DataFrame) -> list[PivotPoint]:
     lows = pd.to_numeric(frame["adj_low"], errors="coerce").to_numpy(dtype=float)
     closes = pd.to_numeric(frame["adj_close"], errors="coerce").to_numpy(dtype=float)
 
+    neighbor_bars = _pivot_neighbor_bars(trend_level)
+    confirmation_bars = _pivot_confirmation_bars(trend_level)
+
     candidates: list[PivotPoint] = []
-    for idx in range(PIVOT_NEIGHBOR_BARS, len(frame) - PIVOT_NEIGHBOR_BARS):
+    for idx in range(neighbor_bars, len(frame) - neighbor_bars):
         current_high = highs[idx]
         current_low = lows[idx]
         if not np.isfinite(current_high) or not np.isfinite(current_low):
             continue
 
-        is_high = _is_swing_high(highs, idx)
-        is_low = _is_swing_low(lows, idx)
+        is_high = _is_swing_high(highs, idx, neighbor_bars)
+        is_low = _is_swing_low(lows, idx, neighbor_bars)
         if not is_high and not is_low:
             continue
 
@@ -356,7 +410,7 @@ def _build_confirmed_pivots(frame: pd.DataFrame) -> list[PivotPoint]:
 
         kind: PivotKind = "HIGH" if is_high else "LOW"
         price = float(current_high if is_high else current_low)
-        confirm_index = min(idx + PIVOT_CONFIRMATION_BARS, len(frame) - 1)
+        confirm_index = min(idx + confirmation_bars, len(frame) - 1)
         candidates.append(
             PivotPoint(
                 index=idx,
@@ -515,10 +569,13 @@ def _build_wave_rows(
     pivots: list[PivotPoint],
     up_candidates: list[ExtremeCandidate],
     down_candidates: list[ExtremeCandidate],
+    trend_level: str = TREND_LEVEL_INTERMEDIATE,
 ) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
     waves: list[dict[str, object]] = []
     events: list[dict[str, object]] = []
-    two_b_window_bars, two_b_window_basis = _two_b_confirmation_window_spec(TREND_LEVEL_INTERMEDIATE)
+    two_b_window_bars, two_b_window_basis = _two_b_confirmation_window_spec(trend_level)
+    parent_trend_level = _parent_trend_level(trend_level)
+    role_basis = _wave_role_basis_for_level(trend_level)
     for start_pivot, end_pivot in zip(pivots, pivots[1:]):
         if start_pivot.index >= end_pivot.index or start_pivot.kind == end_pivot.kind:
             continue
@@ -531,7 +588,8 @@ def _build_wave_rows(
         magnitude_pct = abs(signed_return_pct)
         duration_trade_days = int(end_pivot.index - start_pivot.index)
         wave_id = (
-            f"{code}::{start_pivot.pivot_date.isoformat()}::{end_pivot.pivot_date.isoformat()}::{direction}"
+            f"{code}::{trend_level}::{start_pivot.pivot_date.isoformat()}::"
+            f"{end_pivot.pivot_date.isoformat()}::{direction}"
         )
         candidates = up_candidates if direction == "UP" else down_candidates
         event_rows, two_b_count, last_extreme_date, last_extreme_price = _extract_wave_events(
@@ -563,14 +621,16 @@ def _build_wave_rows(
                 "last_extreme_price": last_extreme_price,
                 "two_b_failure_count": two_b_count,
                 "end_confirm_index": int(end_pivot.confirm_index),
-                "trend_level": TREND_LEVEL_INTERMEDIATE,
+                "start_index": int(start_pivot.index),
+                "end_index": int(end_pivot.index),
+                "trend_level": trend_level,
                 "trend_direction_before": "UNSET",
                 "trend_direction_after": "UNSET",
-                "context_trend_level": TREND_LEVEL_INTERMEDIATE,
+                "context_trend_level": parent_trend_level,
                 "context_trend_direction_before": "UNSET",
                 "context_trend_direction_after": "UNSET",
                 "wave_role": "MAINSTREAM",
-                "wave_role_basis": WAVE_ROLE_BASIS_INTERMEDIATE_PARENT_CONTEXT,
+                "wave_role_basis": role_basis,
                 "reversal_tag": "NONE",
                 "turn_confirm_type": TURN_CONFIRM_NONE,
                 "turn_step1_date": None,
@@ -590,16 +650,43 @@ def _build_wave_rows(
 
 # 这里构造的是“wave 账本内部”的方向上下文，不是市场级趋势模型。
 # 目的只是给后面的 reversal / countertrend 标签一个稳定坐标系。
-def _assign_wave_trend_context(waves: list[dict[str, object]]) -> None:
+def _build_active_direction_timeline(pivots: list[PivotPoint], total_bars: int) -> list[str]:
+    if total_bars <= 0 or not pivots:
+        return []
+
+    timeline: list[str] = []
+    pivot_cursor = 0
+    current_pivot = pivots[0]
+    for idx in range(total_bars):
+        while pivot_cursor + 1 < len(pivots) and pivots[pivot_cursor + 1].confirm_index <= idx:
+            pivot_cursor += 1
+            current_pivot = pivots[pivot_cursor]
+        timeline.append("UP" if current_pivot.kind == "LOW" else "DOWN")
+    return timeline
+
+
+def _assign_wave_trend_context(
+    waves: list[dict[str, object]],
+    trend_level: str,
+    parent_direction_timeline: list[str] | None = None,
+) -> None:
     major_trend = "UNSET"
     highest_up_end: float | None = None
     lowest_down_end: float | None = None
+    parent_level = _parent_trend_level(trend_level)
+    role_basis = _wave_role_basis_for_level(trend_level)
     for wave in waves:
         direction = str(wave["direction"])
         before = major_trend
-        # GX4 起，wave_role 明确相对于“本 wave 开始前已经确认的父趋势方向”判定，
-        # 而不是等本 wave 自己把 trend_direction_after 翻转后再回头把自己洗成 mainstream。
-        context_direction_before = _resolved_context_direction(before, direction)
+        start_index = int(wave.get("start_index", wave.get("end_confirm_index", 0)))
+        end_index = int(wave.get("end_index", wave.get("end_confirm_index", start_index)))
+        if parent_direction_timeline:
+            before_parent_direction = parent_direction_timeline[min(start_index, len(parent_direction_timeline) - 1)]
+            after_parent_direction = parent_direction_timeline[min(end_index, len(parent_direction_timeline) - 1)]
+            context_direction_before = _resolved_context_direction(before_parent_direction, direction)
+        else:
+            context_direction_before = _resolved_context_direction(before, direction)
+            after_parent_direction = ""
         role = _wave_role_from_context_direction(context_direction_before, direction)
         reversal_tag = "NONE"
         if direction == "UP":
@@ -619,14 +706,18 @@ def _assign_wave_trend_context(waves: list[dict[str, object]]) -> None:
         if reversal_tag == "NONE" and int(wave["two_b_failure_count"]) > 0:
             reversal_tag = "TWO_B_WATCH"
         resolved_direction_after = major_trend if major_trend != "UNSET" else direction
-        wave["trend_level"] = TREND_LEVEL_INTERMEDIATE
+        if parent_direction_timeline:
+            context_direction_after = _resolved_context_direction(after_parent_direction, direction)
+        else:
+            context_direction_after = _resolved_context_direction(resolved_direction_after, direction)
+        wave["trend_level"] = trend_level
         wave["trend_direction_before"] = before
         wave["trend_direction_after"] = resolved_direction_after
-        wave["context_trend_level"] = TREND_LEVEL_INTERMEDIATE
+        wave["context_trend_level"] = parent_level
         wave["context_trend_direction_before"] = context_direction_before
-        wave["context_trend_direction_after"] = resolved_direction_after
+        wave["context_trend_direction_after"] = context_direction_after
         wave["wave_role"] = role
-        wave["wave_role_basis"] = WAVE_ROLE_BASIS_INTERMEDIATE_PARENT_CONTEXT
+        wave["wave_role_basis"] = role_basis
         wave["reversal_tag"] = reversal_tag
 
 
@@ -1120,6 +1211,81 @@ def _build_daily_snapshots(
             }
         )
     return snapshots
+
+
+def _build_hierarchy_level_snapshots(
+    code: str,
+    frame: pd.DataFrame,
+    pivots: list[PivotPoint],
+    up_candidates: list[ExtremeCandidate],
+    down_candidates: list[ExtremeCandidate],
+    trend_level: str,
+    parent_direction_timeline: list[str] | None = None,
+) -> pd.DataFrame:
+    if frame.empty or not pivots:
+        return pd.DataFrame()
+
+    dates = pd.to_datetime(frame["date"]).dt.date.to_list()
+    prefix = _snapshot_level_prefix(trend_level)
+    parent_level = _parent_trend_level(trend_level)
+    role_basis = _wave_role_basis_for_level(trend_level)
+    two_b_window_bars, two_b_window_basis = _two_b_confirmation_window_spec(trend_level)
+
+    pivot_cursor = 0
+    current_pivot = pivots[0]
+    active_state = _initial_active_state(
+        pivot=current_pivot,
+        direction="UP" if current_pivot.kind == "LOW" else "DOWN",
+        candidates=up_candidates if current_pivot.kind == "LOW" else down_candidates,
+    )
+    rows: list[dict[str, object]] = []
+
+    for idx, calc_date in enumerate(dates):
+        while pivot_cursor + 1 < len(pivots) and pivots[pivot_cursor + 1].confirm_index <= idx:
+            pivot_cursor += 1
+            current_pivot = pivots[pivot_cursor]
+            direction: WaveDirection = "UP" if current_pivot.kind == "LOW" else "DOWN"
+            active_state = _initial_active_state(
+                pivot=current_pivot,
+                direction=direction,
+                candidates=up_candidates if direction == "UP" else down_candidates,
+            )
+        _advance_active_state(active_state, idx)
+        direction = active_state.direction
+        parent_direction = "UNSET"
+        if parent_direction_timeline:
+            parent_direction = parent_direction_timeline[min(idx, len(parent_direction_timeline) - 1)]
+        context_direction = _resolved_context_direction(parent_direction, direction)
+        rows.append(
+            {
+                "code": code,
+                "calc_date": calc_date,
+                f"current_{prefix}_trend_level": trend_level,
+                f"current_{prefix}_wave_id": f"{code}::{trend_level}::{active_state.start_date.isoformat()}::{direction}",
+                f"current_{prefix}_wave_direction": direction,
+                f"current_{prefix}_context_trend_level": parent_level,
+                f"current_{prefix}_context_trend_direction": context_direction,
+                f"current_{prefix}_wave_role": _wave_role_from_context_direction(context_direction, direction),
+                f"current_{prefix}_wave_role_basis": role_basis,
+                f"current_{prefix}_two_b_window_bars": two_b_window_bars,
+                f"current_{prefix}_two_b_window_basis": two_b_window_basis,
+                f"current_{prefix}_wave_start_date": active_state.start_date,
+                f"current_{prefix}_wave_age_trade_days": int(idx - active_state.start_index + 1),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def _merge_snapshot_hierarchy(
+    base_snapshot_df: pd.DataFrame,
+    hierarchy_frames: list[pd.DataFrame],
+) -> pd.DataFrame:
+    merged = base_snapshot_df.copy()
+    for hierarchy_df in hierarchy_frames:
+        if hierarchy_df.empty:
+            continue
+        merged = merged.merge(hierarchy_df, on=["code", "calc_date"], how="left")
+    return merged
 
 
 # 横截面 rank 是附加视角，不替代自历史 percentile。
@@ -2563,35 +2729,110 @@ def _build_code_gene_payload(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.Data
         return pd.DataFrame(), pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
 
     code = str(frame["code"].iloc[0])
-    pivots = _build_confirmed_pivots(frame)
-    up_candidates = _build_extreme_candidates(frame, "UP")
-    down_candidates = _build_extreme_candidates(frame, "DOWN")
-    wave_rows, event_rows = _build_wave_rows(
-        code=code,
-        pivots=pivots,
-        up_candidates=up_candidates,
-        down_candidates=down_candidates,
+    level_payloads: dict[str, dict[str, object]] = {}
+    for trend_level in TREND_LEVEL_ORDER:
+        pivots = _build_confirmed_pivots(frame, trend_level=trend_level)
+        up_candidates = _build_extreme_candidates(frame, "UP", trend_level=trend_level)
+        down_candidates = _build_extreme_candidates(frame, "DOWN", trend_level=trend_level)
+        wave_rows, event_rows = _build_wave_rows(
+            code=code,
+            pivots=pivots,
+            up_candidates=up_candidates,
+            down_candidates=down_candidates,
+            trend_level=trend_level,
+        )
+        level_payloads[trend_level] = {
+            "pivots": pivots,
+            "up_candidates": up_candidates,
+            "down_candidates": down_candidates,
+            "waves": wave_rows,
+            "events": event_rows,
+        }
+
+    frame_length = len(frame)
+    long_payload = level_payloads[TREND_LEVEL_LONG]
+    intermediate_payload = level_payloads[TREND_LEVEL_INTERMEDIATE]
+    short_payload = level_payloads[TREND_LEVEL_SHORT]
+
+    long_active_timeline = _build_active_direction_timeline(
+        pivots=long_payload["pivots"], total_bars=frame_length
     )
-    _assign_wave_trend_context(wave_rows)
-    event_rows = _apply_structure_labels(wave_rows, event_rows)
-    _apply_wave_history_scores(wave_rows)
-    snapshot_rows = _build_daily_snapshots(
+    intermediate_active_timeline = _build_active_direction_timeline(
+        pivots=intermediate_payload["pivots"], total_bars=frame_length
+    )
+
+    _assign_wave_trend_context(
+        waves=long_payload["waves"],
+        trend_level=TREND_LEVEL_LONG,
+    )
+    _assign_wave_trend_context(
+        waves=intermediate_payload["waves"],
+        trend_level=TREND_LEVEL_INTERMEDIATE,
+        parent_direction_timeline=long_active_timeline,
+    )
+    _assign_wave_trend_context(
+        waves=short_payload["waves"],
+        trend_level=TREND_LEVEL_SHORT,
+        parent_direction_timeline=intermediate_active_timeline,
+    )
+
+    wave_frames: list[pd.DataFrame] = []
+    event_frames: list[pd.DataFrame] = []
+    for trend_level in TREND_LEVEL_ORDER:
+        payload = level_payloads[trend_level]
+        structured_events = _apply_structure_labels(payload["waves"], payload["events"])
+        _apply_wave_history_scores(payload["waves"])
+        wave_frames.append(pd.DataFrame(payload["waves"]))
+        event_frames.append(pd.DataFrame(structured_events))
+
+    canonical_snapshot_rows = _build_daily_snapshots(
         code=code,
         frame=frame,
-        pivots=pivots,
-        waves=wave_rows,
-        up_candidates=up_candidates,
-        down_candidates=down_candidates,
+        pivots=intermediate_payload["pivots"],
+        waves=intermediate_payload["waves"],
+        up_candidates=intermediate_payload["up_candidates"],
+        down_candidates=intermediate_payload["down_candidates"],
     )
+    canonical_snapshot_df = pd.DataFrame(canonical_snapshot_rows)
+    hierarchy_frames = [
+        _build_hierarchy_level_snapshots(
+            code=code,
+            frame=frame,
+            pivots=short_payload["pivots"],
+            up_candidates=short_payload["up_candidates"],
+            down_candidates=short_payload["down_candidates"],
+            trend_level=TREND_LEVEL_SHORT,
+            parent_direction_timeline=intermediate_active_timeline,
+        ),
+        _build_hierarchy_level_snapshots(
+            code=code,
+            frame=frame,
+            pivots=intermediate_payload["pivots"],
+            up_candidates=intermediate_payload["up_candidates"],
+            down_candidates=intermediate_payload["down_candidates"],
+            trend_level=TREND_LEVEL_INTERMEDIATE,
+            parent_direction_timeline=long_active_timeline,
+        ),
+        _build_hierarchy_level_snapshots(
+            code=code,
+            frame=frame,
+            pivots=long_payload["pivots"],
+            up_candidates=long_payload["up_candidates"],
+            down_candidates=long_payload["down_candidates"],
+            trend_level=TREND_LEVEL_LONG,
+        ),
+    ]
+    snapshot_df = _merge_snapshot_hierarchy(canonical_snapshot_df, hierarchy_frames)
+
     factor_eval_samples = _build_factor_eval_samples(
         code=code,
         frame=frame,
-        waves=wave_rows,
+        waves=intermediate_payload["waves"],
     )
     return (
-        pd.DataFrame(snapshot_rows),
-        pd.DataFrame(wave_rows),
-        pd.DataFrame(event_rows),
+        snapshot_df,
+        _concat_sparse_frames(wave_frames),
+        _concat_sparse_frames(event_frames),
         factor_eval_samples,
     )
 

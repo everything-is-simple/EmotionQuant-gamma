@@ -139,7 +139,7 @@ The next formal path is now:
 
 That means:
 
-1. `GX8` remains the final hard semantic problem inside the fourth battlefield
+1. `GX8` no longer remains an open hard semantic problem inside the fourth battlefield
 2. any runtime promotion of `Gene` must happen through a first-battlefield mainline package
 3. `Gene` may not be verbally promoted into runtime behavior outside that package
 
@@ -173,11 +173,12 @@ That means:
 6. `GX8 / three-level trend hierarchy refactor`
    - `post-closeout targeted hypothesis`
    - `src/selector/gene.py`
-   - `Planned`
+   - `Completed`
    - 目标：把 `trend_level` 从单层 `INTERMEDIATE` proxy 推到真正三层趋势并存语义
+   - 配套 record：`03-execution/records/19-phase-gx8-three-level-trend-hierarchy-record-20260319.md`
 
-当前 `GX3 ~ GX7` 已全部完成。  
-当前下一张 targeted hypothesis = `GX8 / three-level trend hierarchy refactor`。  
+当前 `GX4 ~ GX8` 已全部完成。  
+当前第四战场已不再有真正未执行的 hierarchy blocker。  
 定义整改后的正式收口口径是：
 
 1. `G4 / G5 / G6` 结论保留

@@ -70,7 +70,7 @@
 ### `trend_level`
 
 - 书中角色：三层趋势并存
-- 当前状态：`已落盘，但仅 INTERMEDIATE`
+- 当前状态：`已落盘，并已扩成 SHORT / INTERMEDIATE / LONG`
 - 当前实现：
   [`src/selector/gene.py`](../../../src/selector/gene.py)  
   [`src/data/store.py`](../../../src/data/store.py)
@@ -134,9 +134,11 @@
 
 ### `三层趋势并存`
 
-- 当前状态：`半落盘`
-- 缺口：
-  现在只有 `trend_level=INTERMEDIATE`，还没有 `SHORT / INTERMEDIATE / LONG` 同时并存的正式结构。
+- 当前状态：`已落盘`
+- 当前口径：
+  `GX8` 已正式把 `trend_level` 推进到 `SHORT / INTERMEDIATE / LONG` 三层并存。
+- 剩余说明：
+  canonical `l3_stock_gene.current_*` 仍保留中层兼容视图，真三层 active hierarchy 通过 `current_short_* / current_intermediate_* / current_long_*` 暴露。
 
 ### `mainstream / countertrend`
 

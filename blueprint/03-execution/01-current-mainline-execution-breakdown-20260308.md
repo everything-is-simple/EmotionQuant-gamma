@@ -244,7 +244,7 @@
 
 ## 7. 下一步
 
-从 `2026-03-19` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3`、`Phase 4`、`Phase 4.1`、`Phase 5`、`Phase 6`、`Phase 7` 与 `Phase 8` 都已完成当前轮次收口。当前 active mainline package 已切到 `Phase 9 / Gene mainline integration package`：`Phase 9A` 已完成 promoted subset freeze，`Phase 9B / duration_percentile` 已完成第一轮 isolated win，`Phase 9B / wave_role` 已完成但 formal ruling 为 `retain_sidecar_only`，`Phase 9B / reversal_state` 已完成并以 `promote_reversal_state_exit_preparation` 胜出，`Phase 9B / context_trend_direction_before` 也已完成并以 `promote_context_trend_direction_negative_guard` 胜出；当前 `17.6 / 17.7` 仍保持 planned，其中 `17.6` 已不再受 winner-count 阻塞，但 `GX8` 对组合 scope 的 non-blocking 与 formal combination freeze 仍未满足，因此第四战场当前真实状态是“包继续 active，但剩余门槛仍必须先被诚实处理”。
+从 `2026-03-19` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3`、`Phase 4`、`Phase 4.1`、`Phase 5`、`Phase 6`、`Phase 7` 与 `Phase 8` 都已完成当前轮次收口。当前 active mainline package 已切到 `Phase 9 / Gene mainline integration package`：`Phase 9A` 已完成 promoted subset freeze，`Phase 9B / duration_percentile` 已完成第一轮 isolated win，`Phase 9B / wave_role` 已完成但 formal ruling 为 `retain_sidecar_only`，`Phase 9B / reversal_state` 已完成并以 `promote_reversal_state_exit_preparation` 胜出，`Phase 9B / context_trend_direction_before` 也已完成并以 `promote_context_trend_direction_negative_guard` 胜出；`GX8 / three-level trend hierarchy` 现已完成，因此 `17.6` 已正式切成 `Active`，当前真实下一步就是先写 formal combination freeze，再进入组合 replay。
 
 其中：
 
@@ -261,7 +261,7 @@
 11. `Phase 9B / wave_role = Completed (retain_sidecar_only)`
 12. `Phase 9B / reversal_state = Completed (promote_reversal_state_exit_preparation)`
 13. `Phase 9B / context_trend_direction_before = Completed (promote_context_trend_direction_negative_guard)`
-14. `Phase 9C = Planned (winner-count gate satisfied; GX8 combination-scope gate + combination freeze pending)`
+14. `Phase 9C = Active (winner-count gate satisfied; GX8 hierarchy gate cleared; current task = formal combination freeze)`
 15. `Phase 9D = Planned`
 16. rollback target 保持：
    - `legacy_bof_baseline`
@@ -280,10 +280,10 @@
 6. `wave_role` 已完成 isolated validation，但当前 ruling 是 `retain_sidecar_only`
 7. `current_wave_age_band` 继续保持 `shadow-only`，当前不单独开卡
 8. `17.5` 已完成，并形成第三个 truthful isolated winner
-9. `17.6` 已不再受“winner 数量不足”阻塞，但仍不能切成 `Active`
+9. `17.6` 已正式切成 `Active`，因为 winner-count 与 `GX8` 两道门都已满足
 10. 正式默认路径继续保持：
    - `legacy_bof_baseline`
-11. 若继续推进 `Gene`，必须先诚实处理 `GX8` 对组合 scope 的 gate 与 formal combination freeze，不能口头越门槛
+11. 若继续推进 `Gene`，当前就必须在 `17.6` 内先落 formal combination freeze，再做组合 replay，不能口头跳过 freeze
 
 也就是：
 

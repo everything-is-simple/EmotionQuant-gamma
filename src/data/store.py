@@ -16,7 +16,7 @@ from typing import Any
 import duckdb
 import pandas as pd
 
-CURRENT_SCHEMA_VERSION = 14
+CURRENT_SCHEMA_VERSION = 15
 
 
 @dataclass(frozen=True)
@@ -366,6 +366,28 @@ class Store:
             "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS turn_step2_condition VARCHAR",
             "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS turn_step3_condition VARCHAR",
         ]
+        for sql in statements:
+            self.conn.execute(sql)
+
+    def _migrate_schema_v14_to_v15(self) -> None:
+        statements = []
+        level_prefixes = ["short", "intermediate", "long"]
+        for prefix in level_prefixes:
+            statements.extend(
+                [
+                    f"ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_{prefix}_trend_level VARCHAR",
+                    f"ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_{prefix}_wave_id VARCHAR",
+                    f"ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_{prefix}_wave_direction VARCHAR",
+                    f"ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_{prefix}_context_trend_level VARCHAR",
+                    f"ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_{prefix}_context_trend_direction VARCHAR",
+                    f"ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_{prefix}_wave_role VARCHAR",
+                    f"ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_{prefix}_wave_role_basis VARCHAR",
+                    f"ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_{prefix}_two_b_window_bars INTEGER",
+                    f"ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_{prefix}_two_b_window_basis VARCHAR",
+                    f"ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_{prefix}_wave_start_date DATE",
+                    f"ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_{prefix}_wave_age_trade_days INTEGER",
+                ]
+            )
         for sql in statements:
             self.conn.execute(sql)
 
@@ -1138,6 +1160,39 @@ class Store:
                 latest_two_b_confirm_date DATE,
                 current_two_b_window_bars INTEGER,
                 current_two_b_window_basis VARCHAR,
+                current_short_trend_level VARCHAR,
+                current_short_wave_id VARCHAR,
+                current_short_wave_direction VARCHAR,
+                current_short_context_trend_level VARCHAR,
+                current_short_context_trend_direction VARCHAR,
+                current_short_wave_role VARCHAR,
+                current_short_wave_role_basis VARCHAR,
+                current_short_two_b_window_bars INTEGER,
+                current_short_two_b_window_basis VARCHAR,
+                current_short_wave_start_date DATE,
+                current_short_wave_age_trade_days INTEGER,
+                current_intermediate_trend_level VARCHAR,
+                current_intermediate_wave_id VARCHAR,
+                current_intermediate_wave_direction VARCHAR,
+                current_intermediate_context_trend_level VARCHAR,
+                current_intermediate_context_trend_direction VARCHAR,
+                current_intermediate_wave_role VARCHAR,
+                current_intermediate_wave_role_basis VARCHAR,
+                current_intermediate_two_b_window_bars INTEGER,
+                current_intermediate_two_b_window_basis VARCHAR,
+                current_intermediate_wave_start_date DATE,
+                current_intermediate_wave_age_trade_days INTEGER,
+                current_long_trend_level VARCHAR,
+                current_long_wave_id VARCHAR,
+                current_long_wave_direction VARCHAR,
+                current_long_context_trend_level VARCHAR,
+                current_long_context_trend_direction VARCHAR,
+                current_long_wave_role VARCHAR,
+                current_long_wave_role_basis VARCHAR,
+                current_long_two_b_window_bars INTEGER,
+                current_long_two_b_window_basis VARCHAR,
+                current_long_wave_start_date DATE,
+                current_long_wave_age_trade_days INTEGER,
                 cross_section_magnitude_rank INTEGER,
                 cross_section_magnitude_percentile DOUBLE,
                 cross_section_duration_rank INTEGER,

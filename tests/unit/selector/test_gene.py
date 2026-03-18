@@ -181,6 +181,7 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
                 magnitude_band,
                 wave_age_band
             FROM l3_gene_wave
+            WHERE trend_level = 'INTERMEDIATE'
             ORDER BY code, end_date
             """
         )
@@ -195,6 +196,7 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
                 confirmation_window_bars,
                 confirmation_window_basis
             FROM l3_gene_event
+            WHERE wave_id LIKE '%::INTERMEDIATE::%'
             ORDER BY code, event_date, event_seq
             """
         )
@@ -249,6 +251,9 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert "current_wave_role_basis" in schema["name"].tolist()
         assert "current_two_b_window_bars" in schema["name"].tolist()
         assert "current_two_b_window_basis" in schema["name"].tolist()
+        assert "current_short_wave_role_basis" in schema["name"].tolist()
+        assert "current_intermediate_wave_role_basis" in schema["name"].tolist()
+        assert "current_long_wave_role_basis" in schema["name"].tolist()
         assert "cross_section_magnitude_rank" in schema["name"].tolist()
         assert "current_wave_magnitude_band" in schema["name"].tolist()
         assert "current_wave_age_band" in schema["name"].tolist()
@@ -281,7 +286,7 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert snapshots["current_wave_magnitude_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
         assert snapshots["current_wave_age_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
         assert waves["trend_level"].eq("INTERMEDIATE").all()
-        assert waves["context_trend_level"].eq("INTERMEDIATE").all()
+        assert waves["context_trend_level"].eq("LONG").all()
         assert waves["wave_role_basis"].eq("INTERMEDIATE_PARENT_CONTEXT_DIRECTION").all()
         assert waves["two_b_window_bars"].eq(5).all()
         assert waves["two_b_window_basis"].eq("INTERMEDIATE_WITHIN_3_TO_5_BARS").all()
@@ -320,6 +325,110 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         store.close()
 
 
+def test_compute_gene_writes_gx8_three_level_hierarchy(tmp_path) -> None:
+    db = tmp_path / "gene_gx8_hierarchy.duckdb"
+    store = Store(db)
+    try:
+        base = date(2026, 1, 5)
+        closes = [
+            10.0, 11.0, 13.0, 15.0, 14.0, 12.0, 10.0, 9.0, 11.0, 13.0, 16.0, 18.0,
+            17.0, 15.0, 13.0, 11.0, 10.0, 12.0, 14.0, 17.0, 19.0, 18.0, 16.0, 14.0,
+            12.0, 11.0, 13.0, 15.0, 18.0, 20.0, 19.0, 17.0, 15.0, 13.0, 12.0, 14.0,
+            16.0, 19.0, 21.0, 20.0, 18.0, 16.0,
+        ]
+        end = base + timedelta(days=len(closes) - 1)
+
+        store.bulk_upsert("l1_trade_calendar", _trade_calendar(base, len(closes)))
+        store.bulk_upsert("l2_stock_adj_daily", pd.DataFrame(_adj_daily_rows(base, "AAA", closes)))
+
+        compute_gene(store, base, end)
+
+        waves = store.read_df(
+            """
+            SELECT trend_level, context_trend_level, wave_role_basis, two_b_window_bars, two_b_window_basis
+            FROM l3_gene_wave
+            ORDER BY trend_level, end_date
+            """
+        )
+        snapshot = store.read_df(
+            """
+            SELECT
+                trend_level,
+                current_context_trend_level,
+                current_short_trend_level,
+                current_short_context_trend_level,
+                current_short_wave_role_basis,
+                current_short_two_b_window_bars,
+                current_short_two_b_window_basis,
+                current_intermediate_trend_level,
+                current_intermediate_context_trend_level,
+                current_intermediate_wave_role_basis,
+                current_intermediate_two_b_window_bars,
+                current_intermediate_two_b_window_basis,
+                current_long_trend_level,
+                current_long_context_trend_level,
+                current_long_wave_role_basis,
+                current_long_two_b_window_bars,
+                current_long_two_b_window_basis
+            FROM l3_stock_gene
+            WHERE calc_date = ?
+            """,
+            (end,),
+        )
+
+        assert set(waves["trend_level"].tolist()) == {"SHORT", "INTERMEDIATE", "LONG"}
+        assert set(
+            waves.loc[waves["trend_level"] == "SHORT", "context_trend_level"].tolist()
+        ) == {"INTERMEDIATE"}
+        assert set(
+            waves.loc[waves["trend_level"] == "INTERMEDIATE", "context_trend_level"].tolist()
+        ) == {"LONG"}
+        assert set(waves.loc[waves["trend_level"] == "LONG", "context_trend_level"].tolist()) == {"LONG"}
+        assert set(
+            waves.loc[waves["trend_level"] == "SHORT", "wave_role_basis"].tolist()
+        ) == {"SHORT_PARENT_CONTEXT_DIRECTION"}
+        assert set(
+            waves.loc[waves["trend_level"] == "INTERMEDIATE", "wave_role_basis"].tolist()
+        ) == {"INTERMEDIATE_PARENT_CONTEXT_DIRECTION"}
+        assert set(waves.loc[waves["trend_level"] == "LONG", "wave_role_basis"].tolist()) == {
+            "LONG_SELF_DIRECTION_BOOTSTRAP"
+        }
+        assert set(waves.loc[waves["trend_level"] == "SHORT", "two_b_window_bars"].tolist()) == {1}
+        assert set(waves.loc[waves["trend_level"] == "INTERMEDIATE", "two_b_window_bars"].tolist()) == {5}
+        assert set(waves.loc[waves["trend_level"] == "LONG", "two_b_window_bars"].tolist()) == {10}
+        assert set(waves.loc[waves["trend_level"] == "SHORT", "two_b_window_basis"].tolist()) == {
+            "SHORT_WITHIN_1_BAR"
+        }
+        assert set(waves.loc[waves["trend_level"] == "INTERMEDIATE", "two_b_window_basis"].tolist()) == {
+            "INTERMEDIATE_WITHIN_3_TO_5_BARS"
+        }
+        assert set(waves.loc[waves["trend_level"] == "LONG", "two_b_window_basis"].tolist()) == {
+            "LONG_WITHIN_7_TO_10_BARS"
+        }
+
+        assert len(snapshot) == 1
+        row = snapshot.iloc[0]
+        assert row["trend_level"] == "INTERMEDIATE"
+        assert row["current_context_trend_level"] == "INTERMEDIATE"
+        assert row["current_short_trend_level"] == "SHORT"
+        assert row["current_short_context_trend_level"] == "INTERMEDIATE"
+        assert row["current_short_wave_role_basis"] == "SHORT_PARENT_CONTEXT_DIRECTION"
+        assert row["current_short_two_b_window_bars"] == 1
+        assert row["current_short_two_b_window_basis"] == "SHORT_WITHIN_1_BAR"
+        assert row["current_intermediate_trend_level"] == "INTERMEDIATE"
+        assert row["current_intermediate_context_trend_level"] == "LONG"
+        assert row["current_intermediate_wave_role_basis"] == "INTERMEDIATE_PARENT_CONTEXT_DIRECTION"
+        assert row["current_intermediate_two_b_window_bars"] == 5
+        assert row["current_intermediate_two_b_window_basis"] == "INTERMEDIATE_WITHIN_3_TO_5_BARS"
+        assert row["current_long_trend_level"] == "LONG"
+        assert row["current_long_context_trend_level"] == "LONG"
+        assert row["current_long_wave_role_basis"] == "LONG_SELF_DIRECTION_BOOTSTRAP"
+        assert row["current_long_two_b_window_bars"] == 10
+        assert row["current_long_two_b_window_basis"] == "LONG_WITHIN_7_TO_10_BARS"
+    finally:
+        store.close()
+
+
 def test_compute_gene_writes_g3_structure_labels(tmp_path) -> None:
     db = tmp_path / "gene_structure_labels.duckdb"
     store = Store(db)
@@ -342,6 +451,7 @@ def test_compute_gene_writes_g3_structure_labels(tmp_path) -> None:
             """
             SELECT
                 code,
+                trend_level,
                 end_date,
                 turn_confirm_type,
                 turn_step1_date,
@@ -354,7 +464,8 @@ def test_compute_gene_writes_g3_structure_labels(tmp_path) -> None:
                 two_b_window_bars,
                 two_b_window_basis
             FROM l3_gene_wave
-            WHERE turn_confirm_type <> 'NONE' OR two_b_confirm_type <> 'NONE'
+            WHERE trend_level = 'INTERMEDIATE'
+              AND (turn_confirm_type <> 'NONE' OR two_b_confirm_type <> 'NONE')
             ORDER BY code, end_date
             """
         )
@@ -372,6 +483,7 @@ def test_compute_gene_writes_g3_structure_labels(tmp_path) -> None:
                 confirmation_window_basis
             FROM l3_gene_event
             WHERE event_family = 'STRUCTURE'
+              AND anchor_wave_id LIKE '%::INTERMEDIATE::%'
             ORDER BY code, event_date, event_seq
             """
         )

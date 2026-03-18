@@ -63,7 +63,7 @@ Mainline design authority remains in `blueprint/`.
 | Phase 9B parent-context evidence | `blueprint/03-execution/evidence/phase-9b-context-trend-direction-validation-evidence-20260319.md` | 第一战场 evidence：`current_context_trend_direction == DOWN` 的真实 runtime 结果 |
 | Phase 9B parent-context execution record | `blueprint/03-execution/records/phase-9b-context-trend-direction-validation-record-20260319.md` | 第一战场结论：`context_trend_direction_before` 已赢下 isolated parent-context 轮 |
 | Phase 9B parent-context record | `docs/spec/v0.01-plus/records/v0.01-plus-phase-9b-context-trend-direction-validation-20260319.md` | 正式 ruling：`promote_context_trend_direction_negative_guard` |
-| Phase 9C combination card | `blueprint/03-execution/17.6-phase-9c-gene-combination-candidate-card-20260318.md` | `3` 个 isolated winner 已成立，但仍受 `GX8` 组合 scope 与 combination freeze 约束 |
+| Phase 9C combination card | `blueprint/03-execution/17.6-phase-9c-gene-combination-candidate-card-20260318.md` | `GX8` 已完成，当前已切为 `Active`，下一步先写 formal combination freeze |
 | Phase 9D package ruling card | `blueprint/03-execution/17.7-phase-9d-gene-package-promotion-ruling-card-20260318.md` | Phase 9 包级 promotion / retention / defer closeout |
 | Current operating runbook | `docs/reference/operations/current-mainline-operating-runbook-20260317.md` | Truthful operating chain and rollback rules |
 
