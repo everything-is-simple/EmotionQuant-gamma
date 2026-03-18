@@ -1,5 +1,5 @@
 # GX6 / 1-2-3 three-condition refactor
-**状态**: `Planned`  
+**状态**: `Completed`  
 **日期**: `2026-03-17`  
 **类型**: `post-closeout targeted hypothesis`  
 **直接目标文件**: [`../../src/selector/gene.py`](../../src/selector/gene.py)
@@ -76,3 +76,20 @@
 一句话：
 
 `先把 1-2-3 还原成三条件确认法，再决定它如何服务结构层、条件层和后续重验证。`
+
+---
+
+## 7. 完成结果
+
+`GX6` 已完成本卡原定目标：
+
+1. `123_STEP1 / STEP2 / STEP3` 已显式映射到三条件：
+   - `trendline_break`
+   - `failed_extreme_test`
+   - `prior_pivot_breach`
+2. `turn_confirm_type` 现在不再只是“任意三段波标签”，而是三条件齐备后的确认结果
+3. `wave` 与 `event` 层都已补上独立条件字段
+4. schema 与单测已同步更新
+
+配套 record：
+[`records/17-phase-gx6-123-three-condition-refactor-record-20260318.md`](records/17-phase-gx6-123-three-condition-refactor-record-20260318.md)

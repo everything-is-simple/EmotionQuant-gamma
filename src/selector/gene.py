@@ -28,7 +28,6 @@ WaveDirection = Literal["UP", "DOWN"]
 
 PIVOT_NEIGHBOR_BARS = 2
 PIVOT_CONFIRMATION_BARS = 2
-TWO_B_CONFIRMATION_BARS = 3
 GENE_LOOKBACK_TRADE_DAYS = 260
 FACTOR_EVAL_FORWARD_HORIZON_TRADE_DAYS = 10
 FACTOR_EVAL_SAMPLE_SCOPE = "SELF_HISTORY_PERCENTILE"
@@ -45,7 +44,10 @@ G2_BAND_UNSCALED = "UNSCALED"
 TREND_LEVEL_SHORT = "SHORT"
 TREND_LEVEL_INTERMEDIATE = "INTERMEDIATE"
 TREND_LEVEL_LONG = "LONG"
-WAVE_ROLE_BASIS_INTERMEDIATE_PROXY = "INTERMEDIATE_MAJOR_TREND_PROXY"
+WAVE_ROLE_BASIS_INTERMEDIATE_PARENT_CONTEXT = "INTERMEDIATE_PARENT_CONTEXT_DIRECTION"
+TWO_B_WINDOW_BASIS_SHORT = "SHORT_WITHIN_1_BAR"
+TWO_B_WINDOW_BASIS_INTERMEDIATE = "INTERMEDIATE_WITHIN_3_TO_5_BARS"
+TWO_B_WINDOW_BASIS_LONG = "LONG_WITHIN_7_TO_10_BARS"
 EVENT_FAMILY_EXTREME = "EXTREME"
 EVENT_FAMILY_STRUCTURE = "STRUCTURE"
 TURN_CONFIRM_NONE = "NONE"
@@ -56,6 +58,9 @@ TWO_B_BOTTOM = "2B_BOTTOM"
 STEP1_EVENT = "123_STEP1"
 STEP2_EVENT = "123_STEP2"
 STEP3_EVENT = "123_STEP3"
+TURN_STEP1_CONDITION = "trendline_break"
+TURN_STEP2_CONDITION = "failed_extreme_test"
+TURN_STEP3_CONDITION = "prior_pivot_breach"
 G4_VALIDATION_SAMPLE_SCOPE = "SELF_HISTORY_CURRENT_WAVE"
 G4_PRIMARY_RULER = "PRIMARY_RULER"
 G4_SUPPORTING_RULER = "SUPPORTING_RULER"
@@ -103,6 +108,8 @@ class ExtremeCandidate:
     previous_extreme_price: float
     failure_index: int | None
     failure_date: date | None
+    confirmation_window_bars: int
+    confirmation_window_basis: str
 
 
 @dataclass
@@ -128,6 +135,38 @@ class ActiveWaveState:
     last_extreme_date: date | None = None
     last_extreme_price: float | None = None
     two_b_failure_count: int = 0
+
+
+def _resolved_context_direction(parent_trend_direction: str, direction: str) -> str:
+    """把角色判定所依赖的参照趋势方向显式收成一个函数。
+
+    GX4 不去假装三层 trend_level 已经做完，而是先把当前代码的真实口径写清楚：
+    `wave_role` / `current_wave_role` 目前都只相对于 intermediate 层已确认的父趋势方向。
+    若父趋势尚未建立，则退化成 bootstrap 语义，先把当前波段视作主流。
+    """
+
+    return parent_trend_direction if parent_trend_direction != "UNSET" else direction
+
+
+def _wave_role_from_context_direction(context_direction: str, direction: str) -> str:
+    """根据显式的父趋势参照方向判定 mainstream / countertrend。"""
+
+    return "MAINSTREAM" if context_direction == direction else "COUNTERTREND"
+
+
+def _two_b_confirmation_window_spec(trend_level: str) -> tuple[int, str]:
+    """返回当前 trend_level 对应的 2B 确认窗 spec。
+
+    书上的原义是分层级的时间区间，而不是一个固定 magic number。
+    当前 detector 仍然只能机械扫描“最多几根 bar”，所以这里显式采用区间上界：
+    SHORT=1, INTERMEDIATE=5, LONG=10；而原始区间语义保留在 basis 文案里。
+    """
+
+    if trend_level == TREND_LEVEL_SHORT:
+        return 1, TWO_B_WINDOW_BASIS_SHORT
+    if trend_level == TREND_LEVEL_LONG:
+        return 10, TWO_B_WINDOW_BASIS_LONG
+    return 5, TWO_B_WINDOW_BASIS_INTERMEDIATE
 
 
 def _lookback_trade_start(store: Store, start: date, days: int) -> date:
@@ -166,11 +205,16 @@ def _load_gene_input(store: Store, start: date, end: date) -> pd.DataFrame:
 # 1. 哪个 bar 刚刚突破了旧极值
 # 2. 它在短确认窗里有没有失败回落
 # 后面 `_extract_wave_events()` 再把这些候选事件裁切回各自所属的 wave。
-def _build_extreme_candidates(frame: pd.DataFrame, direction: WaveDirection) -> list[ExtremeCandidate]:
+def _build_extreme_candidates(
+    frame: pd.DataFrame,
+    direction: WaveDirection,
+    trend_level: str = TREND_LEVEL_INTERMEDIATE,
+) -> list[ExtremeCandidate]:
     dates = pd.to_datetime(frame["date"]).dt.date.to_list()
     highs = pd.to_numeric(frame["adj_high"], errors="coerce").to_numpy(dtype=float)
     lows = pd.to_numeric(frame["adj_low"], errors="coerce").to_numpy(dtype=float)
     closes = pd.to_numeric(frame["adj_close"], errors="coerce").to_numpy(dtype=float)
+    confirmation_window_bars, confirmation_window_basis = _two_b_confirmation_window_spec(trend_level)
 
     candidates: list[ExtremeCandidate] = []
     running_extreme = np.nan
@@ -185,7 +229,7 @@ def _build_extreme_candidates(frame: pd.DataFrame, direction: WaveDirection) -> 
         is_breakout = price > previous_extreme if direction == "UP" else price < previous_extreme
         if is_breakout:
             failure_index: int | None = None
-            for probe in range(idx + 1, min(len(frame), idx + TWO_B_CONFIRMATION_BARS + 1)):
+            for probe in range(idx + 1, min(len(frame), idx + confirmation_window_bars + 1)):
                 close_value = closes[probe]
                 if not np.isfinite(close_value):
                     continue
@@ -203,6 +247,8 @@ def _build_extreme_candidates(frame: pd.DataFrame, direction: WaveDirection) -> 
                     previous_extreme_price=previous_extreme,
                     failure_index=failure_index,
                     failure_date=dates[failure_index] if failure_index is not None else None,
+                    confirmation_window_bars=confirmation_window_bars,
+                    confirmation_window_basis=confirmation_window_basis,
                 )
             )
             running_extreme = price
@@ -446,6 +492,9 @@ def _extract_wave_events(
                     event.failure_index is not None and event.failure_index <= end_index
                 ),
                 "failure_date": event.failure_date,
+                "confirmation_window_bars": int(event.confirmation_window_bars),
+                "confirmation_window_basis": str(event.confirmation_window_basis),
+                "structure_condition": None,
                 "event_family": EVENT_FAMILY_EXTREME,
                 "structure_direction": None,
                 "anchor_wave_id": wave_id,
@@ -469,6 +518,7 @@ def _build_wave_rows(
 ) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
     waves: list[dict[str, object]] = []
     events: list[dict[str, object]] = []
+    two_b_window_bars, two_b_window_basis = _two_b_confirmation_window_spec(TREND_LEVEL_INTERMEDIATE)
     for start_pivot, end_pivot in zip(pivots, pivots[1:]):
         if start_pivot.index >= end_pivot.index or start_pivot.kind == end_pivot.kind:
             continue
@@ -520,14 +570,19 @@ def _build_wave_rows(
                 "context_trend_direction_before": "UNSET",
                 "context_trend_direction_after": "UNSET",
                 "wave_role": "MAINSTREAM",
-                "wave_role_basis": WAVE_ROLE_BASIS_INTERMEDIATE_PROXY,
+                "wave_role_basis": WAVE_ROLE_BASIS_INTERMEDIATE_PARENT_CONTEXT,
                 "reversal_tag": "NONE",
                 "turn_confirm_type": TURN_CONFIRM_NONE,
                 "turn_step1_date": None,
                 "turn_step2_date": None,
                 "turn_step3_date": None,
+                "turn_step1_condition": None,
+                "turn_step2_condition": None,
+                "turn_step3_condition": None,
                 "two_b_confirm_type": TURN_CONFIRM_NONE,
                 "two_b_confirm_date": None,
+                "two_b_window_bars": two_b_window_bars,
+                "two_b_window_basis": two_b_window_basis,
             }
         )
     return waves, events
@@ -542,7 +597,10 @@ def _assign_wave_trend_context(waves: list[dict[str, object]]) -> None:
     for wave in waves:
         direction = str(wave["direction"])
         before = major_trend
-        role = "MAINSTREAM" if major_trend in {"UNSET", direction} else "COUNTERTREND"
+        # GX4 起，wave_role 明确相对于“本 wave 开始前已经确认的父趋势方向”判定，
+        # 而不是等本 wave 自己把 trend_direction_after 翻转后再回头把自己洗成 mainstream。
+        context_direction_before = _resolved_context_direction(before, direction)
+        role = _wave_role_from_context_direction(context_direction_before, direction)
         reversal_tag = "NONE"
         if direction == "UP":
             end_price = float(wave["end_price"])
@@ -551,7 +609,6 @@ def _assign_wave_trend_context(waves: list[dict[str, object]]) -> None:
                 if major_trend == "UNSET":
                     reversal_tag = "INITIAL_TREND_UP"
                 major_trend = "UP"
-                role = "MAINSTREAM"
         else:
             end_price = float(wave["end_price"])
             if lowest_down_end is None or end_price < lowest_down_end:
@@ -559,7 +616,6 @@ def _assign_wave_trend_context(waves: list[dict[str, object]]) -> None:
                 if major_trend == "UNSET":
                     reversal_tag = "INITIAL_TREND_DOWN"
                 major_trend = "DOWN"
-                role = "MAINSTREAM"
         if reversal_tag == "NONE" and int(wave["two_b_failure_count"]) > 0:
             reversal_tag = "TWO_B_WATCH"
         resolved_direction_after = major_trend if major_trend != "UNSET" else direction
@@ -567,10 +623,10 @@ def _assign_wave_trend_context(waves: list[dict[str, object]]) -> None:
         wave["trend_direction_before"] = before
         wave["trend_direction_after"] = resolved_direction_after
         wave["context_trend_level"] = TREND_LEVEL_INTERMEDIATE
-        wave["context_trend_direction_before"] = before
+        wave["context_trend_direction_before"] = context_direction_before
         wave["context_trend_direction_after"] = resolved_direction_after
         wave["wave_role"] = role
-        wave["wave_role_basis"] = WAVE_ROLE_BASIS_INTERMEDIATE_PROXY
+        wave["wave_role_basis"] = WAVE_ROLE_BASIS_INTERMEDIATE_PARENT_CONTEXT
         wave["reversal_tag"] = reversal_tag
 
 
@@ -659,6 +715,9 @@ def _apply_structure_labels(waves: list[dict[str, object]], events: list[dict[st
                 "density_after_event": None,
                 "is_two_b_failure": True,
                 "failure_date": failure_date,
+                "confirmation_window_bars": event.get("confirmation_window_bars"),
+                "confirmation_window_basis": event.get("confirmation_window_basis"),
+                "structure_condition": None,
                 "event_family": EVENT_FAMILY_STRUCTURE,
                 "structure_direction": structure_direction,
                 "anchor_wave_id": event["wave_id"],
@@ -666,8 +725,12 @@ def _apply_structure_labels(waves: list[dict[str, object]], events: list[dict[st
         )
 
     # Pass 2:
-    # 再扫描连续三段交替 wave，寻找 1-2-3 反转结构。
-    # 这里要求 C 真正突破 A 的末端极值，B 仍保持为有效中继/回撤。
+    # 这里不再把 1-2-3 说成“任意三段 A-B-C 图形”，而是把当前 detector
+    # 能机械落地的三条条件显式拆出来：
+    # 1. trendline_break       -> 第一段反向波先出现
+    # 2. failed_extreme_test   -> 第二段回测未改写第一段起点
+    # 3. prior_pivot_breach    -> 第三段突破第一段末端关键 pivot
+    # 当前仍用三段相邻 completed wave 近似承载这三条件，但不再把近似图形假装成定义本体。
     for idx in range(2, len(waves)):
         wave_a = waves[idx - 2]
         wave_b = waves[idx - 1]
@@ -677,23 +740,33 @@ def _apply_structure_labels(waves: list[dict[str, object]], events: list[dict[st
 
         turn_direction: str | None = None
         reversal_tag: str | None = None
+        trendline_break = False
+        failed_extreme_test = False
+        prior_pivot_breach = False
         if (
             str(wave_a["direction"]) == "UP"
             and str(wave_b["direction"]) == "DOWN"
-            and str(wave_c["direction"]) == "UP"
-            and float(wave_b["end_price"]) > float(wave_a["start_price"])
-            and float(wave_c["end_price"]) > float(wave_a["end_price"])
         ):
-            turn_direction = "UP"
-            reversal_tag = "ONE_TWO_THREE_UP"
-            wave_c["turn_confirm_type"] = TURN_CONFIRM_UP
+            trendline_break = True
+            failed_extreme_test = float(wave_b["end_price"]) > float(wave_a["start_price"])
+            prior_pivot_breach = (
+                str(wave_c["direction"]) == "UP" and float(wave_c["end_price"]) > float(wave_a["end_price"])
+            )
         elif (
             str(wave_a["direction"]) == "DOWN"
             and str(wave_b["direction"]) == "UP"
-            and str(wave_c["direction"]) == "DOWN"
-            and float(wave_b["end_price"]) < float(wave_a["start_price"])
-            and float(wave_c["end_price"]) < float(wave_a["end_price"])
         ):
+            trendline_break = True
+            failed_extreme_test = float(wave_b["end_price"]) < float(wave_a["start_price"])
+            prior_pivot_breach = (
+                str(wave_c["direction"]) == "DOWN" and float(wave_c["end_price"]) < float(wave_a["end_price"])
+            )
+
+        if trendline_break and failed_extreme_test and prior_pivot_breach and str(wave_a["direction"]) == "UP":
+            turn_direction = "UP"
+            reversal_tag = "ONE_TWO_THREE_UP"
+            wave_c["turn_confirm_type"] = TURN_CONFIRM_UP
+        elif trendline_break and failed_extreme_test and prior_pivot_breach and str(wave_a["direction"]) == "DOWN":
             turn_direction = "DOWN"
             reversal_tag = "ONE_TWO_THREE_DOWN"
             wave_c["turn_confirm_type"] = TURN_CONFIRM_DOWN
@@ -704,6 +777,9 @@ def _apply_structure_labels(waves: list[dict[str, object]], events: list[dict[st
         wave_c["turn_step1_date"] = wave_a["end_date"]
         wave_c["turn_step2_date"] = wave_b["end_date"]
         wave_c["turn_step3_date"] = wave_c["end_date"]
+        wave_c["turn_step1_condition"] = TURN_STEP1_CONDITION
+        wave_c["turn_step2_condition"] = TURN_STEP2_CONDITION
+        wave_c["turn_step3_condition"] = TURN_STEP3_CONDITION
         wave_c["reversal_tag"] = reversal_tag
         structure_events.extend(
             [
@@ -720,6 +796,9 @@ def _apply_structure_labels(waves: list[dict[str, object]], events: list[dict[st
                     "density_after_event": None,
                     "is_two_b_failure": False,
                     "failure_date": None,
+                    "confirmation_window_bars": None,
+                    "confirmation_window_basis": None,
+                    "structure_condition": TURN_STEP1_CONDITION,
                     "event_family": EVENT_FAMILY_STRUCTURE,
                     "structure_direction": turn_direction,
                     "anchor_wave_id": wave_a["wave_id"],
@@ -737,6 +816,9 @@ def _apply_structure_labels(waves: list[dict[str, object]], events: list[dict[st
                     "density_after_event": None,
                     "is_two_b_failure": False,
                     "failure_date": None,
+                    "confirmation_window_bars": None,
+                    "confirmation_window_basis": None,
+                    "structure_condition": TURN_STEP2_CONDITION,
                     "event_family": EVENT_FAMILY_STRUCTURE,
                     "structure_direction": turn_direction,
                     "anchor_wave_id": wave_a["wave_id"],
@@ -754,6 +836,9 @@ def _apply_structure_labels(waves: list[dict[str, object]], events: list[dict[st
                     "density_after_event": None,
                     "is_two_b_failure": False,
                     "failure_date": None,
+                    "confirmation_window_bars": None,
+                    "confirmation_window_basis": None,
+                    "structure_condition": TURN_STEP3_CONDITION,
                     "event_family": EVENT_FAMILY_STRUCTURE,
                     "structure_direction": turn_direction,
                     "anchor_wave_id": wave_a["wave_id"],
@@ -885,6 +970,7 @@ def _build_daily_snapshots(
 
     dates = pd.to_datetime(frame["date"]).dt.date.to_list()
     closes = pd.to_numeric(frame["adj_close"], errors="coerce").to_numpy(dtype=float)
+    two_b_window_bars, two_b_window_basis = _two_b_confirmation_window_spec(TREND_LEVEL_INTERMEDIATE)
 
     completed_by_direction: dict[str, list[dict[str, object]]] = {"UP": [], "DOWN": []}
     latest_completed_reversal = "NONE"
@@ -969,8 +1055,10 @@ def _build_daily_snapshots(
         else:
             reversal_state = "NONE"
 
-        current_context_trend_direction = trend_direction if trend_direction != "UNSET" else direction
-        current_wave_role = "MAINSTREAM" if current_context_trend_direction == direction else "COUNTERTREND"
+        # active wave 没有 completed ledger 可直接挂靠时，也沿用同一条父趋势参照规则，
+        # 保证 snapshot 层和 wave ledger 层对 mainstream / countertrend 的口径一致。
+        current_context_trend_direction = _resolved_context_direction(trend_direction, direction)
+        current_wave_role = _wave_role_from_context_direction(current_context_trend_direction, direction)
         snapshots.append(
             {
                 "code": code,
@@ -991,13 +1079,15 @@ def _build_daily_snapshots(
                 "current_context_trend_level": TREND_LEVEL_INTERMEDIATE,
                 "current_context_trend_direction": current_context_trend_direction,
                 "current_wave_role": current_wave_role,
-                "current_wave_role_basis": WAVE_ROLE_BASIS_INTERMEDIATE_PROXY,
+                "current_wave_role_basis": WAVE_ROLE_BASIS_INTERMEDIATE_PARENT_CONTEXT,
                 "reversal_state": reversal_state,
                 "latest_completed_reversal_tag": latest_completed_reversal,
                 "latest_confirmed_turn_type": latest_confirmed_turn_type,
                 "latest_confirmed_turn_date": latest_confirmed_turn_date,
                 "latest_two_b_confirm_type": latest_two_b_confirm_type,
                 "latest_two_b_confirm_date": latest_two_b_confirm_date,
+                "current_two_b_window_bars": two_b_window_bars,
+                "current_two_b_window_basis": two_b_window_basis,
                 "current_wave_start_date": active_state.start_date,
                 "current_wave_reference_price": float(active_state.reference_price),
                 "current_wave_terminal_price": current_close,

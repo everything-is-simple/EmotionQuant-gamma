@@ -1,5 +1,5 @@
 # GX5 / 2B window semantics refactor
-**状态**: `Planned`  
+**状态**: `Completed`  
 **日期**: `2026-03-17`  
 **类型**: `post-closeout targeted hypothesis`  
 **直接目标文件**: [`../../src/selector/gene.py`](../../src/selector/gene.py)
@@ -73,3 +73,17 @@
 一句话：
 
 `先让 2B 的确认窗口服从趋势层级，再谈它在结构层和条件层里怎样被使用。`
+
+---
+
+## 7. 完成结果
+
+`GX5` 已完成本卡原定目标：
+
+1. `2B` 检测不再硬写成固定 `3 bar`
+2. 当前 `INTERMEDIATE` 层正式改成 `3-5 bar` 语义，检测时显式采用上界 `5`
+3. `2B` 时间窗 spec 已落到 `event / wave / snapshot` 三层
+4. schema 与单测已同步到新口径
+
+配套 record：
+[`records/16-phase-gx5-two-b-window-semantics-record-20260318.md`](records/16-phase-gx5-two-b-window-semantics-record-20260318.md)

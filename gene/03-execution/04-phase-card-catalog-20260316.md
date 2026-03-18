@@ -66,22 +66,26 @@
    - 性质：`post-closeout targeted hypothesis`
    - 直接目标：`src/selector/gene.py`
    - 作用：把 `wave_role` 从单层 proxy 修成相对于上一级趋势的正式结构状态
-   - 状态：`Planned`
+   - 状态：`Completed`
+   - 配套 record：`records/15-phase-gx4-mainstream-countertrend-semantics-record-20260318.md`
 3. `GX5 / 2B window semantics refactor`
    - 性质：`post-closeout targeted hypothesis`
    - 直接目标：`src/selector/gene.py`
    - 作用：把 `2B` 从固定 `3 bar` 近似修成层级相关的失败极值确认语法
-   - 状态：`Planned`
+   - 状态：`Completed`
+   - 配套 record：`records/16-phase-gx5-two-b-window-semantics-record-20260318.md`
 4. `GX6 / 1-2-3 three-condition refactor`
    - 性质：`post-closeout targeted hypothesis`
    - 直接目标：`src/selector/gene.py`
    - 作用：把 `1-2-3` 从三段波近似标签修成三条件确认语法
-   - 状态：`Planned`
+   - 状态：`Completed`
+   - 配套 record：`records/17-phase-gx6-123-three-condition-refactor-record-20260318.md`
 5. `GX7 / post-refactor G4-G5-G6 revalidation`
    - 性质：`post-closeout targeted hypothesis`
    - 直接目标：`src/selector/gene.py`
    - 作用：在定义层修正之后，重审 `validation / mirror / conditioning` 的正式结论
-   - 状态：`Planned`
+   - 状态：`Completed`
+   - 配套 record：`records/18-phase-gx7-post-refactor-g4-g5-g6-revalidation-record-20260318.md`
 
 ---
 
@@ -97,5 +101,5 @@
 
 1. 第四战场原始 campaign 已正式收口
 2. 当前没有重开 `G0 ~ G8` 主线
-3. 当前唯一 active 工作项是 `GX3 / trend-level context refactor`
-4. 若后续继续深修 `2B / 1-2-3 / detector`，应在 `GX3` 之后再拆新卡，不得回头把多项整改揉成一张卡
+3. `GX3 ~ GX7` 已全部完成
+4. 当前无新的 active targeted hypothesis；若后续继续深修 detector 或层级趋势，应重新开新卡

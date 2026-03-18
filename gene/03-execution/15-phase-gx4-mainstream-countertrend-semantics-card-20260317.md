@@ -1,5 +1,5 @@
 # GX4 / mainstream-countertrend semantics refactor
-**状态**: `Planned`  
+**状态**: `Completed`  
 **日期**: `2026-03-17`  
 **类型**: `post-closeout targeted hypothesis`  
 **直接目标文件**: [`../../src/selector/gene.py`](../../src/selector/gene.py)
@@ -73,3 +73,17 @@
 一句话：
 
 `先把 mainstream / countertrend 说诚实，再去动 2B 和 1-2-3。`
+
+---
+
+## 7. 完成结果
+
+`GX4` 已完成本卡原定目标：
+
+1. `wave_role` 改为相对于 `context_trend_direction_before` 判定，而不是跟着本 wave 自己翻转后的 `trend_direction_after` 回写
+2. `wave_role_basis / current_wave_role_basis` 已从旧 `INTERMEDIATE_MAJOR_TREND_PROXY` 更新为 `INTERMEDIATE_PARENT_CONTEXT_DIRECTION`
+3. `snapshot` 层与 `wave ledger` 层现在共用同一条父趋势参照规则
+4. 单测已补成新语义口径，验证 `MAINSTREAM / COUNTERTREND` 同时出现
+
+配套 record：
+[`records/15-phase-gx4-mainstream-countertrend-semantics-record-20260318.md`](records/15-phase-gx4-mainstream-countertrend-semantics-record-20260318.md)

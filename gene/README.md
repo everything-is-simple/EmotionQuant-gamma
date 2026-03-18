@@ -131,22 +131,34 @@
 ## 7. Post-Closeout Targeted Hypothesis
 
 1. `GX3 / trend-level context refactor`
+   - `post-closeout targeted hypothesis`
+   - `src/selector/gene.py`
+   - `Active`
+   - 配套 record：`03-execution/records/14-phase-gx3-trend-level-context-refactor-record-20260317.md`
 2. `GX4 / mainstream-countertrend semantics refactor`
+   - `post-closeout targeted hypothesis`
+   - `src/selector/gene.py`
+   - `Completed`
+   - 配套 record：`03-execution/records/15-phase-gx4-mainstream-countertrend-semantics-record-20260318.md`
 3. `GX5 / 2B window semantics refactor`
+   - `post-closeout targeted hypothesis`
+   - `src/selector/gene.py`
+   - `Completed`
+   - 配套 record：`03-execution/records/16-phase-gx5-two-b-window-semantics-record-20260318.md`
 4. `GX6 / 1-2-3 three-condition refactor`
+   - `post-closeout targeted hypothesis`
+   - `src/selector/gene.py`
+   - `Completed`
+   - 配套 record：`03-execution/records/17-phase-gx6-123-three-condition-refactor-record-20260318.md`
 5. `GX7 / post-refactor G4-G5-G6 revalidation`
    - `post-closeout targeted hypothesis`
    - `src/selector/gene.py`
-   - `Planned`
-   - `post-closeout targeted hypothesis`
-   - `src/selector/gene.py`
-   - `Planned`
-   - `post-closeout targeted hypothesis`
-   - `src/selector/gene.py`
-   - `Planned`
-   - `post-closeout targeted hypothesis`
-   - `src/selector/gene.py`
-   - `Planned`
-   - 鎬ц川锛?`post-closeout targeted hypothesis`
-   - 鐩存帴鐩爣锛歚src/selector/gene.py`
-   - 褰撳墠鐘舵€侊細`Active`
+   - `Completed`
+   - 配套 record：`03-execution/records/18-phase-gx7-post-refactor-g4-g5-g6-revalidation-record-20260318.md`
+
+当前 `GX3 ~ GX7` 已全部完成。  
+定义整改后的正式收口口径是：
+
+1. `G4 / G5 / G6` 结论保留
+2. 数值存在小幅漂移，但未触发治理翻案
+3. `Gene` 继续保持 `sidecar / dashboard / attribution` 身份，不升格为 runtime hard gate

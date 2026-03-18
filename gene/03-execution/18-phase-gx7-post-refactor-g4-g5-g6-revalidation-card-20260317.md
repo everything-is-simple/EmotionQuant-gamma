@@ -1,5 +1,5 @@
 # GX7 / post-refactor G4-G5-G6 revalidation
-**状态**: `Planned`  
+**状态**: `Completed`  
 **日期**: `2026-03-17`  
 **类型**: `post-closeout targeted hypothesis`  
 **直接目标文件**: [`../../src/selector/gene.py`](../../src/selector/gene.py)
@@ -75,3 +75,19 @@
 一句话：
 
 `前面几张卡修定义，这张卡负责验定义修完之后，旧统计结论还能不能继续站住。`
+
+---
+
+## 7. 完成结果
+
+`GX7` 已完成本卡原定目标：
+
+1. 已对 `compute_gene / validation / mirror / conditioning` 做正式重跑
+2. `G4 / G5 / G6` 的治理结论均未被推翻
+3. `G4 = keep`
+4. `G5 = keep`
+5. `G6 = keep_with_minor_numeric_drift`
+6. 已补正式 record 与 evidence
+
+配套 record：[`records/18-phase-gx7-post-refactor-g4-g5-g6-revalidation-record-20260318.md`](records/18-phase-gx7-post-refactor-g4-g5-g6-revalidation-record-20260318.md)  
+配套 evidence：[`evidence/18-phase-gx7-post-refactor-g4-g5-g6-revalidation-evidence-20260318.md`](evidence/18-phase-gx7-post-refactor-g4-g5-g6-revalidation-evidence-20260318.md)

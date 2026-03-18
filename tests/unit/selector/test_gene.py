@@ -148,6 +148,8 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
                 current_context_trend_level,
                 current_context_trend_direction,
                 current_wave_role_basis,
+                current_two_b_window_bars,
+                current_two_b_window_basis,
                 current_wave_magnitude_pct,
                 current_wave_magnitude_percentile,
                 current_wave_magnitude_band,
@@ -172,6 +174,8 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
                 duration_trade_days,
                 wave_role,
                 wave_role_basis,
+                two_b_window_bars,
+                two_b_window_basis,
                 reversal_tag,
                 magnitude_percentile,
                 magnitude_band,
@@ -187,7 +191,9 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
                 wave_id,
                 event_type,
                 event_seq,
-                is_two_b_failure
+                is_two_b_failure,
+                confirmation_window_bars,
+                confirmation_window_basis
             FROM l3_gene_event
             ORDER BY code, event_date, event_seq
             """
@@ -241,6 +247,8 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert "current_context_trend_level" in schema["name"].tolist()
         assert "current_context_trend_direction" in schema["name"].tolist()
         assert "current_wave_role_basis" in schema["name"].tolist()
+        assert "current_two_b_window_bars" in schema["name"].tolist()
+        assert "current_two_b_window_basis" in schema["name"].tolist()
         assert "cross_section_magnitude_rank" in schema["name"].tolist()
         assert "current_wave_magnitude_band" in schema["name"].tolist()
         assert "current_wave_age_band" in schema["name"].tolist()
@@ -256,8 +264,13 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert snapshots["current_context_trend_level"].tolist() == ["INTERMEDIATE", "INTERMEDIATE"]
         assert snapshots["current_context_trend_direction"].isin(["UP", "DOWN"]).all()
         assert snapshots["current_wave_role_basis"].tolist() == [
-            "INTERMEDIATE_MAJOR_TREND_PROXY",
-            "INTERMEDIATE_MAJOR_TREND_PROXY",
+            "INTERMEDIATE_PARENT_CONTEXT_DIRECTION",
+            "INTERMEDIATE_PARENT_CONTEXT_DIRECTION",
+        ]
+        assert snapshots["current_two_b_window_bars"].tolist() == [5, 5]
+        assert snapshots["current_two_b_window_basis"].tolist() == [
+            "INTERMEDIATE_WITHIN_3_TO_5_BARS",
+            "INTERMEDIATE_WITHIN_3_TO_5_BARS",
         ]
         assert snapshots["code"].tolist() == ["AAA", "BBB"]
         assert snapshots["cross_section_magnitude_rank"].tolist() == [1, 2]
@@ -269,8 +282,15 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert snapshots["current_wave_age_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
         assert waves["trend_level"].eq("INTERMEDIATE").all()
         assert waves["context_trend_level"].eq("INTERMEDIATE").all()
-        assert waves["wave_role_basis"].eq("INTERMEDIATE_MAJOR_TREND_PROXY").all()
+        assert waves["wave_role_basis"].eq("INTERMEDIATE_PARENT_CONTEXT_DIRECTION").all()
+        assert waves["two_b_window_bars"].eq(5).all()
+        assert waves["two_b_window_basis"].eq("INTERMEDIATE_WITHIN_3_TO_5_BARS").all()
+        assert set(waves["wave_role"].tolist()) == {"MAINSTREAM", "COUNTERTREND"}
         assert waves["context_trend_direction_after"].isin(["UP", "DOWN"]).all()
+        extreme_events = events.loc[events["event_type"].isin(["NEW_HIGH", "NEW_LOW"])].reset_index(drop=True)
+        assert not extreme_events.empty
+        assert extreme_events["confirmation_window_bars"].eq(5).all()
+        assert extreme_events["confirmation_window_basis"].eq("INTERMEDIATE_WITHIN_3_TO_5_BARS").all()
         assert waves["magnitude_percentile"].notna().all()
         assert waves["magnitude_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
         assert waves["wave_age_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
@@ -327,7 +347,12 @@ def test_compute_gene_writes_g3_structure_labels(tmp_path) -> None:
                 turn_step1_date,
                 turn_step2_date,
                 turn_step3_date,
-                two_b_confirm_type
+                turn_step1_condition,
+                turn_step2_condition,
+                turn_step3_condition,
+                two_b_confirm_type,
+                two_b_window_bars,
+                two_b_window_basis
             FROM l3_gene_wave
             WHERE turn_confirm_type <> 'NONE' OR two_b_confirm_type <> 'NONE'
             ORDER BY code, end_date
@@ -341,7 +366,10 @@ def test_compute_gene_writes_g3_structure_labels(tmp_path) -> None:
                 event_type,
                 event_family,
                 structure_direction,
-                anchor_wave_id
+                anchor_wave_id,
+                structure_condition,
+                confirmation_window_bars,
+                confirmation_window_basis
             FROM l3_gene_event
             WHERE event_family = 'STRUCTURE'
             ORDER BY code, event_date, event_seq
@@ -352,7 +380,9 @@ def test_compute_gene_writes_g3_structure_labels(tmp_path) -> None:
             SELECT
                 code,
                 latest_confirmed_turn_type,
-                latest_two_b_confirm_type
+                latest_two_b_confirm_type,
+                current_two_b_window_bars,
+                current_two_b_window_basis
             FROM l3_stock_gene
             WHERE calc_date = ?
             ORDER BY code
@@ -374,19 +404,49 @@ def test_compute_gene_writes_g3_structure_labels(tmp_path) -> None:
         assert "CONFIRMED_TURN_UP" in up_turn["turn_confirm_type"].tolist()
         up_confirm = up_turn.loc[up_turn["turn_confirm_type"] == "CONFIRMED_TURN_UP"].iloc[0]
         assert up_confirm["turn_step1_date"] < up_confirm["turn_step2_date"] < up_confirm["turn_step3_date"]
+        assert up_confirm["turn_step1_condition"] == "trendline_break"
+        assert up_confirm["turn_step2_condition"] == "failed_extreme_test"
+        assert up_confirm["turn_step3_condition"] == "prior_pivot_breach"
         assert "2B_BOTTOM" in up_turn["two_b_confirm_type"].tolist()
+        assert up_turn["two_b_window_bars"].eq(5).all()
+        assert up_turn["two_b_window_basis"].eq("INTERMEDIATE_WITHIN_3_TO_5_BARS").all()
 
         down_turn = structure_waves.loc[structure_waves["code"] == "BBB"].reset_index(drop=True)
         assert "CONFIRMED_TURN_DOWN" in down_turn["turn_confirm_type"].tolist()
         down_confirm = down_turn.loc[down_turn["turn_confirm_type"] == "CONFIRMED_TURN_DOWN"].iloc[0]
         assert down_confirm["turn_step1_date"] < down_confirm["turn_step2_date"] < down_confirm["turn_step3_date"]
+        assert down_confirm["turn_step1_condition"] == "trendline_break"
+        assert down_confirm["turn_step2_condition"] == "failed_extreme_test"
+        assert down_confirm["turn_step3_condition"] == "prior_pivot_breach"
         assert "2B_TOP" in down_turn["two_b_confirm_type"].tolist()
+        assert down_turn["two_b_window_bars"].eq(5).all()
+        assert down_turn["two_b_window_basis"].eq("INTERMEDIATE_WITHIN_3_TO_5_BARS").all()
 
         assert snapshots["latest_confirmed_turn_type"].tolist() == ["CONFIRMED_TURN_UP", "CONFIRMED_TURN_DOWN"]
         assert snapshots["latest_two_b_confirm_type"].tolist() == ["2B_BOTTOM", "2B_TOP"]
+        assert snapshots["current_two_b_window_bars"].tolist() == [5, 5]
+        assert snapshots["current_two_b_window_basis"].tolist() == [
+            "INTERMEDIATE_WITHIN_3_TO_5_BARS",
+            "INTERMEDIATE_WITHIN_3_TO_5_BARS",
+        ]
         assert set(structure_events.loc[structure_events["code"] == "AAA", "structure_direction"].tolist()) == {"UP"}
         assert set(structure_events.loc[structure_events["code"] == "BBB", "structure_direction"].tolist()) == {
             "DOWN"
+        }
+        two_b_structure = structure_events.loc[
+            structure_events["event_type"].isin(["2B_BOTTOM", "2B_TOP"])
+        ].reset_index(drop=True)
+        assert not two_b_structure.empty
+        assert two_b_structure["confirmation_window_bars"].eq(5).all()
+        assert two_b_structure["confirmation_window_basis"].eq("INTERMEDIATE_WITHIN_3_TO_5_BARS").all()
+        turn_steps = structure_events.loc[
+            structure_events["event_type"].isin(["123_STEP1", "123_STEP2", "123_STEP3"])
+        ].reset_index(drop=True)
+        assert not turn_steps.empty
+        assert set(turn_steps["structure_condition"].tolist()) == {
+            "trendline_break",
+            "failed_extreme_test",
+            "prior_pivot_breach",
         }
     finally:
         store.close()

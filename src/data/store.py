@@ -16,7 +16,7 @@ from typing import Any
 import duckdb
 import pandas as pd
 
-CURRENT_SCHEMA_VERSION = 12
+CURRENT_SCHEMA_VERSION = 14
 
 
 @dataclass(frozen=True)
@@ -346,6 +346,28 @@ class Store:
             WHERE data_type = 'sw_industry_member'
             """
         )
+
+    def _migrate_schema_v12_to_v13(self) -> None:
+        statements = [
+            "ALTER TABLE l3_gene_event ADD COLUMN IF NOT EXISTS confirmation_window_bars INTEGER",
+            "ALTER TABLE l3_gene_event ADD COLUMN IF NOT EXISTS confirmation_window_basis VARCHAR",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS two_b_window_bars INTEGER",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS two_b_window_basis VARCHAR",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_two_b_window_bars INTEGER",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_two_b_window_basis VARCHAR",
+        ]
+        for sql in statements:
+            self.conn.execute(sql)
+
+    def _migrate_schema_v13_to_v14(self) -> None:
+        statements = [
+            "ALTER TABLE l3_gene_event ADD COLUMN IF NOT EXISTS structure_condition VARCHAR",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS turn_step1_condition VARCHAR",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS turn_step2_condition VARCHAR",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS turn_step3_condition VARCHAR",
+        ]
+        for sql in statements:
+            self.conn.execute(sql)
 
     def _migrate_schema_v6_to_v7(self) -> None:
         statements = [
@@ -1114,6 +1136,8 @@ class Store:
                 latest_confirmed_turn_date DATE,
                 latest_two_b_confirm_type VARCHAR,
                 latest_two_b_confirm_date DATE,
+                current_two_b_window_bars INTEGER,
+                current_two_b_window_basis VARCHAR,
                 cross_section_magnitude_rank INTEGER,
                 cross_section_magnitude_percentile DOUBLE,
                 cross_section_duration_rank INTEGER,
@@ -1171,8 +1195,13 @@ class Store:
                 turn_step1_date             DATE,
                 turn_step2_date             DATE,
                 turn_step3_date             DATE,
+                turn_step1_condition        VARCHAR,
+                turn_step2_condition        VARCHAR,
+                turn_step3_condition        VARCHAR,
                 two_b_confirm_type          VARCHAR,
                 two_b_confirm_date          DATE,
+                two_b_window_bars           INTEGER,
+                two_b_window_basis          VARCHAR,
                 created_at                  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (code, wave_id)
             )
@@ -1191,6 +1220,9 @@ class Store:
                 density_after_event     DOUBLE,
                 is_two_b_failure        BOOLEAN,
                 failure_date            DATE,
+                confirmation_window_bars INTEGER,
+                confirmation_window_basis VARCHAR,
+                structure_condition     VARCHAR,
                 event_family            VARCHAR,
                 structure_direction     VARCHAR,
                 anchor_wave_id          VARCHAR,
