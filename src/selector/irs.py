@@ -23,7 +23,11 @@ from src.selector.normalize import safe_ratio, zscore_single
 
 IRS_TRACE_SCOPE_INDUSTRY_DAILY = "INDUSTRY_DAILY"
 IRS_TRACE_SCOPE_SIGNAL_ATTACH = "SIGNAL_ATTACH"
-IRS_TRACE_SOURCE_CLASSIFICATION = "SW2021"
+# Phase 8 residual-audit correction:
+# active runtime industry semantics are no longer strict SW2021-only.
+# Trace output should describe the active runtime contract, not the retired
+# source-specific assumption that originally seeded the older IRS chain.
+IRS_TRACE_SOURCE_CLASSIFICATION = "INDUSTRY_MEMBER_RUNTIME"
 IRS_TRACE_BENCHMARK_CODE = "000001.SH"
 IRS_TRACE_FILL_SCORE = 50.0
 

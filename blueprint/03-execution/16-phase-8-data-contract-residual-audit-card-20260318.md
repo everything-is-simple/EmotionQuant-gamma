@@ -1,6 +1,6 @@
 # Phase 8 Data Contract Residual Audit Card
 
-- Status: `Active`
+- Status: `Completed`
 - Date: `2026-03-18`
 - Type: `mainline audit package`
 - Scope: `post-Phase-7 residual contract cleanup`

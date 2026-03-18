@@ -39,6 +39,8 @@ Mainline design authority remains in `blueprint/`.
 | Phase 7 card | `blueprint/03-execution/15-phase-7-data-provider-refactor-card-20260317.md` | Data-provider refactor package |
 | Phase 7B regression audit | `docs/spec/v0.01-plus/records/v0.01-plus-phase-7b-local-data-contract-regression-audit-20260318.md` | Local data-contract regression audit |
 | Phase 7 closeout record | `docs/spec/v0.01-plus/records/v0.01-plus-phase-7-data-provider-refactor-closeout-20260318.md` | Final Phase 7 data-provider closeout |
+| Phase 8 residual audit | `docs/spec/v0.01-plus/records/v0.01-plus-phase-8-data-contract-residual-audit-20260318.md` | Residual active-contract audit after local-first cutover |
+| Phase 8 remediation checklist | `docs/spec/v0.01-plus/records/v0.01-plus-phase-8-data-contract-remediation-checklist-20260318.md` | Residual compatibility/document cleanup queue |
 | Current operating runbook | `docs/reference/operations/current-mainline-operating-runbook-20260317.md` | Truthful operating chain and rollback rules |
 
 ---
