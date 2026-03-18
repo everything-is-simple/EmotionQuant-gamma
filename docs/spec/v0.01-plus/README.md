@@ -47,6 +47,7 @@ Mainline design authority remains in `blueprint/`.
 | Phase 9A execution record | `blueprint/03-execution/records/phase-9a-gene-promoted-subset-freeze-record-20260318.md` | First-battlefield freeze conclusion |
 | Phase 9A freeze | `docs/spec/v0.01-plus/governance/v0.01-plus-phase-9a-gene-promoted-subset-freeze-20260318.md` | Single-field Gene runtime candidate freeze |
 | Phase 9A record | `docs/spec/v0.01-plus/records/v0.01-plus-phase-9a-gene-promoted-subset-freeze-20260318.md` | Formal Phase 9A freeze ruling |
+| Phase 9B card | `blueprint/03-execution/17.2-phase-9b-isolated-duration-percentile-validation-card-20260318.md` | Isolated validation of `duration_percentile` as negative filter |
 | Current operating runbook | `docs/reference/operations/current-mainline-operating-runbook-20260317.md` | Truthful operating chain and rollback rules |
 
 ---

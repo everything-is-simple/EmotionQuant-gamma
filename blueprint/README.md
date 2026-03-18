@@ -83,6 +83,7 @@
 - `03-execution/16-phase-8-data-contract-residual-audit-card-20260318.md`
 - `03-execution/17-phase-9-gene-mainline-integration-package-card-20260318.md`
 - `03-execution/17.1-phase-9a-gene-promoted-subset-freeze-card-20260318.md`
+- `03-execution/17.2-phase-9b-isolated-duration-percentile-validation-card-20260318.md`
 - `03-execution/18-phase-10-bof-risk-unit-lifecycle-package-card-20260318.md`
 
 它们分别负责：
@@ -185,7 +186,8 @@
 19. `16-phase-8-data-contract-residual-audit-card-20260318.md`
 20. `17-phase-9-gene-mainline-integration-package-card-20260318.md`
 21. `17.1-phase-9a-gene-promoted-subset-freeze-card-20260318.md`
-22. `18-phase-10-bof-risk-unit-lifecycle-package-card-20260318.md`
+22. `17.2-phase-9b-isolated-duration-percentile-validation-card-20260318.md`
+23. `18-phase-10-bof-risk-unit-lifecycle-package-card-20260318.md`
 
 当前冻结后的使用顺序固定为：
 
