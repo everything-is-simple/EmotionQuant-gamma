@@ -42,7 +42,11 @@ Mainline design authority remains in `blueprint/`.
 | Phase 8 residual audit | `docs/spec/v0.01-plus/records/v0.01-plus-phase-8-data-contract-residual-audit-20260318.md` | Residual active-contract audit after local-first cutover |
 | Phase 8 remediation checklist | `docs/spec/v0.01-plus/records/v0.01-plus-phase-8-data-contract-remediation-checklist-20260318.md` | Residual compatibility/document cleanup queue |
 | Phase 9 card | `blueprint/03-execution/17-phase-9-gene-mainline-integration-package-card-20260318.md` | Gene mainline integration package |
-| Phase 9A sub-card | `blueprint/03-execution/17.1-phase-9a-gene-promoted-subset-freeze-card-20260318.md` | Active working freeze card; evidence and conclusion still pending |
+| Phase 9A sub-card | `blueprint/03-execution/17.1-phase-9a-gene-promoted-subset-freeze-card-20260318.md` | Completed first isolated Gene runtime candidate freeze |
+| Phase 9A evidence | `blueprint/03-execution/evidence/phase-9a-gene-promoted-subset-freeze-evidence-20260318.md` | Evidence chain for why only `duration_percentile` opens first |
+| Phase 9A execution record | `blueprint/03-execution/records/phase-9a-gene-promoted-subset-freeze-record-20260318.md` | First-battlefield freeze conclusion |
+| Phase 9A freeze | `docs/spec/v0.01-plus/governance/v0.01-plus-phase-9a-gene-promoted-subset-freeze-20260318.md` | Single-field Gene runtime candidate freeze |
+| Phase 9A record | `docs/spec/v0.01-plus/records/v0.01-plus-phase-9a-gene-promoted-subset-freeze-20260318.md` | Formal Phase 9A freeze ruling |
 | Current operating runbook | `docs/reference/operations/current-mainline-operating-runbook-20260317.md` | Truthful operating chain and rollback rules |
 
 ---

@@ -97,24 +97,19 @@ This sub-phase must answer:
 2. which fields remain sidecar only
 3. which fields are permanently forbidden from default runtime use
 
-Current `Phase 9A` status:
+Current `Phase 9A` ruling:
 
-1. the sub-card has been opened, but `Phase 9A` is not yet complete
-2. the current working freeze direction is `duration_percentile`
-3. no `Phase 9A` freeze is considered real until evidence and conclusion are both written down
+1. `duration_percentile` is the only opened `single-variable candidate`
+2. its allowed next-step role is `negative filter only`
+3. `current_wave_age_band`, `wave_role`, `reversal_state`, `context_trend_direction_before`, `mirror`, `conditioning`, and any composite `gene_score` remain outside the first runtime round
 
-Current working boundary under review:
-
-1. `duration_percentile` is the current `single-variable candidate under review`
-2. its intended next-step role, if frozen, is `negative filter only`
-3. `current_wave_age_band`, `wave_role`, `reversal_state`, `context_trend_direction_before`, `mirror`, `conditioning`, and any composite `gene_score` remain outside the first runtime round unless `Phase 9A` evidence says otherwise
-
-Required outputs before `Phase 9A` may be marked completed:
+Formal outputs:
 
 1. [`17.1-phase-9a-gene-promoted-subset-freeze-card-20260318.md`](./17.1-phase-9a-gene-promoted-subset-freeze-card-20260318.md)
-2. `blueprint/03-execution/evidence/phase-9a-gene-promoted-subset-freeze-evidence-20260318.md`
-3. `blueprint/03-execution/records/phase-9a-gene-promoted-subset-freeze-record-20260318.md`
-4. any mainline governance freeze or formal archive record only after `2` and `3` exist
+2. [`phase-9a-gene-promoted-subset-freeze-evidence-20260318.md`](./evidence/phase-9a-gene-promoted-subset-freeze-evidence-20260318.md)
+3. [`phase-9a-gene-promoted-subset-freeze-record-20260318.md`](./records/phase-9a-gene-promoted-subset-freeze-record-20260318.md)
+4. [`v0.01-plus-phase-9a-gene-promoted-subset-freeze-20260318.md`](../../docs/spec/v0.01-plus/governance/v0.01-plus-phase-9a-gene-promoted-subset-freeze-20260318.md)
+5. [`v0.01-plus-phase-9a-gene-promoted-subset-freeze-20260318.md`](../../docs/spec/v0.01-plus/records/v0.01-plus-phase-9a-gene-promoted-subset-freeze-20260318.md)
 
 ### 7.2 Phase 9B
 
