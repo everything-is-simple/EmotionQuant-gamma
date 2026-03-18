@@ -244,7 +244,7 @@
 
 ## 7. 下一步
 
-从 `2026-03-18` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3`、`Phase 4`、`Phase 4.1`、`Phase 5`、`Phase 6`、`Phase 7` 与 `Phase 8` 都已完成当前轮次收口。当前 active mainline package 已切到 `Phase 9 / Gene mainline integration package`：`Phase 9A` 已完成 promoted subset freeze，`Phase 9B / duration_percentile` 已完成第一轮 isolated win，`Phase 9B / wave_role` 已完成但 formal ruling 为 `retain_sidecar_only`；当前下一张 active 子卡已切到 `17.4 / isolated reversal_state validation`，而 `17.5 / 17.6 / 17.7` 已先以 planned 形式开出，避免后续把第四战场又做成临时起意的一锅炖。
+从 `2026-03-18` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3`、`Phase 4`、`Phase 4.1`、`Phase 5`、`Phase 6`、`Phase 7` 与 `Phase 8` 都已完成当前轮次收口。当前 active mainline package 已切到 `Phase 9 / Gene mainline integration package`：`Phase 9A` 已完成 promoted subset freeze，`Phase 9B / duration_percentile` 已完成第一轮 isolated win，`Phase 9B / wave_role` 已完成但 formal ruling 为 `retain_sidecar_only`，`Phase 9B / reversal_state` 也已完成并以 `promote_reversal_state_exit_preparation` 胜出；当前 `17.5 / 17.6 / 17.7` 仍保持 planned，其中 `17.6` 的 winner-count 门槛已经满足，但 `GX8 / non-blocking` 与 formal combination freeze 仍未满足，因此第四战场当前已不是“下一张 active 子卡自动跳出来”，而是“包继续 active，但剩余门槛必须先被诚实处理”。
 
 其中：
 
@@ -259,31 +259,31 @@
 9. `Phase 9A = Completed`
 10. `Phase 9B / duration_percentile = Completed (promote_duration_percentile_negative_filter)`
 11. `Phase 9B / wave_role = Completed (retain_sidecar_only)`
-12. `Phase 9B / reversal_state = Active`
-13. `Phase 9B / context_trend_direction_before = Planned`
-14. `Phase 9C = Planned`
+12. `Phase 9B / reversal_state = Completed (promote_reversal_state_exit_preparation)`
+13. `Phase 9B / context_trend_direction_before = Planned (GX8 + redundancy review gate pending)`
+14. `Phase 9C = Planned (winner-count gate satisfied; GX8 + combination freeze pending)`
 15. `Phase 9D = Planned`
 16. rollback target 保持：
    - `legacy_bof_baseline`
 17. 当前 active mainline package：
    - `Phase 9 / Gene mainline integration package`
 18. 最近收官 record：
-   - `docs/spec/v0.01-plus/records/v0.01-plus-phase-9b-wave-role-validation-20260318.md`
+   - `docs/spec/v0.01-plus/records/v0.01-plus-phase-9b-reversal-state-validation-20260318.md`
 
 后续顺序固定为：
 
 1. 当前不再在 `Phase 4.1` 内冻结新的 `MSS / Broker` 候选
 2. `Phase 5 / Phase 6 / Phase 7 / Phase 8` 都已闭环，不再回头补旧卡
 3. 当前 active package 继续保持在 `Phase 9`
-4. `duration_percentile >= 95` 目前仍是唯一 isolated round 的正式 winner
-5. `wave_role` 已完成 isolated validation，但当前 ruling 是 `retain_sidecar_only`
-6. `current_wave_age_band` 继续保持 `shadow-only`，当前不单独开卡
-7. `17.4` 是当前下一张 active 卡
-8. `17.5 / 17.6 / 17.7` 已开卡但仍处于 `Planned`
-9. `Phase 9C` combination candidate 仍未打开
+4. `duration_percentile >= 95` 仍是当前正式 isolated winner 之一
+5. `reversal_state == CONFIRMED_TURN_DOWN -> exit-preparation only` 也已成为第二个 isolated winner
+6. `wave_role` 已完成 isolated validation，但当前 ruling 是 `retain_sidecar_only`
+7. `current_wave_age_band` 继续保持 `shadow-only`，当前不单独开卡
+8. `17.5` 仍不能切成 `Active`，因为 `GX8 / non-blocking + redundancy review` 还没过
+9. `17.6` 已不再受“winner 数量不足”阻塞，但仍不能切成 `Active`
 10. 正式默认路径继续保持：
    - `legacy_bof_baseline`
-11. 若继续推进 `Gene`，必须按已开卡顺序走，不能跳卡、不能偷开组合
+11. 若继续推进 `Gene`，必须先诚实处理 `GX8 / non-blocking` 与 formal combination freeze，不能口头越门槛
 
 也就是：
 

@@ -294,6 +294,36 @@ class Broker:
     def add_pending_order(self, order: Order) -> None:
         self.pending_orders.append(order)
 
+    def schedule_custom_exit_order(
+        self,
+        code: str,
+        signal_date: date,
+        exit_reason: str,
+        *,
+        event_stage: str = "CUSTOM_EXIT_ORDER_CREATED",
+    ) -> tuple[str, Order | None]:
+        position = self.portfolio.get(code)
+        if position is None:
+            return "position_missing", None
+        if self._has_pending_sell(position):
+            return "pending_sell_exists", None
+
+        execute_date = self.store.next_trade_date(signal_date)
+        if execute_date is None:
+            return "no_execute_date", None
+
+        order = self._build_exit_order(position, signal_date, execute_date, exit_reason)
+        self.add_pending_order(order)
+        self._mark_position_exit_pending(order)
+        self._record_lifecycle_event(
+            order,
+            event_stage=event_stage,
+            event_date=signal_date,
+            reason_code=exit_reason,
+        )
+        self.store.bulk_upsert("l4_orders", pd.DataFrame([order.model_dump()]))
+        return "created", order
+
     def get_pending_orders(self, trade_date: date) -> list[Order]:
         return [o for o in self.pending_orders if o.execute_date == trade_date and o.status == "PENDING"]
 

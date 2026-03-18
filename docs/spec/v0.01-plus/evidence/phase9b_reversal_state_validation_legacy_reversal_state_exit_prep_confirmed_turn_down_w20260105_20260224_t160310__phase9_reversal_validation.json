@@ -1,0 +1,939 @@
+{
+  "generated_at": "2026-03-18T16:49:30Z",
+  "matrix_status": "completed",
+  "research_parent": "phase9_gene_mainline_integration_package",
+  "research_question": "If reversal_state alone is connected into the validated baseline as an exit-preparation rule, does it improve the current mainline enough to justify formal promotion?",
+  "source_db_path": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "db_path": "G:\\EmotionQuant-temp\\backtest\\phase9-reversal-validation-20260319.duckdb",
+  "artifact_root": "G:\\EmotionQuant-temp\\artifacts",
+  "start": "2026-01-05",
+  "end": "2026-02-24",
+  "initial_cash": 1000000.0,
+  "validation_rule": {
+    "runtime_field": "reversal_state",
+    "promoted_metric": "reversal_state",
+    "role": "exit_preparation_only",
+    "operator": "==",
+    "target_state": "CONFIRMED_TURN_DOWN",
+    "exit_reason_code": "GENE_REVERSAL_PREP",
+    "rule": "schedule T+1 SELL when reversal_state == CONFIRMED_TURN_DOWN",
+    "rule_source": "Gene reversal_state compression semantics",
+    "forbidden_companions": [
+      "duration_percentile",
+      "wave_role",
+      "current_wave_age_band",
+      "context_trend_direction_before",
+      "mirror",
+      "conditioning",
+      "gene_score",
+      "gene_entry_filter",
+      "gene_sizing_overlay"
+    ]
+  },
+  "windows": [
+    {
+      "label": "full_window",
+      "start": "2026-01-05",
+      "end": "2026-02-24"
+    },
+    {
+      "label": "front_half_window",
+      "start": "2026-01-05",
+      "end": "2026-01-23"
+    },
+    {
+      "label": "back_half_window",
+      "start": "2026-01-26",
+      "end": "2026-02-24"
+    }
+  ],
+  "scenarios": [
+    {
+      "label": "PHASE9B_BASELINE_CONTROL",
+      "rule_role": "none",
+      "target_reversal_state": null,
+      "exit_reason_code": null,
+      "pipeline_mode": "legacy",
+      "position_sizing_mode": "fixed_notional",
+      "exit_control_mode": "full_exit_control",
+      "notes": "Validated baseline only: legacy BOF entry, FIXED_NOTIONAL_CONTROL, FULL_EXIT_CONTROL, Gene sidecar only."
+    },
+    {
+      "label": "PHASE9B_REVERSAL_CONFIRMED_TURN_DOWN_EXIT_PREP",
+      "rule_role": "reversal_state_exit_preparation",
+      "target_reversal_state": "CONFIRMED_TURN_DOWN",
+      "exit_reason_code": "GENE_REVERSAL_PREP",
+      "pipeline_mode": "legacy",
+      "position_sizing_mode": "fixed_notional",
+      "exit_control_mode": "full_exit_control",
+      "notes": "Single-variable candidate only: keep the validated baseline fixed and schedule a defensive T+1 SELL when reversal_state == CONFIRMED_TURN_DOWN."
+    }
+  ],
+  "candidate_exit_rule": {
+    "metrics": {
+      "reversal_exit_total_position_day_count": 87,
+      "reversal_exit_matched_state_position_day_count": 9,
+      "reversal_exit_created_count": 9,
+      "reversal_exit_created_share_of_positions": 0.10344827586206896,
+      "reversal_exit_pending_sell_skip_count": 0,
+      "reversal_exit_missing_state_position_day_count": 3,
+      "reversal_exit_no_execute_date_skip_count": 0,
+      "reversal_exit_target_state": "CONFIRMED_TURN_DOWN",
+      "reversal_exit_reason_code": "GENE_REVERSAL_PREP",
+      "reversal_exit_rule": "schedule T+1 SELL when reversal_state == CONFIRMED_TURN_DOWN"
+    },
+    "daily_rows": [
+      {
+        "signal_date": "2026-01-05",
+        "position_day_count": 0,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-06",
+        "position_day_count": 0,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-07",
+        "position_day_count": 0,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-08",
+        "position_day_count": 0,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-09",
+        "position_day_count": 0,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-12",
+        "position_day_count": 1,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-13",
+        "position_day_count": 2,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-14",
+        "position_day_count": 2,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-15",
+        "position_day_count": 2,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-16",
+        "position_day_count": 2,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-19",
+        "position_day_count": 2,
+        "matched_state_position_day_count": 1,
+        "created_exit_order_count": 1,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-20",
+        "position_day_count": 1,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-21",
+        "position_day_count": 1,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-22",
+        "position_day_count": 1,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-23",
+        "position_day_count": 1,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-26",
+        "position_day_count": 1,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-27",
+        "position_day_count": 1,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-28",
+        "position_day_count": 1,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-29",
+        "position_day_count": 2,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-01-30",
+        "position_day_count": 6,
+        "matched_state_position_day_count": 1,
+        "created_exit_order_count": 1,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-02-02",
+        "position_day_count": 5,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-02-03",
+        "position_day_count": 4,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-02-04",
+        "position_day_count": 8,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-02-05",
+        "position_day_count": 9,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-02-06",
+        "position_day_count": 9,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-02-09",
+        "position_day_count": 9,
+        "matched_state_position_day_count": 3,
+        "created_exit_order_count": 3,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-02-10",
+        "position_day_count": 6,
+        "matched_state_position_day_count": 3,
+        "created_exit_order_count": 3,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-02-11",
+        "position_day_count": 3,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-02-12",
+        "position_day_count": 3,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 3,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-02-13",
+        "position_day_count": 3,
+        "matched_state_position_day_count": 1,
+        "created_exit_order_count": 1,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      },
+      {
+        "signal_date": "2026-02-24",
+        "position_day_count": 2,
+        "matched_state_position_day_count": 0,
+        "created_exit_order_count": 0,
+        "pending_sell_skip_count": 0,
+        "missing_state_position_day_count": 0,
+        "no_execute_date_skip_count": 0
+      }
+    ],
+    "created_rows": [
+      {
+        "signal_date": "2026-01-19",
+        "code": "002475",
+        "position_id": "002475_2026-01-09_bof",
+        "reversal_state": "CONFIRMED_TURN_DOWN",
+        "latest_confirmed_turn_type": "CONFIRMED_TURN_DOWN",
+        "exit_reason_code": "GENE_REVERSAL_PREP",
+        "order_id": "EXIT_002475_2026-01-19_gene_reversal_prep"
+      },
+      {
+        "signal_date": "2026-01-30",
+        "code": "601818",
+        "position_id": "601818_2026-01-29_bof",
+        "reversal_state": "CONFIRMED_TURN_DOWN",
+        "latest_confirmed_turn_type": "CONFIRMED_TURN_DOWN",
+        "exit_reason_code": "GENE_REVERSAL_PREP",
+        "order_id": "EXIT_601818_2026-01-30_gene_reversal_prep"
+      },
+      {
+        "signal_date": "2026-02-09",
+        "code": "601668",
+        "position_id": "601668_2026-01-29_bof",
+        "reversal_state": "CONFIRMED_TURN_DOWN",
+        "latest_confirmed_turn_type": "CONFIRMED_TURN_DOWN",
+        "exit_reason_code": "GENE_REVERSAL_PREP",
+        "order_id": "EXIT_601668_2026-02-09_gene_reversal_prep"
+      },
+      {
+        "signal_date": "2026-02-09",
+        "code": "002547",
+        "position_id": "002547_2026-02-04_bof",
+        "reversal_state": "CONFIRMED_TURN_DOWN",
+        "latest_confirmed_turn_type": "CONFIRMED_TURN_DOWN",
+        "exit_reason_code": "GENE_REVERSAL_PREP",
+        "order_id": "EXIT_002547_2026-02-09_gene_reversal_prep"
+      },
+      {
+        "signal_date": "2026-02-09",
+        "code": "002384",
+        "position_id": "002384_2026-02-05_bof",
+        "reversal_state": "CONFIRMED_TURN_DOWN",
+        "latest_confirmed_turn_type": "CONFIRMED_TURN_DOWN",
+        "exit_reason_code": "GENE_REVERSAL_PREP",
+        "order_id": "EXIT_002384_2026-02-09_gene_reversal_prep"
+      },
+      {
+        "signal_date": "2026-02-10",
+        "code": "600887",
+        "position_id": "600887_2026-01-29_bof",
+        "reversal_state": "CONFIRMED_TURN_DOWN",
+        "latest_confirmed_turn_type": "CONFIRMED_TURN_DOWN",
+        "exit_reason_code": "GENE_REVERSAL_PREP",
+        "order_id": "EXIT_600887_2026-02-10_gene_reversal_prep"
+      },
+      {
+        "signal_date": "2026-02-10",
+        "code": "600436",
+        "position_id": "600436_2026-01-29_bof",
+        "reversal_state": "CONFIRMED_TURN_DOWN",
+        "latest_confirmed_turn_type": "CONFIRMED_TURN_DOWN",
+        "exit_reason_code": "GENE_REVERSAL_PREP",
+        "order_id": "EXIT_600436_2026-02-10_gene_reversal_prep"
+      },
+      {
+        "signal_date": "2026-02-10",
+        "code": "002517",
+        "position_id": "002517_2026-02-03_bof",
+        "reversal_state": "CONFIRMED_TURN_DOWN",
+        "latest_confirmed_turn_type": "CONFIRMED_TURN_DOWN",
+        "exit_reason_code": "GENE_REVERSAL_PREP",
+        "order_id": "EXIT_002517_2026-02-10_gene_reversal_prep"
+      },
+      {
+        "signal_date": "2026-02-13",
+        "code": "002227",
+        "position_id": "002227_2026-02-03_bof",
+        "reversal_state": "CONFIRMED_TURN_DOWN",
+        "latest_confirmed_turn_type": "CONFIRMED_TURN_DOWN",
+        "exit_reason_code": "GENE_REVERSAL_PREP",
+        "order_id": "EXIT_002227_2026-02-13_gene_reversal_prep"
+      }
+    ],
+    "window_metrics": {
+      "full_window": {
+        "reversal_exit_total_position_day_count": 87,
+        "reversal_exit_matched_state_position_day_count": 9,
+        "reversal_exit_created_count": 9,
+        "reversal_exit_created_share_of_positions": 0.10344827586206896,
+        "reversal_exit_pending_sell_skip_count": 0,
+        "reversal_exit_missing_state_position_day_count": 3,
+        "reversal_exit_no_execute_date_skip_count": 0,
+        "reversal_exit_target_state": "CONFIRMED_TURN_DOWN",
+        "reversal_exit_reason_code": "GENE_REVERSAL_PREP",
+        "reversal_exit_rule": "schedule T+1 SELL when reversal_state == CONFIRMED_TURN_DOWN"
+      },
+      "front_half_window": {
+        "reversal_exit_total_position_day_count": 15,
+        "reversal_exit_matched_state_position_day_count": 1,
+        "reversal_exit_created_count": 1,
+        "reversal_exit_created_share_of_positions": 0.06666666666666667,
+        "reversal_exit_pending_sell_skip_count": 0,
+        "reversal_exit_missing_state_position_day_count": 0,
+        "reversal_exit_no_execute_date_skip_count": 0,
+        "reversal_exit_target_state": "CONFIRMED_TURN_DOWN",
+        "reversal_exit_reason_code": "GENE_REVERSAL_PREP",
+        "reversal_exit_rule": "schedule T+1 SELL when reversal_state == CONFIRMED_TURN_DOWN"
+      },
+      "back_half_window": {
+        "reversal_exit_total_position_day_count": 72,
+        "reversal_exit_matched_state_position_day_count": 8,
+        "reversal_exit_created_count": 8,
+        "reversal_exit_created_share_of_positions": 0.1111111111111111,
+        "reversal_exit_pending_sell_skip_count": 0,
+        "reversal_exit_missing_state_position_day_count": 3,
+        "reversal_exit_no_execute_date_skip_count": 0,
+        "reversal_exit_target_state": "CONFIRMED_TURN_DOWN",
+        "reversal_exit_reason_code": "GENE_REVERSAL_PREP",
+        "reversal_exit_rule": "schedule T+1 SELL when reversal_state == CONFIRMED_TURN_DOWN"
+      }
+    }
+  },
+  "results": [
+    {
+      "scenario_label": "PHASE9B_BASELINE_CONTROL",
+      "window_label": "full_window",
+      "window_start": "2026-01-05",
+      "window_end": "2026-02-24",
+      "notes": "Validated baseline only: legacy BOF entry, FIXED_NOTIONAL_CONTROL, FULL_EXIT_CONTROL, Gene sidecar only.",
+      "run_id": "phase9b_reversal_state_validation_phase9b_baseline_control_full_window_legacy_legacy_bof_baseline_w20260105_20260224_t164829",
+      "pipeline_mode": "legacy",
+      "rule_role": "none",
+      "target_reversal_state": null,
+      "position_sizing_mode": "fixed_notional",
+      "exit_control_mode": "full_exit_control",
+      "trade_days": 31,
+      "trade_count": 13,
+      "win_rate": 0.38461538461538464,
+      "avg_win": 0.030485147867519474,
+      "avg_loss": 0.04106734769162593,
+      "expected_value": -0.013547157091954622,
+      "profit_factor": 0.7423208359213255,
+      "max_drawdown": 0.01985395931421615,
+      "reject_rate": 0.10344827586206896,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.8064516129032258,
+      "opportunity_count": 16.0,
+      "filled_count": 13.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 3.0,
+      "participation_rate": 0.8125,
+      "environment_breakdown": {
+        "BULLISH": {
+          "trade_count": 1.0,
+          "win_rate": 1.0,
+          "avg_win": 0.013239362508435885,
+          "avg_loss": 0.0,
+          "profit_factor": Infinity,
+          "expected_value": 0.013239362508435885,
+          "median_pnl_pct": 0.013239362508435885
+        },
+        "NEUTRAL": {
+          "trade_count": 12.0,
+          "win_rate": 0.3333333333333333,
+          "avg_win": 0.03479659420729037,
+          "avg_loss": 0.04106734769162593,
+          "profit_factor": 0.8473056129306781,
+          "expected_value": -0.01577936705865383,
+          "median_pnl_pct": -0.01678179761824663
+        }
+      },
+      "buy_trade_signature": "b5dd60908aefa2fcc73a6494abed2df9e09e5106fb738dc41c259b635ca34dcd",
+      "trace_counts": {
+        "selector_candidate_trace_count": 0,
+        "pas_trigger_trace_count": 3000,
+        "broker_lifecycle_trace_count": 49,
+        "rank_trace_count": 0
+      },
+      "failure_reason_breakdown": {
+        "MAX_POSITIONS_REACHED": 3
+      },
+      "reversal_exit_metrics": null,
+      "signals_count": 16,
+      "buy_order_count": 16,
+      "buy_filled_count": 13,
+      "buy_reject_count": 3,
+      "buy_reject_rate": 0.1875,
+      "buy_trade_count": 13,
+      "avg_entry_quantity": 5446.153846153846,
+      "avg_entry_notional": 84888.30769230769,
+      "max_entry_notional_pct_initial_cash": 0.09927400000000002
+    },
+    {
+      "scenario_label": "PHASE9B_BASELINE_CONTROL",
+      "window_label": "front_half_window",
+      "window_start": "2026-01-05",
+      "window_end": "2026-01-23",
+      "notes": "Validated baseline only: legacy BOF entry, FIXED_NOTIONAL_CONTROL, FULL_EXIT_CONTROL, Gene sidecar only.",
+      "run_id": "phase9b_reversal_state_validation_phase9b_baseline_control_full_window_legacy_legacy_bof_baseline_w20260105_20260224_t164829",
+      "pipeline_mode": "legacy",
+      "rule_role": "none",
+      "target_reversal_state": null,
+      "position_sizing_mode": "fixed_notional",
+      "exit_control_mode": "full_exit_control",
+      "trade_days": 15,
+      "trade_count": 0,
+      "win_rate": 0.0,
+      "avg_win": 0.0,
+      "avg_loss": 0.0,
+      "expected_value": 0.0,
+      "profit_factor": 0.0,
+      "max_drawdown": 0.0,
+      "reject_rate": 0.0,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.6666666666666666,
+      "opportunity_count": 2.0,
+      "filled_count": 2.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 1.0,
+      "environment_breakdown": {},
+      "buy_trade_signature": "9cd03245de3555f5ac086c60ac25977e3ba9eb32e49f636077d6dd128334163a",
+      "trace_counts": {
+        "selector_candidate_trace_count": 0,
+        "pas_trigger_trace_count": 3000,
+        "broker_lifecycle_trace_count": 49,
+        "rank_trace_count": 0
+      },
+      "failure_reason_breakdown": {},
+      "reversal_exit_metrics": null,
+      "signals_count": 2,
+      "buy_order_count": 2,
+      "buy_filled_count": 2,
+      "buy_reject_count": 0,
+      "buy_reject_rate": 0.0,
+      "buy_trade_count": 2,
+      "avg_entry_quantity": 950.0,
+      "avg_entry_notional": 85446.0,
+      "max_entry_notional_pct_initial_cash": 0.09384
+    },
+    {
+      "scenario_label": "PHASE9B_BASELINE_CONTROL",
+      "window_label": "back_half_window",
+      "window_start": "2026-01-26",
+      "window_end": "2026-02-24",
+      "notes": "Validated baseline only: legacy BOF entry, FIXED_NOTIONAL_CONTROL, FULL_EXIT_CONTROL, Gene sidecar only.",
+      "run_id": "phase9b_reversal_state_validation_phase9b_baseline_control_full_window_legacy_legacy_bof_baseline_w20260105_20260224_t164829",
+      "pipeline_mode": "legacy",
+      "rule_role": "none",
+      "target_reversal_state": null,
+      "position_sizing_mode": "fixed_notional",
+      "exit_control_mode": "full_exit_control",
+      "trade_days": 16,
+      "trade_count": 11,
+      "win_rate": 0.36363636363636365,
+      "avg_win": 0.03479659420729037,
+      "avg_loss": 0.04101375968069878,
+      "expected_value": -0.013446358266884543,
+      "profit_factor": 0.8484126907211038,
+      "max_drawdown": 0.017704556448946827,
+      "reject_rate": 0.1111111111111111,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.6875,
+      "opportunity_count": 14.0,
+      "filled_count": 11.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 3.0,
+      "participation_rate": 0.7857142857142857,
+      "environment_breakdown": {
+        "NEUTRAL": {
+          "trade_count": 11.0,
+          "win_rate": 0.36363636363636365,
+          "avg_win": 0.03479659420729037,
+          "avg_loss": 0.04101375968069878,
+          "profit_factor": 0.8484126907211038,
+          "expected_value": -0.013446358266884543,
+          "median_pnl_pct": -0.013983235955056116
+        }
+      },
+      "buy_trade_signature": "ebb58e242bd76aba71fecdcd4ea8ca3f5ef5095233800df57e005d5820829825",
+      "trace_counts": {
+        "selector_candidate_trace_count": 0,
+        "pas_trigger_trace_count": 3000,
+        "broker_lifecycle_trace_count": 49,
+        "rank_trace_count": 0
+      },
+      "failure_reason_breakdown": {
+        "MAX_POSITIONS_REACHED": 3
+      },
+      "reversal_exit_metrics": null,
+      "signals_count": 14,
+      "buy_order_count": 14,
+      "buy_filled_count": 11,
+      "buy_reject_count": 3,
+      "buy_reject_rate": 0.21428571428571427,
+      "buy_trade_count": 11,
+      "avg_entry_quantity": 6263.636363636364,
+      "avg_entry_notional": 84786.90909090909,
+      "max_entry_notional_pct_initial_cash": 0.09927400000000002
+    },
+    {
+      "scenario_label": "PHASE9B_REVERSAL_CONFIRMED_TURN_DOWN_EXIT_PREP",
+      "window_label": "full_window",
+      "window_start": "2026-01-05",
+      "window_end": "2026-02-24",
+      "notes": "Single-variable candidate only: keep the validated baseline fixed and schedule a defensive T+1 SELL when reversal_state == CONFIRMED_TURN_DOWN.",
+      "run_id": "phase9b_reversal_state_validation_phase9b_reversal_confirmed_turn_down_exit_prep_full_window_legacy_legacy_bof_baseline_w20260105_20260224_t164859",
+      "pipeline_mode": "legacy",
+      "rule_role": "reversal_state_exit_preparation",
+      "target_reversal_state": "CONFIRMED_TURN_DOWN",
+      "position_sizing_mode": "fixed_notional",
+      "exit_control_mode": "full_exit_control",
+      "trade_days": 31,
+      "trade_count": 14,
+      "win_rate": 0.5714285714285714,
+      "avg_win": 0.045292805785330195,
+      "avg_loss": 0.047627827999333676,
+      "expected_value": 0.0054696770204742465,
+      "profit_factor": 0.9509735733899907,
+      "max_drawdown": 0.013753117974859206,
+      "reject_rate": 0.06666666666666667,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.8064516129032258,
+      "opportunity_count": 16.0,
+      "filled_count": 14.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 2.0,
+      "participation_rate": 0.875,
+      "environment_breakdown": {
+        "BULLISH": {
+          "trade_count": 1.0,
+          "win_rate": 1.0,
+          "avg_win": 0.013239362508435885,
+          "avg_loss": 0.0,
+          "profit_factor": Infinity,
+          "expected_value": 0.013239362508435885,
+          "median_pnl_pct": 0.013239362508435885
+        },
+        "NEUTRAL": {
+          "trade_count": 13.0,
+          "win_rate": 0.5384615384615384,
+          "avg_win": 0.04987186911060081,
+          "avg_loss": 0.047627827999333676,
+          "profit_factor": 1.047116175679868,
+          "expected_value": 0.004872008906015662,
+          "median_pnl_pct": 0.002100374531835259
+        }
+      },
+      "buy_trade_signature": "2e7944e3c881cfcb760520a4af03f37d469db86d5685811288657da3824ac3cb",
+      "trace_counts": {
+        "selector_candidate_trace_count": 0,
+        "pas_trigger_trace_count": 3000,
+        "broker_lifecycle_trace_count": 58,
+        "rank_trace_count": 0
+      },
+      "failure_reason_breakdown": {
+        "MAX_POSITIONS_REACHED": 2
+      },
+      "reversal_exit_metrics": {
+        "reversal_exit_order_count": 9,
+        "reversal_exit_filled_count": 9,
+        "reversal_exit_reject_count": 0,
+        "reversal_exit_expire_count": 0,
+        "reversal_exit_trade_count": 9,
+        "reversal_exit_partial_trade_count": 0,
+        "reversal_exit_unique_code_count": 9,
+        "reversal_exit_total_position_day_count": 87,
+        "reversal_exit_matched_state_position_day_count": 9,
+        "reversal_exit_created_count": 9,
+        "reversal_exit_created_share_of_positions": 0.10344827586206896,
+        "reversal_exit_pending_sell_skip_count": 0,
+        "reversal_exit_missing_state_position_day_count": 3,
+        "reversal_exit_no_execute_date_skip_count": 0,
+        "reversal_exit_target_state": "CONFIRMED_TURN_DOWN",
+        "reversal_exit_reason_code": "GENE_REVERSAL_PREP",
+        "reversal_exit_rule": "schedule T+1 SELL when reversal_state == CONFIRMED_TURN_DOWN"
+      },
+      "signals_count": 16,
+      "buy_order_count": 16,
+      "buy_filled_count": 14,
+      "buy_reject_count": 2,
+      "buy_reject_rate": 0.125,
+      "buy_trade_count": 14,
+      "avg_entry_quantity": 6828.571428571428,
+      "avg_entry_notional": 85627.85714285714,
+      "max_entry_notional_pct_initial_cash": 0.09927400000000002
+    },
+    {
+      "scenario_label": "PHASE9B_REVERSAL_CONFIRMED_TURN_DOWN_EXIT_PREP",
+      "window_label": "front_half_window",
+      "window_start": "2026-01-05",
+      "window_end": "2026-01-23",
+      "notes": "Single-variable candidate only: keep the validated baseline fixed and schedule a defensive T+1 SELL when reversal_state == CONFIRMED_TURN_DOWN.",
+      "run_id": "phase9b_reversal_state_validation_phase9b_reversal_confirmed_turn_down_exit_prep_full_window_legacy_legacy_bof_baseline_w20260105_20260224_t164859",
+      "pipeline_mode": "legacy",
+      "rule_role": "reversal_state_exit_preparation",
+      "target_reversal_state": "CONFIRMED_TURN_DOWN",
+      "position_sizing_mode": "fixed_notional",
+      "exit_control_mode": "full_exit_control",
+      "trade_days": 15,
+      "trade_count": 1,
+      "win_rate": 1.0,
+      "avg_win": 0.047208478260869484,
+      "avg_loss": 0.0,
+      "expected_value": 0.047208478260869484,
+      "profit_factor": Infinity,
+      "max_drawdown": 0.0,
+      "reject_rate": 0.0,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.6666666666666666,
+      "opportunity_count": 2.0,
+      "filled_count": 2.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 0.0,
+      "participation_rate": 1.0,
+      "environment_breakdown": {
+        "NEUTRAL": {
+          "trade_count": 1.0,
+          "win_rate": 1.0,
+          "avg_win": 0.047208478260869484,
+          "avg_loss": 0.0,
+          "profit_factor": Infinity,
+          "expected_value": 0.047208478260869484,
+          "median_pnl_pct": 0.047208478260869484
+        }
+      },
+      "buy_trade_signature": "9cd03245de3555f5ac086c60ac25977e3ba9eb32e49f636077d6dd128334163a",
+      "trace_counts": {
+        "selector_candidate_trace_count": 0,
+        "pas_trigger_trace_count": 3000,
+        "broker_lifecycle_trace_count": 58,
+        "rank_trace_count": 0
+      },
+      "failure_reason_breakdown": {},
+      "reversal_exit_metrics": {
+        "reversal_exit_order_count": 1,
+        "reversal_exit_filled_count": 1,
+        "reversal_exit_reject_count": 0,
+        "reversal_exit_expire_count": 0,
+        "reversal_exit_trade_count": 1,
+        "reversal_exit_partial_trade_count": 0,
+        "reversal_exit_unique_code_count": 1,
+        "reversal_exit_total_position_day_count": 15,
+        "reversal_exit_matched_state_position_day_count": 1,
+        "reversal_exit_created_count": 1,
+        "reversal_exit_created_share_of_positions": 0.06666666666666667,
+        "reversal_exit_pending_sell_skip_count": 0,
+        "reversal_exit_missing_state_position_day_count": 0,
+        "reversal_exit_no_execute_date_skip_count": 0,
+        "reversal_exit_target_state": "CONFIRMED_TURN_DOWN",
+        "reversal_exit_reason_code": "GENE_REVERSAL_PREP",
+        "reversal_exit_rule": "schedule T+1 SELL when reversal_state == CONFIRMED_TURN_DOWN"
+      },
+      "signals_count": 2,
+      "buy_order_count": 2,
+      "buy_filled_count": 2,
+      "buy_reject_count": 0,
+      "buy_reject_rate": 0.0,
+      "buy_trade_count": 2,
+      "avg_entry_quantity": 950.0,
+      "avg_entry_notional": 85446.0,
+      "max_entry_notional_pct_initial_cash": 0.09384
+    },
+    {
+      "scenario_label": "PHASE9B_REVERSAL_CONFIRMED_TURN_DOWN_EXIT_PREP",
+      "window_label": "back_half_window",
+      "window_start": "2026-01-26",
+      "window_end": "2026-02-24",
+      "notes": "Single-variable candidate only: keep the validated baseline fixed and schedule a defensive T+1 SELL when reversal_state == CONFIRMED_TURN_DOWN.",
+      "run_id": "phase9b_reversal_state_validation_phase9b_reversal_confirmed_turn_down_exit_prep_full_window_legacy_legacy_bof_baseline_w20260105_20260224_t164859",
+      "pipeline_mode": "legacy",
+      "rule_role": "reversal_state_exit_preparation",
+      "target_reversal_state": "CONFIRMED_TURN_DOWN",
+      "position_sizing_mode": "fixed_notional",
+      "exit_control_mode": "full_exit_control",
+      "trade_days": 16,
+      "trade_count": 12,
+      "win_rate": 0.5,
+      "avg_win": 0.05031576758555604,
+      "avg_loss": 0.047627827999333676,
+      "expected_value": 0.0013439697931111813,
+      "profit_factor": 1.0564363251303412,
+      "max_drawdown": 0.014817718183398621,
+      "reject_rate": 0.07407407407407407,
+      "missing_rate": 0.0,
+      "exposure_rate": 0.75,
+      "opportunity_count": 14.0,
+      "filled_count": 12.0,
+      "skip_cash_count": 0.0,
+      "skip_maxpos_count": 2.0,
+      "participation_rate": 0.8571428571428571,
+      "environment_breakdown": {
+        "NEUTRAL": {
+          "trade_count": 12.0,
+          "win_rate": 0.5,
+          "avg_win": 0.05031576758555604,
+          "avg_loss": 0.047627827999333676,
+          "profit_factor": 1.0564363251303412,
+          "expected_value": 0.0013439697931111813,
+          "median_pnl_pct": -0.0012648426742020988
+        }
+      },
+      "buy_trade_signature": "2aacc46883c6d9cef991a6fcd1658a65eebc8ea36657ac9407c313368e31a80d",
+      "trace_counts": {
+        "selector_candidate_trace_count": 0,
+        "pas_trigger_trace_count": 3000,
+        "broker_lifecycle_trace_count": 58,
+        "rank_trace_count": 0
+      },
+      "failure_reason_breakdown": {
+        "MAX_POSITIONS_REACHED": 2
+      },
+      "reversal_exit_metrics": {
+        "reversal_exit_order_count": 8,
+        "reversal_exit_filled_count": 8,
+        "reversal_exit_reject_count": 0,
+        "reversal_exit_expire_count": 0,
+        "reversal_exit_trade_count": 8,
+        "reversal_exit_partial_trade_count": 0,
+        "reversal_exit_unique_code_count": 8,
+        "reversal_exit_total_position_day_count": 72,
+        "reversal_exit_matched_state_position_day_count": 8,
+        "reversal_exit_created_count": 8,
+        "reversal_exit_created_share_of_positions": 0.1111111111111111,
+        "reversal_exit_pending_sell_skip_count": 0,
+        "reversal_exit_missing_state_position_day_count": 3,
+        "reversal_exit_no_execute_date_skip_count": 0,
+        "reversal_exit_target_state": "CONFIRMED_TURN_DOWN",
+        "reversal_exit_reason_code": "GENE_REVERSAL_PREP",
+        "reversal_exit_rule": "schedule T+1 SELL when reversal_state == CONFIRMED_TURN_DOWN"
+      },
+      "signals_count": 14,
+      "buy_order_count": 14,
+      "buy_filled_count": 12,
+      "buy_reject_count": 2,
+      "buy_reject_rate": 0.14285714285714285,
+      "buy_trade_count": 12,
+      "avg_entry_quantity": 7808.333333333333,
+      "avg_entry_notional": 85658.16666666667,
+      "max_entry_notional_pct_initial_cash": 0.09927400000000002
+    }
+  ],
+  "digest": {
+    "generated_at": "2026-03-18T16:49:30Z",
+    "matrix_status": "completed",
+    "diagnosis": "isolated_exit_preparation_improves_baseline",
+    "decision": "promote_reversal_state_exit_preparation",
+    "full_window_comparison": {
+      "expected_value_delta_candidate_minus_baseline": 0.019016834112428868,
+      "profit_factor_delta_candidate_minus_baseline": 0.2086527374686652,
+      "max_drawdown_delta_candidate_minus_baseline": -0.0061008413393569445,
+      "trade_count_delta_candidate_minus_baseline": 1,
+      "buy_filled_count_delta_candidate_minus_baseline": 1,
+      "signal_count_delta_candidate_minus_baseline": 0
+    },
+    "isolated_rule_summary": {
+      "matched_state_position_day_count": 9,
+      "created_exit_order_count": 9,
+      "filled_exit_order_count": 9,
+      "filled_exit_trade_count": 9,
+      "target_reversal_state": "CONFIRMED_TURN_DOWN",
+      "exit_reason_code": "GENE_REVERSAL_PREP",
+      "rule": "schedule T+1 SELL when reversal_state == CONFIRMED_TURN_DOWN"
+    },
+    "candidate_window_summary": {
+      "front_half_trade_count": 1,
+      "front_half_expected_value": 0.047208478260869484,
+      "back_half_trade_count": 12,
+      "back_half_expected_value": 0.0013439697931111813
+    },
+    "conclusion": "The isolated reversal_state exit-preparation rule improved the validated baseline cleanly enough to earn promotion."
+  },
+  "summary_run_id": "phase9b_reversal_state_validation_legacy_reversal_state_exit_prep_confirmed_turn_down_w20260105_20260224_t160310"
+}

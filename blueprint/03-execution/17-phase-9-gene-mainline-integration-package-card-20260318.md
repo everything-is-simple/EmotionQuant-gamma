@@ -129,7 +129,11 @@ Current completed isolated rounds:
 4. `p65` was reviewed as sensitivity reference only and did not replace the formal `p95` threshold
 5. [`17.3-phase-9b-isolated-wave-role-validation-card-20260318.md`](./17.3-phase-9b-isolated-wave-role-validation-card-20260318.md) completed second isolated round = `wave_role as negative filter, alone`
 6. second isolated ruling = `retain_sidecar_only`
-7. `Phase 9C` combination candidate remains unopened
+7. [`17.4-phase-9b-isolated-reversal-state-validation-card-20260318.md`](./17.4-phase-9b-isolated-reversal-state-validation-card-20260318.md) completed third isolated round = `reversal_state as exit-preparation only`
+8. third isolated ruling = `promote_reversal_state_exit_preparation`
+9. the package now has `2` isolated winners:
+   `duration_percentile` and `reversal_state`
+10. `Phase 9C` combination candidate no longer fails the winner-count gate alone, but it still remains unopened because `GX8 completed or formally non-blocking` plus explicit combination freeze are not yet satisfied
 
 ### 7.3 Phase 9C
 

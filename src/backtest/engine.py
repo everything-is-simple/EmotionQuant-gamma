@@ -18,6 +18,7 @@ from src.selector.selector import select_candidates
 from src.strategy.strategy import generate_signals
 
 SignalFilterHook = Callable[[list[Signal], date, list[Trade], Broker, Store], list[Signal]]
+ExitHook = Callable[[date, list[Trade], Broker, Store], Any]
 
 
 @dataclass(frozen=True)
@@ -181,6 +182,7 @@ def run_backtest(
     initial_cash: float | None = None,
     run_id: str | None = None,
     signal_filter: SignalFilterHook | None = None,
+    exit_hook: ExitHook | None = None,
 ) -> BacktestResult:
     """Run the minimal BOF backtest loop with an optional pre-broker signal filter."""
     cfg = config.model_copy(deep=True)
@@ -200,6 +202,8 @@ def run_backtest(
             filled_trades = broker.execute_pending_orders(trade_day)
             broker.expire_orders(trade_day)
             broker.generate_exit_orders(trade_day)
+            if exit_hook is not None:
+                exit_hook(trade_day, filled_trades, broker, store)
 
             candidates = select_candidates(store, trade_day, cfg, run_id=run_id)
             signals = generate_signals(store, candidates, trade_day, cfg, run_id=run_id)
