@@ -82,6 +82,7 @@
 - `03-execution/15-phase-7-data-provider-refactor-card-20260317.md`
 - `03-execution/16-phase-8-data-contract-residual-audit-card-20260318.md`
 - `03-execution/17-phase-9-gene-mainline-integration-package-card-20260318.md`
+- `03-execution/18-phase-10-bof-risk-unit-lifecycle-package-card-20260318.md`
 
 它们分别负责：
 
@@ -182,6 +183,7 @@
 18. `15-phase-7-data-provider-refactor-card-20260317.md`
 19. `16-phase-8-data-contract-residual-audit-card-20260318.md`
 20. `17-phase-9-gene-mainline-integration-package-card-20260318.md`
+21. `18-phase-10-bof-risk-unit-lifecycle-package-card-20260318.md`
 
 当前冻结后的使用顺序固定为：
 
