@@ -85,3 +85,10 @@
 4. 整体单调性与日度 rank-corr 较弱，当前历史尺更像“过热/衰竭尺”，而不是强 continuation 尺
 
 下一张主线卡应按顺序进入 `G5 / market-industry-index mirror ruler`。
+
+---
+
+## 8. 文档入口
+
+1. 配套 record：[`records/07-phase-g4-self-history-ruler-validation-record-20260316.md`](records/07-phase-g4-self-history-ruler-validation-record-20260316.md)
+2. 配套 evidence：[`evidence/07-phase-g4-self-history-ruler-validation-evidence-20260316.md`](evidence/07-phase-g4-self-history-ruler-validation-evidence-20260316.md)

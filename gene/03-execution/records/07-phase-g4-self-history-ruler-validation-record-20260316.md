@@ -157,3 +157,10 @@
 
 `G4` 已完成。  
 第四战场主线当前已从 `G0 / G1 / G2 / G3` 正式推进到 `G4` 结案，下一张卡应按顺序进入 `G5 / market-industry-index mirror ruler`。
+
+---
+
+## 6. 文档入口
+
+1. 配套 card：[`../07-phase-g4-self-history-ruler-validation-card-20260316.md`](../07-phase-g4-self-history-ruler-validation-card-20260316.md)
+2. 配套 evidence：[`../evidence/07-phase-g4-self-history-ruler-validation-evidence-20260316.md`](../evidence/07-phase-g4-self-history-ruler-validation-evidence-20260316.md)

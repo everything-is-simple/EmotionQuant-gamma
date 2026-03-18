@@ -108,3 +108,10 @@
 一句话：
 
 `GX6` 完成的是“1-2-3 条件拆账”，不是“趋势线理论的全对象化终局版”。`
+
+---
+
+## 6. 文档入口
+
+1. 配套 card：[`../17-phase-gx6-123-three-condition-refactor-card-20260317.md`](../17-phase-gx6-123-three-condition-refactor-card-20260317.md)
+2. 配套 evidence：[`../evidence/17-phase-gx6-123-three-condition-refactor-evidence-20260318.md`](../evidence/17-phase-gx6-123-three-condition-refactor-evidence-20260318.md)

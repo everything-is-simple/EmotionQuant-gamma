@@ -104,3 +104,10 @@
 一句话：
 
 `GX4` 完成的是“角色判定去伪装”，不是“第四战场定义债全部还清”。`
+
+---
+
+## 6. 文档入口
+
+1. 配套 card：[`../15-phase-gx4-mainstream-countertrend-semantics-card-20260317.md`](../15-phase-gx4-mainstream-countertrend-semantics-card-20260317.md)
+2. 配套 evidence：[`../evidence/15-phase-gx4-mainstream-countertrend-semantics-evidence-20260318.md`](../evidence/15-phase-gx4-mainstream-countertrend-semantics-evidence-20260318.md)

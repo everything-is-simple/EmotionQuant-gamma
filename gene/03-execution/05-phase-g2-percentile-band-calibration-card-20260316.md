@@ -78,3 +78,10 @@
 3. `65 / 95` 在第四战场中已被固定为“历史位置标签”，而不是新的交易参数森林
 
 下一张主线卡应按顺序进入 `G3 / structure label calibration`。
+
+---
+
+## 8. 文档入口
+
+1. 配套 record：[`records/05-phase-g2-percentile-band-calibration-record-20260316.md`](records/05-phase-g2-percentile-band-calibration-record-20260316.md)
+2. 配套 evidence：[`evidence/05-phase-g2-percentile-band-calibration-evidence-20260316.md`](evidence/05-phase-g2-percentile-band-calibration-evidence-20260316.md)

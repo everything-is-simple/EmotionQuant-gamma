@@ -84,3 +84,10 @@
 
 `G1` 已经从“基线可写入”推进到“主库真实读数可解释”，可以正式结案。  
 下一张卡应按顺序进入 `G2`：历史寿命分布与 `65 / 95` 校准。
+
+---
+
+## 6. 文档入口
+
+1. 配套 card：[`../03-phase-g1-factor-attribution-baseline-card-20260316.md`](../03-phase-g1-factor-attribution-baseline-card-20260316.md)
+2. 配套 evidence：[`../evidence/03-phase-g1-factor-attribution-baseline-evidence-20260316.md`](../evidence/03-phase-g1-factor-attribution-baseline-evidence-20260316.md)

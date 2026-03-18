@@ -87,3 +87,6 @@
 
 配套 record：
 [`records/16-phase-gx5-two-b-window-semantics-record-20260318.md`](records/16-phase-gx5-two-b-window-semantics-record-20260318.md)
+
+配套 evidence：
+[`evidence/16-phase-gx5-two-b-window-semantics-evidence-20260318.md`](evidence/16-phase-gx5-two-b-window-semantics-evidence-20260318.md)

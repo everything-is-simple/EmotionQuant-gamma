@@ -169,3 +169,10 @@
 
 `G5` 已完成。  
 第四战场主线当前已从 `G0 / G1 / G2 / G3 / G4` 正式推进到 `G5` 结案，下一张卡应按顺序进入 `G6 / BOF-PB-CPB conditioning readout`。
+
+---
+
+## 6. 文档入口
+
+1. 配套 card：[`../08-phase-g5-market-industry-index-mirror-ruler-card-20260316.md`](../08-phase-g5-market-industry-index-mirror-ruler-card-20260316.md)
+2. 配套 evidence：[`../evidence/08-phase-g5-market-industry-index-mirror-ruler-evidence-20260316.md`](../evidence/08-phase-g5-market-industry-index-mirror-ruler-evidence-20260316.md)

@@ -132,3 +132,10 @@
 
 `G3` 已完成。  
 第四战场主线当前已从 `G0 / G1 / G2` 正式推进到 `G3` 结案，下一张卡应按顺序进入 `G4 / self-history ruler validation`。
+
+---
+
+## 6. 文档入口
+
+1. 配套 card：[`../06-phase-g3-structure-label-calibration-card-20260316.md`](../06-phase-g3-structure-label-calibration-card-20260316.md)
+2. 配套 evidence：[`../evidence/06-phase-g3-structure-label-calibration-evidence-20260316.md`](../evidence/06-phase-g3-structure-label-calibration-evidence-20260316.md)

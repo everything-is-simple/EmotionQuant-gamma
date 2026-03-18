@@ -92,3 +92,10 @@
 1. `trend_level + mainstream / countertrend` 深化
 2. `2B window semantics refactor`
 3. `1-2-3 three-condition refactor`
+
+---
+
+## 6. 当前阶段文档入口
+
+1. 配套 card：[`../14-phase-gx3-trend-level-context-refactor-card-20260317.md`](../14-phase-gx3-trend-level-context-refactor-card-20260317.md)
+2. 第一阶段 evidence：[`../evidence/14-phase-gx3-trend-level-context-refactor-evidence-20260317.md`](../evidence/14-phase-gx3-trend-level-context-refactor-evidence-20260317.md)

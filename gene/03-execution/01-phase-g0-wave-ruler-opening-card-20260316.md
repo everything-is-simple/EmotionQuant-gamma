@@ -58,3 +58,10 @@
 1. 不把 `gene` 接进实时选股过滤
 2. 不在本卡里改造 `MSS / IRS`
 3. 不在本卡里引入指数与行业版标尺
+
+---
+
+## 7. 文档入口
+
+1. 配套 record：[`records/01-phase-g0-wave-ruler-opening-record-20260316.md`](records/01-phase-g0-wave-ruler-opening-record-20260316.md)
+2. 配套 evidence：[`evidence/01-phase-g0-wave-ruler-opening-evidence-20260316.md`](evidence/01-phase-g0-wave-ruler-opening-evidence-20260316.md)

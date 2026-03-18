@@ -73,3 +73,10 @@
 一句话：
 
 `先把 trend_level 和 context 语义说诚实，再谈后续 detector 深修。`
+
+---
+
+## 7. 当前阶段文档入口
+
+1. 配套 record：[`records/14-phase-gx3-trend-level-context-refactor-record-20260317.md`](records/14-phase-gx3-trend-level-context-refactor-record-20260317.md)
+2. 第一阶段 evidence：[`evidence/14-phase-gx3-trend-level-context-refactor-evidence-20260317.md`](evidence/14-phase-gx3-trend-level-context-refactor-evidence-20260317.md)

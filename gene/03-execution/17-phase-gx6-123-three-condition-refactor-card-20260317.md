@@ -93,3 +93,6 @@
 
 配套 record：
 [`records/17-phase-gx6-123-three-condition-refactor-record-20260318.md`](records/17-phase-gx6-123-three-condition-refactor-record-20260318.md)
+
+配套 evidence：
+[`evidence/17-phase-gx6-123-three-condition-refactor-evidence-20260318.md`](evidence/17-phase-gx6-123-three-condition-refactor-evidence-20260318.md)

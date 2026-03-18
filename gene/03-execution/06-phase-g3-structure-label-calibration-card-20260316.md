@@ -80,3 +80,10 @@
 3. 当前计数一致性已经足以支持进入 `G4`，暂未发现必须立刻打开 `GX1` 的阻塞级问题
 
 下一张主线卡应按顺序进入 `G4 / self-history ruler validation`。
+
+---
+
+## 8. 文档入口
+
+1. 配套 record：[`records/06-phase-g3-structure-label-calibration-record-20260316.md`](records/06-phase-g3-structure-label-calibration-record-20260316.md)
+2. 配套 evidence：[`evidence/06-phase-g3-structure-label-calibration-evidence-20260316.md`](evidence/06-phase-g3-structure-label-calibration-evidence-20260316.md)

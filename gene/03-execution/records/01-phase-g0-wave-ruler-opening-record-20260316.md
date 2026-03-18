@@ -59,3 +59,10 @@
 
 `G0` 已从“代码落地”推进到“主库迁移与回填完成”，可以正式结案。  
 下一张卡应按顺序进入 `G1` 的真实读数验证；当前这一环也已在本轮同步完成。
+
+---
+
+## 6. 文档入口
+
+1. 配套 card：[`../01-phase-g0-wave-ruler-opening-card-20260316.md`](../01-phase-g0-wave-ruler-opening-card-20260316.md)
+2. 配套 evidence：[`../evidence/01-phase-g0-wave-ruler-opening-evidence-20260316.md`](../evidence/01-phase-g0-wave-ruler-opening-evidence-20260316.md)

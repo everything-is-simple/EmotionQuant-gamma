@@ -108,3 +108,30 @@
 2. 当前没有重开 `G0 ~ G8` 主线
 3. `GX3 ~ GX7` 已全部完成
 4. 当前下一张 targeted hypothesis = `GX8 / three-level trend hierarchy refactor`
+
+---
+
+## 6. 文档闭环入口
+
+除 `GX1 / GX2 / GX8` 外，当前所有已有 `record` 的 phase 都已经补齐对应 `evidence`。  
+其中 `GX3` 当前挂的是“第一阶段 evidence”，不是全卡完工 evidence。
+
+| Phase | Status | Card | Record | Evidence |
+|---|---|---|---|---|
+| `G0` | `Completed` | [`card`](01-phase-g0-wave-ruler-opening-card-20260316.md) | [`record`](records/01-phase-g0-wave-ruler-opening-record-20260316.md) | [`evidence`](evidence/01-phase-g0-wave-ruler-opening-evidence-20260316.md) |
+| `G1` | `Completed` | [`card`](03-phase-g1-factor-attribution-baseline-card-20260316.md) | [`record`](records/04-phase-g1-factor-attribution-baseline-record-20260316.md) | [`evidence`](evidence/03-phase-g1-factor-attribution-baseline-evidence-20260316.md) |
+| `G2` | `Completed` | [`card`](05-phase-g2-percentile-band-calibration-card-20260316.md) | [`record`](records/05-phase-g2-percentile-band-calibration-record-20260316.md) | [`evidence`](evidence/05-phase-g2-percentile-band-calibration-evidence-20260316.md) |
+| `G3` | `Completed` | [`card`](06-phase-g3-structure-label-calibration-card-20260316.md) | [`record`](records/06-phase-g3-structure-label-calibration-record-20260316.md) | [`evidence`](evidence/06-phase-g3-structure-label-calibration-evidence-20260316.md) |
+| `G4` | `Completed` | [`card`](07-phase-g4-self-history-ruler-validation-card-20260316.md) | [`record`](records/07-phase-g4-self-history-ruler-validation-record-20260316.md) | [`evidence`](evidence/07-phase-g4-self-history-ruler-validation-evidence-20260316.md) |
+| `G5` | `Completed` | [`card`](08-phase-g5-market-industry-index-mirror-ruler-card-20260316.md) | [`record`](records/08-phase-g5-market-industry-index-mirror-ruler-record-20260316.md) | [`evidence`](evidence/08-phase-g5-market-industry-index-mirror-ruler-evidence-20260316.md) |
+| `G6` | `Completed` | [`card`](09-phase-g6-bof-pb-cpb-conditioning-card-20260316.md) | [`record`](records/09-phase-g6-bof-pb-cpb-conditioning-record-20260316.md) | [`evidence`](evidence/09-phase-g6-five-pattern-conditioning-evidence-20260316.md) |
+| `G7` | `Completed` | [`card`](10-phase-g7-mss-irs-refactor-or-retire-card-20260316.md) | [`record`](records/10-phase-g7-mss-irs-refactor-or-retire-record-20260316.md) | [`evidence`](evidence/10-phase-g7-mss-irs-decision-evidence-20260316.md) |
+| `G8` | `Completed` | [`card`](11-phase-g8-gene-campaign-closeout-card-20260316.md) | [`record`](records/11-phase-g8-gene-campaign-closeout-record-20260316.md) | [`evidence`](evidence/11-phase-g8-gene-campaign-closeout-evidence-20260316.md) |
+| `GX1` | `Conditional only` | [`card`](12-phase-gx1-targeted-detector-rewrite-card-20260316.md) | `-` | `-` |
+| `GX2` | `Conditional only` | [`card`](13-phase-gx2-targeted-migration-package-card-20260316.md) | `-` | `-` |
+| `GX3` | `Active` | [`card`](14-phase-gx3-trend-level-context-refactor-card-20260317.md) | [`record`](records/14-phase-gx3-trend-level-context-refactor-record-20260317.md) | [`stage evidence`](evidence/14-phase-gx3-trend-level-context-refactor-evidence-20260317.md) |
+| `GX4` | `Completed` | [`card`](15-phase-gx4-mainstream-countertrend-semantics-card-20260317.md) | [`record`](records/15-phase-gx4-mainstream-countertrend-semantics-record-20260318.md) | [`evidence`](evidence/15-phase-gx4-mainstream-countertrend-semantics-evidence-20260318.md) |
+| `GX5` | `Completed` | [`card`](16-phase-gx5-two-b-window-semantics-refactor-card-20260317.md) | [`record`](records/16-phase-gx5-two-b-window-semantics-record-20260318.md) | [`evidence`](evidence/16-phase-gx5-two-b-window-semantics-evidence-20260318.md) |
+| `GX6` | `Completed` | [`card`](17-phase-gx6-123-three-condition-refactor-card-20260317.md) | [`record`](records/17-phase-gx6-123-three-condition-refactor-record-20260318.md) | [`evidence`](evidence/17-phase-gx6-123-three-condition-refactor-evidence-20260318.md) |
+| `GX7` | `Completed` | [`card`](18-phase-gx7-post-refactor-g4-g5-g6-revalidation-card-20260317.md) | [`record`](records/18-phase-gx7-post-refactor-g4-g5-g6-revalidation-record-20260318.md) | [`evidence`](evidence/18-phase-gx7-post-refactor-g4-g5-g6-revalidation-evidence-20260318.md) |
+| `GX8` | `Planned` | [`card`](19-phase-gx8-three-level-trend-hierarchy-card-20260318.md) | `-` | `-` |

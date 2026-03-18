@@ -87,3 +87,6 @@
 
 配套 record：
 [`records/15-phase-gx4-mainstream-countertrend-semantics-record-20260318.md`](records/15-phase-gx4-mainstream-countertrend-semantics-record-20260318.md)
+
+配套 evidence：
+[`evidence/15-phase-gx4-mainstream-countertrend-semantics-evidence-20260318.md`](evidence/15-phase-gx4-mainstream-countertrend-semantics-evidence-20260318.md)

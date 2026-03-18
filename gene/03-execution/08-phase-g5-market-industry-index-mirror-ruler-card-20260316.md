@@ -81,3 +81,10 @@
 4. `amount_vs_ma20 / return_20d / follow_through` 字段当前先保留为预留列，不提升为第一版稳定主辅助集
 
 下一张主线卡应按顺序进入 `G6 / BOF-PB-CPB conditioning readout`。
+
+---
+
+## 8. 文档入口
+
+1. 配套 record：[`records/08-phase-g5-market-industry-index-mirror-ruler-record-20260316.md`](records/08-phase-g5-market-industry-index-mirror-ruler-record-20260316.md)
+2. 配套 evidence：[`evidence/08-phase-g5-market-industry-index-mirror-ruler-evidence-20260316.md`](evidence/08-phase-g5-market-industry-index-mirror-ruler-evidence-20260316.md)

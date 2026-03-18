@@ -110,3 +110,10 @@
 一句话：
 
 `GX5` 完成的是“2B 时间窗去绝对化”，不是“2B 整体定义终局版”。`
+
+---
+
+## 6. 文档入口
+
+1. 配套 card：[`../16-phase-gx5-two-b-window-semantics-refactor-card-20260317.md`](../16-phase-gx5-two-b-window-semantics-refactor-card-20260317.md)
+2. 配套 evidence：[`../evidence/16-phase-gx5-two-b-window-semantics-evidence-20260318.md`](../evidence/16-phase-gx5-two-b-window-semantics-evidence-20260318.md)

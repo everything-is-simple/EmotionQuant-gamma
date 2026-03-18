@@ -117,3 +117,10 @@
 
 `G2` 已完成。  
 第四战场当前主线已从 `G0 / G1` 正式推进到 `G2` 结案，下一张卡应按顺序进入 `G3 / structure label calibration`。
+
+---
+
+## 6. 文档入口
+
+1. 配套 card：[`../05-phase-g2-percentile-band-calibration-card-20260316.md`](../05-phase-g2-percentile-band-calibration-card-20260316.md)
+2. 配套 evidence：[`../evidence/05-phase-g2-percentile-band-calibration-evidence-20260316.md`](../evidence/05-phase-g2-percentile-band-calibration-evidence-20260316.md)

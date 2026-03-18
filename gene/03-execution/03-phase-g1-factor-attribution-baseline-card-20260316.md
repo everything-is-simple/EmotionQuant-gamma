@@ -89,3 +89,10 @@
 1. 不在本卡做 `65 / 95` 校准
 2. 不在本卡重写 `1-2-3 / 2B`
 3. 不在本卡把读数硬接成交易过滤器
+
+---
+
+## 9. 文档入口
+
+1. 配套 record：[`records/04-phase-g1-factor-attribution-baseline-record-20260316.md`](records/04-phase-g1-factor-attribution-baseline-record-20260316.md)
+2. 配套 evidence：[`evidence/03-phase-g1-factor-attribution-baseline-evidence-20260316.md`](evidence/03-phase-g1-factor-attribution-baseline-evidence-20260316.md)
