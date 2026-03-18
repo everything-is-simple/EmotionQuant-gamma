@@ -129,19 +129,26 @@
 
 ---
 
-## 7. Mainline Promotion Path
+## 7. Mainline Phase 9 Tracker
 
-The next formal path is no longer another statistics card inside `gene/`.
-The next formal path is now:
+第四战场当前已经没有新的 hierarchy blocker。  
+当前第一战场 `Phase 9` 的真实追踪位是：
 
-1. `blueprint/03-execution/16-phase-8-data-contract-residual-audit-card-20260318.md`
-2. `blueprint/03-execution/17-phase-9-gene-mainline-integration-package-card-20260318.md`
+1. 当前 active sub-card：`blueprint/03-execution/17.6-phase-9c-formal-combination-freeze-card-20260318.md`
+2. 当前下一张 blocked card：`blueprint/03-execution/17.7-phase-9d-gene-package-promotion-ruling-card-20260318.md`
 
-That means:
+当前 `17.6` 已正式写死：
 
-1. `GX8` no longer remains an open hard semantic problem inside the fourth battlefield
-2. any runtime promotion of `Gene` must happen through a first-battlefield mainline package
-3. `Gene` may not be verbally promoted into runtime behavior outside that package
+1. 只允许从 `duration_percentile / reversal_state / context_trend_direction_before` 这 `3` 个 isolated winners 里选组合候选
+2. 只允许 `3` 个二元组合加 `1` 个三元组合进入 Phase 9C freeze
+3. 明确禁止偷带 `wave_role / current_wave_age_band / mirror / conditioning / gene_score`
+4. 当前先做 `formal combination freeze`，不是直接跑组合 replay，更不是提前做 package promotion ruling
+
+这意味着：
+
+1. `GX8` 不再是 `Phase 9C / 9D` 的 blocker
+2. `Gene` 的 runtime promotion 仍必须通过第一战场主包推进
+3. `17.7` 在 `17.6` 关闭前不能提前写成包级结论
 
 ## 8. Post-Closeout Targeted Hypothesis
 

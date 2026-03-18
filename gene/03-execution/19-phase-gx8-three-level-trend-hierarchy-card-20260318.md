@@ -82,7 +82,7 @@
 
 `GX8` 收口后，第四战场当前最自然的下一步不再是继续补 hierarchy，而是进入第一战场：
 
-[`../../blueprint/03-execution/17.6-phase-9c-gene-combination-candidate-card-20260318.md`](../../blueprint/03-execution/17.6-phase-9c-gene-combination-candidate-card-20260318.md)
+[`../../blueprint/03-execution/17.6-phase-9c-formal-combination-freeze-card-20260318.md`](../../blueprint/03-execution/17.6-phase-9c-formal-combination-freeze-card-20260318.md)
 
 一句话收口：
 

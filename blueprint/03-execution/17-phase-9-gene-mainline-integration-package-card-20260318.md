@@ -68,22 +68,22 @@ Current status before this package starts:
 1. step `1` is already true
 2. steps `2 ~ 5` remain unapproved
 
-## 6. Candidate Surface
+## 6. Current Candidate Surface
 
-The initial candidate surface is intentionally narrow.
-At minimum, this package must examine these fields one by one:
+The package has already passed its first isolated-screening round.
+The current truthful runtime-candidate surface is now narrowed to:
 
 1. `duration_percentile`
-2. `current_wave_age_band`
-3. `wave_role`
-4. `reversal_state`
-5. `context_trend_direction_before`
+2. `reversal_state`
+3. `context_trend_direction_before`
 
-The following are frozen as non-default unless later evidence proves otherwise:
+The following are currently frozen outside the active Phase 9C surface:
 
-1. `mirror_gene_rank` as a direct runtime gate
-2. `conditioning` buckets as a direct runtime gate
-3. any composite `gene_score` as a default hard filter
+1. `current_wave_age_band = shadow-only`
+2. `wave_role = retain_sidecar_only`
+3. `mirror_gene_rank` as a direct runtime gate
+4. `conditioning` buckets as a direct runtime gate
+5. any composite `gene_score` as a default hard filter
 
 ## 7. Package Decomposition
 
@@ -139,10 +139,18 @@ Current completed isolated rounds:
 
 ### 7.3 Phase 9C
 
-`combination candidate only after isolated wins`
+`formal combination freeze before any combination replay`
 
 This sub-phase may open only after each component field has already passed isolated validation.
-It must explicitly state which pre-validated fields are now being combined.
+That gate is now satisfied.
+
+Current freeze boundary:
+
+1. allowed source fields = `duration_percentile`, `reversal_state`, `context_trend_direction_before`
+2. allowed exact combinations = `duration_percentile + reversal_state`, `duration_percentile + context_trend_direction_before`, `reversal_state + context_trend_direction_before`, and `duration_percentile + reversal_state + context_trend_direction_before`
+3. explicitly forbidden from the Phase 9C surface = `wave_role`, `current_wave_age_band`, `mirror`, `conditioning`, and `gene_score`
+4. no runtime / SQL alias expansion is allowed inside this card; it must use canonical field names only
+5. `17.7 / Phase 9D` remains the only downstream package card and stays blocked until `17.6` closes its freeze truthfully
 
 ### 7.4 Phase 9D
 

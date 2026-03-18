@@ -153,7 +153,7 @@
 21. `blueprint/03-execution/17.3-phase-9b-isolated-wave-role-validation-card-20260318.md`
 22. `blueprint/03-execution/17.4-phase-9b-isolated-reversal-state-validation-card-20260318.md`
 23. `blueprint/03-execution/17.5-phase-9b-isolated-context-trend-direction-before-validation-card-20260318.md`
-24. `blueprint/03-execution/17.6-phase-9c-gene-combination-candidate-card-20260318.md`
+24. `blueprint/03-execution/17.6-phase-9c-formal-combination-freeze-card-20260318.md`
 25. `blueprint/03-execution/17.7-phase-9d-gene-package-promotion-ruling-card-20260318.md`
 26. `blueprint/03-execution/18-phase-10-bof-risk-unit-lifecycle-package-card-20260318.md`
 
@@ -198,7 +198,7 @@
    - `blueprint/03-execution/17.3-phase-9b-isolated-wave-role-validation-card-20260318.md`
    - `blueprint/03-execution/17.4-phase-9b-isolated-reversal-state-validation-card-20260318.md`
    - `blueprint/03-execution/17.5-phase-9b-isolated-context-trend-direction-before-validation-card-20260318.md`
-   - `blueprint/03-execution/17.6-phase-9c-gene-combination-candidate-card-20260318.md`
+   - `blueprint/03-execution/17.6-phase-9c-formal-combination-freeze-card-20260318.md`
    - `blueprint/03-execution/17.7-phase-9d-gene-package-promotion-ruling-card-20260318.md`
 13. `Phase 10`
    - `blueprint/03-execution/18-phase-10-bof-risk-unit-lifecycle-package-card-20260318.md`

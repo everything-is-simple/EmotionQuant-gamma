@@ -60,5 +60,5 @@
 ## 5. 当前口径
 
 1. `GX8` 已完成，因此第四战场不再有对 `Phase 9C / 9D` 的 hierarchy blocker
-2. 第一战场下一步应进入 [`../../blueprint/03-execution/17.6-phase-9c-gene-combination-candidate-card-20260318.md`](../../blueprint/03-execution/17.6-phase-9c-gene-combination-candidate-card-20260318.md)
+2. 第一战场下一步应进入 [`../../blueprint/03-execution/17.6-phase-9c-formal-combination-freeze-card-20260318.md`](../../blueprint/03-execution/17.6-phase-9c-formal-combination-freeze-card-20260318.md)
 3. `GX3` 已完成治理收口，不再作为后续清账待办挂起

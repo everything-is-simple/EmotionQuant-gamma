@@ -90,7 +90,7 @@
 
 当前最自然、也最诚实的下一步是：
 
-[`../../../blueprint/03-execution/17.6-phase-9c-gene-combination-candidate-card-20260318.md`](../../../blueprint/03-execution/17.6-phase-9c-gene-combination-candidate-card-20260318.md)
+[`../../../blueprint/03-execution/17.6-phase-9c-formal-combination-freeze-card-20260318.md`](../../../blueprint/03-execution/17.6-phase-9c-formal-combination-freeze-card-20260318.md)
 
 也就是：
 
