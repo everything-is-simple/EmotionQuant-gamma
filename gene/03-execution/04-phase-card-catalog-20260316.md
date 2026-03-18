@@ -86,6 +86,11 @@
    - 作用：在定义层修正之后，重审 `validation / mirror / conditioning` 的正式结论
    - 状态：`Completed`
    - 配套 record：`records/18-phase-gx7-post-refactor-g4-g5-g6-revalidation-record-20260318.md`
+6. `GX8 / three-level trend hierarchy refactor`
+   - 性质：`post-closeout targeted hypothesis`
+   - 直接目标：`src/selector/gene.py`
+   - 作用：把 `trend_level` 从 `INTERMEDIATE` 单层 proxy 推进到真正的三层趋势并存语义
+   - 状态：`Planned`
 
 ---
 
@@ -102,4 +107,4 @@
 1. 第四战场原始 campaign 已正式收口
 2. 当前没有重开 `G0 ~ G8` 主线
 3. `GX3 ~ GX7` 已全部完成
-4. 当前无新的 active targeted hypothesis；若后续继续深修 detector 或层级趋势，应重新开新卡
+4. 当前下一张 targeted hypothesis = `GX8 / three-level trend hierarchy refactor`

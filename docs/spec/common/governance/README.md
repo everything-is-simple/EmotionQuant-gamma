@@ -35,6 +35,7 @@
 - `normandy-foundational-definition-freeze-20260317.md`
 - `positioning-foundational-definition-freeze-20260317.md`
 - `gene-definition-gap-remediation-checklist-20260317.md`
+- `research-line-promotion-discipline-freeze-20260318.md`
 
 ## 权威入口
 

@@ -173,3 +173,17 @@
 第三战场当前一句话基线固定为：
 
 `Positioning 是研究线，不是版本线；先解买多少，再解卖多少；不让 MSS / IRS 参与仓位决定。`
+
+---
+
+## 8. 当前治理冻结
+
+截至 `2026-03-18`，第三战场当前不再继续新开研究口子。  
+当前只允许做：
+
+1. `promotion discipline`
+2. migration boundary 修订
+3. retained / watch / promoted subset 清点
+
+正式冻结口径见：
+[`research-line-promotion-discipline-freeze-20260318.md`](../docs/spec/common/governance/research-line-promotion-discipline-freeze-20260318.md)

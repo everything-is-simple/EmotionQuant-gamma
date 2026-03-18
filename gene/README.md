@@ -111,6 +111,7 @@
 - `03-execution/16-phase-gx5-two-b-window-semantics-refactor-card-20260317.md`
 - `03-execution/17-phase-gx6-123-three-condition-refactor-card-20260317.md`
 - `03-execution/18-phase-gx7-post-refactor-g4-g5-g6-revalidation-card-20260317.md`
+- `03-execution/19-phase-gx8-three-level-trend-hierarchy-card-20260318.md`
 - `03-execution/records/12-gene-book-definition-ingestion-ledger-20260317.md`
 - `03-execution/records/14-phase-gx3-trend-level-context-refactor-record-20260317.md`
 - `03-execution/records/01-phase-g0-wave-ruler-opening-record-20260316.md`
@@ -128,7 +129,21 @@
 
 ---
 
-## 7. Post-Closeout Targeted Hypothesis
+## 7. Mainline Promotion Path
+
+The next formal path is no longer another statistics card inside `gene/`.
+The next formal path is now:
+
+1. `blueprint/03-execution/16-phase-8-data-contract-residual-audit-card-20260318.md`
+2. `blueprint/03-execution/17-phase-9-gene-mainline-integration-package-card-20260318.md`
+
+That means:
+
+1. `GX8` remains the final hard semantic problem inside the fourth battlefield
+2. any runtime promotion of `Gene` must happen through a first-battlefield mainline package
+3. `Gene` may not be verbally promoted into runtime behavior outside that package
+
+## 8. Post-Closeout Targeted Hypothesis
 
 1. `GX3 / trend-level context refactor`
    - `post-closeout targeted hypothesis`
@@ -155,8 +170,14 @@
    - `src/selector/gene.py`
    - `Completed`
    - 配套 record：`03-execution/records/18-phase-gx7-post-refactor-g4-g5-g6-revalidation-record-20260318.md`
+6. `GX8 / three-level trend hierarchy refactor`
+   - `post-closeout targeted hypothesis`
+   - `src/selector/gene.py`
+   - `Planned`
+   - 目标：把 `trend_level` 从单层 `INTERMEDIATE` proxy 推到真正三层趋势并存语义
 
 当前 `GX3 ~ GX7` 已全部完成。  
+当前下一张 targeted hypothesis = `GX8 / three-level trend hierarchy refactor`。  
 定义整改后的正式收口口径是：
 
 1. `G4 / G5 / G6` 结论保留

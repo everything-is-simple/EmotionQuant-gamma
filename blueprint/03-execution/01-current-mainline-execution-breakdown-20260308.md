@@ -146,6 +146,8 @@
 14. `blueprint/03-execution/13-phase-6b-integrated-end-to-end-validation-card-20260317.md`
 15. `blueprint/03-execution/14-phase-6c-unified-operating-runbook-refresh-card-20260317.md`
 16. `blueprint/03-execution/15-phase-7-data-provider-refactor-card-20260317.md`
+17. `blueprint/03-execution/16-phase-8-data-contract-residual-audit-card-20260318.md`
+18. `blueprint/03-execution/17-phase-9-gene-mainline-integration-package-card-20260318.md`
 
 ---
 
@@ -179,6 +181,10 @@
    - `blueprint/03-execution/14-phase-6c-unified-operating-runbook-refresh-card-20260317.md`
 10. `Phase 7`
    - `blueprint/03-execution/15-phase-7-data-provider-refactor-card-20260317.md`
+11. `Phase 8`
+   - `blueprint/03-execution/16-phase-8-data-contract-residual-audit-card-20260318.md`
+12. `Phase 9`
+   - `blueprint/03-execution/17-phase-9-gene-mainline-integration-package-card-20260318.md`
 
 ### 5.2 使用规则
 
