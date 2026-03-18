@@ -121,13 +121,15 @@ This sub-phase must run isolated validation rounds such as:
 2. `wave_role` as negative filter, alone
 3. `reversal_state` as exit-preparation signal, alone
 
-Current opened round:
+Current completed isolated rounds:
 
 1. [`17.2-phase-9b-isolated-duration-percentile-validation-card-20260318.md`](./17.2-phase-9b-isolated-duration-percentile-validation-card-20260318.md)
 2. completed first isolated win = `duration_percentile as negative filter, alone`
 3. current isolated ruling = `promote_duration_percentile_negative_filter`
 4. `p65` was reviewed as sensitivity reference only and did not replace the formal `p95` threshold
-5. next opened round = [`17.3-phase-9b-isolated-wave-role-validation-card-20260318.md`](./17.3-phase-9b-isolated-wave-role-validation-card-20260318.md)
+5. [`17.3-phase-9b-isolated-wave-role-validation-card-20260318.md`](./17.3-phase-9b-isolated-wave-role-validation-card-20260318.md) completed second isolated round = `wave_role as negative filter, alone`
+6. second isolated ruling = `retain_sidecar_only`
+7. `Phase 9C` combination candidate remains unopened
 
 ### 7.3 Phase 9C
 

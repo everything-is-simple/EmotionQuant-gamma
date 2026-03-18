@@ -49,8 +49,12 @@ Mainline design authority remains in `blueprint/`.
 | Phase 9A record | `docs/spec/v0.01-plus/records/v0.01-plus-phase-9a-gene-promoted-subset-freeze-20260318.md` | Formal Phase 9A freeze ruling |
 | Phase 9B card | `blueprint/03-execution/17.2-phase-9b-isolated-duration-percentile-validation-card-20260318.md` | Isolated validation of `duration_percentile` as negative filter |
 | Phase 9B evidence | `blueprint/03-execution/evidence/phase-9b-duration-percentile-validation-evidence-20260318.md` | First-battlefield evidence for the isolated `duration_percentile >= 95` runtime rule |
-| Phase 9B record | `docs/spec/v0.01-plus/records/v0.01-plus-phase-9b-duration-percentile-validation-20260318.md` | Formal Phase 9B isolated validation ruling |
-| Phase 9B next card | `blueprint/03-execution/17.3-phase-9b-isolated-wave-role-validation-card-20260318.md` | Next isolated Gene field round: `wave_role` as negative filter |
+| Phase 9B duration execution record | `blueprint/03-execution/records/phase-9b-duration-percentile-validation-record-20260318.md` | First-battlefield conclusion for the isolated `duration_percentile >= 95` round |
+| Phase 9B duration record | `docs/spec/v0.01-plus/records/v0.01-plus-phase-9b-duration-percentile-validation-20260318.md` | Formal ruling for the isolated `duration_percentile >= 95` round |
+| Phase 9B wave-role card | `blueprint/03-execution/17.3-phase-9b-isolated-wave-role-validation-card-20260318.md` | Isolated validation of `wave_role` as negative filter |
+| Phase 9B wave-role evidence | `blueprint/03-execution/evidence/phase-9b-wave-role-validation-evidence-20260318.md` | First-battlefield evidence for the isolated `wave_role == COUNTERTREND` runtime rule |
+| Phase 9B wave-role execution record | `blueprint/03-execution/records/phase-9b-wave-role-validation-record-20260318.md` | First-battlefield conclusion for the isolated `wave_role` round |
+| Phase 9B wave-role record | `docs/spec/v0.01-plus/records/v0.01-plus-phase-9b-wave-role-validation-20260318.md` | Formal ruling for the isolated `wave_role` round |
 | Current operating runbook | `docs/reference/operations/current-mainline-operating-runbook-20260317.md` | Truthful operating chain and rollback rules |
 
 ---

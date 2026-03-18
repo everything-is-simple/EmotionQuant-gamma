@@ -157,7 +157,7 @@
 
 ## 5. Phase 摘要
 
-### 5.1 当前 15 张卡
+### 5.1 当前 22 张卡
 
 1. `Phase 0`：
    - `blueprint/03-execution/02-phase-0-contract-trace-card-20260309.md`
@@ -236,7 +236,7 @@
 
 ## 7. 下一步
 
-从 `2026-03-17` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3`、`Phase 4`、`Phase 4.1` 与 `Phase 5` 都已完成当前轮次收口。`Phase 4.1` 内部先后完成了 `P4.1-A / P4.1-B / P4.1-C / P4.1-D / P4.1-E / P4.1-F`，其中 `carryover_buffer(1)` 已完成一次 direct `Phase 4 Gate replay`，随后治理裁决冻结最后一条 `size_only_overlay` 候选，但 final replay 仍未推翻 `legacy_bof_baseline`；`Phase 5` 已把第二、第三战场可迁回主线的边界正式吸收回主线 SoT 与治理层；当前下一包正式进入 `Phase 6`，用于把第一到第四战场真正冻结成统一默认系统候选、完成 integrated validation，并刷新统一 runbook。
+从 `2026-03-18` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3`、`Phase 4`、`Phase 4.1`、`Phase 5`、`Phase 6`、`Phase 7` 与 `Phase 8` 都已完成当前轮次收口。当前 active mainline package 已切到 `Phase 9 / Gene mainline integration package`：`Phase 9A` 已完成 promoted subset freeze，`Phase 9B / duration_percentile` 已完成第一轮 isolated win，`Phase 9B / wave_role` 也已完成但 formal ruling 为 `retain_sidecar_only`；当前仍没有任何 `Gene` 字段完成 package-level default runtime promotion，`Phase 9C` combination candidate 也尚未打开。
 
 其中：
 
@@ -244,25 +244,32 @@
 2. `Phase 4 = Completed (NO-GO)`
 3. `Phase 4.1 = Completed (remediation exhausted, NO-GO persists)`
 4. `Phase 5 = Completed (research-line migration package closed)`
-5. `Phase 6 = Opened (unified default system migration package)`
-5. rollback target 保持：
+5. `Phase 6 = Completed (governance promotion only, default runtime unchanged)`
+6. `Phase 7 = Completed (data provider refactor closed)`
+7. `Phase 8 = Completed (data contract residual audit closed)`
+8. `Phase 9 = Active`
+9. `Phase 9A = Completed`
+10. `Phase 9B / duration_percentile = Completed (promote_duration_percentile_negative_filter)`
+11. `Phase 9B / wave_role = Completed (retain_sidecar_only)`
+12. rollback target 保持：
    - `legacy_bof_baseline`
-6. 当前 active mainline package：
-   - `none`
-7. 最近收官 record：
-   - `docs/spec/v0.01-plus/records/v0.01-plus-phase-5-research-line-migration-package-closeout-20260315.md`
+13. 当前 active mainline package：
+   - `Phase 9 / Gene mainline integration package`
+14. 最近收官 record：
+   - `docs/spec/v0.01-plus/records/v0.01-plus-phase-9b-wave-role-validation-20260318.md`
 
 后续顺序固定为：
 
 1. 当前不再在 `Phase 4.1` 内冻结新的 `MSS / Broker` 候选
-2. `Phase 5` 已闭环，不再继续补旧 sub-card
-3. `Phase 6A / 6B / 6C` 已全部完成，`Phase 6 closeout` 也已完成正式裁决
-4. 当前不存在 active mainline migration package；若未来继续，必须新开 formal package
-5. 正式默认路径继续保持：
+2. `Phase 5 / Phase 6 / Phase 7 / Phase 8` 都已闭环，不再回头补旧卡
+3. 当前 active package 继续保持在 `Phase 9`
+4. `duration_percentile >= 95` 目前仍是唯一 isolated round 的正式 winner
+5. `wave_role` 已完成 isolated validation，但当前 ruling 是 `retain_sidecar_only`
+6. `Phase 9C` combination candidate 仍未打开
+7. 正式默认路径继续保持：
    - `legacy_bof_baseline`
-6. 当前主线已吸收第二、第三战场可迁回的治理边界，并已完成第四战场可迁回 `context sidecar boundary` 的第一轮 freeze，但仍没有任何 parameter promotion
-7. 若未来继续，无论是主线默认切换还是研究线新实验，都必须新开 formal package 与新证据链
+8. 若继续推进 `Gene`，必须新开下一张单变量卡与新证据链，不能偷开组合
 
 也就是：
 
-`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 / Phase 4.1 / Phase 5 都已收口；当前 active mainline package 已切到 Phase 6，但默认运行路径仍继续保持 legacy_bof_baseline。`
+`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 / Phase 4.1 / Phase 5 / Phase 6 / Phase 7 / Phase 8 都已收口；当前 active mainline package 已切到 Phase 9，但默认运行路径仍继续保持 legacy_bof_baseline。`
