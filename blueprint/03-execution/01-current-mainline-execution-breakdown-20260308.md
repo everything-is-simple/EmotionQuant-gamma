@@ -151,13 +151,17 @@
 19. `blueprint/03-execution/17.1-phase-9a-gene-promoted-subset-freeze-card-20260318.md`
 20. `blueprint/03-execution/17.2-phase-9b-isolated-duration-percentile-validation-card-20260318.md`
 21. `blueprint/03-execution/17.3-phase-9b-isolated-wave-role-validation-card-20260318.md`
-22. `blueprint/03-execution/18-phase-10-bof-risk-unit-lifecycle-package-card-20260318.md`
+22. `blueprint/03-execution/17.4-phase-9b-isolated-reversal-state-validation-card-20260318.md`
+23. `blueprint/03-execution/17.5-phase-9b-isolated-context-trend-direction-before-validation-card-20260318.md`
+24. `blueprint/03-execution/17.6-phase-9c-gene-combination-candidate-card-20260318.md`
+25. `blueprint/03-execution/17.7-phase-9d-gene-package-promotion-ruling-card-20260318.md`
+26. `blueprint/03-execution/18-phase-10-bof-risk-unit-lifecycle-package-card-20260318.md`
 
 ---
 
 ## 5. Phase 摘要
 
-### 5.1 当前 22 张卡
+### 5.1 当前 26 张卡
 
 1. `Phase 0`：
    - `blueprint/03-execution/02-phase-0-contract-trace-card-20260309.md`
@@ -192,6 +196,10 @@
    - `blueprint/03-execution/17.1-phase-9a-gene-promoted-subset-freeze-card-20260318.md`
    - `blueprint/03-execution/17.2-phase-9b-isolated-duration-percentile-validation-card-20260318.md`
    - `blueprint/03-execution/17.3-phase-9b-isolated-wave-role-validation-card-20260318.md`
+   - `blueprint/03-execution/17.4-phase-9b-isolated-reversal-state-validation-card-20260318.md`
+   - `blueprint/03-execution/17.5-phase-9b-isolated-context-trend-direction-before-validation-card-20260318.md`
+   - `blueprint/03-execution/17.6-phase-9c-gene-combination-candidate-card-20260318.md`
+   - `blueprint/03-execution/17.7-phase-9d-gene-package-promotion-ruling-card-20260318.md`
 13. `Phase 10`
    - `blueprint/03-execution/18-phase-10-bof-risk-unit-lifecycle-package-card-20260318.md`
 
@@ -236,7 +244,7 @@
 
 ## 7. 下一步
 
-从 `2026-03-18` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3`、`Phase 4`、`Phase 4.1`、`Phase 5`、`Phase 6`、`Phase 7` 与 `Phase 8` 都已完成当前轮次收口。当前 active mainline package 已切到 `Phase 9 / Gene mainline integration package`：`Phase 9A` 已完成 promoted subset freeze，`Phase 9B / duration_percentile` 已完成第一轮 isolated win，`Phase 9B / wave_role` 也已完成但 formal ruling 为 `retain_sidecar_only`；当前仍没有任何 `Gene` 字段完成 package-level default runtime promotion，`Phase 9C` combination candidate 也尚未打开。
+从 `2026-03-18` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3`、`Phase 4`、`Phase 4.1`、`Phase 5`、`Phase 6`、`Phase 7` 与 `Phase 8` 都已完成当前轮次收口。当前 active mainline package 已切到 `Phase 9 / Gene mainline integration package`：`Phase 9A` 已完成 promoted subset freeze，`Phase 9B / duration_percentile` 已完成第一轮 isolated win，`Phase 9B / wave_role` 已完成但 formal ruling 为 `retain_sidecar_only`；当前下一张 active 子卡已切到 `17.4 / isolated reversal_state validation`，而 `17.5 / 17.6 / 17.7` 已先以 planned 形式开出，避免后续把第四战场又做成临时起意的一锅炖。
 
 其中：
 
@@ -251,11 +259,15 @@
 9. `Phase 9A = Completed`
 10. `Phase 9B / duration_percentile = Completed (promote_duration_percentile_negative_filter)`
 11. `Phase 9B / wave_role = Completed (retain_sidecar_only)`
-12. rollback target 保持：
+12. `Phase 9B / reversal_state = Active`
+13. `Phase 9B / context_trend_direction_before = Planned`
+14. `Phase 9C = Planned`
+15. `Phase 9D = Planned`
+16. rollback target 保持：
    - `legacy_bof_baseline`
-13. 当前 active mainline package：
+17. 当前 active mainline package：
    - `Phase 9 / Gene mainline integration package`
-14. 最近收官 record：
+18. 最近收官 record：
    - `docs/spec/v0.01-plus/records/v0.01-plus-phase-9b-wave-role-validation-20260318.md`
 
 后续顺序固定为：
@@ -265,10 +277,13 @@
 3. 当前 active package 继续保持在 `Phase 9`
 4. `duration_percentile >= 95` 目前仍是唯一 isolated round 的正式 winner
 5. `wave_role` 已完成 isolated validation，但当前 ruling 是 `retain_sidecar_only`
-6. `Phase 9C` combination candidate 仍未打开
-7. 正式默认路径继续保持：
+6. `current_wave_age_band` 继续保持 `shadow-only`，当前不单独开卡
+7. `17.4` 是当前下一张 active 卡
+8. `17.5 / 17.6 / 17.7` 已开卡但仍处于 `Planned`
+9. `Phase 9C` combination candidate 仍未打开
+10. 正式默认路径继续保持：
    - `legacy_bof_baseline`
-8. 若继续推进 `Gene`，必须新开下一张单变量卡与新证据链，不能偷开组合
+11. 若继续推进 `Gene`，必须按已开卡顺序走，不能跳卡、不能偷开组合
 
 也就是：
 

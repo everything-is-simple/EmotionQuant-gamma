@@ -55,6 +55,10 @@ Mainline design authority remains in `blueprint/`.
 | Phase 9B wave-role evidence | `blueprint/03-execution/evidence/phase-9b-wave-role-validation-evidence-20260318.md` | First-battlefield evidence for the isolated `wave_role == COUNTERTREND` runtime rule |
 | Phase 9B wave-role execution record | `blueprint/03-execution/records/phase-9b-wave-role-validation-record-20260318.md` | First-battlefield conclusion for the isolated `wave_role` round |
 | Phase 9B wave-role record | `docs/spec/v0.01-plus/records/v0.01-plus-phase-9b-wave-role-validation-20260318.md` | Formal ruling for the isolated `wave_role` round |
+| Phase 9B reversal-state card | `blueprint/03-execution/17.4-phase-9b-isolated-reversal-state-validation-card-20260318.md` | 下一张 active 单变量卡：`reversal_state` 作为 `exit-preparation only` |
+| Phase 9B parent-context card | `blueprint/03-execution/17.5-phase-9b-isolated-context-trend-direction-before-validation-card-20260318.md` | 后续单变量卡：`context_trend_direction_before` 作为 parent-context guard |
+| Phase 9C combination card | `blueprint/03-execution/17.6-phase-9c-gene-combination-candidate-card-20260318.md` | 仅在至少两个 isolated winner 成立后才允许打开 |
+| Phase 9D package ruling card | `blueprint/03-execution/17.7-phase-9d-gene-package-promotion-ruling-card-20260318.md` | Phase 9 包级 promotion / retention / defer closeout |
 | Current operating runbook | `docs/reference/operations/current-mainline-operating-runbook-20260317.md` | Truthful operating chain and rollback rules |
 
 ---
