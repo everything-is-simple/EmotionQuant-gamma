@@ -1,24 +1,33 @@
 # GX3 Evidence: trend-level / context 第一阶段落盘证据
 
-**状态**: `Active`  
-**日期**: `2026-03-17`
+**状态**: `Completed`
+**日期**: `2026-03-19`
 
 ---
 
-## 1. 证据来源
+## 1. 证据性质
 
-1. 配套 record：`records/14-phase-gx3-trend-level-context-refactor-record-20260317.md`
-2. 本文件只整理 record 中已固化的第一阶段落盘结果
-3. 这不是 `GX3` 全卡完工证据，只是第一阶段“语义诚实化”证据
+这份 evidence 现在仍然只服务一个用途：
+
+`证明 GX3 第一阶段“语义诚实化”已经真的落过地。`
+
+它不是 `GX3` 全卡独立完工 evidence。  
+`GX3` 的正式收口方式不是伪造一份“全卡完工证据”，而是：
+
+1. 保留这份 `stage evidence`
+2. 配 formal handoff record
+3. 由 `GX8` 承接并完成剩余 hierarchy closeout
 
 ---
 
-## 2. 第一阶段已落盘的字段证据
+## 2. 第一阶段已落盘证据
+
+这份 stage evidence 支持以下事实：
 
 1. `trend_level` 已正式写入：
    - `l3_gene_wave`
    - `l3_stock_gene`
-2. 当前正式写值为：
+2. 当时真实写值为：
    - `INTERMEDIATE`
 3. `major_trend` 已被降格为：
    - `INTERMEDIATE_MAJOR_TREND_PROXY`
@@ -30,37 +39,39 @@
    - `current_context_trend_direction`
    - `wave_role_basis`
    - `current_wave_role_basis`
-5. `schema version = v11`
+5. 当时 schema 版本为：
+   - `v11`
 
 ---
 
 ## 3. 阶段边界证据
 
-record 明确保留未处理项：
+这份 stage evidence 同时证明：
 
-1. `2B` 的层级化时间窗
-2. `1-2-3` 的三条件 detector
-3. `trendline` 对象化
-4. `SHORT / LONG` 两层趋势的正式构造
-5. `G4 / G5 / G6` 的统计层重跑
+1. `GX3` 当时没有完成 `SHORT / LONG` 两层正式构造
+2. 没有完成 `2B` 层级窗口
+3. 没有完成 `1-2-3` 三条件 detector
+4. 没有完成 `G4 / G5 / G6` 后续重审
+
+也就是说，它从来没有声称自己已经完成整张 hierarchy 卡。
 
 ---
 
-## 4. 验证说明
+## 4. 与 GX8 的关系
 
-record 已明确记载：
+现在仓库的正式口径应读作：
 
-1. 配套单测已覆盖新字段存在性
-2. 配套单测已覆盖当前 proxy 语义
-
-当前 record 没有保留独立命令行转录，因此本 evidence 只保留阶段性字段与 schema 证据，不冒充 closeout 级验证证据。
+1. `GX3 evidence` 证明第一阶段确实做过
+2. [`../records/14-phase-gx3-trend-level-context-refactor-record-20260317.md`](../records/14-phase-gx3-trend-level-context-refactor-record-20260317.md) 负责 formal handoff
+3. [`../19-phase-gx8-three-level-trend-hierarchy-card-20260318.md`](../19-phase-gx8-three-level-trend-hierarchy-card-20260318.md) 与 [`../records/19-phase-gx8-three-level-trend-hierarchy-record-20260319.md`](../records/19-phase-gx8-three-level-trend-hierarchy-record-20260319.md) 负责最终 hierarchy closeout
 
 ---
 
 ## 5. Evidence verdict
 
-当前证据支持：
+当前最诚实的 evidence verdict 是：
 
-1. `GX3` 第一阶段已经把 `trend_level + context proxy` 从治理定义推进到正式 schema 与落盘字段
-2. 当前代码已经不再掩盖自己只有 `INTERMEDIATE` 单层 proxy 的事实
-3. `GX3` 仍属于进行中 targeted hypothesis，不应误写成最终三层趋势已完成
+1. `GX3` 第一阶段确实完成过
+2. 它留下的是 `stage evidence`，不是全卡完工 evidence
+3. `GX3` 现在可以通过 handoff 收口
+4. 真正的三层 hierarchy 完成证据应看 `GX8`

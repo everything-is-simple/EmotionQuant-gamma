@@ -148,7 +148,7 @@ That means:
 1. `GX3 / trend-level context refactor`
    - `post-closeout targeted hypothesis`
    - `src/selector/gene.py`
-   - `Active`
+   - `Completed`
    - 配套 record：`03-execution/records/14-phase-gx3-trend-level-context-refactor-record-20260317.md`
 2. `GX4 / mainstream-countertrend semantics refactor`
    - `post-closeout targeted hypothesis`
@@ -177,7 +177,7 @@ That means:
    - 目标：把 `trend_level` 从单层 `INTERMEDIATE` proxy 推到真正三层趋势并存语义
    - 配套 record：`03-execution/records/19-phase-gx8-three-level-trend-hierarchy-record-20260319.md`
 
-当前 `GX4 ~ GX8` 已全部完成。  
+当前 `GX3 ~ GX8` 已全部完成。  
 当前第四战场已不再有真正未执行的 hierarchy blocker。  
 定义整改后的正式收口口径是：
 

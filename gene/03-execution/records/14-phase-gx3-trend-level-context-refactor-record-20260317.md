@@ -1,101 +1,88 @@
 # GX3 Record: trend-level context refactor
-**状态**: `Active`  
-**日期**: `2026-03-17`
+**状态**: `Completed`
+**日期**: `2026-03-19`
 
 ---
 
 ## 1. 记录目的
 
-这份 record 用来正式记录 `GX3 / trend-level context refactor` 第一阶段已经落下了什么，哪些问题还没有被本卡处理。
+这份 record 现在不再是“阶段进行中说明”，而是正式记录：
 
-它只回答：
-
-1. `trend_level + context proxy` 目前已经怎样进入 `gene.py`
-2. schema 和单测已经补到了哪一步
-3. 当前仍然保留了哪些定义缺口
+1. `GX3` 第一阶段到底完成了什么
+2. 它没有完成的部分后来由谁接手
+3. 为什么它现在可以用 handoff 方式收口
 
 ---
 
-## 2. 本阶段已完成的内容
+## 2. `GX3` 第一阶段的正式交付
 
-### 2.1 `trend_level` 已正式进入落盘字段
+`GX3` 第一阶段已经真实完成：
 
-当前第一阶段已经把 `trend_level` 正式写入：
+1. `trend_level` 正式进入 `l3_gene_wave / l3_stock_gene`
+2. `context_trend_level / context_trend_direction_*` 等字段正式落盘
+3. `wave_role_basis / current_wave_role_basis` 被写成诚实的 `intermediate proxy`
+4. schema 与单测已同步
 
-1. `l3_gene_wave`
-2. `l3_stock_gene`
+这一步的真实意义是：
 
-并且显式写成：
-
-`INTERMEDIATE`
-
-这一步的意义不是宣称三层趋势已经做完，而是先承认“趋势有层级”，并把当前代码的真实口径诚实写出来。
-
-### 2.2 `major_trend` 已被降格为 intermediate proxy
-
-当前代码不再把单层 `major_trend` 伪装成无层级最终定义，而是正式承认为：
-
-`INTERMEDIATE_MAJOR_TREND_PROXY`
-
-### 2.3 context 相关字段已补齐
-
-当前新增或正式落盘的上下文字段包括：
-
-1. `context_trend_level`
-2. `context_trend_direction_before`
-3. `context_trend_direction_after`
-4. `current_context_trend_level`
-5. `current_context_trend_direction`
-6. `wave_role_basis`
-7. `current_wave_role_basis`
-
-### 2.4 schema 与单测已同步
-
-当前 schema 已升到：
-
-`v11`
-
-配套单测已覆盖新字段存在性和当前 proxy 语义。
+`不再掩盖当前实现只有单层 proxy 的事实。`
 
 ---
 
-## 3. 本阶段明确没有处理的内容
+## 3. `GX3` 当年刻意保留的缺口
 
-本卡第一阶段刻意没有碰以下问题：
+`GX3` 当时明确没有完成：
 
-1. `2B` 的层级化时间窗
-2. `1-2-3` 的三条件 detector
-3. `trendline` 对象化
-4. `SHORT / LONG` 两个趋势层级的正式构造
-5. `G4 / G5 / G6` 统计口径重跑
+1. `SHORT / INTERMEDIATE / LONG` 三层趋势并存
+2. `mainstream / countertrend` 的真正父层参照
+3. `2B` 的层级化时间窗
+4. `1-2-3` 的三条件 detector
+5. `G4 / G5 / G6` 的后续重审
 
----
-
-## 4. 本阶段结论
-
-`GX3` 第一阶段的正式结论不是“第四战场趋势定义已完成”，而是：
-
-1. 当前代码已经不再掩盖自己的层级缺口
-2. `trend_level` 已从治理定义进入正式 schema 与实现
-3. `mainstream / countertrend` 目前仍只是 `intermediate proxy`
-
-一句话：
-
-`这一步完成的是语义诚实化，不是最终语义完工。`
+这些不是漏做，而是当时就刻意留给后续 targeted hypothesis 的剩余债。
 
 ---
 
-## 5. 后续直接承接项
+## 4. 现在为什么可以正式收口
 
-`GX3` 之后最直接的后续项仍然固定为：
+现在 `GX3` 可以从 `Active` 改成 `Completed`，原因是：
 
-1. `trend_level + mainstream / countertrend` 深化
-2. `2B window semantics refactor`
-3. `1-2-3 three-condition refactor`
+1. 它承诺的“第一阶段语义诚实化”已经完成
+2. 之后的 `GX4 / GX5 / GX6 / GX7 / GX8` 已经把它保留下来的定义债和统计债逐步接走
+3. 尤其是 [`../19-phase-gx8-three-level-trend-hierarchy-card-20260318.md`](../19-phase-gx8-three-level-trend-hierarchy-card-20260318.md) 与 [`19-phase-gx8-three-level-trend-hierarchy-record-20260319.md`](19-phase-gx8-three-level-trend-hierarchy-record-20260319.md) 已把“真正的三层 hierarchy”这笔债正式做完
+
+所以当前最诚实的裁决不是“`GX3` 自己完成了三层趋势”，而是：
+
+`GX3 已完成第一阶段并通过 formal handoff 方式收口；剩余 hierarchy scope 已由 GX8 完成。`
 
 ---
 
-## 6. 当前阶段文档入口
+## 5. Evidence 口径
 
-1. 配套 card：[`../14-phase-gx3-trend-level-context-refactor-card-20260317.md`](../14-phase-gx3-trend-level-context-refactor-card-20260317.md)
-2. 第一阶段 evidence：[`../evidence/14-phase-gx3-trend-level-context-refactor-evidence-20260317.md`](../evidence/14-phase-gx3-trend-level-context-refactor-evidence-20260317.md)
+[`../evidence/14-phase-gx3-trend-level-context-refactor-evidence-20260317.md`](../evidence/14-phase-gx3-trend-level-context-refactor-evidence-20260317.md)
+
+现在仍然保留为：
+
+`stage evidence`
+
+它不是全卡完工 evidence，也不需要被伪装成全卡完工 evidence。  
+`GX3` 的关闭方式是：
+
+`stage evidence + formal handoff + GX8 closeout`
+
+---
+
+## 6. 正式结论
+
+`GX3` 的正式结论现在写定为：
+
+1. 第一阶段任务已完成
+2. 不需要重做实现
+3. 不应继续保持 `Active`
+4. 其剩余 hierarchy 定义债已由 `GX8` 接力并完成
+
+---
+
+## 7. 一句话收口
+
+`GX3` 完成的是“把 trend_level / context proxy 正式写进实现并说诚实”，不是“独立完成三层 hierarchy”；因此它现在应作为已完成的第一阶段 handoff 卡收口。`

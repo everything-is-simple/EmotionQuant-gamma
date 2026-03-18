@@ -10,8 +10,8 @@
 
 1. 原始主线 `G0 ~ G8` 已全部完成
 2. 条件卡 `GX1 / GX2` 继续保持 `Conditional only`
-3. `GX3 ~ GX8` 中，`GX4 ~ GX8` 已完成
-4. `GX3` 仍保留“第一阶段已完成、formal handoff 未单独收口”的状态
+3. `GX3 ~ GX8` 已全部完成
+4. `GX3` 已按“第一阶段完成 + formal handoff to GX8”方式收口
 
 一句话：
 
@@ -48,7 +48,7 @@
 
 | Phase | 状态 | Card | Record | Evidence | 说明 |
 |---|---|---|---|---|---|
-| `GX3` | `Active` | [`card`](14-phase-gx3-trend-level-context-refactor-card-20260317.md) | [`record`](records/14-phase-gx3-trend-level-context-refactor-record-20260317.md) | [`stage evidence`](evidence/14-phase-gx3-trend-level-context-refactor-evidence-20260317.md) | 第一阶段已完成，剩余 hierarchy 债已由 `GX8` 实做解决 |
+| `GX3` | `Completed` | [`card`](14-phase-gx3-trend-level-context-refactor-card-20260317.md) | [`record`](records/14-phase-gx3-trend-level-context-refactor-record-20260317.md) | [`stage evidence`](evidence/14-phase-gx3-trend-level-context-refactor-evidence-20260317.md) | 第一阶段已完成，并已通过 formal handoff 把剩余 hierarchy 债移交 `GX8` |
 | `GX4` | `Completed` | [`card`](15-phase-gx4-mainstream-countertrend-semantics-card-20260317.md) | [`record`](records/15-phase-gx4-mainstream-countertrend-semantics-record-20260318.md) | [`evidence`](evidence/15-phase-gx4-mainstream-countertrend-semantics-evidence-20260318.md) | 主流/逆流语义修正 |
 | `GX5` | `Completed` | [`card`](16-phase-gx5-two-b-window-semantics-refactor-card-20260317.md) | [`record`](records/16-phase-gx5-two-b-window-semantics-record-20260318.md) | [`evidence`](evidence/16-phase-gx5-two-b-window-semantics-evidence-20260318.md) | 2B 时间窗层级化 |
 | `GX6` | `Completed` | [`card`](17-phase-gx6-123-three-condition-refactor-card-20260317.md) | [`record`](records/17-phase-gx6-123-three-condition-refactor-record-20260318.md) | [`evidence`](evidence/17-phase-gx6-123-three-condition-refactor-evidence-20260318.md) | 1-2-3 三条件化 |
@@ -61,4 +61,4 @@
 
 1. `GX8` 已完成，因此第四战场不再有对 `Phase 9C / 9D` 的 hierarchy blocker
 2. 第一战场下一步应进入 [`../../blueprint/03-execution/17.6-phase-9c-gene-combination-candidate-card-20260318.md`](../../blueprint/03-execution/17.6-phase-9c-gene-combination-candidate-card-20260318.md)
-3. `GX3` 是否单独再补 formal handoff，可作为后续治理清账项，但不再阻塞主线推进
+3. `GX3` 已完成治理收口，不再作为后续清账待办挂起
