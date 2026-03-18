@@ -124,7 +124,8 @@ This sub-phase must run isolated validation rounds such as:
 Current opened round:
 
 1. [`17.2-phase-9b-isolated-duration-percentile-validation-card-20260318.md`](./17.2-phase-9b-isolated-duration-percentile-validation-card-20260318.md)
-2. first active candidate = `duration_percentile as negative filter, alone`
+2. completed first isolated win = `duration_percentile as negative filter, alone`
+3. current isolated ruling = `promote_duration_percentile_negative_filter`
 
 ### 7.3 Phase 9C
 
