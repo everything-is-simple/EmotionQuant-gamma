@@ -1,37 +1,48 @@
-# Phase 8 / data contract residual audit
-**状态**: `Active`  
-**日期**: `2026-03-18`  
-**类型**: `mainline audit package`
+# Phase 8 Data Contract Residual Audit Card
 
----
+- Status: `Active`
+- Date: `2026-03-18`
+- Type: `mainline audit package`
+- Scope: `post-Phase-7 residual contract cleanup`
 
-## 1. 目标
+## 1. Goal
 
-这张卡只回答一个问题：
+This card answers one question:
 
-`在 Phase 7 已经把数据底座切成 TDX local-first 之后，当前主线代码、测试、运行手册与下游战场里，还残留了多少旧数据合同假设。`
+`after the Phase 7 local-first data cutover, which old data-contract assumptions still remain in code, tests, docs, and downstream battlefield logic?`
 
----
+## 2. Why This Card Exists
 
-## 2. 为什么现在开这张卡
+`Phase 7` already completed the major direction shift:
 
-`Phase 7` 已经完成：
+1. `vipdoc + hq_cache + mootdx` became the primary local data base
+2. `BaoStock` became light incremental fallback
+3. `TuShare` became emergency fallback
+4. `industry_member / l1_industry_member` became the active industry contract
+5. `up_limit / down_limit` became locally-derived runtime facts
 
-1. `vipdoc + hq_cache + mootdx` 成为主底座
-2. `BaoStock` 降为 light incremental fallback
-3. `TuShare` 降为 emergency fallback
-4. `industry_member / l1_industry_member` 已成为活跃行业合同
-5. `up_limit / down_limit` 已改为本地规则推导
+The remaining risk is no longer `data layer not built`.
+The remaining risk is:
 
-当前最大的系统性隐患，已经从“数据层没打通”变成了：
+`old contract assumptions still scattered across code, tests, docs, and battlefield interfaces`
 
-`旧合同假设仍可能散落在 src/data -> selector -> broker -> backtest -> docs 的接缝处。`
+## 3. Validation Role
 
----
+`Phase 8` is the floor-cleaning audit that must happen before later runtime promotion work.
 
-## 3. 范围
+It freezes:
 
-本卡允许修改：
+1. `validated baseline` = `legacy_bof_baseline + FIXED_NOTIONAL_CONTROL + FULL_EXIT_CONTROL + Gene sidecar only`
+2. `single variable under test` = `residual data-contract assumptions only`
+3. `forbidden variables` = any new entry rule, sizing rule, exit rule, Gene runtime rule, or research promotion
+
+This card is complete only when later packages can safely say:
+
+`the baseline data contract is known, truthful, and stable enough for isolated runtime experiments`
+
+## 4. Scope
+
+This card may modify:
 
 1. [`../../src/data`](../../src/data)
 2. [`../../src/selector`](../../src/selector)
@@ -41,42 +52,37 @@
 6. [`../../docs/reference`](../../docs/reference)
 7. [`../../docs/spec/v0.01-plus`](../../docs/spec/v0.01-plus)
 
-本卡明确不做：
+This card explicitly does not:
 
-1. 不重开新的数据源研究
-2. 不再改写 `Phase 7` 的主底座方向
-3. 不借机重开 `IRS / MSS` 主线
-4. 不把任何 sidecar 研究结果偷升格成 runtime gate
+1. reopen new provider research
+2. change the Phase 7 local-first direction
+3. reactivate legacy `IRS / MSS`
+4. promote any sidecar research result into runtime
 
----
+## 5. Audit Targets
 
-## 4. 审计对象
+This card must explicitly check at least:
 
-本卡至少要清点以下残留假设：
+1. assumptions that industry semantics still strictly equal `SW2021`
+2. assumptions that `l1_sw_industry_member` is still the active runtime contract
+3. assumptions that price limits still come from an online fact table
+4. assumptions that `raw_daily_basic` is still a mainline hard dependency
+5. assumptions that online sources still outrank local sources
+6. docs that still describe an old contract while code already runs a new contract
 
-1. 仍假设行业语义严格等同 `SW2021`
-2. 仍假设 `l1_sw_industry_member` 是活跃合同
-3. 仍假设涨跌停来自在线事实表
-4. 仍假设 `raw_daily_basic` 是主链刚需
-5. 仍假设在线源优先于本地源
-6. 文档仍写旧口径但代码已切新口径
+## 6. Deliverables
 
----
+This card is complete only when it leaves:
 
-## 5. 交付物
+1. a formal residual-audit record
+2. a residual-assumption checklist
+3. a remediation checklist, if any residuals remain
+4. updated truthful operating wording
+5. an explicit statement of which later packages are now unblocked
 
-本卡完成时应至少交付：
+## 7. Acceptance Criteria
 
-1. 一份正式残留审计 record
-2. 一份残留假设清单
-3. 一份必要修订清单
-4. 更新后的主线入口与运行口径说明
-
----
-
-## 6. 验收标准
-
-1. 当前主线活跃合同与运行手册一致
-2. 旧合同假设只允许留在迁移兼容层或历史 records
-3. 不再出现“代码已切新合同，文档仍声称旧合同是活跃口径”的接缝
-4. `preflight` 通过
+1. the active runtime contract and the active runbook agree
+2. old contract assumptions remain only in migration compatibility or historical records
+3. no active doc still presents a retired contract as the live truth
+4. `preflight` passes

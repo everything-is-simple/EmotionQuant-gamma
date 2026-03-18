@@ -1,47 +1,58 @@
 # Research-Line Promotion Discipline Freeze
 
-## 定位
+## Position
 
-这份文件只回答一件事：
+This file answers one question:
 
-`在第一战场与第四战场还有系统性隐患尚未彻底收口时，第二战场和第三战场当前允许做什么，不允许做什么。`
-
----
-
-## 当前冻结结论
-
-截至 `2026-03-18`：
-
-1. [`normandy/`](../../../../normandy/README.md) 不再继续新开研究口子
-2. [`positioning/`](../../../../positioning/README.md) 不再继续新开研究口子
-3. 第二、第三战场当前只允许做 `promotion discipline`
+`while the first battlefield and the fourth battlefield are still closing structural risks, what are the second battlefield and the third battlefield currently allowed to do, and what are they forbidden to do?`
 
 ---
 
-## promotion discipline 允许做
+## Frozen Conclusion
 
-1. 候选与 retained/watch 边界清点
-2. migration boundary 修订
-3. governance wording 修订
-4. no-fake / no-promotion 规则补强
-5. 对当前默认运行口径的诚实收口
+As of `2026-03-18`:
 
----
-
-## promotion discipline 不允许做
-
-1. 不新开 alpha 假设
-2. 不新开 sizing 家族
-3. 不新开 partial-exit 机制实验
-4. 不把 retained / watch 结果偷升格成 runtime 默认
-5. 不绕开 `blueprint/` 直接宣布主线切换
+1. [`normandy/`](../../../../normandy/README.md) may not open new broad research lines.
+2. [`positioning/`](../../../../positioning/README.md) may not open new broad research lines.
+3. The second battlefield and the third battlefield are currently limited to `promotion discipline only`.
+4. All future reopenings must obey [`single-variable-validation-discipline-freeze-20260318.md`](./single-variable-validation-discipline-freeze-20260318.md).
 
 ---
 
-## 触发解除条件
+## Promotion Discipline Allows
 
-只有在以下前提都满足时，第二、第三战场才允许重新打开新的 targeted hypothesis：
+1. candidate inventory cleanup
+2. retained/watch boundary cleanup
+3. migration-boundary clarification
+4. governance wording cleanup
+5. no-fake and no-promotion rule reinforcement
+6. truthful documentation of what is already promoted
 
-1. 第一战场 `Phase 8 / data contract residual audit` 完成
-2. 第四战场 `GX8 / three-level trend hierarchy refactor` 完成
-3. 有新的正式 package 或 card 明确写定范围
+---
+
+## Promotion Discipline Forbids
+
+1. opening a new alpha family
+2. opening a new sizing family
+3. opening a new partial-exit family
+4. verbally promoting retained/watch results into runtime
+5. bypassing `blueprint/` and declaring runtime cutover without a formal package
+6. mixing multiple primary variables into one validation round
+
+---
+
+## Reopen Conditions
+
+The second battlefield or the third battlefield may reopen a new targeted hypothesis only when all of the following are true:
+
+1. [`16-phase-8-data-contract-residual-audit-card-20260318.md`](../../../../blueprint/03-execution/16-phase-8-data-contract-residual-audit-card-20260318.md) is completed
+2. [`19-phase-gx8-three-level-trend-hierarchy-card-20260318.md`](../../../../gene/03-execution/19-phase-gx8-three-level-trend-hierarchy-card-20260318.md) is completed
+3. a new formal package/card defines the exact narrow scope
+4. the new package obeys the single-variable validation discipline
+
+---
+
+## One-Line Conclusion
+
+The second battlefield and the third battlefield are not closed forever.
+They are frozen against uncontrolled expansion until the first battlefield and the fourth battlefield finish their remaining structural work.
