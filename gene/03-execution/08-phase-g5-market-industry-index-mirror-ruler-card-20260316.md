@@ -88,3 +88,21 @@
 
 1. 配套 record：[`records/08-phase-g5-market-industry-index-mirror-ruler-record-20260316.md`](records/08-phase-g5-market-industry-index-mirror-ruler-record-20260316.md)
 2. 配套 evidence：[`evidence/08-phase-g5-market-industry-index-mirror-ruler-evidence-20260316.md`](evidence/08-phase-g5-market-industry-index-mirror-ruler-evidence-20260316.md)
+
+---
+
+## 9. Post-Remediation Governance Note
+
+本卡的 `Completed` 仍然成立，但它只代表：
+
+`第一轮 mirror round 已完成`
+
+`GX12` 已正式裁定这张卡对应的统计 evidence 必须在整改后 surface 上重跑。  
+因此当前应同时成立两句话：
+
+1. `G5 historical round = Completed`
+2. `G5 post-remediation rerun = reopened under GX13`
+
+对应重跑入口：
+
+[`24-phase-gx13-post-remediation-g4-g5-g6-rerun-card-20260319.md`](./24-phase-gx13-post-remediation-g4-g5-g6-rerun-card-20260319.md)

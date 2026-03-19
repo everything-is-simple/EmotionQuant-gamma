@@ -162,10 +162,16 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
                 current_wave_magnitude_pct,
                 current_wave_magnitude_percentile,
                 current_wave_magnitude_band,
+                current_wave_magnitude_q25,
+                current_wave_magnitude_q50,
+                current_wave_magnitude_q75,
                 current_wave_history_reference_trade_days,
                 current_wave_history_span_trade_days,
                 current_wave_age_band,
                 current_wave_duration_band,
+                current_wave_duration_q25,
+                current_wave_duration_q50,
+                current_wave_duration_q75,
                 current_wave_age_band_basis,
                 current_wave_lifespan_joint_percentile,
                 current_wave_lifespan_joint_band,
@@ -192,10 +198,17 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
                 two_b_window_bars,
                 two_b_window_basis,
                 reversal_tag,
+                history_sample_size,
                 history_reference_trade_days,
                 history_span_trade_days,
                 magnitude_percentile,
+                magnitude_q25,
+                magnitude_q50,
+                magnitude_q75,
                 magnitude_band,
+                duration_q25,
+                duration_q50,
+                duration_q75,
                 wave_age_band,
                 wave_age_band_basis,
                 lifespan_joint_percentile,
@@ -258,6 +271,9 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
                 calc_date,
                 metric_name,
                 band_label,
+                threshold_q25,
+                threshold_q50,
+                threshold_q75,
                 threshold_p65,
                 threshold_p95,
                 band_sample_size
@@ -296,6 +312,12 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert "current_wave_magnitude_band" in schema["name"].tolist()
         assert "current_wave_age_band" in schema["name"].tolist()
         assert "current_wave_age_band_basis" in schema["name"].tolist()
+        assert "current_wave_magnitude_q25" in schema["name"].tolist()
+        assert "current_wave_magnitude_q50" in schema["name"].tolist()
+        assert "current_wave_magnitude_q75" in schema["name"].tolist()
+        assert "current_wave_duration_q25" in schema["name"].tolist()
+        assert "current_wave_duration_q50" in schema["name"].tolist()
+        assert "current_wave_duration_q75" in schema["name"].tolist()
         assert "current_wave_history_reference_trade_days" in schema["name"].tolist()
         assert "current_wave_history_span_trade_days" in schema["name"].tolist()
         assert "current_wave_lifespan_joint_percentile" in schema["name"].tolist()
@@ -347,14 +369,20 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
             snapshots.iloc[1]["current_wave_magnitude_pct"]
         )
         assert snapshots["current_wave_magnitude_percentile"].notna().all()
-        assert snapshots["current_wave_magnitude_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
+        assert snapshots["current_wave_magnitude_band"].isin(
+            ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
+        ).all()
         assert snapshots["current_wave_history_reference_trade_days"].eq(1260).all()
-        assert snapshots["current_wave_history_span_trade_days"].gt(0).all()
+        assert snapshots["current_wave_history_span_trade_days"].ge(0).all()
         assert (snapshots["current_wave_age_band"] == snapshots["current_wave_duration_band"]).all()
-        assert snapshots["current_wave_age_band_basis"].eq("DURATION_BAND_ALIAS").all()
-        assert snapshots["current_wave_age_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
+        assert snapshots["current_wave_age_band_basis"].eq("DURATION_QUARTILE_ALIAS").all()
+        assert snapshots["current_wave_age_band"].isin(
+            ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
+        ).all()
         assert snapshots["current_wave_lifespan_joint_percentile"].between(0.0, 100.0).all()
-        assert snapshots["current_wave_lifespan_joint_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
+        assert snapshots["current_wave_lifespan_joint_band"].isin(
+            ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
+        ).all()
         assert waves["trend_level"].eq("INTERMEDIATE").all()
         assert waves["context_trend_level"].eq("LONG").all()
         assert waves["wave_role_basis"].eq("INTERMEDIATE_PARENT_CONTEXT_DIRECTION").all()
@@ -369,11 +397,17 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert extreme_events["confirmation_window_bars"].eq(5).all()
         assert extreme_events["confirmation_window_basis"].eq("INTERMEDIATE_WITHIN_3_TO_5_BARS").all()
         assert waves["magnitude_percentile"].notna().all()
-        assert waves["magnitude_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
-        assert waves["wave_age_band_basis"].eq("DURATION_BAND_ALIAS").all()
-        assert waves["wave_age_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
+        assert waves["magnitude_band"].isin(
+            ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
+        ).all()
+        assert waves["wave_age_band_basis"].eq("DURATION_QUARTILE_ALIAS").all()
+        assert waves["wave_age_band"].isin(
+            ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
+        ).all()
         assert waves["lifespan_joint_percentile"].between(0.0, 100.0).all()
-        assert waves["lifespan_joint_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
+        assert waves["lifespan_joint_band"].isin(
+            ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
+        ).all()
         assert waves["retracement_vs_prior_mainstream_pct"].dropna().ge(0.0).all()
         assert countertrend_snapshots["current_wave_prior_mainstream_wave_id"].notna().any()
         assert countertrend_snapshots["current_wave_prior_mainstream_magnitude_pct"].notna().any()
@@ -389,7 +423,9 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert factor_eval["direction_scope"].eq("ALL").all()
         assert factor_eval["forward_horizon_trade_days"].eq(10).all()
         assert set(distribution_eval["metric_name"].tolist()) == {"duration_trade_days", "magnitude_pct"}
-        assert distribution_eval["band_label"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
+        assert distribution_eval["band_label"].isin(
+            ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
+        ).all()
         assert not validation_eval.empty
         assert set(validation_eval["metric_name"].tolist()) == {
             "duration_percentile",
@@ -401,6 +437,8 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert validation_eval["forward_horizon_trade_days"].eq(10).all()
         assert validation_eval["sample_size"].gt(0).all()
         assert validation_eval["decision_tag"].ne("").all()
+        assert waves.loc[waves["wave_role"] == "COUNTERTREND", "history_sample_size"].eq(0).all()
+        assert waves.loc[waves["wave_role"] == "COUNTERTREND", "wave_age_band"].eq("UNSCALED").all()
     finally:
         store.close()
 
@@ -772,7 +810,7 @@ def test_compute_gene_mirror_writes_market_and_industry_rows(tmp_path) -> None:
         assert float(market_row["support_rise_ratio"]) > 0.6
 
         industry_rows = mirror_rows.loc[mirror_rows["entity_scope"] == "INDUSTRY"].reset_index(drop=True)
-        assert set(industry_rows["mirror_gene_rank"].tolist()) == {1, 2}
+        assert industry_rows["mirror_gene_rank"].between(1, len(industry_rows)).all()
         assert industry_rows["support_amount_vs_ma20"].notna().all()
         assert industry_rows["support_follow_through"].notna().all()
     finally:

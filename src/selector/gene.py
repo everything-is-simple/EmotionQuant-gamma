@@ -38,12 +38,13 @@ FACTOR_EVAL_BIN_METHOD = "FIXED_PERCENTILE_20"
 FACTOR_EVAL_BIN_EDGES = [0.0, 20.0, 40.0, 60.0, 80.0, 100.000001]
 FACTOR_EVAL_BIN_LABELS = ["P0_20", "P20_40", "P40_60", "P60_80", "P80_100"]
 G2_DISTRIBUTION_SAMPLE_SCOPE = "SELF_HISTORY_DISTRIBUTION"
-G2_DISTRIBUTION_BAND_METHOD = "P65_P95"
-G2_BAND_NORMAL = "NORMAL"
-G2_BAND_STRONG = "STRONG"
-G2_BAND_EXTREME = "EXTREME"
+G2_DISTRIBUTION_BAND_METHOD = "QUARTILE_CONTINUOUS"
+G2_BAND_FIRST_QUARTER = "FIRST_QUARTER"
+G2_BAND_SECOND_QUARTER = "SECOND_QUARTER"
+G2_BAND_THIRD_QUARTER = "THIRD_QUARTER"
+G2_BAND_FOURTH_QUARTER = "FOURTH_QUARTER"
 G2_BAND_UNSCALED = "UNSCALED"
-AGE_BAND_BASIS_DURATION_ALIAS = "DURATION_BAND_ALIAS"
+AGE_BAND_BASIS_DURATION_ALIAS = "DURATION_QUARTILE_ALIAS"
 TREND_LEVEL_SHORT = "SHORT"
 TREND_LEVEL_INTERMEDIATE = "INTERMEDIATE"
 TREND_LEVEL_LONG = "LONG"
@@ -483,13 +484,30 @@ def _relative_strength_stats(history: list[float], value: float) -> dict[str, fl
 
 def _distribution_thresholds(history: list[float]) -> dict[str, float | int]:
     if not history:
-        return {"sample_size": 0, "p65": np.nan, "p95": np.nan}
+        return {
+            "sample_size": 0,
+            "q25": np.nan,
+            "q50": np.nan,
+            "q75": np.nan,
+            "p65": np.nan,
+            "p95": np.nan,
+        }
     arr = np.asarray(history, dtype=float)
     arr = arr[np.isfinite(arr)]
     if len(arr) == 0:
-        return {"sample_size": 0, "p65": np.nan, "p95": np.nan}
+        return {
+            "sample_size": 0,
+            "q25": np.nan,
+            "q50": np.nan,
+            "q75": np.nan,
+            "p65": np.nan,
+            "p95": np.nan,
+        }
     return {
         "sample_size": int(len(arr)),
+        "q25": float(np.percentile(arr, 25)),
+        "q50": float(np.percentile(arr, 50)),
+        "q75": float(np.percentile(arr, 75)),
         "p65": float(np.percentile(arr, 65)),
         "p95": float(np.percentile(arr, 95)),
     }
@@ -506,25 +524,30 @@ def _optional_float(value: float | int | None) -> float | None:
 
 def _distribution_band(value: float, thresholds: dict[str, float | int]) -> str:
     sample_size = int(thresholds["sample_size"])
-    p65 = _optional_float(thresholds["p65"])
-    p95 = _optional_float(thresholds["p95"])
-    if sample_size <= 0 or p65 is None or p95 is None or not np.isfinite(value):
+    q25 = _optional_float(thresholds["q25"])
+    q50 = _optional_float(thresholds["q50"])
+    q75 = _optional_float(thresholds["q75"])
+    if sample_size <= 0 or q25 is None or q50 is None or q75 is None or not np.isfinite(value):
         return G2_BAND_UNSCALED
-    if value < p65:
-        return G2_BAND_NORMAL
-    if value <= p95:
-        return G2_BAND_STRONG
-    return G2_BAND_EXTREME
+    if value <= q25:
+        return G2_BAND_FIRST_QUARTER
+    if value <= q50:
+        return G2_BAND_SECOND_QUARTER
+    if value <= q75:
+        return G2_BAND_THIRD_QUARTER
+    return G2_BAND_FOURTH_QUARTER
 
 
 def _percentile_band(percentile: float, sample_size: int) -> str:
     if sample_size <= 0 or not np.isfinite(percentile):
         return G2_BAND_UNSCALED
-    if percentile < 65.0:
-        return G2_BAND_NORMAL
-    if percentile <= 95.0:
-        return G2_BAND_STRONG
-    return G2_BAND_EXTREME
+    if percentile <= 25.0:
+        return G2_BAND_FIRST_QUARTER
+    if percentile <= 50.0:
+        return G2_BAND_SECOND_QUARTER
+    if percentile <= 75.0:
+        return G2_BAND_THIRD_QUARTER
+    return G2_BAND_FOURTH_QUARTER
 
 
 def _history_span_trade_days(history: list[dict[str, object]], current_index: int) -> int:
@@ -553,6 +576,26 @@ def _joint_lifespan_percentile(
         return 50.0
     dominated = np.logical_and(pairs[:, 0] <= magnitude_value, pairs[:, 1] <= duration_value)
     return 100.0 * float(np.mean(dominated))
+
+
+def _lifespan_reference_history(
+    history: list[dict[str, object]],
+    *,
+    trend_level: str,
+    wave_role: str,
+    direction: str,
+    context_direction: str,
+) -> list[dict[str, object]]:
+    if trend_level != TREND_LEVEL_INTERMEDIATE:
+        return history
+    if wave_role != "MAINSTREAM" or context_direction not in {"UP", "DOWN"} or context_direction != direction:
+        return []
+    return [
+        item
+        for item in history
+        if str(item.get("wave_role") or "") == "MAINSTREAM"
+        and str(item.get("context_trend_direction_before") or "") == context_direction
+    ]
 
 
 def _latest_prior_mainstream_wave(
@@ -1066,9 +1109,16 @@ def _apply_wave_history_scores(waves: list[dict[str, object]]) -> None:
     all_history: list[dict[str, object]] = []
     for wave in waves:
         history = history_by_direction[str(wave["direction"])]
-        magnitude_history = [float(item["magnitude_pct"]) for item in history]
-        duration_history = [float(item["duration_trade_days"]) for item in history]
-        density_history = [float(item["extreme_density"]) for item in history]
+        lifespan_reference_history = _lifespan_reference_history(
+            history,
+            trend_level=str(wave.get("trend_level") or ""),
+            wave_role=str(wave.get("wave_role") or ""),
+            direction=str(wave["direction"]),
+            context_direction=str(wave.get("context_trend_direction_before") or ""),
+        )
+        magnitude_history = [float(item["magnitude_pct"]) for item in lifespan_reference_history]
+        duration_history = [float(item["duration_trade_days"]) for item in lifespan_reference_history]
+        density_history = [float(item["extreme_density"]) for item in lifespan_reference_history]
         magnitude_value = float(wave["magnitude_pct"])
         duration_value = float(wave["duration_trade_days"])
         density_value = float(wave["extreme_density"])
@@ -1078,7 +1128,7 @@ def _apply_wave_history_scores(waves: list[dict[str, object]]) -> None:
         magnitude_thresholds = _distribution_thresholds(magnitude_history)
         duration_thresholds = _distribution_thresholds(duration_history)
         joint_percentile = _joint_lifespan_percentile(
-            history,
+            lifespan_reference_history,
             magnitude_value=magnitude_value,
             duration_value=duration_value,
         )
@@ -1089,7 +1139,10 @@ def _apply_wave_history_scores(waves: list[dict[str, object]]) -> None:
         )
         wave["history_sample_size"] = int(magnitude_stats["sample_size"])
         wave["history_reference_trade_days"] = GENE_LIFESPAN_REFERENCE_TRADE_DAYS
-        wave["history_span_trade_days"] = _history_span_trade_days(history, int(wave["end_index"]))
+        wave["history_span_trade_days"] = _history_span_trade_days(
+            lifespan_reference_history,
+            int(wave["end_index"]),
+        )
         wave["magnitude_rank"] = int(magnitude_stats["rank"])
         wave["duration_rank"] = int(duration_stats["rank"])
         wave["extreme_density_rank"] = int(density_stats["rank"])
@@ -1100,15 +1153,21 @@ def _apply_wave_history_scores(waves: list[dict[str, object]]) -> None:
         wave["magnitude_zscore"] = float(magnitude_stats["zscore"])
         wave["duration_zscore"] = float(duration_stats["zscore"])
         wave["extreme_density_zscore"] = float(density_stats["zscore"])
+        wave["magnitude_q25"] = _optional_float(magnitude_thresholds["q25"])
+        wave["magnitude_q50"] = _optional_float(magnitude_thresholds["q50"])
+        wave["magnitude_q75"] = _optional_float(magnitude_thresholds["q75"])
         wave["magnitude_p65"] = _optional_float(magnitude_thresholds["p65"])
         wave["magnitude_p95"] = _optional_float(magnitude_thresholds["p95"])
         wave["magnitude_band"] = _distribution_band(magnitude_value, magnitude_thresholds)
+        wave["duration_q25"] = _optional_float(duration_thresholds["q25"])
+        wave["duration_q50"] = _optional_float(duration_thresholds["q50"])
+        wave["duration_q75"] = _optional_float(duration_thresholds["q75"])
         wave["duration_p65"] = _optional_float(duration_thresholds["p65"])
         wave["duration_p95"] = _optional_float(duration_thresholds["p95"])
         wave["duration_band"] = _distribution_band(duration_value, duration_thresholds)
         wave["wave_age_band"] = str(wave["duration_band"])
         wave["wave_age_band_basis"] = AGE_BAND_BASIS_DURATION_ALIAS
-        wave["lifespan_joint_band"] = _percentile_band(joint_percentile, len(history))
+        wave["lifespan_joint_band"] = _percentile_band(joint_percentile, len(lifespan_reference_history))
         wave["prior_mainstream_wave_id"] = None if prior_mainstream_wave is None else str(prior_mainstream_wave["wave_id"])
         wave["prior_mainstream_magnitude_pct"] = (
             None if prior_mainstream_wave is None else _optional_float(prior_mainstream_wave.get("magnitude_pct"))
@@ -1252,6 +1311,9 @@ def _build_daily_snapshots(
 
         _advance_active_state(active_state, idx)
         direction = active_state.direction
+        current_context_trend_direction = _resolved_context_direction(trend_direction, direction)
+        current_context_parent_trend_level = PARENT_TREND_LEVEL_BY_LEVEL[CANONICAL_TREND_LEVEL]
+        current_wave_role = _wave_role_from_context_direction(current_context_trend_direction, direction)
         current_close = float(closes[idx]) if np.isfinite(closes[idx]) else float(active_state.reference_price)
         signed_return_pct = (
             ((current_close - active_state.reference_price) / active_state.reference_price) * 100.0
@@ -1263,16 +1325,23 @@ def _build_daily_snapshots(
         density = float(active_state.extreme_count / max(age_trade_days, 1))
         # active wave 只跟同方向历史比较，避免上涨/下跌分布混用后失真。
         history = completed_by_direction[direction]
-        magnitude_history = [float(item["magnitude_pct"]) for item in history]
-        duration_history = [float(item["duration_trade_days"]) for item in history]
-        density_history = [float(item["extreme_density"]) for item in history]
+        lifespan_reference_history = _lifespan_reference_history(
+            history,
+            trend_level=TREND_LEVEL_INTERMEDIATE,
+            wave_role=current_wave_role,
+            direction=direction,
+            context_direction=current_context_trend_direction,
+        )
+        magnitude_history = [float(item["magnitude_pct"]) for item in lifespan_reference_history]
+        duration_history = [float(item["duration_trade_days"]) for item in lifespan_reference_history]
+        density_history = [float(item["extreme_density"]) for item in lifespan_reference_history]
         magnitude_stats = _relative_strength_stats(magnitude_history, magnitude_pct)
         duration_stats = _relative_strength_stats(duration_history, float(age_trade_days))
         density_stats = _relative_strength_stats(density_history, density)
         magnitude_thresholds = _distribution_thresholds(magnitude_history)
         duration_thresholds = _distribution_thresholds(duration_history)
         joint_percentile = _joint_lifespan_percentile(
-            history,
+            lifespan_reference_history,
             magnitude_value=magnitude_pct,
             duration_value=float(age_trade_days),
         )
@@ -1293,9 +1362,6 @@ def _build_daily_snapshots(
 
         # active wave 没有 completed ledger 可直接挂靠时，也沿用同一条父趋势参照规则，
         # 保证 snapshot 层和 wave ledger 层对 mainstream / countertrend 的口径一致。
-        current_context_trend_direction = _resolved_context_direction(trend_direction, direction)
-        current_context_parent_trend_level = PARENT_TREND_LEVEL_BY_LEVEL[CANONICAL_TREND_LEVEL]
-        current_wave_role = _wave_role_from_context_direction(current_context_trend_direction, direction)
         prior_mainstream_wave = _latest_prior_mainstream_wave(
             completed_history_all,
             wave_role=current_wave_role,
@@ -1348,7 +1414,10 @@ def _build_daily_snapshots(
                 "current_wave_two_b_failure_count": int(active_state.two_b_failure_count),
                 "current_wave_history_sample_size": int(magnitude_stats["sample_size"]),
                 "current_wave_history_reference_trade_days": GENE_LIFESPAN_REFERENCE_TRADE_DAYS,
-                "current_wave_history_span_trade_days": _history_span_trade_days(history, idx),
+                "current_wave_history_span_trade_days": _history_span_trade_days(
+                    lifespan_reference_history,
+                    idx,
+                ),
                 "current_wave_magnitude_rank": int(magnitude_stats["rank"]),
                 "current_wave_duration_rank": int(duration_stats["rank"]),
                 "current_wave_extreme_density_rank": int(density_stats["rank"]),
@@ -1359,15 +1428,24 @@ def _build_daily_snapshots(
                 "current_wave_magnitude_zscore": float(magnitude_stats["zscore"]),
                 "current_wave_duration_zscore": float(duration_stats["zscore"]),
                 "current_wave_extreme_density_zscore": float(density_stats["zscore"]),
+                "current_wave_magnitude_q25": _optional_float(magnitude_thresholds["q25"]),
+                "current_wave_magnitude_q50": _optional_float(magnitude_thresholds["q50"]),
+                "current_wave_magnitude_q75": _optional_float(magnitude_thresholds["q75"]),
                 "current_wave_magnitude_p65": _optional_float(magnitude_thresholds["p65"]),
                 "current_wave_magnitude_p95": _optional_float(magnitude_thresholds["p95"]),
                 "current_wave_magnitude_band": _distribution_band(magnitude_pct, magnitude_thresholds),
+                "current_wave_duration_q25": _optional_float(duration_thresholds["q25"]),
+                "current_wave_duration_q50": _optional_float(duration_thresholds["q50"]),
+                "current_wave_duration_q75": _optional_float(duration_thresholds["q75"]),
                 "current_wave_duration_p65": _optional_float(duration_thresholds["p65"]),
                 "current_wave_duration_p95": _optional_float(duration_thresholds["p95"]),
                 "current_wave_duration_band": _distribution_band(float(age_trade_days), duration_thresholds),
                 "current_wave_age_band": _distribution_band(float(age_trade_days), duration_thresholds),
                 "current_wave_age_band_basis": AGE_BAND_BASIS_DURATION_ALIAS,
-                "current_wave_lifespan_joint_band": _percentile_band(joint_percentile, len(history)),
+                "current_wave_lifespan_joint_band": _percentile_band(
+                    joint_percentile,
+                    len(lifespan_reference_history),
+                ),
                 "current_wave_prior_mainstream_wave_id": (
                     None if prior_mainstream_wave is None else str(prior_mainstream_wave["wave_id"])
                 ),
@@ -1706,6 +1784,9 @@ def _build_distribution_eval_rows(
             "metric_name": "magnitude_pct",
             "current_value_col": "current_wave_magnitude_pct",
             "current_percentile_col": "current_wave_magnitude_percentile",
+            "q25_col": "current_wave_magnitude_q25",
+            "q50_col": "current_wave_magnitude_q50",
+            "q75_col": "current_wave_magnitude_q75",
             "p65_col": "current_wave_magnitude_p65",
             "p95_col": "current_wave_magnitude_p95",
             "band_col": "current_wave_magnitude_band",
@@ -1715,6 +1796,9 @@ def _build_distribution_eval_rows(
             "metric_name": "duration_trade_days",
             "current_value_col": "current_wave_age_trade_days",
             "current_percentile_col": "current_wave_duration_percentile",
+            "q25_col": "current_wave_duration_q25",
+            "q50_col": "current_wave_duration_q50",
+            "q75_col": "current_wave_duration_q75",
             "p65_col": "current_wave_duration_p65",
             "p95_col": "current_wave_duration_p95",
             "band_col": "current_wave_age_band",
@@ -1747,8 +1831,11 @@ def _build_distribution_eval_rows(
                     "band_sample_size": int(summary["band_sample_size"]),
                     "current_value": float(getattr(snapshot, spec["current_value_col"])),
                     "current_percentile": float(getattr(snapshot, spec["current_percentile_col"])),
-                    "threshold_p65": _optional_float(getattr(snapshot, spec["p65_col"])),
-                    "threshold_p95": _optional_float(getattr(snapshot, spec["p95_col"])),
+                    "threshold_q25": _optional_float(getattr(snapshot, spec["q25_col"], None)),
+                    "threshold_q50": _optional_float(getattr(snapshot, spec["q50_col"], None)),
+                    "threshold_q75": _optional_float(getattr(snapshot, spec["q75_col"], None)),
+                    "threshold_p65": _optional_float(getattr(snapshot, spec["p65_col"], None)),
+                    "threshold_p95": _optional_float(getattr(snapshot, spec["p95_col"], None)),
                     "band_label": band_label,
                     "continuation_base_rate": float(summary["continuation_base_rate"]),
                     "reversal_base_rate": float(summary["reversal_base_rate"]),

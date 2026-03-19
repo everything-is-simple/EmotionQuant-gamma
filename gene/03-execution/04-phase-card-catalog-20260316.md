@@ -54,6 +54,8 @@
 | `GX6` | `Completed` | [`card`](17-phase-gx6-123-three-condition-refactor-card-20260317.md) | [`record`](records/17-phase-gx6-123-three-condition-refactor-record-20260318.md) | [`evidence`](evidence/17-phase-gx6-123-three-condition-refactor-evidence-20260318.md) | 1-2-3 三条件化 |
 | `GX7` | `Completed` | [`card`](18-phase-gx7-post-refactor-g4-g5-g6-revalidation-card-20260317.md) | [`record`](records/18-phase-gx7-post-refactor-g4-g5-g6-revalidation-record-20260318.md) | [`evidence`](evidence/18-phase-gx7-post-refactor-g4-g5-g6-revalidation-evidence-20260318.md) | G4/G5/G6 重审收口 |
 | `GX8` | `Completed` | [`card`](19-phase-gx8-three-level-trend-hierarchy-card-20260318.md) | [`record`](records/19-phase-gx8-three-level-trend-hierarchy-record-20260319.md) | [`evidence`](evidence/19-phase-gx8-three-level-trend-hierarchy-evidence-20260319.md) | 三层趋势层级正式实现 |
+| `GX13` | `Active` | [`card`](24-phase-gx13-post-remediation-g4-g5-g6-rerun-card-20260319.md) | `pending` | `pending` | GX12 裁定后的 G4/G5/G6 联合重跑 |
+| `GX14` | `Active` | [`card`](25-phase-gx14-book-aligned-lifespan-distribution-card-20260319.md) | `pending` | `pending` | 把寿命统计图纠正到书义四分位连续分布 |
 
 ---
 

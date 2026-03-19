@@ -91,3 +91,21 @@
 6. 这些读数当前应作为条件解释层与优先级约束，不应直接升格为硬过滤器
 
 下一张主线卡应按顺序进入 `G7 / MSS-IRS refactor-or-retire decision`。
+
+---
+
+## 8. Post-Remediation Governance Note
+
+本卡的 `Completed` 仍然成立，但它只代表：
+
+`第一轮 conditioning round 已完成`
+
+`GX12` 已正式裁定这张卡对应的统计 evidence 必须在整改后 surface 上重跑。  
+因此当前应同时成立两句话：
+
+1. `G6 historical round = Completed`
+2. `G6 post-remediation rerun = reopened under GX13`
+
+对应重跑入口：
+
+[`24-phase-gx13-post-remediation-g4-g5-g6-rerun-card-20260319.md`](./24-phase-gx13-post-remediation-g4-g5-g6-rerun-card-20260319.md)

@@ -52,7 +52,7 @@
 
 1. `G0`: 对象层脚手架
 2. `G1`: 三子因子解释力基线
-3. `G2`: 历史寿命分布与 `65 / 95` 校准
+3. `G2`: 历史寿命分布第一版校准（历史 `65 / 95` round 已归档；forward 口径已转向四分位连续分布）
 4. `G3`: `1-2-3 / 2B` 结构标签校准
 5. `G4`: 个股自历史标尺验证
 6. `G5`: 指数 / 行业 / 大盘镜像尺
@@ -116,6 +116,8 @@
 - `03-execution/21-phase-gx10-lifespan-reference-basis-expansion-card-20260319.md`
 - `03-execution/22-phase-gx11-runtime-surface-semantic-cleanup-card-20260319.md`
 - `03-execution/23-phase-gx12-post-remediation-gene-and-phase9-revalidation-card-20260319.md`
+- `03-execution/24-phase-gx13-post-remediation-g4-g5-g6-rerun-card-20260319.md`
+- `03-execution/25-phase-gx14-book-aligned-lifespan-distribution-card-20260319.md`
 - `03-execution/records/12-gene-book-definition-ingestion-ledger-20260317.md`
 - `03-execution/records/14-phase-gx3-trend-level-context-refactor-record-20260317.md`
 - `03-execution/records/01-phase-g0-wave-ruler-opening-record-20260316.md`
@@ -215,11 +217,21 @@
    - `Completed`
    - 目标：重审 G4/G5/G6 与 Phase 9 证据是否仍可保留
    - 配套 record：`03-execution/records/23-phase-gx12-post-remediation-gene-and-phase9-revalidation-record-20260319.md`
+11. `GX13 / post-remediation G4-G5-G6 rerun`
+   - `forced statistical rerun`
+   - `scripts/report/run_gx13_post_remediation_revalidation.py`
+   - `Active`
+   - 目标：把 GX12 已裁定必须重跑的 G4/G5/G6 真正重跑并落新 evidence
+12. `GX14 / book-aligned lifespan distribution correction`
+   - `book-aligned semantic correction`
+   - `src/selector/gene.py / src/data/store.py`
+   - `Active`
+   - 目标：把寿命统计从 `p65 / p95` 尾部刀改回中级主要走势的四分位连续分布图
 
-当前 `GX3 ~ GX12` 已完成，当前这轮书义对齐整改队列已收口。  
+当前 `GX3 ~ GX12` 已完成，当前新增执行位为 `GX13 + GX14`。  
 当前第四战场已不再有真正未执行的 hierarchy blocker，但已进入“书义对齐整改”阶段。  
 定义整改后的正式收口口径现更新为：
 
 1. `G4 / G5 / G6` 方向结论保留，但统计 evidence 必须重跑
-2. `Phase 9` 当前保留 `context / reversal` 的 legacy isolated keep，但 `duration` 相关 follow-up 必须在整改后 surface 上重开
+2. `Phase 9` 当前保留 `context / reversal` 的 legacy isolated keep，但 `duration` 相关 follow-up 必须在书义四分位寿命分布 surface 上重开
 3. `Gene` 继续保持 `sidecar / dashboard / attribution` 身份，不升格为 runtime hard gate

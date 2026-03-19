@@ -24,7 +24,7 @@ That remains the truthful current runtime boundary today.
 
 The package has already identified meaningful candidates, but it has **not** yet earned package closeout because:
 
-1. `duration_percentile` has not completed a truthful threshold sweep
+1. `duration_percentile` has not yet completed a truthful, book-aligned lifespan distribution rerun
 2. the frozen `Phase 9C` combinations have not completed formal replay
 3. package-level promotion would therefore jump ahead of the evidence needed for a refined Gene conclusion
 
@@ -121,8 +121,8 @@ Current completed isolated rounds:
 
 1. [`17.2-phase-9b-isolated-duration-percentile-validation-card-20260318.md`](./17.2-phase-9b-isolated-duration-percentile-validation-card-20260318.md)
 2. isolated ruling = `promote_duration_percentile_negative_filter`
-3. formal duration threshold tested so far = `p95`
-4. `p65` was reviewed as sensitivity reference only
+3. the historical isolated round tested `p95`
+4. `p65` was reviewed only as legacy sensitivity reference
 5. [`17.3-phase-9b-isolated-wave-role-validation-card-20260318.md`](./17.3-phase-9b-isolated-wave-role-validation-card-20260318.md)
 6. isolated ruling = `retain_sidecar_only`
 7. [`17.4-phase-9b-isolated-reversal-state-validation-card-20260318.md`](./17.4-phase-9b-isolated-reversal-state-validation-card-20260318.md)
@@ -175,15 +175,16 @@ Current `Phase 9D` ruling:
 
 ### 7.5 Phase 9E
 
-`duration_percentile threshold sweep`
+`book-aligned duration / lifespan distribution rerun`
 
 This sub-phase now becomes the immediate next truthful move.
 
 It must answer:
 
-1. whether `p95` is actually the truthful duration threshold or just an endpoint artifact
-2. whether the useful turning point sits between `p65` and `p95`
-3. whether the duration curve still supports runtime candidacy after a proper step-5 sweep
+1. whether the historical `p95` isolated win survives only as legacy archive or still has forward meaning
+2. whether the remediated duration axis, when read as a continuous quartile distribution of intermediate mainstream waves, still supports runtime candidacy
+3. whether any truthful runtime interpretation sits at a quartile boundary rather than a tail threshold
+4. whether duration should continue forward into `17.9` at all
 
 Current status:
 
