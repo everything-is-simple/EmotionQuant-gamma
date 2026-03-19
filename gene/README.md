@@ -112,6 +112,10 @@
 - `03-execution/17-phase-gx6-123-three-condition-refactor-card-20260317.md`
 - `03-execution/18-phase-gx7-post-refactor-g4-g5-g6-revalidation-card-20260317.md`
 - `03-execution/19-phase-gx8-three-level-trend-hierarchy-card-20260318.md`
+- `03-execution/20-phase-gx9-book-vs-gene-remediation-package-card-20260319.md`
+- `03-execution/21-phase-gx10-lifespan-reference-basis-expansion-card-20260319.md`
+- `03-execution/22-phase-gx11-runtime-surface-semantic-cleanup-card-20260319.md`
+- `03-execution/23-phase-gx12-post-remediation-gene-and-phase9-revalidation-card-20260319.md`
 - `03-execution/records/12-gene-book-definition-ingestion-ledger-20260317.md`
 - `03-execution/records/14-phase-gx3-trend-level-context-refactor-record-20260317.md`
 - `03-execution/records/01-phase-g0-wave-ruler-opening-record-20260316.md`
@@ -125,6 +129,7 @@
 - `03-execution/records/09-phase-g6-bof-pb-cpb-conditioning-record-20260316.md`
 - `03-execution/records/10-phase-g7-mss-irs-refactor-or-retire-record-20260316.md`
 - `03-execution/records/11-phase-g8-gene-campaign-closeout-record-20260316.md`
+- `03-execution/records/20-phase-gx9-book-vs-gene-audit-record-20260319.md`
 - `90-archive/README.md`
 
 ---
@@ -183,10 +188,31 @@
    - `Completed`
    - 目标：把 `trend_level` 从单层 `INTERMEDIATE` proxy 推到真正三层趋势并存语义
    - 配套 record：`03-execution/records/19-phase-gx8-three-level-trend-hierarchy-record-20260319.md`
+7. `GX9 / book-vs-gene remediation package`
+   - `post-audit remediation package`
+   - `gene / src/selector/gene.py / src/data/store.py`
+   - `Active`
+   - 目标：把书义对齐整改拆成寿命基础、运行面语义、强制重验证三张小卡
+   - 配套 record：`03-execution/records/20-phase-gx9-book-vs-gene-audit-record-20260319.md`
+8. `GX10 / lifespan reference-basis expansion`
+   - `targeted semantic implementation`
+   - `src/selector/gene.py / src/data/store.py`
+   - `Planned`
+   - 目标：把寿命轴从 time-only ruler 推进到更接近书义的参考基础
+9. `GX11 / runtime surface semantic cleanup`
+   - `targeted contract cleanup`
+   - `src/selector/gene.py / src/data/store.py`
+   - `Planned`
+   - 目标：清理 age-band / context / reversal 的运行面歧义
+10. `GX12 / post-remediation gene and phase9 revalidation`
+   - `forced downstream revalidation`
+   - `src/selector/gene.py / src/data/store.py`
+   - `Planned`
+   - 目标：重审 G4/G5/G6 与 Phase 9 证据是否仍可保留
 
-当前 `GX3 ~ GX8` 已全部完成。  
-当前第四战场已不再有真正未执行的 hierarchy blocker。  
-定义整改后的正式收口口径是：
+当前 `GX3 ~ GX8` 已全部完成，当前新增整改队列为 `GX9 ~ GX12`。  
+当前第四战场已不再有真正未执行的 hierarchy blocker，但已进入“书义对齐整改”阶段。  
+定义整改后的正式收口口径现更新为：
 
 1. `G4 / G5 / G6` 结论保留
 2. 数值存在小幅漂移，但未触发治理翻案
