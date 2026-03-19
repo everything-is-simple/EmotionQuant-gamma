@@ -236,7 +236,7 @@
 1. `l3_stock_gene` 直接有 `current_wave_duration_percentile`
 2. 同时给出 `p65 / p95 / band`
 3. 已经有独立的 isolated validation runner
-4. 17.8 已经开成明确的 threshold sweep follow-up
+4. 17.8 已经重写成书义寿命分布 follow-up
 
 不好的另一半：
 

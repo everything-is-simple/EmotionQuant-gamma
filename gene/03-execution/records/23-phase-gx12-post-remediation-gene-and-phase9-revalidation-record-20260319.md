@@ -96,7 +96,7 @@
 
 `Phase 9B / duration_percentile` 必须 rerun。
 
-这不是可选项，因为 `17.8` 本来就要继续沿 duration 轴往下做 threshold sweep。  
+这不是可选项，因为 `17.8` 本来就要继续沿 duration 轴往下做书义寿命分布重跑。  
 如果底层 duration surface 已经变了，却还让 `17.8` 沿旧 surface 开跑，就是治理漏洞。
 
 因此当前正式写定：

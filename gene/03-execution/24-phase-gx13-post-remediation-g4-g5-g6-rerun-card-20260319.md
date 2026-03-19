@@ -38,6 +38,12 @@
 2. `G5 / mirror`
 3. `G6 / conditioning`
 
+并且 `G4` 的重跑 evidence 现在必须显式带出：
+
+1. `duration quartile surface`
+2. `joint lifespan quartile surface`
+3. `average lifespan remaining / aged odds`
+
 ---
 
 ## 4. 本卡允许修改
@@ -55,6 +61,7 @@
    - `keep`
    - `keep_with_numeric_drift`
    - 或 `revoke`
+4. `G4` 新 evidence 不得再只停留在旧 `duration_percentile PRIMARY_RULER` 摘要，而必须落出整改后的 quartile / odds surface
 
 ---
 

@@ -157,6 +157,73 @@ def run_gx13_revalidation(
             """,
             (asof,),
         )
+        g4_duration_distribution_rows = _read_df_records(
+            store,
+            """
+            SELECT
+                code,
+                direction,
+                band_label,
+                current_value,
+                current_percentile,
+                current_average_remaining_prob,
+                current_average_aged_prob,
+                current_average_remaining_vs_aged_odds,
+                threshold_q25,
+                threshold_q50,
+                threshold_q75,
+                continuation_base_rate,
+                reversal_base_rate,
+                median_forward_return,
+                median_forward_drawdown
+            FROM l3_gene_distribution_eval
+            WHERE calc_date = ?
+              AND metric_name = 'duration_trade_days'
+            ORDER BY current_average_aged_prob DESC NULLS LAST, code
+            LIMIT 20
+            """,
+            (asof,),
+        )
+        g4_duration_band_counts = _read_df_records(
+            store,
+            """
+            SELECT
+                current_wave_duration_band AS band_label,
+                COUNT(*) AS sample_count
+            FROM l3_stock_gene
+            WHERE calc_date = ?
+            GROUP BY 1
+            ORDER BY CASE current_wave_duration_band
+                WHEN 'FIRST_QUARTER' THEN 1
+                WHEN 'SECOND_QUARTER' THEN 2
+                WHEN 'THIRD_QUARTER' THEN 3
+                WHEN 'FOURTH_QUARTER' THEN 4
+                WHEN 'UNSCALED' THEN 5
+                ELSE 99
+            END
+            """,
+            (asof,),
+        )
+        g4_joint_band_counts = _read_df_records(
+            store,
+            """
+            SELECT
+                current_wave_lifespan_joint_band AS band_label,
+                COUNT(*) AS sample_count
+            FROM l3_stock_gene
+            WHERE calc_date = ?
+            GROUP BY 1
+            ORDER BY CASE current_wave_lifespan_joint_band
+                WHEN 'FIRST_QUARTER' THEN 1
+                WHEN 'SECOND_QUARTER' THEN 2
+                WHEN 'THIRD_QUARTER' THEN 3
+                WHEN 'FOURTH_QUARTER' THEN 4
+                WHEN 'UNSCALED' THEN 5
+                ELSE 99
+            END
+            """,
+            (asof,),
+        )
         market_rows = _read_df_records(
             store,
             """
@@ -278,7 +345,20 @@ def run_gx13_revalidation(
                 "compute_gene_mirror_rows": compute_gene_mirror_rows,
                 "compute_gene_conditioning_rows": compute_gene_conditioning_rows,
             },
+            "surface_contract": {
+                "duration_distribution_method": "QUARTILE_CONTINUOUS",
+                "duration_band_labels": [
+                    "FIRST_QUARTER",
+                    "SECOND_QUARTER",
+                    "THIRD_QUARTER",
+                    "FOURTH_QUARTER",
+                ],
+                "average_lifespan_surface": "REMAINING_PROB / AGED_PROB / ODDS",
+            },
             "g4_validation": g4_rows,
+            "g4_duration_distribution_examples": g4_duration_distribution_rows,
+            "g4_duration_band_counts": g4_duration_band_counts,
+            "g4_joint_band_counts": g4_joint_band_counts,
             "g5_market": market_rows,
             "g5_industry_top_by_mirror_rank": industry_by_mirror_rows,
             "g5_industry_top_by_primary_rank": industry_by_primary_rows,
