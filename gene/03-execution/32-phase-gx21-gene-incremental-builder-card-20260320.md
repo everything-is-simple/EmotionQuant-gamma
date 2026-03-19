@@ -53,9 +53,11 @@
 1. 已有 `dirty scan`、`per-code rebuild`、`market-only rebuild` 脚本与模块入口
 2. `build_l3()` 的 Gene 主线已开始消费增量 builder，而不是默认走全量 `compute_gene()`
 3. `l3_gene_factor_eval / l3_gene_distribution_eval / l3_gene_validation_eval` 已补上按目标 `calc_date` 的增量刷新
-4. 定向测试已覆盖：
+4. `l3_gene_conditioning_sample / l3_gene_conditioning_eval` 已补上“先增量样本，再按目标日聚合”的正式增量路径
+5. 定向测试已覆盖：
    - 脏 code 只重建自身核心表
    - 评估表可按目标日重建
+   - conditioning sample ledger 与 conditioning eval 可按目标日重建
    - `builder.py` 非 force 路径已接到增量入口
 
 ---

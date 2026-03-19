@@ -10,15 +10,18 @@ from src.data.store import Store
 from src.selector.gene import (
     GENE_LOOKBACK_TRADE_DAYS,
     _apply_cross_section_ranks,
+    _attach_conditioning_gene_tags,
+    _build_conditioning_eval_rows,
     _build_distribution_eval_rows,
     _build_factor_eval_rows,
     _build_code_gene_payload,
+    _scan_conditioning_samples_for_code,
     _build_stock_lifespan_surface_rows,
     _concat_sparse_frames,
     _lookback_trade_start,
-    compute_gene_validation,
     FACTOR_EVAL_FORWARD_HORIZON_TRADE_DAYS,
     compute_gene_mirror,
+    compute_gene_validation,
 )
 
 
@@ -30,6 +33,19 @@ class GeneDirtyWindow:
     rebuild_start: date
     source_row_count: int
     existing_gene_max_calc_date: date | None
+
+
+CONDITIONING_SIGNAL_LOOKBACK_TRADE_DAYS = 71
+
+
+def _shift_trade_date_back(store: Store, base_date: date, steps: int) -> date | None:
+    current = base_date
+    for _ in range(max(int(steps), 0)):
+        previous = store.prev_trade_date(current)
+        if previous is None:
+            return None
+        current = previous
+    return current
 
 
 def _normalize_codes(codes: Iterable[str] | None) -> list[str]:
@@ -193,6 +209,57 @@ def _clear_gene_range_for_codes(
         store.conn.unregister(view_name)
 
 
+def _load_conditioning_input_for_codes(
+    store: Store,
+    *,
+    codes: list[str],
+    start: date,
+    end: date,
+) -> pd.DataFrame:
+    if not codes:
+        return pd.DataFrame()
+    view_name = "gene_incremental_conditioning_codes"
+    _register_code_filter(store, codes, view_name)
+    try:
+        frame = store.read_df(
+            f"""
+            SELECT code, date, adj_open, adj_high, adj_low, adj_close, volume, volume_ma20
+            FROM l2_stock_adj_daily
+            WHERE code IN (SELECT code FROM {view_name})
+              AND date BETWEEN ? AND ?
+            ORDER BY code, date
+            """,
+            (start, end),
+        )
+    finally:
+        store.conn.unregister(view_name)
+    return frame
+
+
+def _clear_conditioning_sample_range_for_codes(
+    store: Store,
+    *,
+    codes: list[str],
+    start: date,
+    end: date,
+) -> None:
+    if not codes:
+        return
+    view_name = "gene_incremental_conditioning_codes"
+    _register_code_filter(store, codes, view_name)
+    try:
+        store.conn.execute(
+            f"""
+            DELETE FROM l3_gene_conditioning_sample
+            WHERE date BETWEEN ? AND ?
+              AND code IN (SELECT code FROM {view_name})
+            """,
+            [start, end],
+        )
+    finally:
+        store.conn.unregister(view_name)
+
+
 def refresh_gene_cross_section_ranks(store: Store, target_dates: Iterable[date]) -> int:
     normalized_dates = sorted({item for item in target_dates if item is not None})
     if not normalized_dates:
@@ -220,6 +287,124 @@ def refresh_gene_cross_section_ranks(store: Store, target_dates: Iterable[date])
 
 def refresh_gene_market_surfaces(store: Store, *, calc_date: date) -> int:
     return compute_gene_mirror(store, calc_date)
+
+
+def refresh_gene_conditioning_samples_for_codes(
+    store: Store,
+    *,
+    codes: Iterable[str],
+    start: date,
+    end: date,
+) -> dict[str, object]:
+    normalized_codes = _normalize_codes(codes)
+    if not normalized_codes:
+        return {
+            "conditioning_sample_rows": 0,
+            "conditioning_signal_start": None,
+            "conditioning_signal_end": end.isoformat(),
+        }
+
+    signal_start = _shift_trade_date_back(
+        store,
+        start,
+        FACTOR_EVAL_FORWARD_HORIZON_TRADE_DAYS,
+    ) or start
+    input_start = _lookback_trade_start(
+        store,
+        signal_start,
+        CONDITIONING_SIGNAL_LOOKBACK_TRADE_DAYS,
+    )
+
+    _clear_conditioning_sample_range_for_codes(
+        store,
+        codes=normalized_codes,
+        start=signal_start,
+        end=end,
+    )
+    df = _load_conditioning_input_for_codes(
+        store,
+        codes=normalized_codes,
+        start=input_start,
+        end=end,
+    )
+    if df.empty:
+        return {
+            "conditioning_sample_rows": 0,
+            "conditioning_signal_start": signal_start.isoformat(),
+            "conditioning_signal_end": end.isoformat(),
+        }
+
+    sample_frames: list[pd.DataFrame] = []
+    for _, group in df.groupby("code", sort=True):
+        sample_df = _scan_conditioning_samples_for_code(group.reset_index(drop=True))
+        if sample_df.empty:
+            continue
+        sample_df = sample_df.copy()
+        sample_df["date"] = pd.to_datetime(sample_df["date"], errors="coerce").dt.date
+        sample_df = sample_df.loc[(sample_df["date"] >= signal_start) & (sample_df["date"] <= end)].copy()
+        if not sample_df.empty:
+            sample_frames.append(sample_df)
+
+    if not sample_frames:
+        return {
+            "conditioning_sample_rows": 0,
+            "conditioning_signal_start": signal_start.isoformat(),
+            "conditioning_signal_end": end.isoformat(),
+        }
+
+    conditioning_sample_df = _concat_sparse_frames(sample_frames)
+    if conditioning_sample_df.empty:
+        return {
+            "conditioning_sample_rows": 0,
+            "conditioning_signal_start": signal_start.isoformat(),
+            "conditioning_signal_end": end.isoformat(),
+        }
+    written = store.bulk_upsert("l3_gene_conditioning_sample", conditioning_sample_df)
+    return {
+        "conditioning_sample_rows": int(written),
+        "conditioning_signal_start": signal_start.isoformat(),
+        "conditioning_signal_end": end.isoformat(),
+    }
+
+
+def refresh_gene_conditioning_for_dates(store: Store, target_dates: Iterable[date]) -> int:
+    normalized_dates = sorted({item for item in target_dates if item is not None})
+    if not normalized_dates:
+        return 0
+
+    total_written = 0
+    for calc_date in normalized_dates:
+        cutoff_date = _shift_trade_date_back(store, calc_date, FACTOR_EVAL_FORWARD_HORIZON_TRADE_DAYS)
+        store.conn.execute("DELETE FROM l3_gene_conditioning_eval WHERE calc_date = ?", [calc_date])
+        if cutoff_date is None:
+            continue
+        samples_df = store.read_df(
+            """
+            SELECT
+                code,
+                date,
+                signal_pattern,
+                entry_price,
+                forward_return_pct,
+                mae_pct,
+                mfe_pct,
+                hit_flag,
+                streak_bucket,
+                pattern_strength
+            FROM l3_gene_conditioning_sample
+            WHERE date <= ?
+            ORDER BY code, date, signal_pattern
+            """,
+            (cutoff_date,),
+        )
+        if samples_df.empty:
+            continue
+        tagged_samples_df = _attach_conditioning_gene_tags(store, samples_df)
+        conditioning_eval_df = _build_conditioning_eval_rows(calc_date, tagged_samples_df)
+        if conditioning_eval_df.empty:
+            continue
+        total_written += store.bulk_upsert("l3_gene_conditioning_eval", conditioning_eval_df)
+    return int(total_written)
 
 
 def _load_persisted_factor_eval_samples(
@@ -387,6 +572,7 @@ def compute_gene_incremental_for_codes(
     start: date,
     end: date,
     refresh_evals: bool = True,
+    refresh_conditioning: bool = True,
     refresh_market: bool = False,
     market_calc_date: date | None = None,
 ) -> dict[str, object]:
@@ -400,6 +586,8 @@ def compute_gene_incremental_for_codes(
             "factor_eval_rows": 0,
             "distribution_eval_rows": 0,
             "validation_eval_rows": 0,
+            "conditioning_sample_rows": 0,
+            "conditioning_eval_rows": 0,
             "market_rows": 0,
             "codes": [],
             "touched_dates": [],
@@ -417,6 +605,8 @@ def compute_gene_incremental_for_codes(
             "factor_eval_rows": 0,
             "distribution_eval_rows": 0,
             "validation_eval_rows": 0,
+            "conditioning_sample_rows": 0,
+            "conditioning_eval_rows": 0,
             "market_rows": 0,
             "codes": normalized_codes,
             "touched_dates": [],
@@ -479,6 +669,19 @@ def compute_gene_incremental_for_codes(
     }
     if refresh_evals:
         eval_rows = refresh_gene_evals_for_dates(store, [end])
+    conditioning_rows = {
+        "conditioning_sample_rows": 0,
+        "conditioning_eval_rows": 0,
+    }
+    if refresh_conditioning:
+        conditioning_summary = refresh_gene_conditioning_samples_for_codes(
+            store,
+            codes=normalized_codes,
+            start=start,
+            end=end,
+        )
+        conditioning_rows["conditioning_sample_rows"] = int(conditioning_summary["conditioning_sample_rows"])
+        conditioning_rows["conditioning_eval_rows"] = int(refresh_gene_conditioning_for_dates(store, [end]))
     market_rows = 0
     if refresh_market:
         market_rows = refresh_gene_market_surfaces(store, calc_date=market_calc_date or end)
@@ -489,6 +692,7 @@ def compute_gene_incremental_for_codes(
         "written_rows": int(written),
         "rank_refresh_rows": int(rank_refresh_rows),
         **eval_rows,
+        **conditioning_rows,
         "market_rows": int(market_rows),
         "codes": normalized_codes,
         "touched_dates": [item.isoformat() for item in touched_dates],
@@ -504,6 +708,7 @@ def run_gene_incremental_builder(
     end: date,
     codes: Iterable[str] | None = None,
     refresh_evals: bool = True,
+    refresh_conditioning: bool = True,
     refresh_market: bool = True,
 ) -> dict[str, object]:
     dirty_windows = scan_gene_dirty_windows(store, start=start, end=end, codes=codes)
@@ -514,6 +719,7 @@ def run_gene_incremental_builder(
         start=start,
         end=end,
         refresh_evals=refresh_evals,
+        refresh_conditioning=refresh_conditioning,
         refresh_market=refresh_market,
         market_calc_date=end,
     )

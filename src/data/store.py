@@ -16,7 +16,7 @@ from typing import Any
 import duckdb
 import pandas as pd
 
-CURRENT_SCHEMA_VERSION = 21
+CURRENT_SCHEMA_VERSION = 22
 
 
 @dataclass(frozen=True)
@@ -586,6 +586,26 @@ class Store:
                 current_wave_aged_vs_remaining_odds  DOUBLE,
                 created_at                           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (code, calc_date, surface_label)
+            )
+            """
+        )
+
+    def _migrate_schema_v21_to_v22(self) -> None:
+        self.conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS l3_gene_conditioning_sample (
+                code                 VARCHAR NOT NULL,
+                date                 DATE    NOT NULL,
+                signal_pattern       VARCHAR NOT NULL,
+                entry_price          DOUBLE,
+                forward_return_pct   DOUBLE,
+                mae_pct              DOUBLE,
+                mfe_pct              DOUBLE,
+                hit_flag             BOOLEAN,
+                streak_bucket        VARCHAR,
+                pattern_strength     DOUBLE,
+                created_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (code, date, signal_pattern)
             )
             """
         )
@@ -1779,6 +1799,22 @@ class Store:
                 edge_tag                          VARCHAR,
                 created_at                        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (calc_date, signal_pattern, sample_scope, conditioning_key, conditioning_value)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l3_gene_conditioning_sample (
+                code                 VARCHAR NOT NULL,
+                date                 DATE    NOT NULL,
+                signal_pattern       VARCHAR NOT NULL,
+                entry_price          DOUBLE,
+                forward_return_pct   DOUBLE,
+                mae_pct              DOUBLE,
+                mfe_pct              DOUBLE,
+                hit_flag             BOOLEAN,
+                streak_bucket        VARCHAR,
+                pattern_strength     DOUBLE,
+                created_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (code, date, signal_pattern)
             )
             """,
             # L4

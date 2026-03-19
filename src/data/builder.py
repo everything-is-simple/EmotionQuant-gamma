@@ -88,6 +88,7 @@ def build_l3(store: Store, config: Settings, start: date | None, end: date | Non
         store.conn.execute("DELETE FROM l3_gene_validation_eval")
         store.conn.execute("DELETE FROM l3_gene_mirror")
         store.conn.execute("DELETE FROM l3_gene_market_lifespan_surface")
+        store.conn.execute("DELETE FROM l3_gene_conditioning_sample")
         store.conn.execute("DELETE FROM l3_gene_conditioning_eval")
 
     # Keep each L3 product on its own rebuild window.
@@ -140,6 +141,7 @@ def build_l3(store: Store, config: Settings, start: date | None, end: date | Non
                 start=gene_begin,
                 end=gene_finish,
                 refresh_evals=True,
+                refresh_conditioning=True,
                 refresh_market=True,
             )
             n3 = int(summary["written_rows"])
@@ -147,8 +149,11 @@ def build_l3(store: Store, config: Settings, start: date | None, end: date | Non
             n3 += int(summary["factor_eval_rows"])
             n3 += int(summary["distribution_eval_rows"])
             n3 += int(summary["validation_eval_rows"])
+            n3 += int(summary["conditioning_sample_rows"])
+            n3 += int(summary["conditioning_eval_rows"])
             n3 += int(summary["market_rows"])
-        n3 += compute_gene_conditioning(store, gene_finish)
+        if force:
+            n3 += compute_gene_conditioning(store, gene_finish)
     return n1 + n2 + n3
 
 

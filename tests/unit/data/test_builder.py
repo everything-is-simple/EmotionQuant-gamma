@@ -28,10 +28,20 @@ def test_build_l3_uses_gene_incremental_builder_on_non_force(monkeypatch, tmp_pa
         def fake_irs(*args, **kwargs) -> int:
             return 0
 
-        def fake_incremental_builder(store_arg, *, start, end, codes=None, refresh_evals=True, refresh_market=True):
+        def fake_incremental_builder(
+            store_arg,
+            *,
+            start,
+            end,
+            codes=None,
+            refresh_evals=True,
+            refresh_conditioning=True,
+            refresh_market=True,
+        ):
             calls["start"] = start
             calls["end"] = end
             calls["refresh_evals"] = refresh_evals
+            calls["refresh_conditioning"] = refresh_conditioning
             calls["refresh_market"] = refresh_market
             return {
                 "written_rows": 11,
@@ -39,16 +49,14 @@ def test_build_l3_uses_gene_incremental_builder_on_non_force(monkeypatch, tmp_pa
                 "factor_eval_rows": 5,
                 "distribution_eval_rows": 3,
                 "validation_eval_rows": 2,
+                "conditioning_sample_rows": 19,
+                "conditioning_eval_rows": 17,
                 "market_rows": 13,
             }
-
-        def fake_conditioning(*args, **kwargs) -> int:
-            return 17
 
         monkeypatch.setattr("src.data.builder.compute_mss_variant", fake_mss)
         monkeypatch.setattr("src.data.builder.compute_irs", fake_irs)
         monkeypatch.setattr("src.data.builder.run_gene_incremental_builder", fake_incremental_builder)
-        monkeypatch.setattr("src.data.builder.compute_gene_conditioning", fake_conditioning)
 
         total = build_l3(
             store,
@@ -62,8 +70,9 @@ def test_build_l3_uses_gene_incremental_builder_on_non_force(monkeypatch, tmp_pa
             "start": base,
             "end": base,
             "refresh_evals": True,
+            "refresh_conditioning": True,
             "refresh_market": True,
         }
-        assert total == 58
+        assert total == 77
     finally:
         store.close()

@@ -54,7 +54,7 @@ python scripts/data/repair_l1_partitions_from_raw_duckdb.py --source-db G:\Emoti
 - `audit_trade_date_coverage.py`
   覆盖率审计脚本，诊断用，不是日更入口
 - `run_gene_incremental_builder.py`
-  Gene 增量 builder，按脏窗口扫描受影响 code，再只重建这些 code 的 `l3_stock_gene / l3_stock_lifespan_surface / l3_gene_wave / l3_gene_event`，并可选刷新 `market surface` 与 `factor_eval / distribution_eval / validation_eval`
+  Gene 增量 builder，按脏窗口扫描受影响 code，再只重建这些 code 的 `l3_stock_gene / l3_stock_lifespan_surface / l3_gene_wave / l3_gene_event`，并可选刷新 `market surface`、`factor_eval / distribution_eval / validation_eval` 以及 `conditioning sample / eval`
 
 ## 当前结论：哪些算过时
 

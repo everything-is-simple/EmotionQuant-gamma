@@ -271,7 +271,7 @@
    - `incremental builder`
    - `src/selector/`
    - `Active`
-   - 目标：让 A 股全市场 Gene 与四张寿命面按脏窗口增量更新，并把主线 `build_l3` 与 `G1/G2/G4` 评估刷新接到增量入口
+   - 目标：让 A 股全市场 Gene 与四张寿命面按脏窗口增量更新，并把主线 `build_l3`、`G1/G2/G4` 评估刷新和 `G6 conditioning` 刷新接到增量入口
 20. `GX22 / backtest cache and replay acceleration`
    - `backtest acceleration`
    - `src/backtest/`
