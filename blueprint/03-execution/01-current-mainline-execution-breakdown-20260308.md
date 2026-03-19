@@ -155,13 +155,15 @@
 23. `blueprint/03-execution/17.5-phase-9b-isolated-context-trend-direction-before-validation-card-20260318.md`
 24. `blueprint/03-execution/17.6-phase-9c-formal-combination-freeze-card-20260318.md`
 25. `blueprint/03-execution/17.7-phase-9d-gene-package-promotion-ruling-card-20260318.md`
-26. `blueprint/03-execution/18-phase-10-bof-risk-unit-lifecycle-package-card-20260318.md`
+26. `blueprint/03-execution/17.8-phase-9e-duration-percentile-threshold-sweep-card-20260319.md`
+27. `blueprint/03-execution/17.9-phase-9f-frozen-combination-replay-card-20260319.md`
+28. `blueprint/03-execution/18-phase-10-bof-risk-unit-lifecycle-package-card-20260318.md`
 
 ---
 
 ## 5. Phase 摘要
 
-### 5.1 当前 26 张卡
+### 5.1 当前 28 张卡
 
 1. `Phase 0`：
    - `blueprint/03-execution/02-phase-0-contract-trace-card-20260309.md`
@@ -200,6 +202,8 @@
    - `blueprint/03-execution/17.5-phase-9b-isolated-context-trend-direction-before-validation-card-20260318.md`
    - `blueprint/03-execution/17.6-phase-9c-formal-combination-freeze-card-20260318.md`
    - `blueprint/03-execution/17.7-phase-9d-gene-package-promotion-ruling-card-20260318.md`
+   - `blueprint/03-execution/17.8-phase-9e-duration-percentile-threshold-sweep-card-20260319.md`
+   - `blueprint/03-execution/17.9-phase-9f-frozen-combination-replay-card-20260319.md`
 13. `Phase 10`
    - `blueprint/03-execution/18-phase-10-bof-risk-unit-lifecycle-package-card-20260318.md`
 
@@ -244,7 +248,7 @@
 
 ## 7. 下一步
 
-从 `2026-03-19` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3`、`Phase 4`、`Phase 4.1`、`Phase 5`、`Phase 6`、`Phase 7` 与 `Phase 8` 都已完成当前轮次收口。当前 active mainline package 已切到 `Phase 9 / Gene mainline integration package`：`Phase 9A` 已完成 promoted subset freeze，`Phase 9B / duration_percentile` 已完成第一轮 isolated win，`Phase 9B / wave_role` 已完成但 formal ruling 为 `retain_sidecar_only`，`Phase 9B / reversal_state` 已完成并以 `promote_reversal_state_exit_preparation` 胜出，`Phase 9B / context_trend_direction_before` 也已完成并以 `promote_context_trend_direction_negative_guard` 胜出；`GX8 / three-level trend hierarchy` 现已完成，因此 `17.6` 已正式切成 `Active`，当前真实下一步就是先写 formal combination freeze，再进入组合 replay。
+从 `2026-03-19` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3`、`Phase 4`、`Phase 4.1`、`Phase 5`、`Phase 6`、`Phase 7` 与 `Phase 8` 都已完成当前轮次收口。`Phase 9 / Gene mainline integration package` 还没有 truthfully closeout：`Phase 9A` 已完成 promoted subset freeze，`Phase 9B / duration_percentile`、`Phase 9B / reversal_state`、`Phase 9B / context_trend_direction_before` 都已留下 isolated winners，`Phase 9B / wave_role` 已完成但 ruling 为 `retain_sidecar_only`；`GX8 / three-level trend hierarchy` 已完成，`17.6 / Phase 9C` 已完成 formal combination freeze，并以 `no combination replay opened` 收口；`17.7 / Phase 9D` 当前轮次也已完成，但正式结论改为 `defer and open a smaller follow-up package`。当前真实下一步不是 `Phase 10`，而是先回到 `Phase 9E / duration_percentile threshold sweep`。
 
 其中：
 
@@ -255,36 +259,45 @@
 5. `Phase 6 = Completed (governance promotion only, default runtime unchanged)`
 6. `Phase 7 = Completed (data provider refactor closed)`
 7. `Phase 8 = Completed (data contract residual audit closed)`
-8. `Phase 9 = Active`
+8. `Phase 9 = Active (Gene refinement first; package closeout deferred)`
 9. `Phase 9A = Completed`
 10. `Phase 9B / duration_percentile = Completed (promote_duration_percentile_negative_filter)`
 11. `Phase 9B / wave_role = Completed (retain_sidecar_only)`
 12. `Phase 9B / reversal_state = Completed (promote_reversal_state_exit_preparation)`
 13. `Phase 9B / context_trend_direction_before = Completed (promote_context_trend_direction_negative_guard)`
-14. `Phase 9C = Active (winner-count gate satisfied; GX8 hierarchy gate cleared; current task = formal combination freeze)`
-15. `Phase 9D = Planned`
-16. rollback target 保持：
-   - `legacy_bof_baseline`
-17. 当前 active mainline package：
-   - `Phase 9 / Gene mainline integration package`
-18. 最近收官 record：
-   - `docs/spec/v0.01-plus/records/v0.01-plus-phase-9b-reversal-state-validation-20260318.md`
+14. `Phase 9C = Completed (formal combination freeze closed; no combination replay opened)`
+15. `Phase 9D = Completed (defer and open a smaller follow-up package)`
+16. `Phase 9E = Active (duration_percentile threshold sweep)`
+17. `Phase 9F = Planned (frozen combination replay; blocked-by-17.8)`
+18. `Phase 10 = Blocked-by-Phase-9`
+19. 当前 truthful runtime：
+   - `legacy_bof_baseline + FIXED_NOTIONAL_CONTROL + FULL_EXIT_CONTROL + Gene sidecar only`
+20. 当前 active mainline package：
+   - `Phase 9`
+21. 最近治理 record：
+   - `docs/spec/v0.01-plus/records/v0.01-plus-phase-9d-gene-package-promotion-ruling-20260319.md`
 
 后续顺序固定为：
 
 1. 当前不再在 `Phase 4.1` 内冻结新的 `MSS / Broker` 候选
 2. `Phase 5 / Phase 6 / Phase 7 / Phase 8` 都已闭环，不再回头补旧卡
 3. 当前 active package 继续保持在 `Phase 9`
-4. `duration_percentile >= 95` 仍是当前正式 isolated winner 之一
-5. `reversal_state == CONFIRMED_TURN_DOWN -> exit-preparation only` 也已成为第二个 isolated winner
-6. `wave_role` 已完成 isolated validation，但当前 ruling 是 `retain_sidecar_only`
-7. `current_wave_age_band` 继续保持 `shadow-only`，当前不单独开卡
-8. `17.5` 已完成，并形成第三个 truthful isolated winner
-9. `17.6` 已正式切成 `Active`，因为 winner-count 与 `GX8` 两道门都已满足
-10. 正式默认路径继续保持：
-   - `legacy_bof_baseline`
-11. 若继续推进 `Gene`，当前就必须在 `17.6` 内先落 formal combination freeze，再做组合 replay，不能口头跳过 freeze
+4. `duration_percentile` 仍是当前正式 isolated winner 之一，但其阈值曲线尚未跑完
+5. `reversal_state` 仍是 isolated winner，但当前尚未 package-promote
+6. `context_trend_direction_before` 仍是第三个 isolated winner，但当前尚未 package-promote
+7. `wave_role` 已完成 isolated validation，但当前 ruling 是 `retain_sidecar_only`
+8. `current_wave_age_band` 继续保持 `shadow-only`，当前不单独开卡
+9. `17.6` 已正式 `Completed`，并把组合面冻结到 `4` 个组合
+10. `17.7` 已正式 `Completed`，但其输出是 `defer` 而不是 `promote`
+11. 当前默认运行路径仍然是：
+   - `legacy_bof_baseline + FIXED_NOTIONAL_CONTROL + FULL_EXIT_CONTROL + Gene sidecar only`
+12. 正式 rollback target 仍保持：
+   - `legacy_bof_baseline + FIXED_NOTIONAL_CONTROL + FULL_EXIT_CONTROL + Gene sidecar only`
+13. 当前真实下一步固定为：
+   - `17.8 / duration sweep`
+   - 然后 `17.9 / frozen combination replay`
+14. 只有当 `17.8` 与 `17.9` 补齐 formal evidence 后，`Phase 9` 才允许重新进入 package-level closeout 判断
 
 也就是：
 
-`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 / Phase 4.1 / Phase 5 / Phase 6 / Phase 7 / Phase 8 都已收口；当前 active mainline package 已切到 Phase 9，但默认运行路径仍继续保持 legacy_bof_baseline。`
+`Phase 0 / Phase 1 / Phase 1.5 / Phase 2 / Phase 3 / Phase 4 / Phase 4.1 / Phase 5 / Phase 6 / Phase 7 / Phase 8 都已收口；当前默认运行路径仍然保持纯 baseline + Gene sidecar only，而真实 active 主线工作重新回到 Phase 9 的 Gene refinement。`

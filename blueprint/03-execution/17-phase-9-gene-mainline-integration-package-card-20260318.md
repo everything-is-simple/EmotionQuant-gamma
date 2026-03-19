@@ -2,29 +2,35 @@
 
 - Status: `Active`
 - Date: `2026-03-18`
-- Type: `mainline migration package`
-- Scope: `formal Gene runtime promotion boundary`
+- Type: `mainline refinement package`
+- Scope: `Gene refinement first before any truthful runtime promotion`
 
 ## 1. Goal
 
 This package answers one question:
 
-`after GX4 ~ GX8 have hardened Gene semantics, which Gene outputs may be truthfully promoted from sidecar into current mainline runtime behavior, in what order, and under what rollback boundary?`
+`after GX4 ~ GX8 have hardened Gene semantics, which Gene outputs may truthfully move from sidecar into current mainline runtime behavior, in what order, and under what rollback boundary?`
 
-It does not assume that `Gene` should become a full runtime gate.
-It defines the narrowest truthful promotion path.
+It still does **not** assume that `Gene` should become a full runtime gate.
+But it also no longer pretends that the package has already truthfully closed.
 
-## 2. Why This Package Exists
+## 2. Why This Package Is Still Open
 
-The current truthful boundary is still:
+At package open, the truthful boundary was:
 
-`Gene = sidecar / dashboard / attribution only`
+`legacy_bof_baseline + FIXED_NOTIONAL_CONTROL + FULL_EXIT_CONTROL + Gene sidecar only`
 
-That was the correct boundary while Gene semantics were still incomplete.
-Now the question is no longer whether Gene has value.
-The new question is:
+That remains the truthful current runtime boundary today.
 
-`what is the smallest truthful Gene subset that can enter runtime without turning Gene into an ungoverned new boss indicator?`
+The package has already identified meaningful candidates, but it has **not** yet earned package closeout because:
+
+1. `duration_percentile` has not completed a truthful threshold sweep
+2. the frozen `Phase 9C` combinations have not completed formal replay
+3. package-level promotion would therefore jump ahead of the evidence needed for a refined Gene conclusion
+
+Current package truth after the current `Phase 9D` ruling is:
+
+`Phase 9 stays active, current runtime remains baseline + Gene sidecar only, and Gene refinement must continue before any package-level promotion claim.`
 
 ## 3. Validation Discipline
 
@@ -33,25 +39,28 @@ This package must obey [`single-variable-validation-discipline-freeze-20260318.m
 That means:
 
 1. `validated baseline` remains `legacy_bof_baseline + FIXED_NOTIONAL_CONTROL + FULL_EXIT_CONTROL + Gene sidecar only`
-2. each formal Phase 9 validation round may promote only one Gene runtime variable
+2. each formal Phase 9 validation round may change only one primary Gene runtime variable
 3. multi-field Gene bundles are forbidden until each component field has already passed isolated validation
+4. package closeout may not jump ahead of missing threshold-sweep or combination-replay evidence
 
-Explicitly forbidden in the first validation rounds:
+Explicitly forbidden:
 
 1. `duration_percentile + wave_role + reversal_state` tested together
 2. `Gene filter + Gene sizing overlay` tested together
 3. `mirror + conditioning + age band` tested together
+4. verbally treating isolated winners as if they had already become package-promoted runtime logic
 
 ## 4. Hard Dependency Gate
 
-This package may be opened now, but may not declare runtime promotion complete until:
+This package may remain open now, but may not declare runtime promotion complete until:
 
 1. [`16-phase-8-data-contract-residual-audit-card-20260318.md`](./16-phase-8-data-contract-residual-audit-card-20260318.md) is completed
 2. [`19-phase-gx8-three-level-trend-hierarchy-card-20260318.md`](../../gene/03-execution/19-phase-gx8-three-level-trend-hierarchy-card-20260318.md) is completed or formally ruled non-blocking
 3. the Gene runtime candidate subset is frozen in a formal governance document
 4. isolated replay proves improvement over the current validated baseline
+5. any claimed entry-side Gene promotion is supported by the missing duration-sweep and/or combination-replay evidence it actually depends on
 
-Without all four conditions, `Gene` remains sidecar only.
+Without all five conditions, `Gene` remains sidecar only at package level.
 
 ## 5. Promotion Order
 
@@ -63,21 +72,22 @@ The only allowed promotion order is:
 4. `combination package` only after prior isolated validations succeed
 5. `full runtime hard gate` only if a later explicit package says so
 
-Current status before this package starts:
+Current truthful status:
 
 1. step `1` is already true
-2. steps `2 ~ 5` remain unapproved
+2. parts of step `2` and step `3` have isolated winners
+3. no step has yet earned package-level default runtime promotion
 
 ## 6. Current Candidate Surface
 
 The package has already passed its first isolated-screening round.
-The current truthful runtime-candidate surface is now narrowed to:
+The current truthful runtime-candidate surface is:
 
 1. `duration_percentile`
 2. `reversal_state`
 3. `context_trend_direction_before`
 
-The following are currently frozen outside the active Phase 9C surface:
+The following remain frozen outside the active combination surface:
 
 1. `current_wave_age_band = shadow-only`
 2. `wave_role = retain_sidecar_only`
@@ -91,58 +101,44 @@ The following are currently frozen outside the active Phase 9C surface:
 
 `Gene promoted subset freeze`
 
-This sub-phase must answer:
+This sub-phase answered:
 
 1. which fields are runtime candidates
 2. which fields remain sidecar only
 3. which fields are permanently forbidden from default runtime use
 
-Current `Phase 9A` ruling:
+Current `Phase 9A` status:
 
-1. `duration_percentile` is the only opened `single-variable candidate`
-2. its allowed next-step role is `negative filter only`
-3. `current_wave_age_band`, `wave_role`, `reversal_state`, `context_trend_direction_before`, `mirror`, `conditioning`, and any composite `gene_score` remain outside the first runtime round
-
-Formal outputs:
-
-1. [`17.1-phase-9a-gene-promoted-subset-freeze-card-20260318.md`](./17.1-phase-9a-gene-promoted-subset-freeze-card-20260318.md)
-2. [`phase-9a-gene-promoted-subset-freeze-evidence-20260318.md`](./evidence/phase-9a-gene-promoted-subset-freeze-evidence-20260318.md)
-3. [`phase-9a-gene-promoted-subset-freeze-record-20260318.md`](./records/phase-9a-gene-promoted-subset-freeze-record-20260318.md)
-4. [`v0.01-plus-phase-9a-gene-promoted-subset-freeze-20260318.md`](../../docs/spec/v0.01-plus/governance/v0.01-plus-phase-9a-gene-promoted-subset-freeze-20260318.md)
-5. [`v0.01-plus-phase-9a-gene-promoted-subset-freeze-20260318.md`](../../docs/spec/v0.01-plus/records/v0.01-plus-phase-9a-gene-promoted-subset-freeze-20260318.md)
+1. [`17.1-phase-9a-gene-promoted-subset-freeze-card-20260318.md`](./17.1-phase-9a-gene-promoted-subset-freeze-card-20260318.md) = `Completed`
+2. the package later widened the truthful candidate surface through completed isolated rounds
+3. `Gene sidecar only` remains the package-level baseline until later evidence proves otherwise
 
 ### 7.2 Phase 9B
 
 `single-variable Gene runtime validation`
 
-This sub-phase must run isolated validation rounds such as:
-
-1. `duration_percentile` as negative filter, alone
-2. `wave_role` as negative filter, alone
-3. `reversal_state` as exit-preparation signal, alone
-
 Current completed isolated rounds:
 
 1. [`17.2-phase-9b-isolated-duration-percentile-validation-card-20260318.md`](./17.2-phase-9b-isolated-duration-percentile-validation-card-20260318.md)
-2. completed first isolated win = `duration_percentile as negative filter, alone`
-3. current isolated ruling = `promote_duration_percentile_negative_filter`
-4. `p65` was reviewed as sensitivity reference only and did not replace the formal `p95` threshold
-5. [`17.3-phase-9b-isolated-wave-role-validation-card-20260318.md`](./17.3-phase-9b-isolated-wave-role-validation-card-20260318.md) completed second isolated round = `wave_role as negative filter, alone`
-6. second isolated ruling = `retain_sidecar_only`
-7. [`17.4-phase-9b-isolated-reversal-state-validation-card-20260318.md`](./17.4-phase-9b-isolated-reversal-state-validation-card-20260318.md) completed third isolated round = `reversal_state as exit-preparation only`
-8. third isolated ruling = `promote_reversal_state_exit_preparation`
-9. [`17.5-phase-9b-isolated-context-trend-direction-before-validation-card-20260318.md`](./17.5-phase-9b-isolated-context-trend-direction-before-validation-card-20260318.md) completed fourth isolated round = `context_trend_direction_before as parent-context negative guard`
-10. fourth isolated ruling = `promote_context_trend_direction_negative_guard`
-11. the package now has `3` isolated winners:
-   `duration_percentile`, `reversal_state`, and `context_trend_direction_before`
-12. `Phase 9C` combination candidate no longer fails either the winner-count gate or the `GX8` hierarchy gate, so the next truthful move is to open `17.6` and freeze the smallest allowed combination candidate explicitly
+2. isolated ruling = `promote_duration_percentile_negative_filter`
+3. formal duration threshold tested so far = `p95`
+4. `p65` was reviewed as sensitivity reference only
+5. [`17.3-phase-9b-isolated-wave-role-validation-card-20260318.md`](./17.3-phase-9b-isolated-wave-role-validation-card-20260318.md)
+6. isolated ruling = `retain_sidecar_only`
+7. [`17.4-phase-9b-isolated-reversal-state-validation-card-20260318.md`](./17.4-phase-9b-isolated-reversal-state-validation-card-20260318.md)
+8. isolated ruling = `promote_reversal_state_exit_preparation`
+9. [`17.5-phase-9b-isolated-context-trend-direction-before-validation-card-20260318.md`](./17.5-phase-9b-isolated-context-trend-direction-before-validation-card-20260318.md)
+10. isolated ruling = `promote_context_trend_direction_negative_guard`
+11. the package therefore has `3` isolated winners:
+    `duration_percentile`, `reversal_state`, and `context_trend_direction_before`
+
+Important governance note:
+
+`isolated win != package-level default runtime promotion`
 
 ### 7.3 Phase 9C
 
 `formal combination freeze before any combination replay`
-
-This sub-phase may open only after each component field has already passed isolated validation.
-That gate is now satisfied.
 
 Current freeze boundary:
 
@@ -150,17 +146,64 @@ Current freeze boundary:
 2. allowed exact combinations = `duration_percentile + reversal_state`, `duration_percentile + context_trend_direction_before`, `reversal_state + context_trend_direction_before`, and `duration_percentile + reversal_state + context_trend_direction_before`
 3. explicitly forbidden from the Phase 9C surface = `wave_role`, `current_wave_age_band`, `mirror`, `conditioning`, and `gene_score`
 4. no runtime / SQL alias expansion is allowed inside this card; it must use canonical field names only
-5. `17.7 / Phase 9D` remains the only downstream package card and stays blocked until `17.6` closes its freeze truthfully
+
+Current `Phase 9C` ruling:
+
+1. [`17.6-phase-9c-formal-combination-freeze-card-20260318.md`](./17.6-phase-9c-formal-combination-freeze-card-20260318.md) = `Completed`
+2. formal output = `no combination replay opened`
+3. `Phase 9C has no formal combination winner`
+4. this freeze result is now consumed by later smaller follow-up cards rather than being treated as package closeout proof
 
 ### 7.4 Phase 9D
 
 `promotion ruling or retention ruling`
 
-This sub-phase must produce one of only three outputs:
+This sub-phase still only allows:
 
 1. `promote narrow Gene subset`
 2. `retain Gene as sidecar only`
 3. `defer and open a smaller follow-up package`
+
+Current `Phase 9D` ruling:
+
+1. [`17.7-phase-9d-gene-package-promotion-ruling-card-20260318.md`](./17.7-phase-9d-gene-package-promotion-ruling-card-20260318.md) = `Completed`
+2. current output = `defer and open a smaller follow-up package`
+3. current truthful runtime remains:
+   `legacy_bof_baseline + FIXED_NOTIONAL_CONTROL + FULL_EXIT_CONTROL + Gene sidecar only`
+4. `Phase 10` remains blocked
+5. package closeout remains pending
+
+### 7.5 Phase 9E
+
+`duration_percentile threshold sweep`
+
+This sub-phase now becomes the immediate next truthful move.
+
+It must answer:
+
+1. whether `p95` is actually the truthful duration threshold or just an endpoint artifact
+2. whether the useful turning point sits between `p65` and `p95`
+3. whether the duration curve still supports runtime candidacy after a proper step-5 sweep
+
+Current status:
+
+1. [`17.8-phase-9e-duration-percentile-threshold-sweep-card-20260319.md`](./17.8-phase-9e-duration-percentile-threshold-sweep-card-20260319.md) = `Active`
+
+### 7.6 Phase 9F
+
+`frozen combination replay`
+
+This sub-phase exists because the package still lacks formal replay across the `Phase 9C` frozen surface.
+
+It may only consume:
+
+1. the exact frozen combinations from `17.6`
+2. the duration-threshold conclusion that comes out of `17.8`
+
+Current status:
+
+1. [`17.9-phase-9f-frozen-combination-replay-card-20260319.md`](./17.9-phase-9f-frozen-combination-replay-card-20260319.md) = `Planned`
+2. current gate = `blocked-by-17.8`
 
 ## 8. Non-Goals
 
@@ -168,19 +211,20 @@ This package explicitly does not:
 
 1. replace `BOF baseline` with a Gene-native entry engine
 2. reactivate legacy `IRS-lite / MSS-lite`
-3. promote all Gene labels into runtime switches
-4. verbally declare that four-battlefield integration has already reached runtime cutover
+3. verbally promote isolated winners into runtime without the missing evidence they depend on
+4. declare `Phase 10` active before `Phase 9` finishes truthful Gene refinement
 
 ## 9. Deliverables
 
 This package is complete only when it leaves:
 
 1. a formal promoted-subset freeze
-2. isolated replay evidence per promoted field
-3. combination replay evidence only where justified
-4. a runtime ruling record
-5. an updated operating runbook if promotion happens
-6. an explicit rollback target
+2. isolated replay evidence per candidate field
+3. duration-sweep evidence if duration promotion is still under discussion
+4. combination replay evidence where that discussion actually depends on combinations
+5. a truthful package-level ruling record
+6. an updated operating runbook if and only if package promotion truly happens
+7. an explicit rollback target
 
 ## 10. Acceptance Criteria
 
@@ -188,4 +232,4 @@ This package is complete only when it leaves:
 2. replay proves the subset improves behavior without destroying traceability
 3. no uncoded human interpretation leaks into runtime
 4. rollback to `legacy_bof_baseline + FIXED_NOTIONAL_CONTROL + FULL_EXIT_CONTROL + Gene sidecar only` remains possible
-5. no promotion is considered real until a formal closeout record says so
+5. no package promotion is considered real until the missing duration/combination evidence has been settled truthfully
