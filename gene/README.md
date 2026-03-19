@@ -122,6 +122,12 @@
 - `03-execution/25-phase-gx14-book-aligned-lifespan-distribution-card-20260319.md`
 - `03-execution/26-phase-gx15-market-lifespan-framework-reconstruction-package-card-20260319.md`
 - `03-execution/27-phase-gx16-average-lifespan-odds-surface-card-20260319.md`
+- `03-execution/28-phase-gx17-book-core-definition-final-freeze-card-20260320.md`
+- `03-execution/29-phase-gx18-stock-market-lifespan-surface-schema-refactor-card-20260320.md`
+- `03-execution/30-phase-gx19-average-lifespan-engine-completion-card-20260320.md`
+- `03-execution/31-phase-gx20-book-figure-renderer-and-formal-report-output-card-20260320.md`
+- `03-execution/32-phase-gx21-gene-incremental-builder-card-20260320.md`
+- `03-execution/33-phase-gx22-backtest-cache-and-replay-acceleration-card-20260320.md`
 - `03-execution/records/12-gene-book-definition-ingestion-ledger-20260317.md`
 - `03-execution/records/14-phase-gx3-trend-level-context-refactor-record-20260317.md`
 - `03-execution/records/01-phase-g0-wave-ruler-opening-record-20260316.md`
@@ -241,8 +247,38 @@
    - `src/selector/gene.py / src/data/store.py`
    - `Completed`
    - 目标：把图 26-1 的平均寿命 / odds 正式接进 Gene 对象合同
+15. `GX17 / book core definition final freeze`
+   - `definition freeze`
+   - `gene/01-full-design/`
+   - `Proposal`
+   - 目标：把趋势定义、趋势改变定义与市场寿命框架根口径一次冻结
+16. `GX18 / stock-market lifespan surface schema refactor`
+   - `schema refactor`
+   - `src/data/store.py`
+   - `Proposal`
+   - 目标：把个股与市场四张寿命面收敛成标准化 schema，而不是物理表爆炸
+17. `GX19 / average lifespan engine completion`
+   - `engine completion`
+   - `src/selector/gene.py`
+   - `Proposal`
+   - 目标：把 `UNSCALED / NULL odds / COUNTERTREND` 等缺口全部补齐
+18. `GX20 / book figure renderer and formal report output`
+   - `report productization`
+   - `scripts/report/`
+   - `Proposal`
+   - 目标：把图 11-1 / 26-1 风格的市场寿命图正式输出成系统报告产物
+19. `GX21 / gene incremental builder`
+   - `incremental builder`
+   - `src/selector/`
+   - `Proposal`
+   - 目标：让 A 股全市场 Gene 与四张寿命面按脏窗口增量更新
+20. `GX22 / backtest cache and replay acceleration`
+   - `backtest acceleration`
+   - `src/backtest/`
+   - `Proposal`
+   - 目标：把回测从重复读写型 runner 推进到缓存驱动型批量回放
 
-当前 `GX3 ~ GX12` 已完成，当前新增执行位为 `GX13 + GX14 + GX15`，其中 `GX16` 已完成。  
+当前 `GX3 ~ GX12` 已完成，当前新增执行位为 `GX13 + GX14 + GX15`，其中 `GX16` 已完成；下一轮系统性清账队列已经展开为 `GX17 ~ GX22`。  
 当前第四战场已不再有真正未执行的 hierarchy blocker，但已进入“书义对齐整改”阶段。  
 定义整改后的正式收口口径现更新为：
 
