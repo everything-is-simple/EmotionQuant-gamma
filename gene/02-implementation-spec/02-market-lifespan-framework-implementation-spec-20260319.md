@@ -67,6 +67,30 @@ canonical lifespan history 当前应定义为：
 4. 同一 `MAINSTREAM` 角色
 5. 已完成 completed wave
 
+### 3.1A market lifespan surfaces
+
+当消费对象是 `MARKET` 而不是单只股票时，canonical surfaces 必须显式拆成四张：
+
+1. `BULL_MAINSTREAM`
+   - `context_trend_direction_before = UP`
+   - `wave_role = MAINSTREAM`
+   - 幅度轴 = `magnitude_pct`
+2. `BULL_COUNTERTREND`
+   - `context_trend_direction_before = UP`
+   - `wave_role = COUNTERTREND`
+   - 幅度轴 = `retracement_vs_prior_mainstream_pct`
+3. `BEAR_MAINSTREAM`
+   - `context_trend_direction_before = DOWN`
+   - `wave_role = MAINSTREAM`
+   - 幅度轴 = `magnitude_pct`
+4. `BEAR_COUNTERTREND`
+   - `context_trend_direction_before = DOWN`
+   - `wave_role = COUNTERTREND`
+   - 幅度轴 = `retracement_vs_prior_mainstream_pct`
+
+这四张表共同组成 `market average lifespan framework`。  
+不允许再把 `BULL / BEAR` 或 `MAINSTREAM / COUNTERTREND` 混在一张统计面里。
+
 ### 3.2 统计维度
 
 canonical lifespan surface 至少需要：
@@ -146,6 +170,21 @@ distribution eval 需要从“尾部阈值摘要”转向：
 1. quartile summary
 2. continuous distribution summary
 3. payoff by quartile
+
+### 4.4 `l3_gene_market_lifespan_surface`
+
+市场寿命框架需要正式落一张市场表，至少包含：
+
+1. `market_regime_direction / market_regime_label`
+2. `wave_role`
+3. `surface_label`
+4. `amplitude_metric_name`
+5. 幅度轴与期限轴的 `min / mean / q25 / q50 / q75 / p65 / p95 / max`
+6. 当前市场 active wave 在所属 surface 中的：
+   - 幅度 percentile / band
+   - duration percentile / band
+   - joint percentile / band
+   - average remaining / aged odds
 
 ---
 

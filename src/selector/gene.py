@@ -105,6 +105,8 @@ G5_SCOPE_MARKET = "MARKET"
 G5_SCOPE_INDUSTRY = "INDUSTRY"
 G5_PRICE_SOURCE_OHLC = "OHLC_NATIVE"
 G5_PRICE_SOURCE_SYNTHETIC = "SYNTHETIC_CLOSE_ONLY"
+MARKET_REGIME_BULL = "BULL"
+MARKET_REGIME_BEAR = "BEAR"
 G6_CONDITIONING_SAMPLE_SCOPE = "PAS_DETECTOR_TRIGGER"
 G6_EDGE_BETTER = "BETTER"
 G6_EDGE_MIXED = "MIXED"
@@ -609,6 +611,93 @@ def _lifespan_remaining_profile(
         "lifespan_average_aged_prob": average_aged_prob,
         "lifespan_remaining_vs_aged_odds": remaining_vs_aged_odds,
         "lifespan_aged_vs_remaining_odds": aged_vs_remaining_odds,
+    }
+
+
+def _empty_lifespan_remaining_profile() -> dict[str, float | None]:
+    return {
+        "magnitude_remaining_prob": None,
+        "duration_remaining_prob": None,
+        "lifespan_average_remaining_prob": None,
+        "lifespan_average_aged_prob": None,
+        "lifespan_remaining_vs_aged_odds": None,
+        "lifespan_aged_vs_remaining_odds": None,
+    }
+
+
+def _relative_strength_stats_nullable(history: list[float], value: float | None) -> dict[str, float | int | None]:
+    parsed = _optional_float(value)
+    if parsed is None:
+        return {"rank": None, "percentile": None, "zscore": None, "sample_size": 0}
+    arr = np.asarray(history, dtype=float)
+    arr = arr[np.isfinite(arr)]
+    if len(arr) == 0:
+        return {"rank": None, "percentile": None, "zscore": None, "sample_size": 0}
+    return _relative_strength_stats(arr.tolist(), parsed)
+
+
+def _joint_surface_percentile(
+    history_pairs: list[tuple[float, float]],
+    *,
+    amplitude_value: float | None,
+    duration_value: float | None,
+) -> float | None:
+    amplitude = _optional_float(amplitude_value)
+    duration = _optional_float(duration_value)
+    if amplitude is None or duration is None or not history_pairs:
+        return None
+    arr = np.asarray(history_pairs, dtype=float)
+    if len(arr) == 0:
+        return None
+    dominated = np.logical_and(arr[:, 0] <= amplitude, arr[:, 1] <= duration)
+    return 100.0 * float(np.mean(dominated))
+
+
+def _market_regime_label(direction: str) -> str | None:
+    if direction == "UP":
+        return MARKET_REGIME_BULL
+    if direction == "DOWN":
+        return MARKET_REGIME_BEAR
+    return None
+
+
+def _market_lifespan_surface_label(direction: str, wave_role: str) -> str:
+    regime = _market_regime_label(direction) or "UNSET"
+    return f"{regime}_{wave_role}"
+
+
+def _market_lifespan_amplitude_spec(wave_role: str) -> tuple[str, str]:
+    if wave_role == "COUNTERTREND":
+        return "retracement_vs_prior_mainstream_pct", "current_wave_retracement_vs_prior_mainstream_pct"
+    return "magnitude_pct", "current_wave_magnitude_pct"
+
+
+def _distribution_summary(history: list[float]) -> dict[str, float | int | None]:
+    arr = np.asarray(history, dtype=float)
+    arr = arr[np.isfinite(arr)]
+    if len(arr) == 0:
+        return {
+            "sample_size": 0,
+            "min": None,
+            "mean": None,
+            "q25": None,
+            "q50": None,
+            "q75": None,
+            "p65": None,
+            "p95": None,
+            "max": None,
+        }
+    thresholds = _distribution_thresholds(arr.tolist())
+    return {
+        "sample_size": int(len(arr)),
+        "min": float(arr.min()),
+        "mean": float(arr.mean()),
+        "q25": _optional_float(thresholds["q25"]),
+        "q50": _optional_float(thresholds["q50"]),
+        "q75": _optional_float(thresholds["q75"]),
+        "p65": _optional_float(thresholds["p65"]),
+        "p95": _optional_float(thresholds["p95"]),
+        "max": float(arr.max()),
     }
 
 
@@ -2409,6 +2498,174 @@ def _apply_mirror_ranks(mirror_df: pd.DataFrame) -> pd.DataFrame:
     return ranked
 
 
+def _build_market_lifespan_surface_rows(
+    *,
+    calc_date: date,
+    final_snapshot_df: pd.DataFrame,
+    wave_df: pd.DataFrame,
+    meta: pd.Series,
+) -> pd.DataFrame:
+    if final_snapshot_df.empty:
+        return pd.DataFrame()
+
+    snapshot = final_snapshot_df.iloc[0]
+    current_regime_direction = str(
+        snapshot.get("current_context_parent_trend_direction")
+        or snapshot.get("current_context_trend_direction")
+        or "UNSET"
+    )
+    current_wave_role = str(snapshot.get("current_wave_role") or "UNSET")
+    current_wave_direction = str(snapshot.get("current_wave_direction") or "UNSET")
+    current_duration_value = _optional_float(snapshot.get("current_wave_age_trade_days"))
+
+    intermediate_waves = wave_df.loc[
+        (wave_df["trend_level"] == TREND_LEVEL_INTERMEDIATE)
+        & (wave_df["context_trend_level"] == TREND_LEVEL_LONG)
+        & (wave_df["context_trend_direction_before"].isin(["UP", "DOWN"]))
+        & (wave_df["wave_role"].isin(["MAINSTREAM", "COUNTERTREND"]))
+    ].copy()
+
+    rows: list[dict[str, object]] = []
+    for regime_direction in ("UP", "DOWN"):
+        regime_label = _market_regime_label(regime_direction)
+        if regime_label is None:
+            continue
+        for wave_role in ("MAINSTREAM", "COUNTERTREND"):
+            amplitude_metric_name, current_amplitude_col = _market_lifespan_amplitude_spec(wave_role)
+            surface_label = _market_lifespan_surface_label(regime_direction, wave_role)
+            surface_history = intermediate_waves.loc[
+                (intermediate_waves["context_trend_direction_before"] == regime_direction)
+                & (intermediate_waves["wave_role"] == wave_role)
+            ].copy()
+            surface_history["surface_amplitude_value"] = pd.to_numeric(
+                surface_history[amplitude_metric_name],
+                errors="coerce",
+            )
+            surface_history["surface_duration_value"] = pd.to_numeric(
+                surface_history["duration_trade_days"],
+                errors="coerce",
+            )
+            surface_history = surface_history.loc[
+                surface_history["surface_amplitude_value"].notna()
+                & surface_history["surface_duration_value"].notna()
+            ].copy()
+
+            amplitude_history = surface_history["surface_amplitude_value"].astype(float).tolist()
+            duration_history = surface_history["surface_duration_value"].astype(float).tolist()
+            history_pairs = list(zip(amplitude_history, duration_history, strict=False))
+            amplitude_summary = _distribution_summary(amplitude_history)
+            duration_summary = _distribution_summary(duration_history)
+            amplitude_thresholds = _distribution_thresholds(amplitude_history)
+            duration_thresholds = _distribution_thresholds(duration_history)
+
+            current_match = current_regime_direction == regime_direction and current_wave_role == wave_role
+            current_amplitude_value = (
+                _optional_float(snapshot.get(current_amplitude_col))
+                if current_match
+                else None
+            )
+            amplitude_stats = _relative_strength_stats_nullable(amplitude_history, current_amplitude_value)
+            duration_stats = _relative_strength_stats_nullable(duration_history, current_duration_value if current_match else None)
+            joint_percentile = (
+                _joint_surface_percentile(
+                    history_pairs,
+                    amplitude_value=current_amplitude_value,
+                    duration_value=current_duration_value,
+                )
+                if current_match
+                else None
+            )
+            remaining_profile = (
+                _lifespan_remaining_profile(
+                    magnitude_percentile=float(amplitude_stats["percentile"]),
+                    duration_percentile=float(duration_stats["percentile"]),
+                )
+                if amplitude_stats["percentile"] is not None and duration_stats["percentile"] is not None
+                else _empty_lifespan_remaining_profile()
+            )
+
+            sample_first_wave_start_date = None
+            sample_last_wave_end_date = None
+            if not surface_history.empty:
+                sample_first_wave_start_date = pd.to_datetime(
+                    surface_history["start_date"], errors="coerce"
+                ).min()
+                sample_last_wave_end_date = pd.to_datetime(
+                    surface_history["end_date"], errors="coerce"
+                ).max()
+
+            rows.append(
+                {
+                    "entity_scope": str(meta["entity_scope"]),
+                    "entity_code": str(meta["entity_code"]),
+                    "calc_date": calc_date,
+                    "entity_name": str(meta["entity_name"]),
+                    "source_table": str(meta["source_table"]),
+                    "price_source_kind": str(meta["price_source_kind"]),
+                    "market_regime_direction": regime_direction,
+                    "market_regime_label": regime_label,
+                    "wave_role": wave_role,
+                    "surface_label": surface_label,
+                    "amplitude_metric_name": amplitude_metric_name,
+                    "history_reference_trade_days": GENE_LIFESPAN_REFERENCE_TRADE_DAYS,
+                    "sample_size": int(amplitude_summary["sample_size"] or 0),
+                    "sample_first_wave_start_date": (
+                        None
+                        if pd.isna(sample_first_wave_start_date)
+                        else pd.Timestamp(sample_first_wave_start_date).date()
+                    ),
+                    "sample_last_wave_end_date": (
+                        None
+                        if pd.isna(sample_last_wave_end_date)
+                        else pd.Timestamp(sample_last_wave_end_date).date()
+                    ),
+                    "amplitude_min": amplitude_summary["min"],
+                    "amplitude_mean": amplitude_summary["mean"],
+                    "amplitude_q25": amplitude_summary["q25"],
+                    "amplitude_q50": amplitude_summary["q50"],
+                    "amplitude_q75": amplitude_summary["q75"],
+                    "amplitude_p65": amplitude_summary["p65"],
+                    "amplitude_p95": amplitude_summary["p95"],
+                    "amplitude_max": amplitude_summary["max"],
+                    "duration_min": duration_summary["min"],
+                    "duration_mean": duration_summary["mean"],
+                    "duration_q25": duration_summary["q25"],
+                    "duration_q50": duration_summary["q50"],
+                    "duration_q75": duration_summary["q75"],
+                    "duration_p65": duration_summary["p65"],
+                    "duration_p95": duration_summary["p95"],
+                    "duration_max": duration_summary["max"],
+                    "current_wave_matches_surface": bool(current_match),
+                    "current_wave_direction": current_wave_direction if current_match else None,
+                    "current_wave_age_trade_days": int(current_duration_value) if current_match and current_duration_value is not None else None,
+                    "current_wave_amplitude_value": current_amplitude_value,
+                    "current_wave_amplitude_percentile": _optional_float(amplitude_stats["percentile"]),
+                    "current_wave_duration_percentile": _optional_float(duration_stats["percentile"]),
+                    "current_wave_joint_percentile": _optional_float(joint_percentile),
+                    "current_wave_amplitude_band": (
+                        _distribution_band(current_amplitude_value, amplitude_thresholds)
+                        if current_match and current_amplitude_value is not None
+                        else G2_BAND_UNSCALED
+                    ),
+                    "current_wave_duration_band": (
+                        _distribution_band(float(current_duration_value), duration_thresholds)
+                        if current_match and current_duration_value is not None
+                        else G2_BAND_UNSCALED
+                    ),
+                    "current_wave_joint_band": (
+                        _percentile_band(float(joint_percentile), int(amplitude_summary["sample_size"] or 0))
+                        if current_match and joint_percentile is not None
+                        else G2_BAND_UNSCALED
+                    ),
+                    "current_wave_average_remaining_prob": remaining_profile["lifespan_average_remaining_prob"],
+                    "current_wave_average_aged_prob": remaining_profile["lifespan_average_aged_prob"],
+                    "current_wave_remaining_vs_aged_odds": remaining_profile["lifespan_remaining_vs_aged_odds"],
+                    "current_wave_aged_vs_remaining_odds": remaining_profile["lifespan_aged_vs_remaining_odds"],
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 # G5：把个股自历史尺镜像到市场/行业层。
 # 目的不是重做 MSS / IRS，而是用同一套 Gene 尺子回答：
 # 当前市场、当前行业在它们各自历史里处在什么位置。
@@ -2423,13 +2680,15 @@ def compute_gene_mirror(store: Store, calc_date: date) -> int:
     start = _lookback_trade_start(store, calc_date, GENE_LOOKBACK_TRADE_DAYS)
     mirror_input = _load_g5_mirror_input(store, start, calc_date)
     store.conn.execute("DELETE FROM l3_gene_mirror WHERE calc_date = ?", [calc_date])
+    store.conn.execute("DELETE FROM l3_gene_market_lifespan_surface WHERE calc_date = ?", [calc_date])
     if mirror_input.empty:
         return 0
 
     snapshot_frames: list[pd.DataFrame] = []
+    market_lifespan_frames: list[pd.DataFrame] = []
     for _, group in mirror_input.groupby("code", sort=True):
         entity_frame = group.reset_index(drop=True).copy()
-        snapshot_df, _, _, _ = _build_code_gene_payload(entity_frame)
+        snapshot_df, wave_df, _, _ = _build_code_gene_payload(entity_frame)
         if snapshot_df.empty:
             continue
         final_snapshot = snapshot_df.loc[snapshot_df["calc_date"] == calc_date].copy()
@@ -2442,6 +2701,15 @@ def compute_gene_mirror(store: Store, calc_date: date) -> int:
         final_snapshot["source_table"] = str(meta["source_table"])
         final_snapshot["price_source_kind"] = str(meta["price_source_kind"])
         snapshot_frames.append(final_snapshot)
+        if str(meta["entity_scope"]) == G5_SCOPE_MARKET and not wave_df.empty:
+            market_surface_df = _build_market_lifespan_surface_rows(
+                calc_date=calc_date,
+                final_snapshot_df=final_snapshot,
+                wave_df=wave_df,
+                meta=meta,
+            )
+            if not market_surface_df.empty:
+                market_lifespan_frames.append(market_surface_df)
 
     if not snapshot_frames:
         return 0
@@ -2537,7 +2805,12 @@ def compute_gene_mirror(store: Store, calc_date: date) -> int:
         "support_return_20d",
         "support_follow_through",
     ]
-    return store.bulk_upsert("l3_gene_mirror", mirror_df[output_columns].copy())
+    written = store.bulk_upsert("l3_gene_mirror", mirror_df[output_columns].copy())
+    if market_lifespan_frames:
+        market_lifespan_df = _concat_sparse_frames(market_lifespan_frames)
+        if not market_lifespan_df.empty:
+            written += store.bulk_upsert("l3_gene_market_lifespan_surface", market_lifespan_df)
+    return written
 
 
 def _future_window_extreme(series: pd.Series, horizon: int, fn: str) -> pd.Series:

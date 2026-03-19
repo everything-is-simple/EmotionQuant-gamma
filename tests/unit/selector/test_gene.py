@@ -884,8 +884,25 @@ def test_compute_gene_mirror_writes_market_and_industry_rows(tmp_path) -> None:
             """,
             (end,),
         )
+        market_lifespan_rows = store.read_df(
+            """
+            SELECT
+                surface_label,
+                market_regime_label,
+                wave_role,
+                amplitude_metric_name,
+                sample_size,
+                current_wave_matches_surface,
+                current_wave_amplitude_value,
+                current_wave_average_aged_prob
+            FROM l3_gene_market_lifespan_surface
+            WHERE calc_date = ?
+            ORDER BY surface_label
+            """,
+            (end,),
+        )
 
-        assert written == 3
+        assert written == 7
         assert mirror_rows["entity_scope"].tolist().count("MARKET") == 1
         assert mirror_rows["entity_scope"].tolist().count("INDUSTRY") == 2
         assert set(mirror_rows["source_table"].tolist()) == {"l1_index_daily", "l2_industry_daily"}
@@ -902,6 +919,25 @@ def test_compute_gene_mirror_writes_market_and_industry_rows(tmp_path) -> None:
         assert industry_rows["mirror_gene_rank"].between(1, len(industry_rows)).all()
         assert industry_rows["support_amount_vs_ma20"].notna().all()
         assert industry_rows["support_follow_through"].notna().all()
+        assert len(market_lifespan_rows) == 4
+        assert set(market_lifespan_rows["surface_label"].tolist()) == {
+            "BULL_MAINSTREAM",
+            "BULL_COUNTERTREND",
+            "BEAR_MAINSTREAM",
+            "BEAR_COUNTERTREND",
+        }
+        assert market_lifespan_rows.loc[
+            market_lifespan_rows["wave_role"] == "MAINSTREAM", "amplitude_metric_name"
+        ].eq("magnitude_pct").all()
+        assert market_lifespan_rows.loc[
+            market_lifespan_rows["wave_role"] == "COUNTERTREND", "amplitude_metric_name"
+        ].eq("retracement_vs_prior_mainstream_pct").all()
+        assert market_lifespan_rows["sample_size"].ge(0).all()
+        assert int(market_lifespan_rows["current_wave_matches_surface"].fillna(False).astype(int).sum()) == 1
+        active_surface = market_lifespan_rows.loc[
+            market_lifespan_rows["current_wave_matches_surface"].fillna(False)
+        ].iloc[0]
+        assert pd.notna(active_surface["current_wave_amplitude_value"])
     finally:
         store.close()
 
