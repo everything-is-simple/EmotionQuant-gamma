@@ -53,6 +53,8 @@ python scripts/data/repair_l1_partitions_from_raw_duckdb.py --source-db G:\Emoti
   公共工具模块，不直接运行
 - `audit_trade_date_coverage.py`
   覆盖率审计脚本，诊断用，不是日更入口
+- `run_gene_incremental_builder.py`
+  Gene 增量 builder，按脏窗口扫描受影响 code，再只重建这些 code 的 `l3_stock_gene / l3_stock_lifespan_surface / l3_gene_wave / l3_gene_event`，并可选刷新 market surface
 
 ## 当前结论：哪些算过时
 
@@ -64,4 +66,3 @@ python scripts/data/repair_l1_partitions_from_raw_duckdb.py --source-db G:\Emoti
 它们不是错误，而是“遗留 fallback”。当前正式日更链已经切成：
 
 `import_tdx_vipdoc.py + import_tdx_static_assets.py + repair_l1_partitions_from_raw_duckdb.py`
-

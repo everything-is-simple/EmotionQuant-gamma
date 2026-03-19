@@ -714,8 +714,15 @@ def _distribution_summary(history: list[float]) -> dict[str, float | int | None]
 
 
 def _prepare_lifespan_surface_history(wave_df: pd.DataFrame) -> pd.DataFrame:
+    derived_columns = [
+        "surface_magnitude_pct",
+        "surface_retracement_vs_prior_mainstream_pct",
+        "surface_duration_value",
+        "surface_start_date",
+        "surface_end_date",
+    ]
     if wave_df.empty:
-        return pd.DataFrame()
+        return pd.DataFrame(columns=derived_columns)
     prepared = wave_df.loc[
         (wave_df["trend_level"] == TREND_LEVEL_INTERMEDIATE)
         & (wave_df["context_trend_level"] == TREND_LEVEL_LONG)
@@ -723,6 +730,8 @@ def _prepare_lifespan_surface_history(wave_df: pd.DataFrame) -> pd.DataFrame:
         & (wave_df["wave_role"].isin(["MAINSTREAM", "COUNTERTREND"]))
     ].copy()
     if prepared.empty:
+        for column in derived_columns:
+            prepared[column] = pd.Series(dtype="object")
         return prepared
     prepared["surface_magnitude_pct"] = pd.to_numeric(prepared["magnitude_pct"], errors="coerce")
     prepared["surface_retracement_vs_prior_mainstream_pct"] = pd.to_numeric(

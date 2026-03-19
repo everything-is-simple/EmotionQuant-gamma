@@ -1,5 +1,5 @@
 # GX21 / Gene 增量构建器卡
-**状态**: `Proposal`
+**状态**: `Active`
 **日期**: `2026-03-20`
 **类型**: `incremental builder`
 **直接目标目录**: [`../../src/selector/`](../../src/selector/)
@@ -30,6 +30,21 @@
 3. `market-only rebuild` 入口
 4. `surface refresh` 入口
 5. 增量验证与幂等验证
+
+---
+
+## 3A. 四目录落位口径
+
+`GX21` 的增量 builder 必须显式服从四目录纪律：
+
+1. `G:\EmotionQuant-gamma`
+   - 放 builder 源码、执行卡、测试、治理记录
+2. `G:\EmotionQuant_data`
+   - 放正式执行库与正式增量写回结果
+3. `G:\EmotionQuant-temp`
+   - 放 dirty scan 摘要、临时工作库、性能试跑产物
+4. `G:\EmotionQuant-report`
+   - 不放 builder 中间件，只消费最终图和报告
 
 ---
 

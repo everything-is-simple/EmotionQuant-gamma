@@ -62,7 +62,7 @@
 | `GX18` | `Active` | [`card`](29-phase-gx18-stock-market-lifespan-surface-schema-refactor-card-20260320.md) | `pending` | `pending` | 个股与市场四张寿命面的标准化 schema 重构 |
 | `GX19` | `Active` | [`card`](30-phase-gx19-average-lifespan-engine-completion-card-20260320.md) | `pending` | `pending` | 把平均寿命框架补成完整、诚实、双侧可用的统计引擎 |
 | `GX20` | `Active` | [`card`](31-phase-gx20-book-figure-renderer-and-formal-report-output-card-20260320.md) | `pending` | `pending` | 把图 11-1 / 26-1 风格的市场寿命图正式产品化输出 |
-| `GX21` | `Proposal` | [`card`](32-phase-gx21-gene-incremental-builder-card-20260320.md) | `pending` | `pending` | Gene 与四张寿命面按脏窗口增量更新 |
+| `GX21` | `Active` | [`card`](32-phase-gx21-gene-incremental-builder-card-20260320.md) | `pending` | `pending` | Gene 与四张寿命面按脏窗口增量更新 |
 | `GX22` | `Proposal` | [`card`](33-phase-gx22-backtest-cache-and-replay-acceleration-card-20260320.md) | `pending` | `pending` | 回测缓存层、批量回放与多场景加速 |
 
 ---

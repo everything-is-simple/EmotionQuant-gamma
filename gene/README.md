@@ -270,7 +270,7 @@
 19. `GX21 / gene incremental builder`
    - `incremental builder`
    - `src/selector/`
-   - `Proposal`
+   - `Active`
    - 目标：让 A 股全市场 Gene 与四张寿命面按脏窗口增量更新
 20. `GX22 / backtest cache and replay acceleration`
    - `backtest acceleration`
