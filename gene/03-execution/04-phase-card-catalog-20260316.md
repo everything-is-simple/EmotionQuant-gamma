@@ -58,8 +58,8 @@
 | `GX14` | `Active` | [`card`](25-phase-gx14-book-aligned-lifespan-distribution-card-20260319.md) | `pending` | `pending` | 把寿命统计图纠正到书义四分位连续分布 |
 | `GX15` | `Active` | [`card`](26-phase-gx15-market-lifespan-framework-reconstruction-package-card-20260319.md) | `pending` | `pending` | 以市场寿命框架为根基的 Gene 总重构包 |
 | `GX16` | `Completed` | [`card`](27-phase-gx16-average-lifespan-odds-surface-card-20260319.md) | [`record`](records/27-phase-gx16-average-lifespan-odds-surface-record-20260319.md) | `pending` | 图 26-1 平均寿命赔率面正式接入 |
-| `GX17` | `Proposal` | [`card`](28-phase-gx17-book-core-definition-final-freeze-card-20260320.md) | `pending` | `pending` | 书义趋势定义、趋势改变定义与市场寿命根口径最终冻结 |
-| `GX18` | `Proposal` | [`card`](29-phase-gx18-stock-market-lifespan-surface-schema-refactor-card-20260320.md) | `pending` | `pending` | 个股与市场四张寿命面的标准化 schema 重构 |
+| `GX17` | `Active` | [`card`](28-phase-gx17-book-core-definition-final-freeze-card-20260320.md) | `pending` | `pending` | 书义趋势定义、趋势改变定义与市场寿命根口径最终冻结 |
+| `GX18` | `Active` | [`card`](29-phase-gx18-stock-market-lifespan-surface-schema-refactor-card-20260320.md) | `pending` | `pending` | 个股与市场四张寿命面的标准化 schema 重构 |
 | `GX19` | `Proposal` | [`card`](30-phase-gx19-average-lifespan-engine-completion-card-20260320.md) | `pending` | `pending` | 把平均寿命框架补成完整、诚实、双侧可用的统计引擎 |
 | `GX20` | `Proposal` | [`card`](31-phase-gx20-book-figure-renderer-and-formal-report-output-card-20260320.md) | `pending` | `pending` | 把图 11-1 / 26-1 风格的市场寿命图正式产品化输出 |
 | `GX21` | `Proposal` | [`card`](32-phase-gx21-gene-incremental-builder-card-20260320.md) | `pending` | `pending` | Gene 与四张寿命面按脏窗口增量更新 |

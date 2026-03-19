@@ -317,6 +317,25 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
             ORDER BY metric_name
             """
         )
+        stock_lifespan_surface = store.read_df(
+            """
+            SELECT
+                code,
+                calc_date,
+                surface_label,
+                market_regime_label,
+                wave_role,
+                amplitude_metric_name,
+                sample_size,
+                current_wave_matches_surface,
+                current_wave_amplitude_value,
+                current_wave_average_aged_prob
+            FROM l3_stock_lifespan_surface
+            WHERE calc_date = ?
+            ORDER BY code, surface_label
+            """,
+            (base + timedelta(days=len(closes_a) - 1),),
+        )
 
         assert written > 0
         assert "current_wave_direction" in schema["name"].tolist()
@@ -360,6 +379,7 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert not events.empty
         assert not factor_eval.empty
         assert not distribution_eval.empty
+        assert len(stock_lifespan_surface) == 8
         assert snapshots["current_wave_direction"].tolist() == ["UP", "UP"]
         assert snapshots["trend_level"].tolist() == ["INTERMEDIATE", "INTERMEDIATE"]
         assert snapshots["current_context_trend_level"].tolist() == ["INTERMEDIATE", "INTERMEDIATE"]
@@ -416,6 +436,24 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert snapshots["current_wave_duration_remaining_prob"].dropna().between(0.0, 1.0).all()
         assert snapshots["current_wave_lifespan_average_remaining_prob"].dropna().between(0.0, 1.0).all()
         assert snapshots["current_wave_lifespan_average_aged_prob"].dropna().between(0.0, 1.0).all()
+        assert set(stock_lifespan_surface["surface_label"].tolist()) == {
+            "BULL_MAINSTREAM",
+            "BULL_COUNTERTREND",
+            "BEAR_MAINSTREAM",
+            "BEAR_COUNTERTREND",
+        }
+        assert stock_lifespan_surface.groupby("code")["surface_label"].nunique().eq(4).all()
+        assert stock_lifespan_surface.loc[
+            stock_lifespan_surface["wave_role"] == "MAINSTREAM", "amplitude_metric_name"
+        ].eq("magnitude_pct").all()
+        assert stock_lifespan_surface.loc[
+            stock_lifespan_surface["wave_role"] == "COUNTERTREND", "amplitude_metric_name"
+        ].eq("retracement_vs_prior_mainstream_pct").all()
+        assert int(stock_lifespan_surface["current_wave_matches_surface"].fillna(False).astype(int).sum()) == 2
+        assert stock_lifespan_surface.loc[
+            stock_lifespan_surface["current_wave_matches_surface"].fillna(False),
+            "current_wave_amplitude_value",
+        ].notna().all()
         assert waves["trend_level"].eq("INTERMEDIATE").all()
         assert waves["context_trend_level"].eq("LONG").all()
         assert waves["wave_role_basis"].eq("INTERMEDIATE_PARENT_CONTEXT_DIRECTION").all()
@@ -618,11 +656,18 @@ def test_compute_gene_snapshots_for_dates_writes_only_requested_snapshot_dates(t
             ORDER BY calc_date, code
             """
         )
+        stock_surface = store.read_df(
+            """
+            SELECT code, calc_date, surface_label, current_wave_matches_surface
+            FROM l3_stock_lifespan_surface
+            ORDER BY calc_date, code, surface_label
+            """
+        )
         wave_count = int(store.read_scalar("SELECT COUNT(*) FROM l3_gene_wave") or 0)
         event_count = int(store.read_scalar("SELECT COUNT(*) FROM l3_gene_event") or 0)
         factor_eval_count = int(store.read_scalar("SELECT COUNT(*) FROM l3_gene_factor_eval") or 0)
 
-        assert written == len(target_dates) * 2
+        assert written == (len(target_dates) * 2) + (len(target_dates) * 2 * 4)
         assert pd.to_datetime(snapshots["calc_date"], errors="coerce").dt.date.tolist() == [
             target_dates[0],
             target_dates[0],
@@ -630,11 +675,31 @@ def test_compute_gene_snapshots_for_dates_writes_only_requested_snapshot_dates(t
             target_dates[1],
         ]
         assert snapshots["code"].tolist() == ["AAA", "BBB", "AAA", "BBB"]
+        assert pd.to_datetime(stock_surface["calc_date"], errors="coerce").dt.date.tolist() == [
+            target_dates[0],
+            target_dates[0],
+            target_dates[0],
+            target_dates[0],
+            target_dates[0],
+            target_dates[0],
+            target_dates[0],
+            target_dates[0],
+            target_dates[1],
+            target_dates[1],
+            target_dates[1],
+            target_dates[1],
+            target_dates[1],
+            target_dates[1],
+            target_dates[1],
+            target_dates[1],
+        ]
+        assert stock_surface.groupby(["code", "calc_date"])["surface_label"].nunique().eq(4).all()
         assert snapshots["current_wave_direction"].isin(["UP", "DOWN"]).all()
         assert snapshots["current_wave_duration_band"].isin(
             ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
         ).all()
         assert snapshots["current_short_trend_level"].eq("SHORT").all()
+        assert int(stock_surface["current_wave_matches_surface"].fillna(False).astype(int).sum()) == len(target_dates) * 2
         assert wave_count == 0
         assert event_count == 0
         assert factor_eval_count == 0

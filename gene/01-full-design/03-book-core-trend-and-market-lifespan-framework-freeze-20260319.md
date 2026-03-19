@@ -165,6 +165,23 @@ Gene 后续所有“当前趋势”说法，都必须显式带层级。
 
 它们不允许再混成一张“市场总寿命表”。
 
+### 3.6B 个股寿命框架也必须投影到同一组四张 canonical surface
+
+当对象从“市场平均寿命框架”回到“单只股票当前中级波段”时，Gene 不允许另造一套与书义脱节的寿命轴。
+
+单只股票的当前 `INTERMEDIATE` 波段，也必须显式投影到同一组四张 canonical surface 上：
+
+1. `BULL_MAINSTREAM`
+2. `BULL_COUNTERTREND`
+3. `BEAR_MAINSTREAM`
+4. `BEAR_COUNTERTREND`
+
+这四张表对单只股票的含义不是“四个当前同时发生的事实”，而是：
+
+1. 当前 active wave 真正命中的那一张，是它此刻所处的 canonical surface
+2. 其余三张，是同一只股票历史上另外三类市场背景 / 波段角色下的对照统计面
+3. 因此每个个股在每个 `calc_date` 上，都应有一组可审计的四张寿命表，而不是只剩一个混合 percentile
+
 ### 3.7 平均寿命框架不是精准择时器，而是风险老化框架
 
 图 `26-1` 与表 `26-1 / 26-2` 当前被写定为：
@@ -237,6 +254,8 @@ Gene 后续所有“当前趋势”说法，都必须显式带层级。
    - `SHORT`
    - `MAINSTREAM`
    - `COUNTERTREND`
+7. 不允许把个股寿命框架继续收缩成“只在 `l3_stock_gene` 里放几个 percentile 字段”
+8. 个股与市场都必须能够落成四张 canonical surface，并可被表、图与回测直接消费
 
 ---
 

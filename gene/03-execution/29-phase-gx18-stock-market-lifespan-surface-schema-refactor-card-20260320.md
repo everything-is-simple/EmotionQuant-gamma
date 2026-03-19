@@ -1,5 +1,5 @@
 # GX18 / 个股与市场寿命面 Schema 重构卡
-**状态**: `Proposal`
+**状态**: `Active`
 **日期**: `2026-03-20`
 **类型**: `schema refactor`
 **直接目标文件**: [`../../src/data/store.py`](../../src/data/store.py)
@@ -44,6 +44,23 @@
 2. `l3_gene_market_lifespan_surface` 与个股表的关系说明
 3. 主键、字段、索引、空值语义
 4. 旧字段到新结构的迁移策略
+
+---
+
+## 4A. 四目录落位口径
+
+`GX18` 不是只在 `DuckDB` 里加一张表，还必须把四目录职责写清：
+
+1. `G:\EmotionQuant-gamma`
+   - 放 schema 合同、迁移说明、执行卡、record、测试
+2. `G:\EmotionQuant_data`
+   - 放正式 `l3_stock_lifespan_surface` / `l3_gene_market_lifespan_surface` 所在的主库
+3. `G:\EmotionQuant-temp`
+   - 放 schema migration rehearsal、working DB、增量 builder 临时副本、性能试跑库
+4. `G:\EmotionQuant-report`
+   - 放未来消费这些 surface 生成的寿命图、综合几率图与说明报告
+
+这意味着 `GX18` 的完成标准，不只是“表存在”，而是“表在四目录体系中有明确归位”。
 
 ---
 

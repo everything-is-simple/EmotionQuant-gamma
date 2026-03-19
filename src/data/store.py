@@ -16,7 +16,7 @@ from typing import Any
 import duckdb
 import pandas as pd
 
-CURRENT_SCHEMA_VERSION = 20
+CURRENT_SCHEMA_VERSION = 21
 
 
 @dataclass(frozen=True)
@@ -535,6 +535,57 @@ class Store:
                 current_wave_aged_vs_remaining_odds  DOUBLE,
                 created_at                           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (entity_scope, entity_code, calc_date, surface_label)
+            )
+            """
+        )
+
+    def _migrate_schema_v20_to_v21(self) -> None:
+        self.conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS l3_stock_lifespan_surface (
+                code                                 VARCHAR NOT NULL,
+                calc_date                            DATE    NOT NULL,
+                market_regime_direction              VARCHAR NOT NULL,
+                market_regime_label                  VARCHAR NOT NULL,
+                wave_role                            VARCHAR NOT NULL,
+                surface_label                        VARCHAR NOT NULL,
+                amplitude_metric_name                VARCHAR NOT NULL,
+                history_reference_trade_days         INTEGER,
+                sample_size                          INTEGER,
+                sample_first_wave_start_date         DATE,
+                sample_last_wave_end_date            DATE,
+                amplitude_min                        DOUBLE,
+                amplitude_mean                       DOUBLE,
+                amplitude_q25                        DOUBLE,
+                amplitude_q50                        DOUBLE,
+                amplitude_q75                        DOUBLE,
+                amplitude_p65                        DOUBLE,
+                amplitude_p95                        DOUBLE,
+                amplitude_max                        DOUBLE,
+                duration_min                         DOUBLE,
+                duration_mean                        DOUBLE,
+                duration_q25                         DOUBLE,
+                duration_q50                         DOUBLE,
+                duration_q75                         DOUBLE,
+                duration_p65                         DOUBLE,
+                duration_p95                         DOUBLE,
+                duration_max                         DOUBLE,
+                current_wave_matches_surface         BOOLEAN,
+                current_wave_direction               VARCHAR,
+                current_wave_age_trade_days          INTEGER,
+                current_wave_amplitude_value         DOUBLE,
+                current_wave_amplitude_percentile    DOUBLE,
+                current_wave_duration_percentile     DOUBLE,
+                current_wave_joint_percentile        DOUBLE,
+                current_wave_amplitude_band          VARCHAR,
+                current_wave_duration_band           VARCHAR,
+                current_wave_joint_band              VARCHAR,
+                current_wave_average_remaining_prob  DOUBLE,
+                current_wave_average_aged_prob       DOUBLE,
+                current_wave_remaining_vs_aged_odds  DOUBLE,
+                current_wave_aged_vs_remaining_odds  DOUBLE,
+                created_at                           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (code, calc_date, surface_label)
             )
             """
         )
@@ -1659,6 +1710,53 @@ class Store:
                 current_wave_aged_vs_remaining_odds  DOUBLE,
                 created_at                           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 PRIMARY KEY (entity_scope, entity_code, calc_date, surface_label)
+            )
+            """,
+            """
+            CREATE TABLE IF NOT EXISTS l3_stock_lifespan_surface (
+                code                                 VARCHAR NOT NULL,
+                calc_date                            DATE    NOT NULL,
+                market_regime_direction              VARCHAR NOT NULL,
+                market_regime_label                  VARCHAR NOT NULL,
+                wave_role                            VARCHAR NOT NULL,
+                surface_label                        VARCHAR NOT NULL,
+                amplitude_metric_name                VARCHAR NOT NULL,
+                history_reference_trade_days         INTEGER,
+                sample_size                          INTEGER,
+                sample_first_wave_start_date         DATE,
+                sample_last_wave_end_date            DATE,
+                amplitude_min                        DOUBLE,
+                amplitude_mean                       DOUBLE,
+                amplitude_q25                        DOUBLE,
+                amplitude_q50                        DOUBLE,
+                amplitude_q75                        DOUBLE,
+                amplitude_p65                        DOUBLE,
+                amplitude_p95                        DOUBLE,
+                amplitude_max                        DOUBLE,
+                duration_min                         DOUBLE,
+                duration_mean                        DOUBLE,
+                duration_q25                         DOUBLE,
+                duration_q50                         DOUBLE,
+                duration_q75                         DOUBLE,
+                duration_p65                         DOUBLE,
+                duration_p95                         DOUBLE,
+                duration_max                         DOUBLE,
+                current_wave_matches_surface         BOOLEAN,
+                current_wave_direction               VARCHAR,
+                current_wave_age_trade_days          INTEGER,
+                current_wave_amplitude_value         DOUBLE,
+                current_wave_amplitude_percentile    DOUBLE,
+                current_wave_duration_percentile     DOUBLE,
+                current_wave_joint_percentile        DOUBLE,
+                current_wave_amplitude_band          VARCHAR,
+                current_wave_duration_band           VARCHAR,
+                current_wave_joint_band              VARCHAR,
+                current_wave_average_remaining_prob  DOUBLE,
+                current_wave_average_aged_prob       DOUBLE,
+                current_wave_remaining_vs_aged_odds  DOUBLE,
+                current_wave_aged_vs_remaining_odds  DOUBLE,
+                created_at                           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (code, calc_date, surface_label)
             )
             """,
             """

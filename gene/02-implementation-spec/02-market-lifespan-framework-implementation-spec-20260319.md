@@ -186,6 +186,42 @@ distribution eval 需要从“尾部阈值摘要”转向：
    - joint percentile / band
    - average remaining / aged odds
 
+### 4.4A `l3_stock_lifespan_surface`
+
+除了市场表外，单只股票也必须正式落一张个股寿命面表，至少包含：
+
+1. `code / calc_date / surface_label`
+2. `market_regime_direction / market_regime_label`
+3. `wave_role`
+4. `amplitude_metric_name`
+5. 幅度轴与期限轴的 `min / mean / q25 / q50 / q75 / p65 / p95 / max`
+6. 当前个股 active wave 在所属 surface 中的：
+   - 幅度 percentile / band
+   - duration percentile / band
+   - joint percentile / band
+   - average remaining / aged odds
+
+个股表与市场表的差异固定为：
+
+1. 市场表以 `entity_scope / entity_code` 标识对象
+2. 个股表以 `code` 标识对象
+3. 两者必须共享同一套 `surface_label`、幅度轴口径与空值语义
+
+### 4.4B 四目录落位约束
+
+市场平均寿命框架与个股寿命框架的正式实现，必须遵守当前系统四目录纪律：
+
+1. `G:\EmotionQuant-gamma`
+   - 存放 design freeze、implementation spec、schema migration、测试、formal evidence、formal record
+2. `G:\EmotionQuant_data`
+   - 存放正式主库中的 `l3_stock_lifespan_surface` 与 `l3_gene_market_lifespan_surface`
+3. `G:\EmotionQuant-temp`
+   - 存放 working DB、增量重建副本、临时回测库、性能验证产物
+4. `G:\EmotionQuant-report`
+   - 存放消费这两类 surface 导出的图 `11-1 / 26-1` 风格图表与长报告
+
+禁止把这四类职责重新混回单一目录或单一数据库副本。
+
 ---
 
 ## 5. Execution Implications

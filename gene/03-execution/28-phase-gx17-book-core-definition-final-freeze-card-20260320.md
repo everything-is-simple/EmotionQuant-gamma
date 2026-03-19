@@ -1,5 +1,5 @@
 # GX17 / 书义根定义最终冻结卡
-**状态**: `Proposal`
+**状态**: `Active`
 **日期**: `2026-03-20`
 **类型**: `definition freeze`
 **直接目标目录**: [`../01-full-design/`](../01-full-design/)
@@ -44,6 +44,23 @@
 2. 当前实现与书义差异矩阵
 3. 术语表与字段映射表
 4. 下游卡片统一引用口径
+
+---
+
+## 3A. 四目录落位口径
+
+`GX17` 的定义冻结虽然发生在 `G:\EmotionQuant-gamma\gene\`，但必须显式受当前系统四目录纪律约束：
+
+1. `G:\EmotionQuant-gamma`
+   - 放定义冻结文档、implementation spec、phase card、formal evidence、formal record
+2. `G:\EmotionQuant_data`
+   - 放正式数据库与长期保留的数据事实，不放临时试跑副本
+3. `G:\EmotionQuant-temp`
+   - 放 working DB、临时增量重建产物、回测副本、缓存、中间件结果
+4. `G:\EmotionQuant-report`
+   - 放给人读的图、表、报告导出，不放 schema SoT
+
+因此，`GX17` 冻结的不只是术语，还包括后续这些定义应分别在哪个目录落地。
 
 ---
 

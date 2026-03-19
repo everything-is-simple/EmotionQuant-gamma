@@ -250,12 +250,12 @@
 15. `GX17 / book core definition final freeze`
    - `definition freeze`
    - `gene/01-full-design/`
-   - `Proposal`
+   - `Active`
    - 目标：把趋势定义、趋势改变定义与市场寿命框架根口径一次冻结
 16. `GX18 / stock-market lifespan surface schema refactor`
    - `schema refactor`
    - `src/data/store.py`
-   - `Proposal`
+   - `Active`
    - 目标：把个股与市场四张寿命面收敛成标准化 schema，而不是物理表爆炸
 17. `GX19 / average lifespan engine completion`
    - `engine completion`
