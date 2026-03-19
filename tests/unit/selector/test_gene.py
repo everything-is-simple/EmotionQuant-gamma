@@ -175,6 +175,12 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
                 current_wave_age_band_basis,
                 current_wave_lifespan_joint_percentile,
                 current_wave_lifespan_joint_band,
+                current_wave_magnitude_remaining_prob,
+                current_wave_duration_remaining_prob,
+                current_wave_lifespan_average_remaining_prob,
+                current_wave_lifespan_average_aged_prob,
+                current_wave_lifespan_remaining_vs_aged_odds,
+                current_wave_lifespan_aged_vs_remaining_odds,
                 cross_section_magnitude_rank,
                 cross_section_magnitude_percentile
             FROM l3_stock_gene
@@ -213,6 +219,12 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
                 wave_age_band_basis,
                 lifespan_joint_percentile,
                 lifespan_joint_band,
+                magnitude_remaining_prob,
+                duration_remaining_prob,
+                lifespan_average_remaining_prob,
+                lifespan_average_aged_prob,
+                lifespan_remaining_vs_aged_odds,
+                lifespan_aged_vs_remaining_odds,
                 prior_mainstream_magnitude_pct,
                 retracement_vs_prior_mainstream_pct
             FROM l3_gene_wave
@@ -271,6 +283,12 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
                 calc_date,
                 metric_name,
                 band_label,
+                current_metric_remaining_prob,
+                current_metric_aged_prob,
+                current_average_remaining_prob,
+                current_average_aged_prob,
+                current_average_remaining_vs_aged_odds,
+                current_average_aged_vs_remaining_odds,
                 threshold_q25,
                 threshold_q50,
                 threshold_q75,
@@ -318,6 +336,12 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert "current_wave_duration_q25" in schema["name"].tolist()
         assert "current_wave_duration_q50" in schema["name"].tolist()
         assert "current_wave_duration_q75" in schema["name"].tolist()
+        assert "current_wave_magnitude_remaining_prob" in schema["name"].tolist()
+        assert "current_wave_duration_remaining_prob" in schema["name"].tolist()
+        assert "current_wave_lifespan_average_remaining_prob" in schema["name"].tolist()
+        assert "current_wave_lifespan_average_aged_prob" in schema["name"].tolist()
+        assert "current_wave_lifespan_remaining_vs_aged_odds" in schema["name"].tolist()
+        assert "current_wave_lifespan_aged_vs_remaining_odds" in schema["name"].tolist()
         assert "current_wave_history_reference_trade_days" in schema["name"].tolist()
         assert "current_wave_history_span_trade_days" in schema["name"].tolist()
         assert "current_wave_lifespan_joint_percentile" in schema["name"].tolist()
@@ -383,6 +407,10 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert snapshots["current_wave_lifespan_joint_band"].isin(
             ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
         ).all()
+        assert snapshots["current_wave_magnitude_remaining_prob"].dropna().between(0.0, 1.0).all()
+        assert snapshots["current_wave_duration_remaining_prob"].dropna().between(0.0, 1.0).all()
+        assert snapshots["current_wave_lifespan_average_remaining_prob"].dropna().between(0.0, 1.0).all()
+        assert snapshots["current_wave_lifespan_average_aged_prob"].dropna().between(0.0, 1.0).all()
         assert waves["trend_level"].eq("INTERMEDIATE").all()
         assert waves["context_trend_level"].eq("LONG").all()
         assert waves["wave_role_basis"].eq("INTERMEDIATE_PARENT_CONTEXT_DIRECTION").all()
@@ -408,6 +436,10 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert waves["lifespan_joint_band"].isin(
             ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
         ).all()
+        assert waves["magnitude_remaining_prob"].dropna().between(0.0, 1.0).all()
+        assert waves["duration_remaining_prob"].dropna().between(0.0, 1.0).all()
+        assert waves["lifespan_average_remaining_prob"].dropna().between(0.0, 1.0).all()
+        assert waves["lifespan_average_aged_prob"].dropna().between(0.0, 1.0).all()
         assert waves["retracement_vs_prior_mainstream_pct"].dropna().ge(0.0).all()
         assert countertrend_snapshots["current_wave_prior_mainstream_wave_id"].notna().any()
         assert countertrend_snapshots["current_wave_prior_mainstream_magnitude_pct"].notna().any()
@@ -426,6 +458,10 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert distribution_eval["band_label"].isin(
             ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
         ).all()
+        assert distribution_eval["current_metric_remaining_prob"].dropna().between(0.0, 1.0).all()
+        assert distribution_eval["current_metric_aged_prob"].dropna().between(0.0, 1.0).all()
+        assert distribution_eval["current_average_remaining_prob"].dropna().between(0.0, 1.0).all()
+        assert distribution_eval["current_average_aged_prob"].dropna().between(0.0, 1.0).all()
         assert not validation_eval.empty
         assert set(validation_eval["metric_name"].tolist()) == {
             "duration_percentile",

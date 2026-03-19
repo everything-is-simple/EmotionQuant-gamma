@@ -578,6 +578,40 @@ def _joint_lifespan_percentile(
     return 100.0 * float(np.mean(dominated))
 
 
+def _lifespan_remaining_profile(
+    *,
+    magnitude_percentile: float,
+    duration_percentile: float,
+) -> dict[str, float | None]:
+    if not np.isfinite(magnitude_percentile) or not np.isfinite(duration_percentile):
+        return {
+            "magnitude_remaining_prob": None,
+            "duration_remaining_prob": None,
+            "lifespan_average_remaining_prob": None,
+            "lifespan_average_aged_prob": None,
+            "lifespan_remaining_vs_aged_odds": None,
+            "lifespan_aged_vs_remaining_odds": None,
+        }
+    magnitude_remaining_prob = float(np.clip(1.0 - (magnitude_percentile / 100.0), 0.0, 1.0))
+    duration_remaining_prob = float(np.clip(1.0 - (duration_percentile / 100.0), 0.0, 1.0))
+    average_remaining_prob = float(np.clip(np.mean([magnitude_remaining_prob, duration_remaining_prob]), 0.0, 1.0))
+    average_aged_prob = float(np.clip(1.0 - average_remaining_prob, 0.0, 1.0))
+    remaining_vs_aged_odds = (
+        None if average_aged_prob <= 1e-12 else float(average_remaining_prob / average_aged_prob)
+    )
+    aged_vs_remaining_odds = (
+        None if average_remaining_prob <= 1e-12 else float(average_aged_prob / average_remaining_prob)
+    )
+    return {
+        "magnitude_remaining_prob": magnitude_remaining_prob,
+        "duration_remaining_prob": duration_remaining_prob,
+        "lifespan_average_remaining_prob": average_remaining_prob,
+        "lifespan_average_aged_prob": average_aged_prob,
+        "lifespan_remaining_vs_aged_odds": remaining_vs_aged_odds,
+        "lifespan_aged_vs_remaining_odds": aged_vs_remaining_odds,
+    }
+
+
 def _lifespan_reference_history(
     history: list[dict[str, object]],
     *,
@@ -1127,6 +1161,10 @@ def _apply_wave_history_scores(waves: list[dict[str, object]]) -> None:
         density_stats = _relative_strength_stats(density_history, density_value)
         magnitude_thresholds = _distribution_thresholds(magnitude_history)
         duration_thresholds = _distribution_thresholds(duration_history)
+        remaining_profile = _lifespan_remaining_profile(
+            magnitude_percentile=float(magnitude_stats["percentile"]),
+            duration_percentile=float(duration_stats["percentile"]),
+        )
         joint_percentile = _joint_lifespan_percentile(
             lifespan_reference_history,
             magnitude_value=magnitude_value,
@@ -1153,6 +1191,12 @@ def _apply_wave_history_scores(waves: list[dict[str, object]]) -> None:
         wave["magnitude_zscore"] = float(magnitude_stats["zscore"])
         wave["duration_zscore"] = float(duration_stats["zscore"])
         wave["extreme_density_zscore"] = float(density_stats["zscore"])
+        wave["magnitude_remaining_prob"] = remaining_profile["magnitude_remaining_prob"]
+        wave["duration_remaining_prob"] = remaining_profile["duration_remaining_prob"]
+        wave["lifespan_average_remaining_prob"] = remaining_profile["lifespan_average_remaining_prob"]
+        wave["lifespan_average_aged_prob"] = remaining_profile["lifespan_average_aged_prob"]
+        wave["lifespan_remaining_vs_aged_odds"] = remaining_profile["lifespan_remaining_vs_aged_odds"]
+        wave["lifespan_aged_vs_remaining_odds"] = remaining_profile["lifespan_aged_vs_remaining_odds"]
         wave["magnitude_q25"] = _optional_float(magnitude_thresholds["q25"])
         wave["magnitude_q50"] = _optional_float(magnitude_thresholds["q50"])
         wave["magnitude_q75"] = _optional_float(magnitude_thresholds["q75"])
@@ -1340,6 +1384,10 @@ def _build_daily_snapshots(
         density_stats = _relative_strength_stats(density_history, density)
         magnitude_thresholds = _distribution_thresholds(magnitude_history)
         duration_thresholds = _distribution_thresholds(duration_history)
+        remaining_profile = _lifespan_remaining_profile(
+            magnitude_percentile=float(magnitude_stats["percentile"]),
+            duration_percentile=float(duration_stats["percentile"]),
+        )
         joint_percentile = _joint_lifespan_percentile(
             lifespan_reference_history,
             magnitude_value=magnitude_pct,
@@ -1428,6 +1476,18 @@ def _build_daily_snapshots(
                 "current_wave_magnitude_zscore": float(magnitude_stats["zscore"]),
                 "current_wave_duration_zscore": float(duration_stats["zscore"]),
                 "current_wave_extreme_density_zscore": float(density_stats["zscore"]),
+                "current_wave_magnitude_remaining_prob": remaining_profile["magnitude_remaining_prob"],
+                "current_wave_duration_remaining_prob": remaining_profile["duration_remaining_prob"],
+                "current_wave_lifespan_average_remaining_prob": remaining_profile[
+                    "lifespan_average_remaining_prob"
+                ],
+                "current_wave_lifespan_average_aged_prob": remaining_profile["lifespan_average_aged_prob"],
+                "current_wave_lifespan_remaining_vs_aged_odds": remaining_profile[
+                    "lifespan_remaining_vs_aged_odds"
+                ],
+                "current_wave_lifespan_aged_vs_remaining_odds": remaining_profile[
+                    "lifespan_aged_vs_remaining_odds"
+                ],
                 "current_wave_magnitude_q25": _optional_float(magnitude_thresholds["q25"]),
                 "current_wave_magnitude_q50": _optional_float(magnitude_thresholds["q50"]),
                 "current_wave_magnitude_q75": _optional_float(magnitude_thresholds["q75"]),
@@ -1831,6 +1891,37 @@ def _build_distribution_eval_rows(
                     "band_sample_size": int(summary["band_sample_size"]),
                     "current_value": float(getattr(snapshot, spec["current_value_col"])),
                     "current_percentile": float(getattr(snapshot, spec["current_percentile_col"])),
+                    "current_metric_remaining_prob": _optional_float(
+                        getattr(snapshot, f'current_wave_{"magnitude" if spec["metric_name"] == "magnitude_pct" else "duration"}_remaining_prob', None)
+                    ),
+                    "current_metric_aged_prob": _optional_float(
+                        1.0
+                        - float(
+                            getattr(
+                                snapshot,
+                                f'current_wave_{"magnitude" if spec["metric_name"] == "magnitude_pct" else "duration"}_remaining_prob',
+                            )
+                        )
+                    )
+                    if getattr(
+                        snapshot,
+                        f'current_wave_{"magnitude" if spec["metric_name"] == "magnitude_pct" else "duration"}_remaining_prob',
+                        None,
+                    )
+                    is not None
+                    else None,
+                    "current_average_remaining_prob": _optional_float(
+                        getattr(snapshot, "current_wave_lifespan_average_remaining_prob", None)
+                    ),
+                    "current_average_aged_prob": _optional_float(
+                        getattr(snapshot, "current_wave_lifespan_average_aged_prob", None)
+                    ),
+                    "current_average_remaining_vs_aged_odds": _optional_float(
+                        getattr(snapshot, "current_wave_lifespan_remaining_vs_aged_odds", None)
+                    ),
+                    "current_average_aged_vs_remaining_odds": _optional_float(
+                        getattr(snapshot, "current_wave_lifespan_aged_vs_remaining_odds", None)
+                    ),
                     "threshold_q25": _optional_float(getattr(snapshot, spec["q25_col"], None)),
                     "threshold_q50": _optional_float(getattr(snapshot, spec["q50_col"], None)),
                     "threshold_q75": _optional_float(getattr(snapshot, spec["q75_col"], None)),

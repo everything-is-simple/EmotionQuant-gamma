@@ -96,7 +96,8 @@
 1. 已完成关键书页首轮复核
 2. 已落盘定义冻结与实现映射
 3. 已完成第一版 quartile surface 代码修正
-4. `tests/unit/selector/test_gene.py` 已通过
+4. 已完成 `GX16 / average lifespan odds surface`
+5. `tests/unit/selector/test_gene.py` 已通过
 
 ---
 
@@ -104,10 +105,9 @@
 
 本包尚未完成的关键部分：
 
-1. `平均寿命 / odds` 还未正式进入代码合同
-2. `GX13` 还没在新 surface 上重跑
-3. `17.8` 还没在新 surface 上落正式 evidence
-4. 相关 design / execution README 还未全部回灌
+1. `GX13` 还没在新 surface 上重跑
+2. `17.8` 还没在新 surface 上落正式 evidence
+3. 相关 design / execution README 还未全部回灌
 
 ---
 

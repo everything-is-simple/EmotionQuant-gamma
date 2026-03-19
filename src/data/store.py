@@ -16,7 +16,7 @@ from typing import Any
 import duckdb
 import pandas as pd
 
-CURRENT_SCHEMA_VERSION = 18
+CURRENT_SCHEMA_VERSION = 19
 
 
 @dataclass(frozen=True)
@@ -456,6 +456,30 @@ class Store:
             "ALTER TABLE l3_gene_distribution_eval ADD COLUMN IF NOT EXISTS threshold_q25 DOUBLE",
             "ALTER TABLE l3_gene_distribution_eval ADD COLUMN IF NOT EXISTS threshold_q50 DOUBLE",
             "ALTER TABLE l3_gene_distribution_eval ADD COLUMN IF NOT EXISTS threshold_q75 DOUBLE",
+        ]
+        for sql in statements:
+            self.conn.execute(sql)
+
+    def _migrate_schema_v18_to_v19(self) -> None:
+        statements = [
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_magnitude_remaining_prob DOUBLE",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_duration_remaining_prob DOUBLE",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_lifespan_average_remaining_prob DOUBLE",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_lifespan_average_aged_prob DOUBLE",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_lifespan_remaining_vs_aged_odds DOUBLE",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_lifespan_aged_vs_remaining_odds DOUBLE",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS magnitude_remaining_prob DOUBLE",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS duration_remaining_prob DOUBLE",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS lifespan_average_remaining_prob DOUBLE",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS lifespan_average_aged_prob DOUBLE",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS lifespan_remaining_vs_aged_odds DOUBLE",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS lifespan_aged_vs_remaining_odds DOUBLE",
+            "ALTER TABLE l3_gene_distribution_eval ADD COLUMN IF NOT EXISTS current_metric_remaining_prob DOUBLE",
+            "ALTER TABLE l3_gene_distribution_eval ADD COLUMN IF NOT EXISTS current_metric_aged_prob DOUBLE",
+            "ALTER TABLE l3_gene_distribution_eval ADD COLUMN IF NOT EXISTS current_average_remaining_prob DOUBLE",
+            "ALTER TABLE l3_gene_distribution_eval ADD COLUMN IF NOT EXISTS current_average_aged_prob DOUBLE",
+            "ALTER TABLE l3_gene_distribution_eval ADD COLUMN IF NOT EXISTS current_average_remaining_vs_aged_odds DOUBLE",
+            "ALTER TABLE l3_gene_distribution_eval ADD COLUMN IF NOT EXISTS current_average_aged_vs_remaining_odds DOUBLE",
         ]
         for sql in statements:
             self.conn.execute(sql)
@@ -1227,6 +1251,12 @@ class Store:
                 current_wave_magnitude_zscore DOUBLE,
                 current_wave_duration_zscore DOUBLE,
                 current_wave_extreme_density_zscore DOUBLE,
+                current_wave_magnitude_remaining_prob DOUBLE,
+                current_wave_duration_remaining_prob DOUBLE,
+                current_wave_lifespan_average_remaining_prob DOUBLE,
+                current_wave_lifespan_average_aged_prob DOUBLE,
+                current_wave_lifespan_remaining_vs_aged_odds DOUBLE,
+                current_wave_lifespan_aged_vs_remaining_odds DOUBLE,
                 current_wave_magnitude_q25 DOUBLE,
                 current_wave_magnitude_q50 DOUBLE,
                 current_wave_magnitude_q75 DOUBLE,
@@ -1333,6 +1363,12 @@ class Store:
                 magnitude_zscore            DOUBLE,
                 duration_zscore             DOUBLE,
                 extreme_density_zscore      DOUBLE,
+                magnitude_remaining_prob    DOUBLE,
+                duration_remaining_prob     DOUBLE,
+                lifespan_average_remaining_prob DOUBLE,
+                lifespan_average_aged_prob  DOUBLE,
+                lifespan_remaining_vs_aged_odds DOUBLE,
+                lifespan_aged_vs_remaining_odds DOUBLE,
                 magnitude_q25               DOUBLE,
                 magnitude_q50               DOUBLE,
                 magnitude_q75               DOUBLE,
@@ -1429,6 +1465,12 @@ class Store:
                 band_sample_size           INTEGER,
                 current_value              DOUBLE,
                 current_percentile         DOUBLE,
+                current_metric_remaining_prob DOUBLE,
+                current_metric_aged_prob   DOUBLE,
+                current_average_remaining_prob DOUBLE,
+                current_average_aged_prob  DOUBLE,
+                current_average_remaining_vs_aged_odds DOUBLE,
+                current_average_aged_vs_remaining_odds DOUBLE,
                 threshold_q25              DOUBLE,
                 threshold_q50              DOUBLE,
                 threshold_q75              DOUBLE,

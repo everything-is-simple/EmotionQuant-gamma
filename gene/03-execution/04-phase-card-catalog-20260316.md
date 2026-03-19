@@ -57,6 +57,7 @@
 | `GX13` | `Active` | [`card`](24-phase-gx13-post-remediation-g4-g5-g6-rerun-card-20260319.md) | `pending` | `pending` | GX12 裁定后的 G4/G5/G6 联合重跑 |
 | `GX14` | `Active` | [`card`](25-phase-gx14-book-aligned-lifespan-distribution-card-20260319.md) | `pending` | `pending` | 把寿命统计图纠正到书义四分位连续分布 |
 | `GX15` | `Active` | [`card`](26-phase-gx15-market-lifespan-framework-reconstruction-package-card-20260319.md) | `pending` | `pending` | 以市场寿命框架为根基的 Gene 总重构包 |
+| `GX16` | `Completed` | [`card`](27-phase-gx16-average-lifespan-odds-surface-card-20260319.md) | [`record`](records/27-phase-gx16-average-lifespan-odds-surface-record-20260319.md) | `pending` | 图 26-1 平均寿命赔率面正式接入 |
 
 ---
 

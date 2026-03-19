@@ -158,6 +158,29 @@ Gene 后续所有“当前趋势”说法，都必须显式带层级。
 2. 提高或降低你对后续延续的主观赔率
 3. 与结构确认、市场背景、成交量关系一起构成风险框架
 
+### 3.8 平均寿命 / odds 的 canonical 算式
+
+当前冻结采用书里的中性表达，不直接写成“做多胜率”或“做空胜率”，而是先固定为：
+
+1. `magnitude_remaining_prob`
+   - 当前幅度之后，历史上还有多少同类走势继续走得更远
+2. `duration_remaining_prob`
+   - 当前时间之后，历史上还有多少同类走势继续走得更久
+3. `lifespan_average_remaining_prob`
+   - `magnitude_remaining_prob` 与 `duration_remaining_prob` 的均值
+4. `lifespan_average_aged_prob`
+   - `1 - lifespan_average_remaining_prob`
+5. `lifespan_remaining_vs_aged_odds`
+   - `remaining / aged`
+6. `lifespan_aged_vs_remaining_odds`
+   - `aged / remaining`
+
+这样做的原因是：
+
+1. 对 `MAINSTREAM` 波段，`aged` 更接近“主升/主跌段告一段落”的风险
+2. 对 `COUNTERTREND` 波段，`aged` 更接近“修正段接近尾声、主趋势恢复”的概率
+3. 同一套中性合同，可以避免在代码层过早硬编码交易方向解释
+
 ---
 
 ## 4. 对 Gene 的硬约束

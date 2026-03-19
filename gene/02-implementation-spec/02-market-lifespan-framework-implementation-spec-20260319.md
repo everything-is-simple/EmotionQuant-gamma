@@ -95,6 +95,25 @@ canonical quartile thresholds 至少应落盘：
 
 legacy `p65 / p95` 只允许保留为历史兼容列，不再充当 forward canonical surface。
 
+### 3.5 Average Lifespan / Odds Contract
+
+除 quartile 与 joint percentile 外，canonical lifespan surface 还应正式暴露：
+
+1. `magnitude_remaining_prob`
+2. `duration_remaining_prob`
+3. `lifespan_average_remaining_prob`
+4. `lifespan_average_aged_prob`
+5. `lifespan_remaining_vs_aged_odds`
+6. `lifespan_aged_vs_remaining_odds`
+
+这组字段的角色固定为：
+
+1. 先给出中性寿命赔率
+2. 再由 `wave_role + long context` 去解释是：
+   - 主趋势继续的赔率
+   - 还是修正段继续的赔率
+3. 不允许在字段名层直接把它们写死成多头/空头交易建议
+
 ---
 
 ## 4. Table And Field Implications

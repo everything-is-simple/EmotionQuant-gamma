@@ -121,6 +121,7 @@
 - `03-execution/24-phase-gx13-post-remediation-g4-g5-g6-rerun-card-20260319.md`
 - `03-execution/25-phase-gx14-book-aligned-lifespan-distribution-card-20260319.md`
 - `03-execution/26-phase-gx15-market-lifespan-framework-reconstruction-package-card-20260319.md`
+- `03-execution/27-phase-gx16-average-lifespan-odds-surface-card-20260319.md`
 - `03-execution/records/12-gene-book-definition-ingestion-ledger-20260317.md`
 - `03-execution/records/14-phase-gx3-trend-level-context-refactor-record-20260317.md`
 - `03-execution/records/01-phase-g0-wave-ruler-opening-record-20260316.md`
@@ -235,8 +236,13 @@
    - `gene/`
    - `Active`
    - 目标：把定义冻结、实现映射、代码重构、统计重跑与记录收口统一到同一条总包里
+14. `GX16 / average lifespan odds surface`
+   - `targeted semantic implementation`
+   - `src/selector/gene.py / src/data/store.py`
+   - `Completed`
+   - 目标：把图 26-1 的平均寿命 / odds 正式接进 Gene 对象合同
 
-当前 `GX3 ~ GX12` 已完成，当前新增执行位为 `GX13 + GX14 + GX15`。  
+当前 `GX3 ~ GX12` 已完成，当前新增执行位为 `GX13 + GX14 + GX15`，其中 `GX16` 已完成。  
 当前第四战场已不再有真正未执行的 hierarchy blocker，但已进入“书义对齐整改”阶段。  
 定义整改后的正式收口口径现更新为：
 
