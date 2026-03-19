@@ -28,7 +28,9 @@ WaveDirection = Literal["UP", "DOWN"]
 
 PIVOT_NEIGHBOR_BARS = 2
 PIVOT_CONFIRMATION_BARS = 2
-GENE_LOOKBACK_TRADE_DAYS = 260
+GENE_STRUCTURE_LOOKBACK_TRADE_DAYS = 260
+GENE_LIFESPAN_REFERENCE_TRADE_DAYS = 1260
+GENE_LOOKBACK_TRADE_DAYS = max(GENE_STRUCTURE_LOOKBACK_TRADE_DAYS, GENE_LIFESPAN_REFERENCE_TRADE_DAYS)
 FACTOR_EVAL_FORWARD_HORIZON_TRADE_DAYS = 10
 FACTOR_EVAL_SAMPLE_SCOPE = "SELF_HISTORY_PERCENTILE"
 FACTOR_EVAL_DIRECTION_SCOPE = "ALL"
@@ -41,9 +43,11 @@ G2_BAND_NORMAL = "NORMAL"
 G2_BAND_STRONG = "STRONG"
 G2_BAND_EXTREME = "EXTREME"
 G2_BAND_UNSCALED = "UNSCALED"
+AGE_BAND_BASIS_DURATION_ALIAS = "DURATION_BAND_ALIAS"
 TREND_LEVEL_SHORT = "SHORT"
 TREND_LEVEL_INTERMEDIATE = "INTERMEDIATE"
 TREND_LEVEL_LONG = "LONG"
+CONTEXT_VIEW_SCOPE_CANONICAL_INTERMEDIATE = "CANONICAL_INTERMEDIATE_VIEW"
 CANONICAL_TREND_LEVEL = TREND_LEVEL_INTERMEDIATE
 TREND_LEVEL_ORDER = [TREND_LEVEL_SHORT, TREND_LEVEL_INTERMEDIATE, TREND_LEVEL_LONG]
 TREND_LEVEL_PIVOT_NEIGHBOR_BARS = {
@@ -77,6 +81,10 @@ EVENT_FAMILY_STRUCTURE = "STRUCTURE"
 TURN_CONFIRM_NONE = "NONE"
 TURN_CONFIRM_UP = "CONFIRMED_TURN_UP"
 TURN_CONFIRM_DOWN = "CONFIRMED_TURN_DOWN"
+REVERSAL_STATE_FAMILY_NONE = "NONE"
+REVERSAL_STATE_FAMILY_CONFIRMED_TURN = "CONFIRMED_TURN"
+REVERSAL_STATE_FAMILY_TWO_B_WATCH = "TWO_B_WATCH"
+REVERSAL_STATE_FAMILY_COUNTERTREND_WATCH = "COUNTERTREND_WATCH"
 TWO_B_TOP = "2B_TOP"
 TWO_B_BOTTOM = "2B_BOTTOM"
 STEP1_EVENT = "123_STEP1"
@@ -507,6 +515,113 @@ def _distribution_band(value: float, thresholds: dict[str, float | int]) -> str:
     if value <= p95:
         return G2_BAND_STRONG
     return G2_BAND_EXTREME
+
+
+def _percentile_band(percentile: float, sample_size: int) -> str:
+    if sample_size <= 0 or not np.isfinite(percentile):
+        return G2_BAND_UNSCALED
+    if percentile < 65.0:
+        return G2_BAND_NORMAL
+    if percentile <= 95.0:
+        return G2_BAND_STRONG
+    return G2_BAND_EXTREME
+
+
+def _history_span_trade_days(history: list[dict[str, object]], current_index: int) -> int:
+    if not history:
+        return 0
+    first_start_index = min(int(item.get("start_index", current_index)) for item in history)
+    return max(0, int(current_index - first_start_index + 1))
+
+
+def _joint_lifespan_percentile(
+    history: list[dict[str, object]],
+    *,
+    magnitude_value: float,
+    duration_value: float,
+) -> float:
+    if not history:
+        return 50.0
+    pairs = np.asarray(
+        [
+            (float(item["magnitude_pct"]), float(item["duration_trade_days"]))
+            for item in history
+        ],
+        dtype=float,
+    )
+    if len(pairs) == 0:
+        return 50.0
+    dominated = np.logical_and(pairs[:, 0] <= magnitude_value, pairs[:, 1] <= duration_value)
+    return 100.0 * float(np.mean(dominated))
+
+
+def _latest_prior_mainstream_wave(
+    history: list[dict[str, object]],
+    *,
+    wave_role: str,
+    context_direction: str,
+) -> dict[str, object] | None:
+    if wave_role != "COUNTERTREND" or context_direction not in {"UP", "DOWN"}:
+        return None
+    for item in reversed(history):
+        if str(item.get("direction")) != context_direction:
+            continue
+        if str(item.get("wave_role")) != "MAINSTREAM":
+            continue
+        return item
+    return None
+
+
+def _retracement_vs_prior_mainstream_pct(
+    magnitude_pct: float,
+    prior_mainstream_wave: dict[str, object] | None,
+) -> float | None:
+    if prior_mainstream_wave is None:
+        return None
+    prior_magnitude_pct = _optional_float(prior_mainstream_wave.get("magnitude_pct"))
+    if prior_magnitude_pct is None or prior_magnitude_pct <= 0:
+        return None
+    return float((magnitude_pct / prior_magnitude_pct) * 100.0)
+
+
+def _reversal_state_view(
+    *,
+    latest_confirmed_turn_type: str,
+    active_two_b_failure_count: int,
+    trend_direction: str,
+    direction: str,
+) -> dict[str, object]:
+    if latest_confirmed_turn_type != TURN_CONFIRM_NONE and trend_direction == direction:
+        return {
+            "reversal_state": latest_confirmed_turn_type,
+            "reversal_state_family": REVERSAL_STATE_FAMILY_CONFIRMED_TURN,
+            "reversal_state_is_confirmed_turn": True,
+            "reversal_state_is_two_b_watch": False,
+            "reversal_state_is_countertrend_watch": False,
+        }
+    if active_two_b_failure_count > 0:
+        return {
+            "reversal_state": "TWO_B_WATCH",
+            "reversal_state_family": REVERSAL_STATE_FAMILY_TWO_B_WATCH,
+            "reversal_state_is_confirmed_turn": False,
+            "reversal_state_is_two_b_watch": True,
+            "reversal_state_is_countertrend_watch": False,
+        }
+    if trend_direction not in {"UNSET", direction}:
+        return {
+            "reversal_state": "COUNTERTREND_WATCH",
+            "reversal_state_family": REVERSAL_STATE_FAMILY_COUNTERTREND_WATCH,
+            "reversal_state_is_confirmed_turn": False,
+            "reversal_state_is_two_b_watch": False,
+            "reversal_state_is_countertrend_watch": True,
+        }
+    return {
+        "reversal_state": "NONE",
+        "reversal_state_family": REVERSAL_STATE_FAMILY_NONE,
+        "reversal_state_is_confirmed_turn": False,
+        "reversal_state_is_two_b_watch": False,
+        "reversal_state_is_countertrend_watch": False,
+    }
 
 
 # 只做“时间归属”，不重新识别事件：
@@ -948,6 +1063,7 @@ def _apply_wave_history_scores(waves: list[dict[str, object]]) -> None:
     """只拿同方向历史 completed wave 给当前波段做自历史评分。"""
 
     history_by_direction: dict[str, list[dict[str, object]]] = {"UP": [], "DOWN": []}
+    all_history: list[dict[str, object]] = []
     for wave in waves:
         history = history_by_direction[str(wave["direction"])]
         magnitude_history = [float(item["magnitude_pct"]) for item in history]
@@ -961,13 +1077,26 @@ def _apply_wave_history_scores(waves: list[dict[str, object]]) -> None:
         density_stats = _relative_strength_stats(density_history, density_value)
         magnitude_thresholds = _distribution_thresholds(magnitude_history)
         duration_thresholds = _distribution_thresholds(duration_history)
+        joint_percentile = _joint_lifespan_percentile(
+            history,
+            magnitude_value=magnitude_value,
+            duration_value=duration_value,
+        )
+        prior_mainstream_wave = _latest_prior_mainstream_wave(
+            all_history,
+            wave_role=str(wave.get("wave_role") or ""),
+            context_direction=str(wave.get("context_trend_direction_before") or ""),
+        )
         wave["history_sample_size"] = int(magnitude_stats["sample_size"])
+        wave["history_reference_trade_days"] = GENE_LIFESPAN_REFERENCE_TRADE_DAYS
+        wave["history_span_trade_days"] = _history_span_trade_days(history, int(wave["end_index"]))
         wave["magnitude_rank"] = int(magnitude_stats["rank"])
         wave["duration_rank"] = int(duration_stats["rank"])
         wave["extreme_density_rank"] = int(density_stats["rank"])
         wave["magnitude_percentile"] = float(magnitude_stats["percentile"])
         wave["duration_percentile"] = float(duration_stats["percentile"])
         wave["extreme_density_percentile"] = float(density_stats["percentile"])
+        wave["lifespan_joint_percentile"] = float(joint_percentile)
         wave["magnitude_zscore"] = float(magnitude_stats["zscore"])
         wave["duration_zscore"] = float(duration_stats["zscore"])
         wave["extreme_density_zscore"] = float(density_stats["zscore"])
@@ -978,7 +1107,18 @@ def _apply_wave_history_scores(waves: list[dict[str, object]]) -> None:
         wave["duration_p95"] = _optional_float(duration_thresholds["p95"])
         wave["duration_band"] = _distribution_band(duration_value, duration_thresholds)
         wave["wave_age_band"] = str(wave["duration_band"])
+        wave["wave_age_band_basis"] = AGE_BAND_BASIS_DURATION_ALIAS
+        wave["lifespan_joint_band"] = _percentile_band(joint_percentile, len(history))
+        wave["prior_mainstream_wave_id"] = None if prior_mainstream_wave is None else str(prior_mainstream_wave["wave_id"])
+        wave["prior_mainstream_magnitude_pct"] = (
+            None if prior_mainstream_wave is None else _optional_float(prior_mainstream_wave.get("magnitude_pct"))
+        )
+        wave["retracement_vs_prior_mainstream_pct"] = _retracement_vs_prior_mainstream_pct(
+            magnitude_value,
+            prior_mainstream_wave,
+        )
         history.append(wave)
+        all_history.append(wave)
 
 
 # active wave 从“最近一个已经确认的 pivot”起算，
@@ -1064,6 +1204,7 @@ def _build_daily_snapshots(
     two_b_window_bars, two_b_window_basis = _two_b_confirmation_window_spec(TREND_LEVEL_INTERMEDIATE)
 
     completed_by_direction: dict[str, list[dict[str, object]]] = {"UP": [], "DOWN": []}
+    completed_history_all: list[dict[str, object]] = []
     latest_completed_reversal = "NONE"
     latest_confirmed_turn_type = TURN_CONFIRM_NONE
     latest_confirmed_turn_date: date | None = None
@@ -1086,6 +1227,7 @@ def _build_daily_snapshots(
         while wave_cursor < len(waves) and int(waves[wave_cursor]["end_confirm_index"]) <= idx:
             completed = waves[wave_cursor]
             completed_by_direction[str(completed["direction"])].append(completed)
+            completed_history_all.append(completed)
             trend_direction = str(completed["trend_direction_after"])
             latest_completed_reversal = str(completed["reversal_tag"])
             if str(completed["turn_confirm_type"]) != TURN_CONFIRM_NONE:
@@ -1129,27 +1271,36 @@ def _build_daily_snapshots(
         density_stats = _relative_strength_stats(density_history, density)
         magnitude_thresholds = _distribution_thresholds(magnitude_history)
         duration_thresholds = _distribution_thresholds(duration_history)
+        joint_percentile = _joint_lifespan_percentile(
+            history,
+            magnitude_value=magnitude_pct,
+            duration_value=float(age_trade_days),
+        )
         bull_score, bear_score, gene_score = _gene_score_from_percentiles(
             magnitude_percentile=float(magnitude_stats["percentile"]),
             duration_percentile=float(duration_stats["percentile"]),
             density_percentile=float(density_stats["percentile"]),
             direction=direction,
         )
-        # reversal_state 是给下游消费的压缩语义：
-        # 优先级依次是 confirmed turn -> active 2B watch -> countertrend watch -> none。
-        if latest_confirmed_turn_type != TURN_CONFIRM_NONE and trend_direction == direction:
-            reversal_state = latest_confirmed_turn_type
-        elif active_state.two_b_failure_count > 0:
-            reversal_state = "TWO_B_WATCH"
-        elif trend_direction not in {"UNSET", direction}:
-            reversal_state = "COUNTERTREND_WATCH"
-        else:
-            reversal_state = "NONE"
+        # reversal_state 继续保留压缩视图，但 family / flags 现在显式落盘，
+        # 避免下游只能靠字符串猜它来自 confirmed turn、2B 还是 countertrend watch。
+        reversal_view = _reversal_state_view(
+            latest_confirmed_turn_type=latest_confirmed_turn_type,
+            active_two_b_failure_count=int(active_state.two_b_failure_count),
+            trend_direction=trend_direction,
+            direction=direction,
+        )
 
         # active wave 没有 completed ledger 可直接挂靠时，也沿用同一条父趋势参照规则，
         # 保证 snapshot 层和 wave ledger 层对 mainstream / countertrend 的口径一致。
         current_context_trend_direction = _resolved_context_direction(trend_direction, direction)
+        current_context_parent_trend_level = PARENT_TREND_LEVEL_BY_LEVEL[CANONICAL_TREND_LEVEL]
         current_wave_role = _wave_role_from_context_direction(current_context_trend_direction, direction)
+        prior_mainstream_wave = _latest_prior_mainstream_wave(
+            completed_history_all,
+            wave_role=current_wave_role,
+            context_direction=current_context_trend_direction,
+        )
         snapshots.append(
             {
                 "code": code,
@@ -1169,9 +1320,13 @@ def _build_daily_snapshots(
                 "current_wave_direction": direction,
                 "current_context_trend_level": TREND_LEVEL_INTERMEDIATE,
                 "current_context_trend_direction": current_context_trend_direction,
+                "current_context_view_scope": CONTEXT_VIEW_SCOPE_CANONICAL_INTERMEDIATE,
+                "current_context_view_level": CANONICAL_TREND_LEVEL,
+                "current_context_parent_trend_level": current_context_parent_trend_level,
+                "current_context_parent_trend_direction": current_context_trend_direction,
                 "current_wave_role": current_wave_role,
                 "current_wave_role_basis": WAVE_ROLE_BASIS_INTERMEDIATE_PARENT_CONTEXT,
-                "reversal_state": reversal_state,
+                **reversal_view,
                 "latest_completed_reversal_tag": latest_completed_reversal,
                 "latest_confirmed_turn_type": latest_confirmed_turn_type,
                 "latest_confirmed_turn_date": latest_confirmed_turn_date,
@@ -1192,12 +1347,15 @@ def _build_daily_snapshots(
                 "current_wave_last_extreme_price": active_state.last_extreme_price,
                 "current_wave_two_b_failure_count": int(active_state.two_b_failure_count),
                 "current_wave_history_sample_size": int(magnitude_stats["sample_size"]),
+                "current_wave_history_reference_trade_days": GENE_LIFESPAN_REFERENCE_TRADE_DAYS,
+                "current_wave_history_span_trade_days": _history_span_trade_days(history, idx),
                 "current_wave_magnitude_rank": int(magnitude_stats["rank"]),
                 "current_wave_duration_rank": int(duration_stats["rank"]),
                 "current_wave_extreme_density_rank": int(density_stats["rank"]),
                 "current_wave_magnitude_percentile": float(magnitude_stats["percentile"]),
                 "current_wave_duration_percentile": float(duration_stats["percentile"]),
                 "current_wave_extreme_density_percentile": float(density_stats["percentile"]),
+                "current_wave_lifespan_joint_percentile": float(joint_percentile),
                 "current_wave_magnitude_zscore": float(magnitude_stats["zscore"]),
                 "current_wave_duration_zscore": float(duration_stats["zscore"]),
                 "current_wave_extreme_density_zscore": float(density_stats["zscore"]),
@@ -1208,6 +1366,20 @@ def _build_daily_snapshots(
                 "current_wave_duration_p95": _optional_float(duration_thresholds["p95"]),
                 "current_wave_duration_band": _distribution_band(float(age_trade_days), duration_thresholds),
                 "current_wave_age_band": _distribution_band(float(age_trade_days), duration_thresholds),
+                "current_wave_age_band_basis": AGE_BAND_BASIS_DURATION_ALIAS,
+                "current_wave_lifespan_joint_band": _percentile_band(joint_percentile, len(history)),
+                "current_wave_prior_mainstream_wave_id": (
+                    None if prior_mainstream_wave is None else str(prior_mainstream_wave["wave_id"])
+                ),
+                "current_wave_prior_mainstream_magnitude_pct": (
+                    None
+                    if prior_mainstream_wave is None
+                    else _optional_float(prior_mainstream_wave.get("magnitude_pct"))
+                ),
+                "current_wave_retracement_vs_prior_mainstream_pct": _retracement_vs_prior_mainstream_pct(
+                    magnitude_pct,
+                    prior_mainstream_wave,
+                ),
             }
         )
     return snapshots

@@ -147,13 +147,28 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
                 current_wave_direction,
                 current_context_trend_level,
                 current_context_trend_direction,
+                current_context_view_scope,
+                current_context_view_level,
+                current_context_parent_trend_level,
+                current_context_parent_trend_direction,
                 current_wave_role_basis,
+                reversal_state,
+                reversal_state_family,
+                reversal_state_is_confirmed_turn,
+                reversal_state_is_two_b_watch,
+                reversal_state_is_countertrend_watch,
                 current_two_b_window_bars,
                 current_two_b_window_basis,
                 current_wave_magnitude_pct,
                 current_wave_magnitude_percentile,
                 current_wave_magnitude_band,
+                current_wave_history_reference_trade_days,
+                current_wave_history_span_trade_days,
                 current_wave_age_band,
+                current_wave_duration_band,
+                current_wave_age_band_basis,
+                current_wave_lifespan_joint_percentile,
+                current_wave_lifespan_joint_band,
                 cross_section_magnitude_rank,
                 cross_section_magnitude_percentile
             FROM l3_stock_gene
@@ -177,12 +192,33 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
                 two_b_window_bars,
                 two_b_window_basis,
                 reversal_tag,
+                history_reference_trade_days,
+                history_span_trade_days,
                 magnitude_percentile,
                 magnitude_band,
-                wave_age_band
+                wave_age_band,
+                wave_age_band_basis,
+                lifespan_joint_percentile,
+                lifespan_joint_band,
+                prior_mainstream_magnitude_pct,
+                retracement_vs_prior_mainstream_pct
             FROM l3_gene_wave
             WHERE trend_level = 'INTERMEDIATE'
             ORDER BY code, end_date
+            """
+        )
+        countertrend_snapshots = store.read_df(
+            """
+            SELECT
+                code,
+                calc_date,
+                current_wave_role,
+                current_wave_prior_mainstream_wave_id,
+                current_wave_prior_mainstream_magnitude_pct,
+                current_wave_retracement_vs_prior_mainstream_pct
+            FROM l3_stock_gene
+            WHERE current_wave_role = 'COUNTERTREND'
+            ORDER BY code, calc_date
             """
         )
         events = store.read_df(
@@ -248,6 +284,8 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert "trend_level" in schema["name"].tolist()
         assert "current_context_trend_level" in schema["name"].tolist()
         assert "current_context_trend_direction" in schema["name"].tolist()
+        assert "current_context_view_scope" in schema["name"].tolist()
+        assert "current_context_parent_trend_level" in schema["name"].tolist()
         assert "current_wave_role_basis" in schema["name"].tolist()
         assert "current_two_b_window_bars" in schema["name"].tolist()
         assert "current_two_b_window_basis" in schema["name"].tolist()
@@ -257,10 +295,17 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert "cross_section_magnitude_rank" in schema["name"].tolist()
         assert "current_wave_magnitude_band" in schema["name"].tolist()
         assert "current_wave_age_band" in schema["name"].tolist()
+        assert "current_wave_age_band_basis" in schema["name"].tolist()
+        assert "current_wave_history_reference_trade_days" in schema["name"].tolist()
+        assert "current_wave_history_span_trade_days" in schema["name"].tolist()
+        assert "current_wave_lifespan_joint_percentile" in schema["name"].tolist()
+        assert "current_wave_lifespan_joint_band" in schema["name"].tolist()
+        assert "current_wave_retracement_vs_prior_mainstream_pct" in schema["name"].tolist()
         assert "latest_confirmed_turn_type" in schema["name"].tolist()
         assert "latest_two_b_confirm_type" in schema["name"].tolist()
         assert not snapshots.empty
         assert not waves.empty
+        assert not countertrend_snapshots.empty
         assert not events.empty
         assert not factor_eval.empty
         assert not distribution_eval.empty
@@ -268,10 +313,29 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert snapshots["trend_level"].tolist() == ["INTERMEDIATE", "INTERMEDIATE"]
         assert snapshots["current_context_trend_level"].tolist() == ["INTERMEDIATE", "INTERMEDIATE"]
         assert snapshots["current_context_trend_direction"].isin(["UP", "DOWN"]).all()
+        assert snapshots["current_context_view_scope"].eq("CANONICAL_INTERMEDIATE_VIEW").all()
+        assert snapshots["current_context_view_level"].eq("INTERMEDIATE").all()
+        assert snapshots["current_context_parent_trend_level"].eq("LONG").all()
+        assert (snapshots["current_context_parent_trend_direction"] == snapshots["current_context_trend_direction"]).all()
         assert snapshots["current_wave_role_basis"].tolist() == [
             "INTERMEDIATE_PARENT_CONTEXT_DIRECTION",
             "INTERMEDIATE_PARENT_CONTEXT_DIRECTION",
         ]
+        assert snapshots["reversal_state"].isin(
+            ["NONE", "TWO_B_WATCH", "COUNTERTREND_WATCH", "CONFIRMED_TURN_UP", "CONFIRMED_TURN_DOWN"]
+        ).all()
+        assert snapshots["reversal_state_family"].isin(
+            ["NONE", "CONFIRMED_TURN", "TWO_B_WATCH", "COUNTERTREND_WATCH"]
+        ).all()
+        assert snapshots.loc[
+            snapshots["reversal_state_family"] == "CONFIRMED_TURN", "reversal_state_is_confirmed_turn"
+        ].all()
+        assert snapshots.loc[
+            snapshots["reversal_state_family"] == "TWO_B_WATCH", "reversal_state_is_two_b_watch"
+        ].all()
+        assert snapshots.loc[
+            snapshots["reversal_state_family"] == "COUNTERTREND_WATCH", "reversal_state_is_countertrend_watch"
+        ].all()
         assert snapshots["current_two_b_window_bars"].tolist() == [5, 5]
         assert snapshots["current_two_b_window_basis"].tolist() == [
             "INTERMEDIATE_WITHIN_3_TO_5_BARS",
@@ -284,7 +348,13 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         )
         assert snapshots["current_wave_magnitude_percentile"].notna().all()
         assert snapshots["current_wave_magnitude_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
+        assert snapshots["current_wave_history_reference_trade_days"].eq(1260).all()
+        assert snapshots["current_wave_history_span_trade_days"].gt(0).all()
+        assert (snapshots["current_wave_age_band"] == snapshots["current_wave_duration_band"]).all()
+        assert snapshots["current_wave_age_band_basis"].eq("DURATION_BAND_ALIAS").all()
         assert snapshots["current_wave_age_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
+        assert snapshots["current_wave_lifespan_joint_percentile"].between(0.0, 100.0).all()
+        assert snapshots["current_wave_lifespan_joint_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
         assert waves["trend_level"].eq("INTERMEDIATE").all()
         assert waves["context_trend_level"].eq("LONG").all()
         assert waves["wave_role_basis"].eq("INTERMEDIATE_PARENT_CONTEXT_DIRECTION").all()
@@ -292,13 +362,23 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert waves["two_b_window_basis"].eq("INTERMEDIATE_WITHIN_3_TO_5_BARS").all()
         assert set(waves["wave_role"].tolist()) == {"MAINSTREAM", "COUNTERTREND"}
         assert waves["context_trend_direction_after"].isin(["UP", "DOWN"]).all()
+        assert waves["history_reference_trade_days"].eq(1260).all()
+        assert waves["history_span_trade_days"].ge(0).all()
         extreme_events = events.loc[events["event_type"].isin(["NEW_HIGH", "NEW_LOW"])].reset_index(drop=True)
         assert not extreme_events.empty
         assert extreme_events["confirmation_window_bars"].eq(5).all()
         assert extreme_events["confirmation_window_basis"].eq("INTERMEDIATE_WITHIN_3_TO_5_BARS").all()
         assert waves["magnitude_percentile"].notna().all()
         assert waves["magnitude_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
+        assert waves["wave_age_band_basis"].eq("DURATION_BAND_ALIAS").all()
         assert waves["wave_age_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
+        assert waves["lifespan_joint_percentile"].between(0.0, 100.0).all()
+        assert waves["lifespan_joint_band"].isin(["NORMAL", "STRONG", "EXTREME", "UNSCALED"]).all()
+        assert waves["retracement_vs_prior_mainstream_pct"].dropna().ge(0.0).all()
+        assert countertrend_snapshots["current_wave_prior_mainstream_wave_id"].notna().any()
+        assert countertrend_snapshots["current_wave_prior_mainstream_magnitude_pct"].notna().any()
+        assert countertrend_snapshots["current_wave_retracement_vs_prior_mainstream_pct"].notna().any()
+        assert countertrend_snapshots["current_wave_retracement_vs_prior_mainstream_pct"].dropna().ge(0.0).all()
         assert events["event_seq"].min() == 1
         assert set(factor_eval.loc[factor_eval["bin_label"] == "ALL", "factor_name"].tolist()) == {
             "magnitude",
@@ -355,6 +435,9 @@ def test_compute_gene_writes_gx8_three_level_hierarchy(tmp_path) -> None:
             SELECT
                 trend_level,
                 current_context_trend_level,
+                current_context_view_scope,
+                current_context_view_level,
+                current_context_parent_trend_level,
                 current_short_trend_level,
                 current_short_context_trend_level,
                 current_short_wave_role_basis,
@@ -410,6 +493,9 @@ def test_compute_gene_writes_gx8_three_level_hierarchy(tmp_path) -> None:
         row = snapshot.iloc[0]
         assert row["trend_level"] == "INTERMEDIATE"
         assert row["current_context_trend_level"] == "INTERMEDIATE"
+        assert row["current_context_view_scope"] == "CANONICAL_INTERMEDIATE_VIEW"
+        assert row["current_context_view_level"] == "INTERMEDIATE"
+        assert row["current_context_parent_trend_level"] == "LONG"
         assert row["current_short_trend_level"] == "SHORT"
         assert row["current_short_context_trend_level"] == "INTERMEDIATE"
         assert row["current_short_wave_role_basis"] == "SHORT_PARENT_CONTEXT_DIRECTION"

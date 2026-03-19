@@ -16,7 +16,7 @@ from typing import Any
 import duckdb
 import pandas as pd
 
-CURRENT_SCHEMA_VERSION = 15
+CURRENT_SCHEMA_VERSION = 17
 
 
 @dataclass(frozen=True)
@@ -388,6 +388,42 @@ class Store:
                     f"ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_{prefix}_wave_age_trade_days INTEGER",
                 ]
             )
+        for sql in statements:
+            self.conn.execute(sql)
+
+    def _migrate_schema_v15_to_v16(self) -> None:
+        statements = [
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_history_reference_trade_days INTEGER",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_history_span_trade_days INTEGER",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_lifespan_joint_percentile DOUBLE",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_lifespan_joint_band VARCHAR",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_prior_mainstream_wave_id VARCHAR",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_prior_mainstream_magnitude_pct DOUBLE",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_retracement_vs_prior_mainstream_pct DOUBLE",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS history_reference_trade_days INTEGER",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS history_span_trade_days INTEGER",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS lifespan_joint_percentile DOUBLE",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS lifespan_joint_band VARCHAR",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS prior_mainstream_wave_id VARCHAR",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS prior_mainstream_magnitude_pct DOUBLE",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS retracement_vs_prior_mainstream_pct DOUBLE",
+        ]
+        for sql in statements:
+            self.conn.execute(sql)
+
+    def _migrate_schema_v16_to_v17(self) -> None:
+        statements = [
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_context_view_scope VARCHAR",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_context_view_level VARCHAR",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_context_parent_trend_level VARCHAR",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_context_parent_trend_direction VARCHAR",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS reversal_state_family VARCHAR",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS reversal_state_is_confirmed_turn BOOLEAN",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS reversal_state_is_two_b_watch BOOLEAN",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS reversal_state_is_countertrend_watch BOOLEAN",
+            "ALTER TABLE l3_stock_gene ADD COLUMN IF NOT EXISTS current_wave_age_band_basis VARCHAR",
+            "ALTER TABLE l3_gene_wave ADD COLUMN IF NOT EXISTS wave_age_band_basis VARCHAR",
+        ]
         for sql in statements:
             self.conn.execute(sql)
 
@@ -1121,9 +1157,17 @@ class Store:
                 current_wave_direction VARCHAR,
                 current_context_trend_level VARCHAR,
                 current_context_trend_direction VARCHAR,
+                current_context_view_scope VARCHAR,
+                current_context_view_level VARCHAR,
+                current_context_parent_trend_level VARCHAR,
+                current_context_parent_trend_direction VARCHAR,
                 current_wave_role VARCHAR,
                 current_wave_role_basis VARCHAR,
                 reversal_state VARCHAR,
+                reversal_state_family VARCHAR,
+                reversal_state_is_confirmed_turn BOOLEAN,
+                reversal_state_is_two_b_watch BOOLEAN,
+                reversal_state_is_countertrend_watch BOOLEAN,
                 latest_completed_reversal_tag VARCHAR,
                 current_wave_start_date DATE,
                 current_wave_reference_price DOUBLE,
@@ -1138,12 +1182,15 @@ class Store:
                 current_wave_last_extreme_price DOUBLE,
                 current_wave_two_b_failure_count INTEGER,
                 current_wave_history_sample_size INTEGER,
+                current_wave_history_reference_trade_days INTEGER,
+                current_wave_history_span_trade_days INTEGER,
                 current_wave_magnitude_rank INTEGER,
                 current_wave_duration_rank INTEGER,
                 current_wave_extreme_density_rank INTEGER,
                 current_wave_magnitude_percentile DOUBLE,
                 current_wave_duration_percentile DOUBLE,
                 current_wave_extreme_density_percentile DOUBLE,
+                current_wave_lifespan_joint_percentile DOUBLE,
                 current_wave_magnitude_zscore DOUBLE,
                 current_wave_duration_zscore DOUBLE,
                 current_wave_extreme_density_zscore DOUBLE,
@@ -1154,6 +1201,11 @@ class Store:
                 current_wave_duration_p95 DOUBLE,
                 current_wave_duration_band VARCHAR,
                 current_wave_age_band VARCHAR,
+                current_wave_age_band_basis VARCHAR,
+                current_wave_lifespan_joint_band VARCHAR,
+                current_wave_prior_mainstream_wave_id VARCHAR,
+                current_wave_prior_mainstream_magnitude_pct DOUBLE,
+                current_wave_retracement_vs_prior_mainstream_pct DOUBLE,
                 latest_confirmed_turn_type VARCHAR,
                 latest_confirmed_turn_date DATE,
                 latest_two_b_confirm_type VARCHAR,
@@ -1230,12 +1282,15 @@ class Store:
                 wave_role_basis             VARCHAR,
                 reversal_tag                VARCHAR,
                 history_sample_size         INTEGER,
+                history_reference_trade_days INTEGER,
+                history_span_trade_days     INTEGER,
                 magnitude_rank              INTEGER,
                 duration_rank               INTEGER,
                 extreme_density_rank        INTEGER,
                 magnitude_percentile        DOUBLE,
                 duration_percentile         DOUBLE,
                 extreme_density_percentile  DOUBLE,
+                lifespan_joint_percentile   DOUBLE,
                 magnitude_zscore            DOUBLE,
                 duration_zscore             DOUBLE,
                 extreme_density_zscore      DOUBLE,
@@ -1246,6 +1301,11 @@ class Store:
                 duration_p95                DOUBLE,
                 duration_band               VARCHAR,
                 wave_age_band               VARCHAR,
+                wave_age_band_basis         VARCHAR,
+                lifespan_joint_band         VARCHAR,
+                prior_mainstream_wave_id    VARCHAR,
+                prior_mainstream_magnitude_pct DOUBLE,
+                retracement_vs_prior_mainstream_pct DOUBLE,
                 turn_confirm_type           VARCHAR,
                 turn_step1_date             DATE,
                 turn_step2_date             DATE,

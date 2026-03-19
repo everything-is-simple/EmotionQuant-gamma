@@ -1,5 +1,5 @@
 # GX10 / 寿命参考基础扩充卡
-**状态**: `Planned`  
+**状态**: `Completed`  
 **日期**: `2026-03-19`  
 **类型**: `targeted semantic implementation`  
 **直接目标文件**: [`../../src/selector/gene.py`](../../src/selector/gene.py)
@@ -90,7 +90,37 @@
 
 ---
 
-## 7. 下一步
+## 7. 完成结果
+
+本卡当前正式完成了三组最小交付：
+
+1. 把寿命参考深度从单一 `260` 日结构窗口，拆成：
+   `GENE_STRUCTURE_LOOKBACK_TRADE_DAYS = 260`
+   `GENE_LIFESPAN_REFERENCE_TRADE_DAYS = 1260`
+   并把 snapshot / wave ledger 的 `history_reference_trade_days` 与 `history_span_trade_days` 正式落盘
+2. 补上相对前一主要波段的折返宽度字段：
+   `prior_mainstream_wave_id`
+   `prior_mainstream_magnitude_pct`
+   `retracement_vs_prior_mainstream_pct`
+3. 补上宽度 + 时间联合寿命读数：
+   `lifespan_joint_percentile`
+   `lifespan_joint_band`
+
+这轮实现只把“寿命参考基础”补实，没有直接改写第一战场运行面，也没有把第四战场升级为 runtime hard gate。
+
+验证口径当前写定为：
+
+1. `py_compile` 已通过
+2. `tests/unit/selector/test_gene.py` 新语义断言已补齐
+3. 正式 `pytest` 在当前 Windows 会话里仍受 `basetemp` 权限问题干扰，因此本轮同时保留了等价手工 smoke 验证记录
+
+配套 record：
+
+[`records/21-phase-gx10-lifespan-reference-basis-expansion-record-20260319.md`](./records/21-phase-gx10-lifespan-reference-basis-expansion-record-20260319.md)
+
+---
+
+## 8. 下一步
 
 本卡完成后，固定进入：
 
@@ -99,4 +129,3 @@
 一句话收口：
 
 `GX10` 先把寿命尺的参考基础补对，再谈运行面怎么消费。`
-

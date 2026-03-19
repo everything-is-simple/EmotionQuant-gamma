@@ -130,6 +130,8 @@
 - `03-execution/records/10-phase-g7-mss-irs-refactor-or-retire-record-20260316.md`
 - `03-execution/records/11-phase-g8-gene-campaign-closeout-record-20260316.md`
 - `03-execution/records/20-phase-gx9-book-vs-gene-audit-record-20260319.md`
+- `03-execution/records/21-phase-gx10-lifespan-reference-basis-expansion-record-20260319.md`
+- `03-execution/records/22-phase-gx11-runtime-surface-semantic-cleanup-record-20260319.md`
 - `90-archive/README.md`
 
 ---
@@ -191,26 +193,28 @@
 7. `GX9 / book-vs-gene remediation package`
    - `post-audit remediation package`
    - `gene / src/selector/gene.py / src/data/store.py`
-   - `Active`
+   - `Completed`
    - 目标：把书义对齐整改拆成寿命基础、运行面语义、强制重验证三张小卡
    - 配套 record：`03-execution/records/20-phase-gx9-book-vs-gene-audit-record-20260319.md`
 8. `GX10 / lifespan reference-basis expansion`
    - `targeted semantic implementation`
    - `src/selector/gene.py / src/data/store.py`
-   - `Planned`
+   - `Completed`
    - 目标：把寿命轴从 time-only ruler 推进到更接近书义的参考基础
+   - 配套 record：`03-execution/records/21-phase-gx10-lifespan-reference-basis-expansion-record-20260319.md`
 9. `GX11 / runtime surface semantic cleanup`
    - `targeted contract cleanup`
    - `src/selector/gene.py / src/data/store.py`
-   - `Planned`
+   - `Completed`
    - 目标：清理 age-band / context / reversal 的运行面歧义
+   - 配套 record：`03-execution/records/22-phase-gx11-runtime-surface-semantic-cleanup-record-20260319.md`
 10. `GX12 / post-remediation gene and phase9 revalidation`
    - `forced downstream revalidation`
    - `src/selector/gene.py / src/data/store.py`
    - `Planned`
    - 目标：重审 G4/G5/G6 与 Phase 9 证据是否仍可保留
 
-当前 `GX3 ~ GX8` 已全部完成，当前新增整改队列为 `GX9 ~ GX12`。  
+当前 `GX3 ~ GX11` 已完成，当前新增整改队列为 `GX12`。  
 当前第四战场已不再有真正未执行的 hierarchy blocker，但已进入“书义对齐整改”阶段。  
 定义整改后的正式收口口径现更新为：
 

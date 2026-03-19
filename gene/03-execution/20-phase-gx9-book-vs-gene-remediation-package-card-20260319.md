@@ -1,5 +1,5 @@
 # GX9 / 书义对齐整改包
-**状态**: `Active`  
+**状态**: `Completed`  
 **日期**: `2026-03-19`  
 **类型**: `post-audit remediation package`  
 **直接目标文件**: `gene / src/selector/gene.py / src/data/store.py / tests/unit/selector/test_gene.py`
@@ -91,7 +91,25 @@
 
 ---
 
-## 7. 下一步
+## 7. 完成结果
+
+`GX9` 已完成本卡原定目标：
+
+1. 审计记录已落盘：
+   [`records/20-phase-gx9-book-vs-gene-audit-record-20260319.md`](records/20-phase-gx9-book-vs-gene-audit-record-20260319.md)
+2. 三张下游整改卡已开出：
+   - [`21-phase-gx10-lifespan-reference-basis-expansion-card-20260319.md`](./21-phase-gx10-lifespan-reference-basis-expansion-card-20260319.md)
+   - [`22-phase-gx11-runtime-surface-semantic-cleanup-card-20260319.md`](./22-phase-gx11-runtime-surface-semantic-cleanup-card-20260319.md)
+   - [`23-phase-gx12-post-remediation-gene-and-phase9-revalidation-card-20260319.md`](./23-phase-gx12-post-remediation-gene-and-phase9-revalidation-card-20260319.md)
+3. `GX10 / GX11 / GX12` 与 `17.8 / 17.9` 的关系边界已经写明
+
+因此本卡的 truthful 角色现已完成：
+
+`先完成书义对齐审计，再把整改落成明确的小卡队列，而不是继续用口头方式推进。`
+
+---
+
+## 8. 下一步
 
 按当前问题优先级，下一张执行卡固定为：
 
@@ -100,4 +118,3 @@
 一句话收口：
 
 `GX9` 不是自己下场改代码，而是把“书义对齐整改”拆成寿命基础、运行面语义、强制重验证三张小卡。`
-

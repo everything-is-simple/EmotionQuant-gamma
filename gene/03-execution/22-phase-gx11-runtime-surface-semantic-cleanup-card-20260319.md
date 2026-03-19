@@ -1,5 +1,5 @@
 # GX11 / 运行面语义清理卡
-**状态**: `Planned`  
+**状态**: `Completed`  
 **日期**: `2026-03-19`  
 **类型**: `targeted contract cleanup`  
 **直接目标文件**: [`../../src/selector/gene.py`](../../src/selector/gene.py)
@@ -91,7 +91,47 @@
 
 ---
 
-## 7. 下一步
+## 7. 完成结果
+
+本卡当前正式完成了三组运行面清理：
+
+1. `age_band` 收口：
+   `current_wave_age_band` 与 `wave_age_band` 继续保留，但已新增
+   `current_wave_age_band_basis / wave_age_band_basis = DURATION_BAND_ALIAS`
+   明确它只是 `duration band` 的展示别名
+2. `context` 口径诚实化：
+   canonical snapshot 现在新增
+   `current_context_view_scope`
+   `current_context_view_level`
+   `current_context_parent_trend_level`
+   `current_context_parent_trend_direction`
+   用来明确当前 canonical 行是 `INTERMEDIATE` 兼容视图，而父层上下文应读哪一层
+3. `reversal_state` 透明化：
+   在保留压缩字段 `reversal_state` 的同时，新增
+   `reversal_state_family`
+   `reversal_state_is_confirmed_turn`
+   `reversal_state_is_two_b_watch`
+   `reversal_state_is_countertrend_watch`
+   让下游不再只能靠压缩字符串猜来源
+
+这轮没有改旧字段值，也没有修改 `Phase 9` 既有 isolated evidence 的消费字段。  
+也就是说，当前采取的是：
+
+`加透明层，不静默改旧口径。`
+
+验证口径当前写定为：
+
+1. `py_compile` 已通过
+2. `tests/unit/selector/test_gene.py` 已补入兼容层断言
+3. 等价手工 smoke 已通过全部 `5` 个 Gene 单测函数
+
+配套 record：
+
+[`records/22-phase-gx11-runtime-surface-semantic-cleanup-record-20260319.md`](./records/22-phase-gx11-runtime-surface-semantic-cleanup-record-20260319.md)
+
+---
+
+## 8. 下一步
 
 本卡完成后，固定进入：
 
@@ -100,4 +140,3 @@
 一句话收口：
 
 `GX11` 负责把 Gene 运行面从“能用但容易误读”清成“诚实且不容易偷带歧义”的合同。`
-
