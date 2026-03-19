@@ -267,8 +267,8 @@
 13. `Phase 9B / context_trend_direction_before = Completed (promote_context_trend_direction_negative_guard)`
 14. `Phase 9C = Completed (formal combination freeze closed; no combination replay opened)`
 15. `Phase 9D = Completed (defer and open a smaller follow-up package)`
-16. `Phase 9E = Active (duration_percentile threshold sweep)`
-17. `Phase 9F = Planned (frozen combination replay; blocked-by-17.8)`
+16. `Phase 9E = Active (legacy-surface sweep paused; reopen on remediated duration surface)`
+17. `Phase 9F = Planned (frozen combination replay; blocked-by-remediated-17.8)`
 18. `Phase 10 = Blocked-by-Phase-9`
 19. 当前 truthful runtime：
    - `legacy_bof_baseline + FIXED_NOTIONAL_CONTROL + FULL_EXIT_CONTROL + Gene sidecar only`
@@ -293,10 +293,11 @@
    - `legacy_bof_baseline + FIXED_NOTIONAL_CONTROL + FULL_EXIT_CONTROL + Gene sidecar only`
 12. 正式 rollback target 仍保持：
    - `legacy_bof_baseline + FIXED_NOTIONAL_CONTROL + FULL_EXIT_CONTROL + Gene sidecar only`
-13. 当前真实下一步固定为：
-   - `17.8 / duration sweep`
+13. `GX10 / GX11 / GX12` 已完成并正式裁定：`duration` 相关 follow-up 必须在整改后 surface 上重开
+14. 当前真实下一步固定为：
+   - `17.8 / duration sweep on remediated duration surface`
    - 然后 `17.9 / frozen combination replay`
-14. 只有当 `17.8` 与 `17.9` 补齐 formal evidence 后，`Phase 9` 才允许重新进入 package-level closeout 判断
+15. 只有当整改后 `17.8` 与 `17.9` 补齐 formal evidence 后，`Phase 9` 才允许重新进入 package-level closeout 判断
 
 也就是：
 

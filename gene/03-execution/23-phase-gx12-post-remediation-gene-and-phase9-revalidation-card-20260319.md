@@ -1,5 +1,5 @@
 # GX12 / 整改后 Gene 与 Phase 9 重验证卡
-**状态**: `Planned`  
+**状态**: `Completed`  
 **日期**: `2026-03-19`  
 **类型**: `forced downstream revalidation`  
 **直接目标文件**: [`../../src/selector/gene.py`](../../src/selector/gene.py)
@@ -66,7 +66,29 @@
 
 ---
 
-## 7. 一句话状态
+## 7. 完成结果
+
+本卡当前正式裁定如下：
+
+1. `G4 / validation` = `rerun`
+2. `G5 / mirror` = `rerun`
+3. `G6 / conditioning` = `rerun`
+4. `Phase 9B / duration_percentile` = `rerun before any further sweep or combination replay`
+5. `Phase 9B / context_trend_direction_before` = `keep on legacy proxy surface`
+6. `Phase 9B / reversal_state` = `keep on legacy compressed surface`
+7. `17.8 / duration sweep` = `pause current legacy-surface attempt and reopen on remediated duration surface`
+8. `17.9 / frozen combination replay` = `remain blocked; consume only remediated 17.8 result`
+
+本轮正式口径因此写定为：
+
+`Phase 9` 不能继续假装 duration 轴还是旧 surface；当前应读成“保留 context / reversal 的旧 isolated 结论，但把 duration 驱动的 follow-up 暂停并在整改后 surface 上重开”。`
+
+配套 record：
+
+[`records/23-phase-gx12-post-remediation-gene-and-phase9-revalidation-record-20260319.md`](./records/23-phase-gx12-post-remediation-gene-and-phase9-revalidation-record-20260319.md)
+
+---
+
+## 8. 一句话状态
 
 `GX12` 是整改后的强制收口卡；前面真改了语义，后面就必须老老实实重审 Gene 统计层和 Phase 9 runtime 证据。`
-

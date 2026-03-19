@@ -132,6 +132,7 @@
 - `03-execution/records/20-phase-gx9-book-vs-gene-audit-record-20260319.md`
 - `03-execution/records/21-phase-gx10-lifespan-reference-basis-expansion-record-20260319.md`
 - `03-execution/records/22-phase-gx11-runtime-surface-semantic-cleanup-record-20260319.md`
+- `03-execution/records/23-phase-gx12-post-remediation-gene-and-phase9-revalidation-record-20260319.md`
 - `90-archive/README.md`
 
 ---
@@ -211,13 +212,14 @@
 10. `GX12 / post-remediation gene and phase9 revalidation`
    - `forced downstream revalidation`
    - `src/selector/gene.py / src/data/store.py`
-   - `Planned`
+   - `Completed`
    - 目标：重审 G4/G5/G6 与 Phase 9 证据是否仍可保留
+   - 配套 record：`03-execution/records/23-phase-gx12-post-remediation-gene-and-phase9-revalidation-record-20260319.md`
 
-当前 `GX3 ~ GX11` 已完成，当前新增整改队列为 `GX12`。  
+当前 `GX3 ~ GX12` 已完成，当前这轮书义对齐整改队列已收口。  
 当前第四战场已不再有真正未执行的 hierarchy blocker，但已进入“书义对齐整改”阶段。  
 定义整改后的正式收口口径现更新为：
 
-1. `G4 / G5 / G6` 结论保留
-2. 数值存在小幅漂移，但未触发治理翻案
+1. `G4 / G5 / G6` 方向结论保留，但统计 evidence 必须重跑
+2. `Phase 9` 当前保留 `context / reversal` 的 legacy isolated keep，但 `duration` 相关 follow-up 必须在整改后 surface 上重开
 3. `Gene` 继续保持 `sidecar / dashboard / attribution` 身份，不升格为 runtime hard gate
