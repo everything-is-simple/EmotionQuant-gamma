@@ -248,7 +248,7 @@
 
 ## 7. 下一步
 
-从 `2026-03-19` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3`、`Phase 4`、`Phase 4.1`、`Phase 5`、`Phase 6`、`Phase 7` 与 `Phase 8` 都已完成当前轮次收口。`Phase 9 / Gene mainline integration package` 还没有 truthfully closeout：`Phase 9A` 已完成 promoted subset freeze，`Phase 9B / duration_percentile`、`Phase 9B / reversal_state`、`Phase 9B / context_trend_direction_before` 都已留下 isolated winners，`Phase 9B / wave_role` 已完成但 ruling 为 `retain_sidecar_only`；`GX8 / three-level trend hierarchy` 已完成，`17.6 / Phase 9C` 已完成 formal combination freeze，并以 `no combination replay opened` 收口；`17.7 / Phase 9D` 当前轮次也已完成，但正式结论改为 `defer and open a smaller follow-up package`。当前真实下一步不是 `Phase 10`，而是先回到 `Phase 9E / duration_percentile threshold sweep`。
+从 `2026-03-19` 起，`Phase 0`、`Phase 1`、`Phase 1.5`、`Phase 2`、`Phase 3`、`Phase 4`、`Phase 4.1`、`Phase 5`、`Phase 6`、`Phase 7` 与 `Phase 8` 都已完成当前轮次收口。`Phase 9 / Gene mainline integration package` 还没有 truthfully closeout：`Phase 9A` 已完成 promoted subset freeze，`Phase 9B / duration_percentile`、`Phase 9B / reversal_state`、`Phase 9B / context_trend_direction_before` 都已留下 historical isolated winners，`Phase 9B / wave_role` 已完成但 ruling 为 `retain_sidecar_only`；`GX8 / three-level trend hierarchy` 已完成，`17.6 / Phase 9C` 已完成 formal combination freeze，并以 `no combination replay opened` 收口；`17.7 / Phase 9D` 当前轮次也已完成，但正式结论改为 `defer and open a smaller follow-up package`；`17.8 / Phase 9E` 现已完成书义寿命分布重跑，并正式裁定 `duration -> sidecar only`。当前真实下一步不是 `Phase 10`，也不是直接打开旧定义的 `17.9`，而是先把 `Phase 9F / package reruling` 改到新的 truthful surface。
 
 其中：
 
@@ -261,14 +261,14 @@
 7. `Phase 8 = Completed (data contract residual audit closed)`
 8. `Phase 9 = Active (Gene refinement first; package closeout deferred)`
 9. `Phase 9A = Completed`
-10. `Phase 9B / duration_percentile = Completed (promote_duration_percentile_negative_filter)`
+10. `Phase 9B / duration_percentile = Completed (historical isolated winner kept; remediated quartile rerun => sidecar-only)`
 11. `Phase 9B / wave_role = Completed (retain_sidecar_only)`
 12. `Phase 9B / reversal_state = Completed (promote_reversal_state_exit_preparation)`
 13. `Phase 9B / context_trend_direction_before = Completed (promote_context_trend_direction_negative_guard)`
 14. `Phase 9C = Completed (formal combination freeze closed; no combination replay opened)`
 15. `Phase 9D = Completed (defer and open a smaller follow-up package)`
-16. `Phase 9E = Active (legacy-surface sweep paused; reopen on remediated duration surface)`
-17. `Phase 9F = Planned (frozen combination replay; blocked-by-remediated-17.8)`
+16. `Phase 9E = Completed (book-aligned quartile + average lifespan odds rerun landed; duration returns to sidecar-only)`
+17. `Phase 9F = Blocked (17.8 ruled out carrying duration forward; replay surface needs reruling first)`
 18. `Phase 10 = Blocked-by-Phase-9`
 19. 当前 truthful runtime：
    - `legacy_bof_baseline + FIXED_NOTIONAL_CONTROL + FULL_EXIT_CONTROL + Gene sidecar only`
@@ -282,7 +282,7 @@
 1. 当前不再在 `Phase 4.1` 内冻结新的 `MSS / Broker` 候选
 2. `Phase 5 / Phase 6 / Phase 7 / Phase 8` 都已闭环，不再回头补旧卡
 3. 当前 active package 继续保持在 `Phase 9`
-4. `duration_percentile` 仍是当前正式 isolated winner 之一，但其阈值曲线尚未跑完
+4. `duration_percentile` 的历史 isolated winner 事实保留，但整改后 quartile surface 已裁定它当前只能回到 sidecar-only
 5. `reversal_state` 仍是 isolated winner，但当前尚未 package-promote
 6. `context_trend_direction_before` 仍是第三个 isolated winner，但当前尚未 package-promote
 7. `wave_role` 已完成 isolated validation，但当前 ruling 是 `retain_sidecar_only`
@@ -295,9 +295,9 @@
    - `legacy_bof_baseline + FIXED_NOTIONAL_CONTROL + FULL_EXIT_CONTROL + Gene sidecar only`
 13. `GX10 / GX11 / GX12` 已完成并正式裁定：`duration` 相关 follow-up 必须在整改后 surface 上重开
 14. 当前真实下一步固定为：
-   - `17.8 / duration sweep on remediated duration surface`
-   - 然后 `17.9 / frozen combination replay`
-15. 只有当整改后 `17.8` 与 `17.9` 补齐 formal evidence 后，`Phase 9` 才允许重新进入 package-level closeout 判断
+   - 先回到 `17.7 / Phase 9D` 或 `17.9 / Phase 9F` 的 reruling
+   - 只有在删去含 duration 组合后，才允许考虑是否打开新的 frozen combination replay
+15. 只有当新的 reruling 与任何重新定义后的 `17.9` 补齐 formal evidence 后，`Phase 9` 才允许重新进入 package-level closeout 判断
 
 也就是：
 

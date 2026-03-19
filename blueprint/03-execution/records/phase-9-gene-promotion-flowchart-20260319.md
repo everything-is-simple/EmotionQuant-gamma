@@ -50,9 +50,9 @@ flowchart TD
     E -.-> G["retain Gene as sidecar only"]:::decision
     E -->|"Chosen"| H["defer and open a smaller follow-up package"]:::chosen
 
-    H --> I["Phase 9E<br/>duration threshold sweep<br/>Active<br/>p65~p95 step 5"]:::chosen
-    I --> J["Freeze truthful duration candidate(s)<br/>or rule out duration runtime promotion"]:::freeze
-    J --> K["Phase 9F<br/>frozen combination replay<br/>Planned / blocked-by-17.8"]:::decision
+    H --> I["Phase 9E<br/>Completed<br/>quartile + average lifespan odds"]:::chosen
+    I --> J["17.8 ruling<br/>duration -> sidecar only<br/>p65/p95 -> archive only"]:::freeze
+    J --> K["Phase 9F<br/>Blocked pending reruling<br/>duration-bearing combos disallowed"]:::decision
     K --> L["Return to later package ruling<br/>with new evidence"]:::decision
 
     H --> M["Current truthful runtime<br/>legacy_bof_baseline + FIXED_NOTIONAL_CONTROL + FULL_EXIT_CONTROL + Gene sidecar only"]:::freeze
@@ -77,10 +77,11 @@ flowchart TD
 2. `wave_role` 已完成 isolated validation，但 ruling 是 `retain_sidecar_only`
 3. `Phase 9C` 只冻结组合面，没有打开 combination replay
 4. `Phase 9C has no formal combination winner`
-5. `Phase 9D` 当前选择的是：
+5. `17.8 / Phase 9E` 已完成，并正式把 duration 裁回 `sidecar-only`
+6. `Phase 9D` 当前选择的是：
    `defer and open a smaller follow-up package`
-6. 当前主线仍然是：
+7. 当前主线仍然是：
    `legacy_bof_baseline + FIXED_NOTIONAL_CONTROL + FULL_EXIT_CONTROL + Gene sidecar only`
-7. 当前真实下一步是：
-   - `17.8 / duration threshold sweep`
-   - 然后 `17.9 / frozen combination replay`
+8. 当前真实下一步不是直接打开旧定义的 `17.9`，而是：
+   - 先对 `Phase 9F` 做 reruling
+   - 再决定是否只在无 duration 的 frozen combo 上重开 replay

@@ -108,7 +108,18 @@
 
 ---
 
-## 7. 下游含义
+## 7. Post-Remediation Note
+
+`2026-03-19` 的 `17.8 / Phase 9E` 已经完成 book-aligned quartile rerun，并正式裁定：
+
+1. `duration_should_return_to_sidecar_only_distribution_reading`
+2. 历史 `p65 / p95` round 只保留为 `legacy archive`
+3. 含 `duration_percentile` 的 frozen combos 继续保留为历史冻结事实，但当前不具备 truthful replay 资格
+4. `reversal_state + context_trend_direction_before` 是当前唯一没有被 `17.8` 直接否决的历史冻结组合，但是否打开，必须在本 record 之外另做 reruling
+
+---
+
+## 8. 下游含义
 
 `17.6` 完成之后，当前 truthful downstream 不再是“直接默认 package promotion 可以成立”。
 
@@ -117,9 +128,10 @@
 1. `17.7 / Phase 9D` 必须先对现有证据做包级判断
 2. 若现有证据不足，它只能选择：
    `defer and open a smaller follow-up package`
-3. 当前 follow-up 已明确落到：
-   - `17.8 / duration_percentile threshold sweep`
-   - `17.9 / frozen combination replay`
+3. `17.8 / book-aligned duration lifespan distribution rerun` 现已完成，并把 duration 裁回 `sidecar only`
+4. 因此当前 truthful downstream 不再是“直接打开旧定义的 17.9”，而是：
+   - 先做新的 reruling
+   - 再决定是否只在无 duration 的 frozen combo 上重开 replay
 
 一句话收口：
 

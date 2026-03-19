@@ -49,6 +49,7 @@
 | `run_positioning_*` | 第三战场 / Positioning | sizing / partial-exit family replay、digest、control matrix | `positioning/03-execution/evidence/` |
 | `run_phase6_integrated_validation.py` | 第一战场 / Phase 6 | 统一默认系统候选验证 | `docs/spec/v0.01-plus/evidence/` |
 | `run_phase9_duration_percentile_validation.py` | 第一战场 / Phase 9B | `duration_percentile` 单变量负向过滤验证 | `docs/spec/v0.01-plus/evidence/` |
+| `run_phase9_duration_lifespan_distribution.py` | 第一战场 / Phase 9E | 书义寿命分布重跑，输出 quartile + average lifespan odds evidence | `docs/spec/v0.01-plus/evidence/` |
 | `run_closed_loop_fullspan_reports.py` | 报告导出 | 2020-2026 闭环年度报告与逐笔文件 | 仓库外报告目录 |
 | `run_mainline_yearly_reports.py` | 报告导出 | 主线逐年摘要报告 | 仓库外报告目录 |
 | `check_idempotency.py` | 跨线校验 | 幂等检查，不直接给主线结论 | 对应 evidence 目录 |
@@ -74,6 +75,7 @@
 | `run_v001_plus_rank_decomposition.py` | rank decomposition |
 | `run_phase6_integrated_validation.py` | Phase 6 integrated validation |
 | `run_phase9_duration_percentile_validation.py` | Phase 9B duration_percentile isolated validation |
+| `run_phase9_duration_lifespan_distribution.py` | Phase 9E 书义寿命分布重跑 |
 
 ### 4.2 第二战场
 

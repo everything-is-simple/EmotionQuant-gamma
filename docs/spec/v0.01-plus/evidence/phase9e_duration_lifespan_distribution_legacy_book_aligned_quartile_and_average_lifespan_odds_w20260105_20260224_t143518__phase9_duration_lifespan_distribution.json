@@ -1,0 +1,1045 @@
+{
+  "generated_at": "2026-03-19T14:46:45Z",
+  "research_parent": "phase9_gene_mainline_integration_package",
+  "research_question": "If duration is reopened on the remediated book-aligned lifespan surface, does the quartile + average lifespan odds evidence still justify any truthful runtime follow-up?",
+  "scope": "phase9e_duration_lifespan_distribution",
+  "baseline_contract": "legacy_bof_baseline + FIXED_NOTIONAL_CONTROL + FULL_EXIT_CONTROL + Gene sidecar only",
+  "source_db": "G:\\EmotionQuant_data\\emotionquant.duckdb",
+  "working_db": "G:\\EmotionQuant-temp\\backtest\\phase9-duration-lifespan-distribution-20260319-rerun.duckdb",
+  "window_run_id": "phase9e_duration_lifespan_distribution_full_window_legacy_legacy_bof_baseline_w20260105_20260224_t143526",
+  "entry_signal_dates": [
+    "2026-01-09",
+    "2026-01-12",
+    "2026-01-29",
+    "2026-01-30",
+    "2026-02-03",
+    "2026-02-04",
+    "2026-02-05",
+    "2026-02-06"
+  ],
+  "start": "2026-01-05",
+  "end": "2026-02-24",
+  "windows": [
+    {
+      "window_label": "full_window",
+      "window_start": "2026-01-05",
+      "window_end": "2026-02-24",
+      "entry_count": 13,
+      "paired_trade_count": 13,
+      "overall_payoff_summary": {
+        "paired_trade_count": 13,
+        "win_rate": 0.46153846153846156,
+        "avg_pnl_pct": -0.0058474335443986685,
+        "median_pnl_pct": -0.008541046396841093,
+        "profit_factor": 0.8669414787109352,
+        "avg_holding_days": 17.923076923076923,
+        "avg_average_aged_prob": 0.5373870962106256,
+        "median_average_aged_prob": 0.5,
+        "avg_remaining_vs_aged_odds": 0.9052382802382802,
+        "median_remaining_vs_aged_odds": 1.0
+      },
+      "official_backtest_metrics": {
+        "trade_count": 13,
+        "win_rate": 0.46153846153846156,
+        "expected_value": -0.005847433544398664,
+        "profit_factor": 0.8669414787109353,
+        "max_drawdown": 0.016380623576066206,
+        "filled_count": 13.0,
+        "participation_rate": 0.8666666666666667
+      },
+      "duration_quartile_counts": [
+        {
+          "band_label": "FIRST_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "SECOND_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "THIRD_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "FOURTH_QUARTER",
+          "entry_count": 3
+        },
+        {
+          "band_label": "UNSCALED",
+          "entry_count": 10
+        }
+      ],
+      "magnitude_quartile_counts": [
+        {
+          "band_label": "FIRST_QUARTER",
+          "entry_count": 1
+        },
+        {
+          "band_label": "SECOND_QUARTER",
+          "entry_count": 1
+        },
+        {
+          "band_label": "THIRD_QUARTER",
+          "entry_count": 1
+        },
+        {
+          "band_label": "FOURTH_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "UNSCALED",
+          "entry_count": 10
+        }
+      ],
+      "joint_quartile_counts": [
+        {
+          "band_label": "FIRST_QUARTER",
+          "entry_count": 1
+        },
+        {
+          "band_label": "SECOND_QUARTER",
+          "entry_count": 1
+        },
+        {
+          "band_label": "THIRD_QUARTER",
+          "entry_count": 1
+        },
+        {
+          "band_label": "FOURTH_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "UNSCALED",
+          "entry_count": 10
+        }
+      ],
+      "duration_quartile_payoff": [
+        {
+          "band_label": "FOURTH_QUARTER",
+          "paired_trade_count": 3,
+          "win_rate": 0.3333333333333333,
+          "avg_pnl_pct": -0.009745129355059489,
+          "median_pnl_pct": -0.013983235955056116,
+          "profit_factor": 0.2579108191966747,
+          "avg_holding_days": 25.0,
+          "avg_average_aged_prob": 0.6620107502460443,
+          "median_average_aged_prob": 0.7297297297297298,
+          "avg_remaining_vs_aged_odds": 0.5893658810325478,
+          "median_remaining_vs_aged_odds": 0.37037037037037024
+        },
+        {
+          "band_label": "UNSCALED",
+          "paired_trade_count": 10,
+          "win_rate": 0.5,
+          "avg_pnl_pct": -0.004678124801200422,
+          "median_pnl_pct": 0.0008201212557662043,
+          "profit_factor": 0.821668671618537,
+          "avg_holding_days": 15.8,
+          "avg_average_aged_prob": 0.5,
+          "median_average_aged_prob": 0.5,
+          "avg_remaining_vs_aged_odds": 1.0,
+          "median_remaining_vs_aged_odds": 1.0
+        }
+      ],
+      "magnitude_quartile_payoff": [
+        {
+          "band_label": "FIRST_QUARTER",
+          "paired_trade_count": 1,
+          "win_rate": 0.0,
+          "avg_pnl_pct": -0.01958035928143714,
+          "median_pnl_pct": -0.01958035928143714,
+          "profit_factor": 0.0,
+          "avg_holding_days": 25.0,
+          "avg_average_aged_prob": 0.47058823529411753,
+          "median_average_aged_prob": 0.47058823529411753,
+          "avg_remaining_vs_aged_odds": 1.1250000000000004,
+          "median_remaining_vs_aged_odds": 1.1250000000000004
+        },
+        {
+          "band_label": "SECOND_QUARTER",
+          "paired_trade_count": 1,
+          "win_rate": 1.0,
+          "avg_pnl_pct": 0.004328207171314792,
+          "median_pnl_pct": 0.004328207171314792,
+          "profit_factor": Infinity,
+          "avg_holding_days": 25.0,
+          "avg_average_aged_prob": 0.7297297297297298,
+          "median_average_aged_prob": 0.7297297297297298,
+          "avg_remaining_vs_aged_odds": 0.37037037037037024,
+          "median_remaining_vs_aged_odds": 0.37037037037037024
+        },
+        {
+          "band_label": "THIRD_QUARTER",
+          "paired_trade_count": 1,
+          "win_rate": 0.0,
+          "avg_pnl_pct": -0.013983235955056116,
+          "median_pnl_pct": -0.013983235955056116,
+          "profit_factor": 0.0,
+          "avg_holding_days": 25.0,
+          "avg_average_aged_prob": 0.7857142857142857,
+          "median_average_aged_prob": 0.7857142857142857,
+          "avg_remaining_vs_aged_odds": 0.27272727272727276,
+          "median_remaining_vs_aged_odds": 0.27272727272727276
+        },
+        {
+          "band_label": "UNSCALED",
+          "paired_trade_count": 10,
+          "win_rate": 0.5,
+          "avg_pnl_pct": -0.004678124801200422,
+          "median_pnl_pct": 0.0008201212557662043,
+          "profit_factor": 0.821668671618537,
+          "avg_holding_days": 15.8,
+          "avg_average_aged_prob": 0.5,
+          "median_average_aged_prob": 0.5,
+          "avg_remaining_vs_aged_odds": 1.0,
+          "median_remaining_vs_aged_odds": 1.0
+        }
+      ],
+      "joint_quartile_payoff": [
+        {
+          "band_label": "FIRST_QUARTER",
+          "paired_trade_count": 1,
+          "win_rate": 0.0,
+          "avg_pnl_pct": -0.01958035928143714,
+          "median_pnl_pct": -0.01958035928143714,
+          "profit_factor": 0.0,
+          "avg_holding_days": 25.0,
+          "avg_average_aged_prob": 0.47058823529411753,
+          "median_average_aged_prob": 0.47058823529411753,
+          "avg_remaining_vs_aged_odds": 1.1250000000000004,
+          "median_remaining_vs_aged_odds": 1.1250000000000004
+        },
+        {
+          "band_label": "SECOND_QUARTER",
+          "paired_trade_count": 1,
+          "win_rate": 1.0,
+          "avg_pnl_pct": 0.004328207171314792,
+          "median_pnl_pct": 0.004328207171314792,
+          "profit_factor": Infinity,
+          "avg_holding_days": 25.0,
+          "avg_average_aged_prob": 0.7297297297297298,
+          "median_average_aged_prob": 0.7297297297297298,
+          "avg_remaining_vs_aged_odds": 0.37037037037037024,
+          "median_remaining_vs_aged_odds": 0.37037037037037024
+        },
+        {
+          "band_label": "THIRD_QUARTER",
+          "paired_trade_count": 1,
+          "win_rate": 0.0,
+          "avg_pnl_pct": -0.013983235955056116,
+          "median_pnl_pct": -0.013983235955056116,
+          "profit_factor": 0.0,
+          "avg_holding_days": 25.0,
+          "avg_average_aged_prob": 0.7857142857142857,
+          "median_average_aged_prob": 0.7857142857142857,
+          "avg_remaining_vs_aged_odds": 0.27272727272727276,
+          "median_remaining_vs_aged_odds": 0.27272727272727276
+        },
+        {
+          "band_label": "UNSCALED",
+          "paired_trade_count": 10,
+          "win_rate": 0.5,
+          "avg_pnl_pct": -0.004678124801200422,
+          "median_pnl_pct": 0.0008201212557662043,
+          "profit_factor": 0.821668671618537,
+          "avg_holding_days": 15.8,
+          "avg_average_aged_prob": 0.5,
+          "median_average_aged_prob": 0.5,
+          "avg_remaining_vs_aged_odds": 1.0,
+          "median_remaining_vs_aged_odds": 1.0
+        }
+      ],
+      "continuous_relationships": {
+        "duration_percentile_vs_pnl_pct_spearman": -0.08917313018968802,
+        "magnitude_percentile_vs_pnl_pct_spearman": 0.014862188364948003,
+        "joint_percentile_vs_pnl_pct_spearman": 0.014862188364948003,
+        "average_aged_prob_vs_pnl_pct_spearman": 0.07431094182474,
+        "joint_percentile_bucket_payoff": [
+          {
+            "bucket_label": "0.00_25.00",
+            "bucket_start": 0.0,
+            "bucket_end": 25.0,
+            "paired_trade_count": 1,
+            "win_rate": 0.0,
+            "avg_pnl_pct": -0.01958035928143714,
+            "median_pnl_pct": -0.01958035928143714,
+            "profit_factor": 0.0,
+            "avg_holding_days": 25.0,
+            "avg_average_aged_prob": 0.47058823529411753,
+            "median_average_aged_prob": 0.47058823529411753,
+            "avg_remaining_vs_aged_odds": 1.1250000000000004,
+            "median_remaining_vs_aged_odds": 1.1250000000000004
+          },
+          {
+            "bucket_label": "25.00_50.00",
+            "bucket_start": 25.0,
+            "bucket_end": 50.0,
+            "paired_trade_count": 1,
+            "win_rate": 1.0,
+            "avg_pnl_pct": 0.004328207171314792,
+            "median_pnl_pct": 0.004328207171314792,
+            "profit_factor": Infinity,
+            "avg_holding_days": 25.0,
+            "avg_average_aged_prob": 0.7297297297297298,
+            "median_average_aged_prob": 0.7297297297297298,
+            "avg_remaining_vs_aged_odds": 0.37037037037037024,
+            "median_remaining_vs_aged_odds": 0.37037037037037024
+          },
+          {
+            "bucket_label": "50.00_75.00",
+            "bucket_start": 50.0,
+            "bucket_end": 75.0,
+            "paired_trade_count": 11,
+            "win_rate": 0.45454545454545453,
+            "avg_pnl_pct": -0.005524043997005488,
+            "median_pnl_pct": -0.008541046396841093,
+            "profit_factor": 0.936103895689253,
+            "avg_holding_days": 16.636363636363637,
+            "avg_average_aged_prob": 0.525974025974026,
+            "median_average_aged_prob": 0.5,
+            "avg_remaining_vs_aged_odds": 0.9338842975206613,
+            "median_remaining_vs_aged_odds": 1.0
+          },
+          {
+            "bucket_label": "75.00_100.00",
+            "bucket_start": 75.0,
+            "bucket_end": 100.0,
+            "paired_trade_count": 0,
+            "win_rate": null,
+            "avg_pnl_pct": null,
+            "median_pnl_pct": null,
+            "profit_factor": null,
+            "avg_holding_days": null,
+            "avg_average_aged_prob": null,
+            "median_average_aged_prob": null,
+            "avg_remaining_vs_aged_odds": null,
+            "median_remaining_vs_aged_odds": null
+          }
+        ],
+        "average_aged_prob_bucket_payoff": [
+          {
+            "bucket_label": "0.00_0.25",
+            "bucket_start": 0.0,
+            "bucket_end": 0.25,
+            "paired_trade_count": 0,
+            "win_rate": null,
+            "avg_pnl_pct": null,
+            "median_pnl_pct": null,
+            "profit_factor": null,
+            "avg_holding_days": null,
+            "avg_average_aged_prob": null,
+            "median_average_aged_prob": null,
+            "avg_remaining_vs_aged_odds": null,
+            "median_remaining_vs_aged_odds": null
+          },
+          {
+            "bucket_label": "0.25_0.50",
+            "bucket_start": 0.25,
+            "bucket_end": 0.5,
+            "paired_trade_count": 1,
+            "win_rate": 0.0,
+            "avg_pnl_pct": -0.01958035928143714,
+            "median_pnl_pct": -0.01958035928143714,
+            "profit_factor": 0.0,
+            "avg_holding_days": 25.0,
+            "avg_average_aged_prob": 0.47058823529411753,
+            "median_average_aged_prob": 0.47058823529411753,
+            "avg_remaining_vs_aged_odds": 1.1250000000000004,
+            "median_remaining_vs_aged_odds": 1.1250000000000004
+          },
+          {
+            "bucket_label": "0.50_0.75",
+            "bucket_start": 0.5,
+            "bucket_end": 0.75,
+            "paired_trade_count": 11,
+            "win_rate": 0.5454545454545454,
+            "avg_pnl_pct": -0.0038593673491535835,
+            "median_pnl_pct": 0.004328207171314792,
+            "profit_factor": 0.6984732578281154,
+            "avg_holding_days": 16.636363636363637,
+            "avg_average_aged_prob": 0.5208845208845209,
+            "median_average_aged_prob": 0.5,
+            "avg_remaining_vs_aged_odds": 0.9427609427609428,
+            "median_remaining_vs_aged_odds": 1.0
+          },
+          {
+            "bucket_label": "0.75_1.00",
+            "bucket_start": 0.75,
+            "bucket_end": 1.0,
+            "paired_trade_count": 1,
+            "win_rate": 0.0,
+            "avg_pnl_pct": -0.013983235955056116,
+            "median_pnl_pct": -0.013983235955056116,
+            "profit_factor": 0.0,
+            "avg_holding_days": 25.0,
+            "avg_average_aged_prob": 0.7857142857142857,
+            "median_average_aged_prob": 0.7857142857142857,
+            "avg_remaining_vs_aged_odds": 0.27272727272727276,
+            "median_remaining_vs_aged_odds": 0.27272727272727276
+          }
+        ]
+      },
+      "trade_days": 31,
+      "run_id": "phase9e_duration_lifespan_distribution_full_window_legacy_legacy_bof_baseline_w20260105_20260224_t143526"
+    },
+    {
+      "window_label": "front_half_window",
+      "window_start": "2026-01-05",
+      "window_end": "2026-01-23",
+      "entry_count": 2,
+      "paired_trade_count": 2,
+      "overall_payoff_summary": {
+        "paired_trade_count": 2,
+        "win_rate": 0.5,
+        "avg_pnl_pct": -0.014101550629840054,
+        "median_pnl_pct": -0.014101550629840054,
+        "profit_factor": 0.3194636926635059,
+        "avg_holding_days": 20.0,
+        "avg_average_aged_prob": 0.5,
+        "median_average_aged_prob": 0.5,
+        "avg_remaining_vs_aged_odds": 1.0,
+        "median_remaining_vs_aged_odds": 1.0
+      },
+      "official_backtest_metrics": {
+        "trade_count": 0,
+        "win_rate": 0.0,
+        "expected_value": 0.0,
+        "profit_factor": 0.0,
+        "max_drawdown": 0.0,
+        "filled_count": 2.0,
+        "participation_rate": 1.0
+      },
+      "duration_quartile_counts": [
+        {
+          "band_label": "FIRST_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "SECOND_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "THIRD_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "FOURTH_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "UNSCALED",
+          "entry_count": 2
+        }
+      ],
+      "magnitude_quartile_counts": [
+        {
+          "band_label": "FIRST_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "SECOND_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "THIRD_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "FOURTH_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "UNSCALED",
+          "entry_count": 2
+        }
+      ],
+      "joint_quartile_counts": [
+        {
+          "band_label": "FIRST_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "SECOND_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "THIRD_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "FOURTH_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "UNSCALED",
+          "entry_count": 2
+        }
+      ],
+      "duration_quartile_payoff": [
+        {
+          "band_label": "UNSCALED",
+          "paired_trade_count": 2,
+          "win_rate": 0.5,
+          "avg_pnl_pct": -0.014101550629840054,
+          "median_pnl_pct": -0.014101550629840054,
+          "profit_factor": 0.3194636926635059,
+          "avg_holding_days": 20.0,
+          "avg_average_aged_prob": 0.5,
+          "median_average_aged_prob": 0.5,
+          "avg_remaining_vs_aged_odds": 1.0,
+          "median_remaining_vs_aged_odds": 1.0
+        }
+      ],
+      "magnitude_quartile_payoff": [
+        {
+          "band_label": "UNSCALED",
+          "paired_trade_count": 2,
+          "win_rate": 0.5,
+          "avg_pnl_pct": -0.014101550629840054,
+          "median_pnl_pct": -0.014101550629840054,
+          "profit_factor": 0.3194636926635059,
+          "avg_holding_days": 20.0,
+          "avg_average_aged_prob": 0.5,
+          "median_average_aged_prob": 0.5,
+          "avg_remaining_vs_aged_odds": 1.0,
+          "median_remaining_vs_aged_odds": 1.0
+        }
+      ],
+      "joint_quartile_payoff": [
+        {
+          "band_label": "UNSCALED",
+          "paired_trade_count": 2,
+          "win_rate": 0.5,
+          "avg_pnl_pct": -0.014101550629840054,
+          "median_pnl_pct": -0.014101550629840054,
+          "profit_factor": 0.3194636926635059,
+          "avg_holding_days": 20.0,
+          "avg_average_aged_prob": 0.5,
+          "median_average_aged_prob": 0.5,
+          "avg_remaining_vs_aged_odds": 1.0,
+          "median_remaining_vs_aged_odds": 1.0
+        }
+      ],
+      "continuous_relationships": {
+        "duration_percentile_vs_pnl_pct_spearman": null,
+        "magnitude_percentile_vs_pnl_pct_spearman": null,
+        "joint_percentile_vs_pnl_pct_spearman": null,
+        "average_aged_prob_vs_pnl_pct_spearman": null,
+        "joint_percentile_bucket_payoff": [
+          {
+            "bucket_label": "0.00_25.00",
+            "bucket_start": 0.0,
+            "bucket_end": 25.0,
+            "paired_trade_count": 0,
+            "win_rate": null,
+            "avg_pnl_pct": null,
+            "median_pnl_pct": null,
+            "profit_factor": null,
+            "avg_holding_days": null,
+            "avg_average_aged_prob": null,
+            "median_average_aged_prob": null,
+            "avg_remaining_vs_aged_odds": null,
+            "median_remaining_vs_aged_odds": null
+          },
+          {
+            "bucket_label": "25.00_50.00",
+            "bucket_start": 25.0,
+            "bucket_end": 50.0,
+            "paired_trade_count": 0,
+            "win_rate": null,
+            "avg_pnl_pct": null,
+            "median_pnl_pct": null,
+            "profit_factor": null,
+            "avg_holding_days": null,
+            "avg_average_aged_prob": null,
+            "median_average_aged_prob": null,
+            "avg_remaining_vs_aged_odds": null,
+            "median_remaining_vs_aged_odds": null
+          },
+          {
+            "bucket_label": "50.00_75.00",
+            "bucket_start": 50.0,
+            "bucket_end": 75.0,
+            "paired_trade_count": 2,
+            "win_rate": 0.5,
+            "avg_pnl_pct": -0.014101550629840054,
+            "median_pnl_pct": -0.014101550629840054,
+            "profit_factor": 0.3194636926635059,
+            "avg_holding_days": 20.0,
+            "avg_average_aged_prob": 0.5,
+            "median_average_aged_prob": 0.5,
+            "avg_remaining_vs_aged_odds": 1.0,
+            "median_remaining_vs_aged_odds": 1.0
+          },
+          {
+            "bucket_label": "75.00_100.00",
+            "bucket_start": 75.0,
+            "bucket_end": 100.0,
+            "paired_trade_count": 0,
+            "win_rate": null,
+            "avg_pnl_pct": null,
+            "median_pnl_pct": null,
+            "profit_factor": null,
+            "avg_holding_days": null,
+            "avg_average_aged_prob": null,
+            "median_average_aged_prob": null,
+            "avg_remaining_vs_aged_odds": null,
+            "median_remaining_vs_aged_odds": null
+          }
+        ],
+        "average_aged_prob_bucket_payoff": [
+          {
+            "bucket_label": "0.00_0.25",
+            "bucket_start": 0.0,
+            "bucket_end": 0.25,
+            "paired_trade_count": 0,
+            "win_rate": null,
+            "avg_pnl_pct": null,
+            "median_pnl_pct": null,
+            "profit_factor": null,
+            "avg_holding_days": null,
+            "avg_average_aged_prob": null,
+            "median_average_aged_prob": null,
+            "avg_remaining_vs_aged_odds": null,
+            "median_remaining_vs_aged_odds": null
+          },
+          {
+            "bucket_label": "0.25_0.50",
+            "bucket_start": 0.25,
+            "bucket_end": 0.5,
+            "paired_trade_count": 0,
+            "win_rate": null,
+            "avg_pnl_pct": null,
+            "median_pnl_pct": null,
+            "profit_factor": null,
+            "avg_holding_days": null,
+            "avg_average_aged_prob": null,
+            "median_average_aged_prob": null,
+            "avg_remaining_vs_aged_odds": null,
+            "median_remaining_vs_aged_odds": null
+          },
+          {
+            "bucket_label": "0.50_0.75",
+            "bucket_start": 0.5,
+            "bucket_end": 0.75,
+            "paired_trade_count": 2,
+            "win_rate": 0.5,
+            "avg_pnl_pct": -0.014101550629840054,
+            "median_pnl_pct": -0.014101550629840054,
+            "profit_factor": 0.3194636926635059,
+            "avg_holding_days": 20.0,
+            "avg_average_aged_prob": 0.5,
+            "median_average_aged_prob": 0.5,
+            "avg_remaining_vs_aged_odds": 1.0,
+            "median_remaining_vs_aged_odds": 1.0
+          },
+          {
+            "bucket_label": "0.75_1.00",
+            "bucket_start": 0.75,
+            "bucket_end": 1.0,
+            "paired_trade_count": 0,
+            "win_rate": null,
+            "avg_pnl_pct": null,
+            "median_pnl_pct": null,
+            "profit_factor": null,
+            "avg_holding_days": null,
+            "avg_average_aged_prob": null,
+            "median_average_aged_prob": null,
+            "avg_remaining_vs_aged_odds": null,
+            "median_remaining_vs_aged_odds": null
+          }
+        ]
+      },
+      "trade_days": 15,
+      "run_id": "phase9e_duration_lifespan_distribution_full_window_legacy_legacy_bof_baseline_w20260105_20260224_t143526"
+    },
+    {
+      "window_label": "back_half_window",
+      "window_start": "2026-01-26",
+      "window_end": "2026-02-24",
+      "entry_count": 11,
+      "paired_trade_count": 11,
+      "overall_payoff_summary": {
+        "paired_trade_count": 11,
+        "win_rate": 0.45454545454545453,
+        "avg_pnl_pct": -0.004346684983409324,
+        "median_pnl_pct": -0.008541046396841093,
+        "profit_factor": 0.9745077450792535,
+        "avg_holding_days": 17.545454545454547,
+        "avg_average_aged_prob": 0.544184750067103,
+        "median_average_aged_prob": 0.5,
+        "avg_remaining_vs_aged_odds": 0.8880088766452403,
+        "median_remaining_vs_aged_odds": 1.0
+      },
+      "official_backtest_metrics": {
+        "trade_count": 11,
+        "win_rate": 0.45454545454545453,
+        "expected_value": -0.004346684983409323,
+        "profit_factor": 0.9745077450792535,
+        "max_drawdown": 0.017322821809257122,
+        "filled_count": 11.0,
+        "participation_rate": 0.8461538461538461
+      },
+      "duration_quartile_counts": [
+        {
+          "band_label": "FIRST_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "SECOND_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "THIRD_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "FOURTH_QUARTER",
+          "entry_count": 3
+        },
+        {
+          "band_label": "UNSCALED",
+          "entry_count": 8
+        }
+      ],
+      "magnitude_quartile_counts": [
+        {
+          "band_label": "FIRST_QUARTER",
+          "entry_count": 1
+        },
+        {
+          "band_label": "SECOND_QUARTER",
+          "entry_count": 1
+        },
+        {
+          "band_label": "THIRD_QUARTER",
+          "entry_count": 1
+        },
+        {
+          "band_label": "FOURTH_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "UNSCALED",
+          "entry_count": 8
+        }
+      ],
+      "joint_quartile_counts": [
+        {
+          "band_label": "FIRST_QUARTER",
+          "entry_count": 1
+        },
+        {
+          "band_label": "SECOND_QUARTER",
+          "entry_count": 1
+        },
+        {
+          "band_label": "THIRD_QUARTER",
+          "entry_count": 1
+        },
+        {
+          "band_label": "FOURTH_QUARTER",
+          "entry_count": 0
+        },
+        {
+          "band_label": "UNSCALED",
+          "entry_count": 8
+        }
+      ],
+      "duration_quartile_payoff": [
+        {
+          "band_label": "FOURTH_QUARTER",
+          "paired_trade_count": 3,
+          "win_rate": 0.3333333333333333,
+          "avg_pnl_pct": -0.009745129355059489,
+          "median_pnl_pct": -0.013983235955056116,
+          "profit_factor": 0.2579108191966747,
+          "avg_holding_days": 25.0,
+          "avg_average_aged_prob": 0.6620107502460443,
+          "median_average_aged_prob": 0.7297297297297298,
+          "avg_remaining_vs_aged_odds": 0.5893658810325478,
+          "median_remaining_vs_aged_odds": 0.37037037037037024
+        },
+        {
+          "band_label": "UNSCALED",
+          "paired_trade_count": 8,
+          "win_rate": 0.5,
+          "avg_pnl_pct": -0.0023222683440405137,
+          "median_pnl_pct": 0.0008201212557662043,
+          "profit_factor": 0.9158923127137892,
+          "avg_holding_days": 14.75,
+          "avg_average_aged_prob": 0.5,
+          "median_average_aged_prob": 0.5,
+          "avg_remaining_vs_aged_odds": 1.0,
+          "median_remaining_vs_aged_odds": 1.0
+        }
+      ],
+      "magnitude_quartile_payoff": [
+        {
+          "band_label": "FIRST_QUARTER",
+          "paired_trade_count": 1,
+          "win_rate": 0.0,
+          "avg_pnl_pct": -0.01958035928143714,
+          "median_pnl_pct": -0.01958035928143714,
+          "profit_factor": 0.0,
+          "avg_holding_days": 25.0,
+          "avg_average_aged_prob": 0.47058823529411753,
+          "median_average_aged_prob": 0.47058823529411753,
+          "avg_remaining_vs_aged_odds": 1.1250000000000004,
+          "median_remaining_vs_aged_odds": 1.1250000000000004
+        },
+        {
+          "band_label": "SECOND_QUARTER",
+          "paired_trade_count": 1,
+          "win_rate": 1.0,
+          "avg_pnl_pct": 0.004328207171314792,
+          "median_pnl_pct": 0.004328207171314792,
+          "profit_factor": Infinity,
+          "avg_holding_days": 25.0,
+          "avg_average_aged_prob": 0.7297297297297298,
+          "median_average_aged_prob": 0.7297297297297298,
+          "avg_remaining_vs_aged_odds": 0.37037037037037024,
+          "median_remaining_vs_aged_odds": 0.37037037037037024
+        },
+        {
+          "band_label": "THIRD_QUARTER",
+          "paired_trade_count": 1,
+          "win_rate": 0.0,
+          "avg_pnl_pct": -0.013983235955056116,
+          "median_pnl_pct": -0.013983235955056116,
+          "profit_factor": 0.0,
+          "avg_holding_days": 25.0,
+          "avg_average_aged_prob": 0.7857142857142857,
+          "median_average_aged_prob": 0.7857142857142857,
+          "avg_remaining_vs_aged_odds": 0.27272727272727276,
+          "median_remaining_vs_aged_odds": 0.27272727272727276
+        },
+        {
+          "band_label": "UNSCALED",
+          "paired_trade_count": 8,
+          "win_rate": 0.5,
+          "avg_pnl_pct": -0.0023222683440405137,
+          "median_pnl_pct": 0.0008201212557662043,
+          "profit_factor": 0.9158923127137892,
+          "avg_holding_days": 14.75,
+          "avg_average_aged_prob": 0.5,
+          "median_average_aged_prob": 0.5,
+          "avg_remaining_vs_aged_odds": 1.0,
+          "median_remaining_vs_aged_odds": 1.0
+        }
+      ],
+      "joint_quartile_payoff": [
+        {
+          "band_label": "FIRST_QUARTER",
+          "paired_trade_count": 1,
+          "win_rate": 0.0,
+          "avg_pnl_pct": -0.01958035928143714,
+          "median_pnl_pct": -0.01958035928143714,
+          "profit_factor": 0.0,
+          "avg_holding_days": 25.0,
+          "avg_average_aged_prob": 0.47058823529411753,
+          "median_average_aged_prob": 0.47058823529411753,
+          "avg_remaining_vs_aged_odds": 1.1250000000000004,
+          "median_remaining_vs_aged_odds": 1.1250000000000004
+        },
+        {
+          "band_label": "SECOND_QUARTER",
+          "paired_trade_count": 1,
+          "win_rate": 1.0,
+          "avg_pnl_pct": 0.004328207171314792,
+          "median_pnl_pct": 0.004328207171314792,
+          "profit_factor": Infinity,
+          "avg_holding_days": 25.0,
+          "avg_average_aged_prob": 0.7297297297297298,
+          "median_average_aged_prob": 0.7297297297297298,
+          "avg_remaining_vs_aged_odds": 0.37037037037037024,
+          "median_remaining_vs_aged_odds": 0.37037037037037024
+        },
+        {
+          "band_label": "THIRD_QUARTER",
+          "paired_trade_count": 1,
+          "win_rate": 0.0,
+          "avg_pnl_pct": -0.013983235955056116,
+          "median_pnl_pct": -0.013983235955056116,
+          "profit_factor": 0.0,
+          "avg_holding_days": 25.0,
+          "avg_average_aged_prob": 0.7857142857142857,
+          "median_average_aged_prob": 0.7857142857142857,
+          "avg_remaining_vs_aged_odds": 0.27272727272727276,
+          "median_remaining_vs_aged_odds": 0.27272727272727276
+        },
+        {
+          "band_label": "UNSCALED",
+          "paired_trade_count": 8,
+          "win_rate": 0.5,
+          "avg_pnl_pct": -0.0023222683440405137,
+          "median_pnl_pct": 0.0008201212557662043,
+          "profit_factor": 0.9158923127137892,
+          "avg_holding_days": 14.75,
+          "avg_average_aged_prob": 0.5,
+          "median_average_aged_prob": 0.5,
+          "avg_remaining_vs_aged_odds": 1.0,
+          "median_remaining_vs_aged_odds": 1.0
+        }
+      ],
+      "continuous_relationships": {
+        "duration_percentile_vs_pnl_pct_spearman": -0.11562432251572007,
+        "magnitude_percentile_vs_pnl_pct_spearman": 0.023124864503144014,
+        "joint_percentile_vs_pnl_pct_spearman": 0.023124864503144014,
+        "average_aged_prob_vs_pnl_pct_spearman": 0.09249945801257606,
+        "joint_percentile_bucket_payoff": [
+          {
+            "bucket_label": "0.00_25.00",
+            "bucket_start": 0.0,
+            "bucket_end": 25.0,
+            "paired_trade_count": 1,
+            "win_rate": 0.0,
+            "avg_pnl_pct": -0.01958035928143714,
+            "median_pnl_pct": -0.01958035928143714,
+            "profit_factor": 0.0,
+            "avg_holding_days": 25.0,
+            "avg_average_aged_prob": 0.47058823529411753,
+            "median_average_aged_prob": 0.47058823529411753,
+            "avg_remaining_vs_aged_odds": 1.1250000000000004,
+            "median_remaining_vs_aged_odds": 1.1250000000000004
+          },
+          {
+            "bucket_label": "25.00_50.00",
+            "bucket_start": 25.0,
+            "bucket_end": 50.0,
+            "paired_trade_count": 1,
+            "win_rate": 1.0,
+            "avg_pnl_pct": 0.004328207171314792,
+            "median_pnl_pct": 0.004328207171314792,
+            "profit_factor": Infinity,
+            "avg_holding_days": 25.0,
+            "avg_average_aged_prob": 0.7297297297297298,
+            "median_average_aged_prob": 0.7297297297297298,
+            "avg_remaining_vs_aged_odds": 0.37037037037037024,
+            "median_remaining_vs_aged_odds": 0.37037037037037024
+          },
+          {
+            "bucket_label": "50.00_75.00",
+            "bucket_start": 50.0,
+            "bucket_end": 75.0,
+            "paired_trade_count": 9,
+            "win_rate": 0.4444444444444444,
+            "avg_pnl_pct": -0.003617931411931136,
+            "median_pnl_pct": -0.008541046396841093,
+            "profit_factor": 1.0767041666849975,
+            "avg_holding_days": 15.88888888888889,
+            "avg_average_aged_prob": 0.5317460317460317,
+            "median_average_aged_prob": 0.5,
+            "avg_remaining_vs_aged_odds": 0.9191919191919192,
+            "median_remaining_vs_aged_odds": 1.0
+          },
+          {
+            "bucket_label": "75.00_100.00",
+            "bucket_start": 75.0,
+            "bucket_end": 100.0,
+            "paired_trade_count": 0,
+            "win_rate": null,
+            "avg_pnl_pct": null,
+            "median_pnl_pct": null,
+            "profit_factor": null,
+            "avg_holding_days": null,
+            "avg_average_aged_prob": null,
+            "median_average_aged_prob": null,
+            "avg_remaining_vs_aged_odds": null,
+            "median_remaining_vs_aged_odds": null
+          }
+        ],
+        "average_aged_prob_bucket_payoff": [
+          {
+            "bucket_label": "0.00_0.25",
+            "bucket_start": 0.0,
+            "bucket_end": 0.25,
+            "paired_trade_count": 0,
+            "win_rate": null,
+            "avg_pnl_pct": null,
+            "median_pnl_pct": null,
+            "profit_factor": null,
+            "avg_holding_days": null,
+            "avg_average_aged_prob": null,
+            "median_average_aged_prob": null,
+            "avg_remaining_vs_aged_odds": null,
+            "median_remaining_vs_aged_odds": null
+          },
+          {
+            "bucket_label": "0.25_0.50",
+            "bucket_start": 0.25,
+            "bucket_end": 0.5,
+            "paired_trade_count": 1,
+            "win_rate": 0.0,
+            "avg_pnl_pct": -0.01958035928143714,
+            "median_pnl_pct": -0.01958035928143714,
+            "profit_factor": 0.0,
+            "avg_holding_days": 25.0,
+            "avg_average_aged_prob": 0.47058823529411753,
+            "median_average_aged_prob": 0.47058823529411753,
+            "avg_remaining_vs_aged_odds": 1.1250000000000004,
+            "median_remaining_vs_aged_odds": 1.1250000000000004
+          },
+          {
+            "bucket_label": "0.50_0.75",
+            "bucket_start": 0.5,
+            "bucket_end": 0.75,
+            "paired_trade_count": 9,
+            "win_rate": 0.5555555555555556,
+            "avg_pnl_pct": -0.0015833266201121443,
+            "median_pnl_pct": 0.004328207171314792,
+            "profit_factor": 0.7483897084846961,
+            "avg_holding_days": 15.88888888888889,
+            "avg_average_aged_prob": 0.5255255255255256,
+            "median_average_aged_prob": 0.5,
+            "avg_remaining_vs_aged_odds": 0.9300411522633745,
+            "median_remaining_vs_aged_odds": 1.0
+          },
+          {
+            "bucket_label": "0.75_1.00",
+            "bucket_start": 0.75,
+            "bucket_end": 1.0,
+            "paired_trade_count": 1,
+            "win_rate": 0.0,
+            "avg_pnl_pct": -0.013983235955056116,
+            "median_pnl_pct": -0.013983235955056116,
+            "profit_factor": 0.0,
+            "avg_holding_days": 25.0,
+            "avg_average_aged_prob": 0.7857142857142857,
+            "median_average_aged_prob": 0.7857142857142857,
+            "avg_remaining_vs_aged_odds": 0.27272727272727276,
+            "median_remaining_vs_aged_odds": 0.27272727272727276
+          }
+        ]
+      },
+      "trade_days": 16,
+      "run_id": "phase9e_duration_lifespan_distribution_full_window_legacy_legacy_bof_baseline_w20260105_20260224_t143526"
+    }
+  ],
+  "final_snapshot": {
+    "signal_date": "2026-02-24",
+    "entry_count": 0,
+    "duration_quartile_counts": [],
+    "joint_quartile_counts": []
+  },
+  "legacy_archive": {
+    "phase9b_duration_percentile_isolated_p95": "legacy_archive_only",
+    "phase9b_duration_percentile_isolated_p65": "legacy_archive_only"
+  },
+  "digest": {
+    "generated_at": "2026-03-19T14:46:45Z",
+    "decision": "duration_should_return_to_sidecar_only_distribution_reading",
+    "diagnosis": "quartile_surface_is_mixed_or_under-sampled",
+    "phase9f_duration_operand_recommendation": "do_not_carry_duration_into_phase9f_until_stronger_quartile_evidence_exists",
+    "legacy_threshold_archive_status": "p65_and_p95_are_legacy_archive_only",
+    "full_window_overall_avg_pnl_pct": -0.0058474335443986685,
+    "full_window_overall_win_rate": 0.46153846153846156,
+    "full_window_fourth_quarter_avg_pnl_pct": -0.009745129355059489,
+    "full_window_fourth_quarter_win_rate": 0.3333333333333333,
+    "full_window_fourth_quarter_trade_count": 3,
+    "full_window_fourth_quarter_avg_aged_prob": 0.6620107502460443,
+    "full_window_joint_fourth_quarter_avg_pnl_pct": null,
+    "full_window_joint_fourth_quarter_trade_count": 0,
+    "conclusion": "The remediated quartile surface is still mixed or too thin in the late-life buckets, so duration should stay as a sidecar distribution reading rather than a truthful runtime guard for now."
+  }
+}

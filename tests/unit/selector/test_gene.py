@@ -5,7 +5,12 @@ from datetime import date, timedelta
 import pandas as pd
 
 from src.data.store import Store
-from src.selector.gene import compute_gene, compute_gene_conditioning, compute_gene_mirror
+from src.selector.gene import (
+    compute_gene,
+    compute_gene_conditioning,
+    compute_gene_mirror,
+    compute_gene_snapshots_for_dates,
+)
 
 
 def _trade_calendar(start: date, days: int) -> pd.DataFrame:
@@ -585,6 +590,54 @@ def test_compute_gene_writes_gx8_three_level_hierarchy(tmp_path) -> None:
         assert row["current_long_wave_role_basis"] == "LONG_SELF_DIRECTION_BOOTSTRAP"
         assert row["current_long_two_b_window_bars"] == 10
         assert row["current_long_two_b_window_basis"] == "LONG_WITHIN_7_TO_10_BARS"
+    finally:
+        store.close()
+
+
+def test_compute_gene_snapshots_for_dates_writes_only_requested_snapshot_dates(tmp_path) -> None:
+    db = tmp_path / "gene_sparse_snapshots.duckdb"
+    store = Store(db)
+    try:
+        base = date(2026, 1, 5)
+        closes_a = [10.0, 11.0, 13.0, 12.0, 9.0, 10.0, 12.0, 11.0, 13.0, 12.0, 14.0, 15.0]
+        closes_b = [8.0, 8.5, 9.2, 8.9, 7.8, 8.1, 8.8, 8.4, 9.0, 8.8, 9.1, 9.3]
+        target_dates = [base + timedelta(days=3), base + timedelta(days=9)]
+
+        store.bulk_upsert("l1_trade_calendar", _trade_calendar(base, len(closes_a)))
+        store.bulk_upsert(
+            "l2_stock_adj_daily",
+            pd.DataFrame(_adj_daily_rows(base, "AAA", closes_a) + _adj_daily_rows(base, "BBB", closes_b)),
+        )
+
+        written = compute_gene_snapshots_for_dates(store, target_dates)
+
+        snapshots = store.read_df(
+            """
+            SELECT code, calc_date, current_wave_direction, current_wave_duration_band, current_short_trend_level
+            FROM l3_stock_gene
+            ORDER BY calc_date, code
+            """
+        )
+        wave_count = int(store.read_scalar("SELECT COUNT(*) FROM l3_gene_wave") or 0)
+        event_count = int(store.read_scalar("SELECT COUNT(*) FROM l3_gene_event") or 0)
+        factor_eval_count = int(store.read_scalar("SELECT COUNT(*) FROM l3_gene_factor_eval") or 0)
+
+        assert written == len(target_dates) * 2
+        assert pd.to_datetime(snapshots["calc_date"], errors="coerce").dt.date.tolist() == [
+            target_dates[0],
+            target_dates[0],
+            target_dates[1],
+            target_dates[1],
+        ]
+        assert snapshots["code"].tolist() == ["AAA", "BBB", "AAA", "BBB"]
+        assert snapshots["current_wave_direction"].isin(["UP", "DOWN"]).all()
+        assert snapshots["current_wave_duration_band"].isin(
+            ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
+        ).all()
+        assert snapshots["current_short_trend_level"].eq("SHORT").all()
+        assert wave_count == 0
+        assert event_count == 0
+        assert factor_eval_count == 0
     finally:
         store.close()
 

@@ -15,7 +15,7 @@ Gene 的目标不是直接给出买卖信号，而是回答：
 
 from dataclasses import dataclass, field
 from datetime import date
-from typing import Literal
+from typing import Iterable, Literal
 
 import numpy as np
 import pandas as pd
@@ -1291,6 +1291,7 @@ def _build_daily_snapshots(
     waves: list[dict[str, object]],
     up_candidates: list[ExtremeCandidate],
     down_candidates: list[ExtremeCandidate],
+    target_dates: set[date] | None = None,
 ) -> list[dict[str, object]]:
     """为每个交易日生成面向运行时的 Gene snapshot。
 
@@ -1355,6 +1356,8 @@ def _build_daily_snapshots(
 
         _advance_active_state(active_state, idx)
         direction = active_state.direction
+        if target_dates is not None and calc_date not in target_dates:
+            continue
         current_context_trend_direction = _resolved_context_direction(trend_direction, direction)
         current_context_parent_trend_level = PARENT_TREND_LEVEL_BY_LEVEL[CANONICAL_TREND_LEVEL]
         current_wave_role = _wave_role_from_context_direction(current_context_trend_direction, direction)
@@ -1531,6 +1534,7 @@ def _build_hierarchy_level_snapshots(
     down_candidates: list[ExtremeCandidate],
     trend_level: str,
     parent_direction_timeline: list[str] | None = None,
+    target_dates: set[date] | None = None,
 ) -> pd.DataFrame:
     if frame.empty or not pivots:
         return pd.DataFrame()
@@ -1562,6 +1566,8 @@ def _build_hierarchy_level_snapshots(
             )
         _advance_active_state(active_state, idx)
         direction = active_state.direction
+        if target_dates is not None and calc_date not in target_dates:
+            continue
         parent_direction = "UNSET"
         if parent_direction_timeline:
             parent_direction = parent_direction_timeline[min(idx, len(parent_direction_timeline) - 1)]
@@ -3186,6 +3192,132 @@ def _build_code_gene_payload(frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.Data
         factor_eval_samples,
     )
 
+
+def _build_code_gene_snapshot_payload(
+    frame: pd.DataFrame,
+    *,
+    target_dates: set[date] | None = None,
+) -> pd.DataFrame:
+    """Build only the snapshot surface for selected dates, keeping the full wave logic intact."""
+
+    if frame.empty:
+        return pd.DataFrame()
+
+    code = str(frame["code"].iloc[0])
+    level_payloads: dict[str, dict[str, object]] = {}
+    for trend_level in TREND_LEVEL_ORDER:
+        pivots = _build_confirmed_pivots(frame, trend_level=trend_level)
+        up_candidates = _build_extreme_candidates(frame, "UP", trend_level=trend_level)
+        down_candidates = _build_extreme_candidates(frame, "DOWN", trend_level=trend_level)
+        wave_rows, event_rows = _build_wave_rows(
+            code=code,
+            pivots=pivots,
+            up_candidates=up_candidates,
+            down_candidates=down_candidates,
+            trend_level=trend_level,
+        )
+        level_payloads[trend_level] = {
+            "pivots": pivots,
+            "up_candidates": up_candidates,
+            "down_candidates": down_candidates,
+            "waves": wave_rows,
+            "events": event_rows,
+        }
+
+    frame_length = len(frame)
+    long_payload = level_payloads[TREND_LEVEL_LONG]
+    intermediate_payload = level_payloads[TREND_LEVEL_INTERMEDIATE]
+    short_payload = level_payloads[TREND_LEVEL_SHORT]
+
+    long_active_timeline = _build_active_direction_timeline(
+        pivots=long_payload["pivots"], total_bars=frame_length
+    )
+    intermediate_active_timeline = _build_active_direction_timeline(
+        pivots=intermediate_payload["pivots"], total_bars=frame_length
+    )
+
+    _assign_wave_trend_context(
+        waves=long_payload["waves"],
+        trend_level=TREND_LEVEL_LONG,
+    )
+    _assign_wave_trend_context(
+        waves=intermediate_payload["waves"],
+        trend_level=TREND_LEVEL_INTERMEDIATE,
+        parent_direction_timeline=long_active_timeline,
+    )
+    _assign_wave_trend_context(
+        waves=short_payload["waves"],
+        trend_level=TREND_LEVEL_SHORT,
+        parent_direction_timeline=intermediate_active_timeline,
+    )
+
+    canonical_snapshot_rows = _build_daily_snapshots(
+        code=code,
+        frame=frame,
+        pivots=intermediate_payload["pivots"],
+        waves=intermediate_payload["waves"],
+        up_candidates=intermediate_payload["up_candidates"],
+        down_candidates=intermediate_payload["down_candidates"],
+        target_dates=target_dates,
+    )
+    canonical_snapshot_df = pd.DataFrame(canonical_snapshot_rows)
+    if canonical_snapshot_df.empty:
+        return canonical_snapshot_df
+
+    hierarchy_frames = [
+        _build_hierarchy_level_snapshots(
+            code=code,
+            frame=frame,
+            pivots=short_payload["pivots"],
+            up_candidates=short_payload["up_candidates"],
+            down_candidates=short_payload["down_candidates"],
+            trend_level=TREND_LEVEL_SHORT,
+            parent_direction_timeline=intermediate_active_timeline,
+            target_dates=target_dates,
+        ),
+        _build_hierarchy_level_snapshots(
+            code=code,
+            frame=frame,
+            pivots=intermediate_payload["pivots"],
+            up_candidates=intermediate_payload["up_candidates"],
+            down_candidates=intermediate_payload["down_candidates"],
+            trend_level=TREND_LEVEL_INTERMEDIATE,
+            parent_direction_timeline=long_active_timeline,
+            target_dates=target_dates,
+        ),
+        _build_hierarchy_level_snapshots(
+            code=code,
+            frame=frame,
+            pivots=long_payload["pivots"],
+            up_candidates=long_payload["up_candidates"],
+            down_candidates=long_payload["down_candidates"],
+            trend_level=TREND_LEVEL_LONG,
+            target_dates=target_dates,
+        ),
+    ]
+    return _merge_snapshot_hierarchy(canonical_snapshot_df, hierarchy_frames)
+
+
+def _normalize_target_dates(target_dates: Iterable[date]) -> list[date]:
+    normalized = sorted({item for item in target_dates if item is not None})
+    return normalized
+
+
+def _clear_gene_snapshot_dates(store: Store, target_dates: list[date]) -> None:
+    if not target_dates:
+        return
+    target_df = pd.DataFrame({"calc_date": target_dates})
+    store.conn.register("gene_snapshot_target_dates", target_df)
+    try:
+        store.conn.execute(
+            """
+            DELETE FROM l3_stock_gene
+            WHERE calc_date IN (SELECT calc_date FROM gene_snapshot_target_dates)
+            """
+        )
+    finally:
+        store.conn.unregister("gene_snapshot_target_dates")
+
 # Main Gene entry point.
 # Rebuild always starts with an explicit lookback window because the snapshot on
 # `start` depends on waves that may have begun much earlier. The function writes:
@@ -3281,3 +3413,44 @@ def compute_gene(store: Store, start: date, end: date) -> int:
         total_written += compute_gene_validation(store, end)
 
     return total_written
+
+
+def compute_gene_snapshots_for_dates(store: Store, target_dates: Iterable[date]) -> int:
+    """Rebuild only l3_stock_gene snapshots for selected dates.
+
+    This keeps the canonical wave/pivot logic but avoids writing wave/event/eval tables when
+    a downstream study only needs point-in-time Gene annotations.
+    """
+
+    normalized_target_dates = _normalize_target_dates(target_dates)
+    if not normalized_target_dates:
+        return 0
+
+    rebuild_start = _lookback_trade_start(store, normalized_target_dates[0], GENE_LOOKBACK_TRADE_DAYS)
+    rebuild_end = normalized_target_dates[-1]
+    df = _load_gene_input(store, rebuild_start, rebuild_end)
+    _clear_gene_snapshot_dates(store, normalized_target_dates)
+    if df.empty:
+        return 0
+
+    df = df.copy()
+    df["date"] = pd.to_datetime(df["date"]).dt.date
+    target_date_set = set(normalized_target_dates)
+    snapshot_frames: list[pd.DataFrame] = []
+
+    for _, group in df.groupby("code", sort=True):
+        snapshot_df = _build_code_gene_snapshot_payload(
+            group.reset_index(drop=True),
+            target_dates=target_date_set,
+        )
+        if not snapshot_df.empty:
+            snapshot_frames.append(snapshot_df)
+
+    if not snapshot_frames:
+        return 0
+
+    snapshot_df = _concat_sparse_frames(snapshot_frames)
+    snapshot_df = _apply_cross_section_ranks(snapshot_df)
+    if snapshot_df.empty:
+        return 0
+    return store.bulk_upsert("l3_stock_gene", snapshot_df)
