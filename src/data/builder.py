@@ -8,6 +8,7 @@ from src.data.cleaner import clean_industry_daily, clean_industry_structure_dail
 from src.data.store import Store
 from src.logging_utils import logger
 from src.selector.gene import compute_gene, compute_gene_conditioning, compute_gene_mirror
+from src.selector.gene_incremental import run_gene_incremental_builder
 from src.selector.irs import compute_irs
 from src.selector.mss_experiments import compute_mss_variant
 
@@ -130,8 +131,23 @@ def build_l3(store: Store, config: Settings, start: date | None, end: date | Non
     n3 = 0
     if gene_window is not None:
         gene_begin, gene_finish = gene_window
-        n3 = compute_gene(store, gene_begin, gene_finish)
-        n3 += compute_gene_mirror(store, gene_finish)
+        if force:
+            n3 = compute_gene(store, gene_begin, gene_finish)
+            n3 += compute_gene_mirror(store, gene_finish)
+        else:
+            summary = run_gene_incremental_builder(
+                store,
+                start=gene_begin,
+                end=gene_finish,
+                refresh_evals=True,
+                refresh_market=True,
+            )
+            n3 = int(summary["written_rows"])
+            n3 += int(summary["rank_refresh_rows"])
+            n3 += int(summary["factor_eval_rows"])
+            n3 += int(summary["distribution_eval_rows"])
+            n3 += int(summary["validation_eval_rows"])
+            n3 += int(summary["market_rows"])
         n3 += compute_gene_conditioning(store, gene_finish)
     return n1 + n2 + n3
 
