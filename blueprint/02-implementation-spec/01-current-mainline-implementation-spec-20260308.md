@@ -55,10 +55,11 @@
 
 当前实现方案默认继承一组固定执行前提，后续实现不得绕开：
 
-1. 三目录纪律固定为：
+1. 四目录纪律固定为：
    - `G:\EmotionQuant-gamma` = 代码 / 文档 / 配置
    - `G:\EmotionQuant_data` = 正式数据库 / 日志 / 长期产物
    - `G:\EmotionQuant-temp` = 临时文件 / 工作副本 / 实验缓存
+   - `G:\EmotionQuant-report` = 导出报表 / 人读长报告 / 展示型长期产物
 2. 当前默认执行库固定为 `G:\EmotionQuant_data\emotionquant.duckdb`。
 3. 当前默认旧库候选固定为 `G:\EmotionQuant_data\duckdb\emotionquant.duckdb`。
 4. 数据补齐顺序固定为“先复用本地旧库，再用 TuShare 双通道补缺”。

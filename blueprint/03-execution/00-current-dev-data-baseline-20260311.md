@@ -13,7 +13,7 @@
 
 本文只冻结当前主线执行时必须时刻记住的 5 件事：
 
-1. 三目录的固定职责。
+1. 四目录的固定职责。
 2. 当前执行库与旧库候选的默认区分。
 3. 本地旧库优先、TuShare 补缺的取数顺序。
 4. 双 TuShare key 的角色分工。
@@ -25,7 +25,7 @@
 
 ---
 
-## 2. 三目录固定职责
+## 2. 四目录固定职责
 
 当前本地目录纪律固定为：
 
@@ -38,6 +38,9 @@
 3. `G:\EmotionQuant-temp`
    - 只放临时文件、运行副本、实验缓存、中间产物、pytest/backtest 工作副本。
    - 默认是正式 `TEMP_PATH`。
+4. `G:\EmotionQuant-report`
+   - 只放人读报告、导出表和长期展示型报表产物。
+   - 不放 working DB，不作为 formal evidence / record 的默认落点。
 
 当前 `.env` 的最小路径口径应保持为：
 
@@ -50,6 +53,7 @@ TEMP_PATH=G:\EmotionQuant-temp
 
 1. `LOG_PATH` 允许按当前代码默认规则回落。
 2. 临时 DuckDB、pytest cache、backtest working db 一律放 `G:\EmotionQuant-temp`。
+3. 报表类脚本若不显式改 `--output-dir`，默认应优先落 `G:\EmotionQuant-report`。
 
 ---
 

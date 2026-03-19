@@ -68,10 +68,11 @@
 
 除了 phase / card 顺序外，当前主线还固定继承一组非 phase 的执行前提：
 
-1. 三目录纪律固定为：
+1. 四目录纪律固定为：
    - `G:\EmotionQuant-gamma` 只放代码、文档、配置与脚本
    - `G:\EmotionQuant_data` 只放正式数据库、日志与长期数据产物
    - `G:\EmotionQuant-temp` 只放临时文件、工作副本、pytest / backtest / artifacts
+   - `G:\EmotionQuant-report` 只放导出报表与人读长报告
 2. 当前默认执行库固定为：
    - `G:\EmotionQuant_data\emotionquant.duckdb`
 3. 当前默认旧库候选固定为：

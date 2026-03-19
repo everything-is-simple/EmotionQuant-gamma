@@ -16,6 +16,7 @@ It does not carry research backlog or temporary migration notes.
 
 | File | Role |
 |---|---|
+| `current-system-usage-map-20260319.md` | 当前系统总览、四目录纪律与 Gene 平均寿命框架用法 |
 | `setup-guide.md` | Environment setup, directory discipline, and temp-file handling |
 | `current-mainline-operating-runbook-20260317.md` | Current truthful operating chain, allowed switches, intervention boundary, and rollback rules |
 
@@ -29,4 +30,5 @@ It does not carry research backlog or temporary migration notes.
 ## Entry Points
 
 1. `setup-guide.md`
-2. `current-mainline-operating-runbook-20260317.md`
+2. `current-system-usage-map-20260319.md`
+3. `current-mainline-operating-runbook-20260317.md`

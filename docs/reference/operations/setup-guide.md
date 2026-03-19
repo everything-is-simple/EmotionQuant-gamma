@@ -4,6 +4,7 @@
 > - `G:\EmotionQuant-gamma` 只放代码和文档
 > - `G:\EmotionQuant_data` 只放数据库与日志
 > - `G:\EmotionQuant-temp` 只放临时文件与运行时产物
+> - `G:\EmotionQuant-report` 只放导出报表与人读报告
 
 > 当前定位：
 > - 本文是环境与运维参考，不是当前主线设计 SoT
@@ -17,7 +18,7 @@
 
 ## 📂 目录结构规划
 
-### 推荐的三目录分离结构
+### 推荐的四目录分离结构
 
 ```
 G:\
@@ -35,11 +36,12 @@ G:\
 │   ├── emotionquant.duckdb-shm  # 共享内存
 │   └── logs/                    # 日志文件（可选）
 │
-└── EmotionQuant-temp\           # 临时文件（不进 Git）
+├── EmotionQuant-temp\           # 临时文件（不进 Git）
     ├── logs/                    # 日志文件
     ├── cache/                   # 缓存
     ├── artifacts/               # 运行时产物
-    └── .reports/                # 报告输出
+└── EmotionQuant-report\         # 导出报表（不进 Git）
+    └── backtest_reports/        # 人读长报告 / 年报 / 导出表
 ```
 
 **优势**：
@@ -64,7 +66,10 @@ New-Item -ItemType Directory -Path "G:\EmotionQuant-temp" -Force
 New-Item -ItemType Directory -Path "G:\EmotionQuant-temp\logs" -Force
 New-Item -ItemType Directory -Path "G:\EmotionQuant-temp\cache" -Force
 New-Item -ItemType Directory -Path "G:\EmotionQuant-temp\artifacts" -Force
-New-Item -ItemType Directory -Path "G:\EmotionQuant-temp\.reports" -Force
+
+# 创建报表目录
+New-Item -ItemType Directory -Path "G:\EmotionQuant-report" -Force
+New-Item -ItemType Directory -Path "G:\EmotionQuant-report\backtest_reports" -Force
 ```
 
 ### 步骤 2：配置 .env 文件

@@ -205,7 +205,7 @@
 2. 再看 `06-08`，确认算法正文
 3. 再看 `09`，确认端到端运行路径、系统级场景矩阵与证据口径
 4. 再看 `02-implementation-spec/01-current-mainline-implementation-spec-20260308.md`
-5. 再看 `03-execution/00-current-dev-data-baseline-20260311.md`，确认当前执行库、旧库候选、三目录纪律、TuShare 双通道和当前 phase 顺序
+5. 再看 `03-execution/00-current-dev-data-baseline-20260311.md`，确认当前执行库、旧库候选、四目录纪律、TuShare 双通道和当前 phase 顺序
 6. 再看当前 execution breakdown 与 phase card
 7. 只有在做来源审计或历史回看时，才看 `90-92`
 8. 实现只允许从 `01-09` 裁出，不允许跳过正文直接拿附录下定义
