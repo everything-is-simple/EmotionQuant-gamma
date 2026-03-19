@@ -1,5 +1,5 @@
 # GX19 / 平均寿命框架引擎补完卡
-**状态**: `Proposal`
+**状态**: `Active`
 **日期**: `2026-03-20`
 **类型**: `engine completion`
 **直接目标文件**: [`../../src/selector/gene.py`](../../src/selector/gene.py)

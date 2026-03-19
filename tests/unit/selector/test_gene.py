@@ -6,6 +6,10 @@ import pandas as pd
 
 from src.data.store import Store
 from src.selector.gene import (
+    _gene_score_from_percentiles,
+    _joint_lifespan_percentile,
+    _lifespan_remaining_profile,
+    _relative_strength_stats,
     compute_gene,
     compute_gene_conditioning,
     compute_gene_mirror,
@@ -126,6 +130,33 @@ def _industry_daily_rows(base: date, industry: str, pct_changes: list[float], am
     return rows
 
 
+def test_lifespan_stats_return_nulls_when_history_is_empty() -> None:
+    stats = _relative_strength_stats([], 12.0)
+    joint_percentile = _joint_lifespan_percentile([], magnitude_value=10.0, duration_value=8.0)
+    remaining_profile = _lifespan_remaining_profile(
+        magnitude_percentile=float("nan"),
+        duration_percentile=float("nan"),
+    )
+    bull_score, bear_score, gene_score = _gene_score_from_percentiles(
+        magnitude_percentile=None,
+        duration_percentile=None,
+        density_percentile=None,
+        direction="UP",
+    )
+
+    assert stats["sample_size"] == 0
+    assert stats["rank"] is None
+    assert stats["percentile"] is None
+    assert stats["zscore"] is None
+    assert joint_percentile is None
+    assert remaining_profile["lifespan_average_remaining_prob"] is None
+    assert remaining_profile["lifespan_average_aged_prob"] is None
+    assert remaining_profile["lifespan_remaining_vs_aged_odds"] is None
+    assert bull_score is None
+    assert bear_score is None
+    assert gene_score is None
+
+
 def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
     db = tmp_path / "gene_wave_ruler.duckdb"
     store = Store(db)
@@ -170,6 +201,7 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
                 current_wave_magnitude_q25,
                 current_wave_magnitude_q50,
                 current_wave_magnitude_q75,
+                current_wave_history_sample_size,
                 current_wave_history_reference_trade_days,
                 current_wave_history_span_trade_days,
                 current_wave_age_band,
@@ -287,6 +319,8 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
                 code,
                 calc_date,
                 metric_name,
+                history_sample_size,
+                current_percentile,
                 band_label,
                 current_metric_remaining_prob,
                 current_metric_aged_prob,
@@ -329,7 +363,9 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
                 sample_size,
                 current_wave_matches_surface,
                 current_wave_amplitude_value,
-                current_wave_average_aged_prob
+                current_wave_average_remaining_prob,
+                current_wave_average_aged_prob,
+                current_wave_remaining_vs_aged_odds
             FROM l3_stock_lifespan_surface
             WHERE calc_date = ?
             ORDER BY code, surface_label
@@ -377,7 +413,6 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert not waves.empty
         assert not countertrend_snapshots.empty
         assert not events.empty
-        assert not factor_eval.empty
         assert not distribution_eval.empty
         assert len(stock_lifespan_surface) == 8
         assert snapshots["current_wave_direction"].tolist() == ["UP", "UP"]
@@ -417,7 +452,8 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert float(snapshots.iloc[0]["current_wave_magnitude_pct"]) > float(
             snapshots.iloc[1]["current_wave_magnitude_pct"]
         )
-        assert snapshots["current_wave_magnitude_percentile"].notna().all()
+        assert snapshots["current_wave_history_sample_size"].eq(0).all()
+        assert snapshots["current_wave_magnitude_percentile"].isna().all()
         assert snapshots["current_wave_magnitude_band"].isin(
             ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
         ).all()
@@ -425,17 +461,19 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert snapshots["current_wave_history_span_trade_days"].ge(0).all()
         assert (snapshots["current_wave_age_band"] == snapshots["current_wave_duration_band"]).all()
         assert snapshots["current_wave_age_band_basis"].eq("DURATION_QUARTILE_ALIAS").all()
+        assert snapshots["current_wave_age_band"].eq("UNSCALED").all()
         assert snapshots["current_wave_age_band"].isin(
             ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
         ).all()
-        assert snapshots["current_wave_lifespan_joint_percentile"].between(0.0, 100.0).all()
+        assert snapshots["current_wave_lifespan_joint_percentile"].isna().all()
         assert snapshots["current_wave_lifespan_joint_band"].isin(
             ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
         ).all()
-        assert snapshots["current_wave_magnitude_remaining_prob"].dropna().between(0.0, 1.0).all()
-        assert snapshots["current_wave_duration_remaining_prob"].dropna().between(0.0, 1.0).all()
-        assert snapshots["current_wave_lifespan_average_remaining_prob"].dropna().between(0.0, 1.0).all()
-        assert snapshots["current_wave_lifespan_average_aged_prob"].dropna().between(0.0, 1.0).all()
+        assert snapshots["current_wave_lifespan_joint_band"].eq("UNSCALED").all()
+        assert snapshots["current_wave_magnitude_remaining_prob"].isna().all()
+        assert snapshots["current_wave_duration_remaining_prob"].isna().all()
+        assert snapshots["current_wave_lifespan_average_remaining_prob"].isna().all()
+        assert snapshots["current_wave_lifespan_average_aged_prob"].isna().all()
         assert set(stock_lifespan_surface["surface_label"].tolist()) == {
             "BULL_MAINSTREAM",
             "BULL_COUNTERTREND",
@@ -454,6 +492,10 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
             stock_lifespan_surface["current_wave_matches_surface"].fillna(False),
             "current_wave_amplitude_value",
         ].notna().all()
+        unsized_stock_surface = stock_lifespan_surface.loc[stock_lifespan_surface["sample_size"].eq(0)].copy()
+        assert unsized_stock_surface["current_wave_average_remaining_prob"].isna().all()
+        assert unsized_stock_surface["current_wave_average_aged_prob"].isna().all()
+        assert unsized_stock_surface["current_wave_remaining_vs_aged_odds"].isna().all()
         assert waves["trend_level"].eq("INTERMEDIATE").all()
         assert waves["context_trend_level"].eq("LONG").all()
         assert waves["wave_role_basis"].eq("INTERMEDIATE_PARENT_CONTEXT_DIRECTION").all()
@@ -467,7 +509,7 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert not extreme_events.empty
         assert extreme_events["confirmation_window_bars"].eq(5).all()
         assert extreme_events["confirmation_window_basis"].eq("INTERMEDIATE_WITHIN_3_TO_5_BARS").all()
-        assert waves["magnitude_percentile"].notna().all()
+        assert waves.loc[waves["history_sample_size"].eq(0), "magnitude_percentile"].isna().all()
         assert waves["magnitude_band"].isin(
             ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
         ).all()
@@ -475,7 +517,7 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert waves["wave_age_band"].isin(
             ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
         ).all()
-        assert waves["lifespan_joint_percentile"].between(0.0, 100.0).all()
+        assert waves.loc[waves["history_sample_size"].eq(0), "lifespan_joint_percentile"].isna().all()
         assert waves["lifespan_joint_band"].isin(
             ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
         ).all()
@@ -489,35 +531,23 @@ def test_compute_gene_writes_wave_event_and_snapshot_tables(tmp_path) -> None:
         assert countertrend_snapshots["current_wave_retracement_vs_prior_mainstream_pct"].notna().any()
         assert countertrend_snapshots["current_wave_retracement_vs_prior_mainstream_pct"].dropna().ge(0.0).all()
         assert events["event_seq"].min() == 1
-        assert set(factor_eval.loc[factor_eval["bin_label"] == "ALL", "factor_name"].tolist()) == {
-            "magnitude",
-            "duration",
-            "extreme_density",
-        }
-        assert factor_eval["sample_scope"].eq("SELF_HISTORY_PERCENTILE").all()
-        assert factor_eval["direction_scope"].eq("ALL").all()
-        assert factor_eval["forward_horizon_trade_days"].eq(10).all()
+        assert factor_eval.empty
         assert set(distribution_eval["metric_name"].tolist()) == {"duration_trade_days", "magnitude_pct"}
         assert distribution_eval["band_label"].isin(
             ["FIRST_QUARTER", "SECOND_QUARTER", "THIRD_QUARTER", "FOURTH_QUARTER", "UNSCALED"]
         ).all()
+        assert distribution_eval["history_sample_size"].eq(0).all()
+        assert distribution_eval["current_percentile"].isna().all()
         assert distribution_eval["current_metric_remaining_prob"].dropna().between(0.0, 1.0).all()
         assert distribution_eval["current_metric_aged_prob"].dropna().between(0.0, 1.0).all()
         assert distribution_eval["current_average_remaining_prob"].dropna().between(0.0, 1.0).all()
         assert distribution_eval["current_average_aged_prob"].dropna().between(0.0, 1.0).all()
-        assert not validation_eval.empty
-        assert set(validation_eval["metric_name"].tolist()) == {
-            "duration_percentile",
-            "extreme_density_percentile",
-            "gene_score",
-            "magnitude_percentile",
-        }
-        assert validation_eval["sample_scope"].eq("SELF_HISTORY_CURRENT_WAVE").all()
-        assert validation_eval["forward_horizon_trade_days"].eq(10).all()
-        assert validation_eval["sample_size"].gt(0).all()
-        assert validation_eval["decision_tag"].ne("").all()
+        assert validation_eval.empty
         assert waves.loc[waves["wave_role"] == "COUNTERTREND", "history_sample_size"].eq(0).all()
         assert waves.loc[waves["wave_role"] == "COUNTERTREND", "wave_age_band"].eq("UNSCALED").all()
+        assert waves.loc[waves["wave_role"] == "COUNTERTREND", "lifespan_average_remaining_prob"].isna().all()
+        assert waves.loc[waves["wave_role"] == "COUNTERTREND", "lifespan_average_aged_prob"].isna().all()
+        assert waves.loc[waves["wave_role"] == "COUNTERTREND", "lifespan_remaining_vs_aged_odds"].isna().all()
     finally:
         store.close()
 
@@ -959,7 +989,9 @@ def test_compute_gene_mirror_writes_market_and_industry_rows(tmp_path) -> None:
                 sample_size,
                 current_wave_matches_surface,
                 current_wave_amplitude_value,
-                current_wave_average_aged_prob
+                current_wave_average_remaining_prob,
+                current_wave_average_aged_prob,
+                current_wave_remaining_vs_aged_odds
             FROM l3_gene_market_lifespan_surface
             WHERE calc_date = ?
             ORDER BY surface_label
@@ -1003,6 +1035,10 @@ def test_compute_gene_mirror_writes_market_and_industry_rows(tmp_path) -> None:
             market_lifespan_rows["current_wave_matches_surface"].fillna(False)
         ].iloc[0]
         assert pd.notna(active_surface["current_wave_amplitude_value"])
+        unsized_market_surface = market_lifespan_rows.loc[market_lifespan_rows["sample_size"].eq(0)].copy()
+        assert unsized_market_surface["current_wave_average_remaining_prob"].isna().all()
+        assert unsized_market_surface["current_wave_average_aged_prob"].isna().all()
+        assert unsized_market_surface["current_wave_remaining_vs_aged_odds"].isna().all()
     finally:
         store.close()
 

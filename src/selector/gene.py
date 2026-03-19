@@ -16,6 +16,7 @@ Gene 的目标不是直接给出买卖信号，而是回答：
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Iterable, Literal
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -469,10 +470,13 @@ def _build_confirmed_pivots(
     return pivots
 
 
-def _relative_strength_stats(history: list[float], value: float) -> dict[str, float | int]:
+def _relative_strength_stats(history: list[float], value: float) -> dict[str, float | int | None]:
     if not history:
-        return {"rank": 1, "percentile": 50.0, "zscore": 0.0, "sample_size": 0}
+        return {"rank": None, "percentile": None, "zscore": None, "sample_size": 0}
     arr = np.asarray(history, dtype=float)
+    arr = arr[np.isfinite(arr)]
+    if len(arr) == 0:
+        return {"rank": None, "percentile": None, "zscore": None, "sample_size": 0}
     rank = 1 + int(np.sum(arr > value))
     percentile = 100.0 * float(np.mean(arr <= value))
     std = float(arr.std(ddof=0))
@@ -481,7 +485,7 @@ def _relative_strength_stats(history: list[float], value: float) -> dict[str, fl
         "rank": rank,
         "percentile": percentile,
         "zscore": zscore,
-        "sample_size": int(len(history)),
+        "sample_size": int(len(arr)),
     }
 
 
@@ -525,6 +529,13 @@ def _optional_float(value: float | int | None) -> float | None:
     return number
 
 
+def _optional_int(value: float | int | None) -> int | None:
+    number = _optional_float(value)
+    if number is None:
+        return None
+    return int(number)
+
+
 def _distribution_band(value: float, thresholds: dict[str, float | int]) -> str:
     sample_size = int(thresholds["sample_size"])
     q25 = _optional_float(thresholds["q25"])
@@ -565,9 +576,9 @@ def _joint_lifespan_percentile(
     *,
     magnitude_value: float,
     duration_value: float,
-) -> float:
+) -> float | None:
     if not history:
-        return 50.0
+        return None
     pairs = np.asarray(
         [
             (float(item["magnitude_pct"]), float(item["duration_trade_days"]))
@@ -576,7 +587,7 @@ def _joint_lifespan_percentile(
         dtype=float,
     )
     if len(pairs) == 0:
-        return 50.0
+        return None
     dominated = np.logical_and(pairs[:, 0] <= magnitude_value, pairs[:, 1] <= duration_value)
     return 100.0 * float(np.mean(dominated))
 
@@ -1273,9 +1284,13 @@ def _apply_wave_history_scores(waves: list[dict[str, object]]) -> None:
         density_stats = _relative_strength_stats(density_history, density_value)
         magnitude_thresholds = _distribution_thresholds(magnitude_history)
         duration_thresholds = _distribution_thresholds(duration_history)
-        remaining_profile = _lifespan_remaining_profile(
-            magnitude_percentile=float(magnitude_stats["percentile"]),
-            duration_percentile=float(duration_stats["percentile"]),
+        remaining_profile = (
+            _lifespan_remaining_profile(
+                magnitude_percentile=float(magnitude_stats["percentile"]),
+                duration_percentile=float(duration_stats["percentile"]),
+            )
+            if magnitude_stats["percentile"] is not None and duration_stats["percentile"] is not None
+            else _empty_lifespan_remaining_profile()
         )
         joint_percentile = _joint_lifespan_percentile(
             lifespan_reference_history,
@@ -1293,16 +1308,16 @@ def _apply_wave_history_scores(waves: list[dict[str, object]]) -> None:
             lifespan_reference_history,
             int(wave["end_index"]),
         )
-        wave["magnitude_rank"] = int(magnitude_stats["rank"])
-        wave["duration_rank"] = int(duration_stats["rank"])
-        wave["extreme_density_rank"] = int(density_stats["rank"])
-        wave["magnitude_percentile"] = float(magnitude_stats["percentile"])
-        wave["duration_percentile"] = float(duration_stats["percentile"])
-        wave["extreme_density_percentile"] = float(density_stats["percentile"])
-        wave["lifespan_joint_percentile"] = float(joint_percentile)
-        wave["magnitude_zscore"] = float(magnitude_stats["zscore"])
-        wave["duration_zscore"] = float(duration_stats["zscore"])
-        wave["extreme_density_zscore"] = float(density_stats["zscore"])
+        wave["magnitude_rank"] = _optional_int(magnitude_stats["rank"])
+        wave["duration_rank"] = _optional_int(duration_stats["rank"])
+        wave["extreme_density_rank"] = _optional_int(density_stats["rank"])
+        wave["magnitude_percentile"] = _optional_float(magnitude_stats["percentile"])
+        wave["duration_percentile"] = _optional_float(duration_stats["percentile"])
+        wave["extreme_density_percentile"] = _optional_float(density_stats["percentile"])
+        wave["lifespan_joint_percentile"] = _optional_float(joint_percentile)
+        wave["magnitude_zscore"] = _optional_float(magnitude_stats["zscore"])
+        wave["duration_zscore"] = _optional_float(duration_stats["zscore"])
+        wave["extreme_density_zscore"] = _optional_float(density_stats["zscore"])
         wave["magnitude_remaining_prob"] = remaining_profile["magnitude_remaining_prob"]
         wave["duration_remaining_prob"] = remaining_profile["duration_remaining_prob"]
         wave["lifespan_average_remaining_prob"] = remaining_profile["lifespan_average_remaining_prob"]
@@ -1381,12 +1396,20 @@ def _advance_active_state(state: ActiveWaveState, current_index: int) -> None:
 # 再按方向投射到 bull_score / bear_score。
 # 这正是 G4 要验证的对象：它能不能当主尺，还是只能做汇总视图。
 def _gene_score_from_percentiles(
-    magnitude_percentile: float,
-    duration_percentile: float,
-    density_percentile: float,
+    magnitude_percentile: float | None,
+    duration_percentile: float | None,
+    density_percentile: float | None,
     direction: WaveDirection,
-) -> tuple[float, float, float]:
-    composite = float(np.nanmean([magnitude_percentile, duration_percentile, density_percentile]))
+) -> tuple[float | None, float | None, float | None]:
+    values = [
+        _optional_float(magnitude_percentile),
+        _optional_float(duration_percentile),
+        _optional_float(density_percentile),
+    ]
+    finite_values = [value for value in values if value is not None]
+    if not finite_values:
+        return None, None, None
+    composite = float(np.mean(finite_values))
     if direction == "UP":
         return composite, 0.0, composite
     return 0.0, composite, composite
@@ -1499,9 +1522,13 @@ def _build_daily_snapshots(
         density_stats = _relative_strength_stats(density_history, density)
         magnitude_thresholds = _distribution_thresholds(magnitude_history)
         duration_thresholds = _distribution_thresholds(duration_history)
-        remaining_profile = _lifespan_remaining_profile(
-            magnitude_percentile=float(magnitude_stats["percentile"]),
-            duration_percentile=float(duration_stats["percentile"]),
+        remaining_profile = (
+            _lifespan_remaining_profile(
+                magnitude_percentile=float(magnitude_stats["percentile"]),
+                duration_percentile=float(duration_stats["percentile"]),
+            )
+            if magnitude_stats["percentile"] is not None and duration_stats["percentile"] is not None
+            else _empty_lifespan_remaining_profile()
         )
         joint_percentile = _joint_lifespan_percentile(
             lifespan_reference_history,
@@ -1509,9 +1536,9 @@ def _build_daily_snapshots(
             duration_value=float(age_trade_days),
         )
         bull_score, bear_score, gene_score = _gene_score_from_percentiles(
-            magnitude_percentile=float(magnitude_stats["percentile"]),
-            duration_percentile=float(duration_stats["percentile"]),
-            density_percentile=float(density_stats["percentile"]),
+            magnitude_percentile=_optional_float(magnitude_stats["percentile"]),
+            duration_percentile=_optional_float(duration_stats["percentile"]),
+            density_percentile=_optional_float(density_stats["percentile"]),
             direction=direction,
         )
         # reversal_state 继续保留压缩视图，但 family / flags 现在显式落盘，
@@ -1539,10 +1566,26 @@ def _build_daily_snapshots(
                 "gene_score": gene_score,
                 "new_high_freq": density if direction == "UP" else 0.0,
                 "new_low_freq": density if direction == "DOWN" else 0.0,
-                "strength_ratio": float(magnitude_stats["percentile"] / 100.0) if direction == "UP" else 0.0,
-                "weakness_ratio": float(magnitude_stats["percentile"] / 100.0) if direction == "DOWN" else 0.0,
-                "resilience": float(duration_stats["percentile"] / 100.0) if direction == "UP" else 0.0,
-                "fragility": float(duration_stats["percentile"] / 100.0) if direction == "DOWN" else 0.0,
+                "strength_ratio": (
+                    float(magnitude_stats["percentile"] / 100.0)
+                    if direction == "UP" and magnitude_stats["percentile"] is not None
+                    else None
+                ),
+                "weakness_ratio": (
+                    float(magnitude_stats["percentile"] / 100.0)
+                    if direction == "DOWN" and magnitude_stats["percentile"] is not None
+                    else None
+                ),
+                "resilience": (
+                    float(duration_stats["percentile"] / 100.0)
+                    if direction == "UP" and duration_stats["percentile"] is not None
+                    else None
+                ),
+                "fragility": (
+                    float(duration_stats["percentile"] / 100.0)
+                    if direction == "DOWN" and duration_stats["percentile"] is not None
+                    else None
+                ),
                 "trend_level": TREND_LEVEL_INTERMEDIATE,
                 "trend_direction": current_context_trend_direction,
                 "current_wave_id": f"{code}::{active_state.start_date.isoformat()}::{direction}",
@@ -1581,16 +1624,16 @@ def _build_daily_snapshots(
                     lifespan_reference_history,
                     idx,
                 ),
-                "current_wave_magnitude_rank": int(magnitude_stats["rank"]),
-                "current_wave_duration_rank": int(duration_stats["rank"]),
-                "current_wave_extreme_density_rank": int(density_stats["rank"]),
-                "current_wave_magnitude_percentile": float(magnitude_stats["percentile"]),
-                "current_wave_duration_percentile": float(duration_stats["percentile"]),
-                "current_wave_extreme_density_percentile": float(density_stats["percentile"]),
-                "current_wave_lifespan_joint_percentile": float(joint_percentile),
-                "current_wave_magnitude_zscore": float(magnitude_stats["zscore"]),
-                "current_wave_duration_zscore": float(duration_stats["zscore"]),
-                "current_wave_extreme_density_zscore": float(density_stats["zscore"]),
+                "current_wave_magnitude_rank": _optional_int(magnitude_stats["rank"]),
+                "current_wave_duration_rank": _optional_int(duration_stats["rank"]),
+                "current_wave_extreme_density_rank": _optional_int(density_stats["rank"]),
+                "current_wave_magnitude_percentile": _optional_float(magnitude_stats["percentile"]),
+                "current_wave_duration_percentile": _optional_float(duration_stats["percentile"]),
+                "current_wave_extreme_density_percentile": _optional_float(density_stats["percentile"]),
+                "current_wave_lifespan_joint_percentile": _optional_float(joint_percentile),
+                "current_wave_magnitude_zscore": _optional_float(magnitude_stats["zscore"]),
+                "current_wave_duration_zscore": _optional_float(duration_stats["zscore"]),
+                "current_wave_extreme_density_zscore": _optional_float(density_stats["zscore"]),
                 "current_wave_magnitude_remaining_prob": remaining_profile["magnitude_remaining_prob"],
                 "current_wave_duration_remaining_prob": remaining_profile["duration_remaining_prob"],
                 "current_wave_lifespan_average_remaining_prob": remaining_profile[
@@ -1826,9 +1869,9 @@ def _build_factor_eval_samples(
                 "magnitude_band": str(wave["magnitude_band"]),
                 "duration_band": str(wave["duration_band"]),
                 "wave_age_band": str(wave["wave_age_band"]),
-                "magnitude": float(wave["magnitude_percentile"]),
-                "duration": float(wave["duration_percentile"]),
-                "extreme_density": float(wave["extreme_density_percentile"]),
+                "magnitude": _optional_float(wave["magnitude_percentile"]),
+                "duration": _optional_float(wave["duration_percentile"]),
+                "extreme_density": _optional_float(wave["extreme_density_percentile"]),
                 **metrics,
             }
         )
@@ -2005,10 +2048,10 @@ def _build_distribution_eval_rows(
                     "metric_name": spec["metric_name"],
                     "sample_scope": G2_DISTRIBUTION_SAMPLE_SCOPE,
                     "band_method": G2_DISTRIBUTION_BAND_METHOD,
-                    "history_sample_size": int(snapshot.current_wave_history_sample_size),
+                    "history_sample_size": _optional_int(snapshot.current_wave_history_sample_size),
                     "band_sample_size": int(summary["band_sample_size"]),
                     "current_value": float(getattr(snapshot, spec["current_value_col"])),
-                    "current_percentile": float(getattr(snapshot, spec["current_percentile_col"])),
+                    "current_percentile": _optional_float(getattr(snapshot, spec["current_percentile_col"])),
                     "current_metric_remaining_prob": _optional_float(
                         getattr(snapshot, f'current_wave_{"magnitude" if spec["metric_name"] == "magnitude_pct" else "duration"}_remaining_prob', None)
                     ),
@@ -2669,7 +2712,7 @@ def _build_stock_lifespan_surface_rows(
                             else G2_BAND_UNSCALED
                         ),
                         "current_wave_joint_band": (
-                            _percentile_band(float(joint_percentile), int(amplitude_summary["sample_size"] or 0))
+                            _percentile_band(joint_percentile, int(amplitude_summary["sample_size"] or 0))
                             if current_match and joint_percentile is not None
                             else G2_BAND_UNSCALED
                         ),
@@ -2826,7 +2869,7 @@ def _build_market_lifespan_surface_rows(
                         else G2_BAND_UNSCALED
                     ),
                     "current_wave_joint_band": (
-                        _percentile_band(float(joint_percentile), int(amplitude_summary["sample_size"] or 0))
+                        _percentile_band(joint_percentile, int(amplitude_summary["sample_size"] or 0))
                         if current_match and joint_percentile is not None
                         else G2_BAND_UNSCALED
                     ),
@@ -3514,10 +3557,16 @@ def compute_gene_conditioning(store: Store, calc_date: date) -> int:
 # 不同对象生成的中间表可能有轻微列差异；
 # 先丢掉全空列，再 concat，避免落库时带一堆无意义空列。
 def _concat_sparse_frames(frames: list[pd.DataFrame]) -> pd.DataFrame:
-    normalized = [frame.dropna(axis=1, how="all") for frame in frames if not frame.empty]
+    normalized = [frame for frame in frames if not frame.empty]
     if not normalized:
         return pd.DataFrame()
-    return pd.concat(normalized, ignore_index=True, sort=False)
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message="The behavior of DataFrame concatenation with empty or all-NA entries is deprecated.",
+            category=FutureWarning,
+        )
+        return pd.concat(normalized, ignore_index=True, sort=False)
 
 
 # 单代码流水线是 Gene 的最小可解释单元：
@@ -3861,7 +3910,17 @@ def compute_gene(store: Store, start: date, end: date) -> int:
             total_written += store.bulk_upsert("l3_gene_event", event_df)
 
     if factor_eval_sample_frames:
-        factor_eval_samples_df = _concat_sparse_frames(factor_eval_sample_frames)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message="The behavior of DataFrame concatenation with empty or all-NA entries is deprecated.",
+                category=FutureWarning,
+            )
+            factor_eval_samples_df = pd.concat(
+                [frame for frame in factor_eval_sample_frames if not frame.empty],
+                ignore_index=True,
+                sort=False,
+            )
         factor_eval_df = _build_factor_eval_rows(factor_eval_samples_df, calc_date=end)
         if not factor_eval_df.empty:
             total_written += store.bulk_upsert("l3_gene_factor_eval", factor_eval_df)

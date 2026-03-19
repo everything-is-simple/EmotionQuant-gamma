@@ -260,12 +260,12 @@
 17. `GX19 / average lifespan engine completion`
    - `engine completion`
    - `src/selector/gene.py`
-   - `Proposal`
+   - `Active`
    - 目标：把 `UNSCALED / NULL odds / COUNTERTREND` 等缺口全部补齐
 18. `GX20 / book figure renderer and formal report output`
    - `report productization`
    - `scripts/report/`
-   - `Proposal`
+   - `Active`
    - 目标：把图 11-1 / 26-1 风格的市场寿命图正式输出成系统报告产物
 19. `GX21 / gene incremental builder`
    - `incremental builder`

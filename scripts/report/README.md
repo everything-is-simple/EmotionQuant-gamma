@@ -28,6 +28,7 @@
 | 脚本 | 作用 | 主要输入 | 主要输出 |
 |---|---|---|---|
 | `build_g6_asof_evidence.py` | 构建第四战场 `G6` 的 as-of 覆盖率证据，核对 `raw_stock_basic -> l1_stock_info` 的新鲜度与命中情况 | raw 库、执行库 | `docs/spec/v0.01/*.json` evidence |
+| `run_market_lifespan_report.py` | 生成市场四张寿命面正式图与 Markdown 报告，消费 `l3_gene_market_lifespan_surface` | 正式执行库 / 市场寿命面表 | `G:\EmotionQuant-report\gene_market_lifespan\...` |
 
 ---
 

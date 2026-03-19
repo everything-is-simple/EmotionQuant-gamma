@@ -1,5 +1,5 @@
 # GX20 / 书义寿命图与正式报告输出卡
-**状态**: `Proposal`
+**状态**: `Active`
 **日期**: `2026-03-20`
 **类型**: `report productization`
 **直接目标目录**: [`../../scripts/report/`](../../scripts/report/)
