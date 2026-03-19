@@ -90,7 +90,9 @@
 
 - `01-full-design/01-stock-historical-trend-ruler-charter-20260316.md`
 - `01-full-design/02-professional-speculation-principles-theory-annex-20260316.md`
+- `01-full-design/03-book-core-trend-and-market-lifespan-framework-freeze-20260319.md`
 - `02-implementation-spec/01-price-only-wave-ruler-spec-20260316.md`
+- `02-implementation-spec/02-market-lifespan-framework-implementation-spec-20260319.md`
 - `03-execution/01-phase-g0-wave-ruler-opening-card-20260316.md`
 - `03-execution/03-phase-g1-factor-attribution-baseline-card-20260316.md`
 - `03-execution/04-phase-card-catalog-20260316.md`
@@ -118,6 +120,7 @@
 - `03-execution/23-phase-gx12-post-remediation-gene-and-phase9-revalidation-card-20260319.md`
 - `03-execution/24-phase-gx13-post-remediation-g4-g5-g6-rerun-card-20260319.md`
 - `03-execution/25-phase-gx14-book-aligned-lifespan-distribution-card-20260319.md`
+- `03-execution/26-phase-gx15-market-lifespan-framework-reconstruction-package-card-20260319.md`
 - `03-execution/records/12-gene-book-definition-ingestion-ledger-20260317.md`
 - `03-execution/records/14-phase-gx3-trend-level-context-refactor-record-20260317.md`
 - `03-execution/records/01-phase-g0-wave-ruler-opening-record-20260316.md`
@@ -227,8 +230,13 @@
    - `src/selector/gene.py / src/data/store.py`
    - `Active`
    - 目标：把寿命统计从 `p65 / p95` 尾部刀改回中级主要走势的四分位连续分布图
+13. `GX15 / market lifespan framework reconstruction package`
+   - `full gene reconstruction package`
+   - `gene/`
+   - `Active`
+   - 目标：把定义冻结、实现映射、代码重构、统计重跑与记录收口统一到同一条总包里
 
-当前 `GX3 ~ GX12` 已完成，当前新增执行位为 `GX13 + GX14`。  
+当前 `GX3 ~ GX12` 已完成，当前新增执行位为 `GX13 + GX14 + GX15`。  
 当前第四战场已不再有真正未执行的 hierarchy blocker，但已进入“书义对齐整改”阶段。  
 定义整改后的正式收口口径现更新为：
 
